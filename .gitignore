@@ -1,3 +1,4 @@
 .ipynb_checkpoints/*
 *.json
 __pycache__/*
+*.csv
