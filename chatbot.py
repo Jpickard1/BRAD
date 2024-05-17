@@ -69,13 +69,11 @@ def logger(chatlog, chatstatus, chatname):
         'output' : chatstatus['output'],  # the output to the user
         'process': chatstatus['process'], # information about the process that ran
         'status' : {                      # information about the chat at that time
-            'databases'     : str(chatstatus['databases']),
-#             'llm'           : str(chatstatus['llm']),
-            'current table' : chatstatus['current table'],
-            'current table' : chatstatus['current documents'],
+            'databases'         : str(chatstatus['databases']),
+            'current table'     : chatstatus['current table'],
+            'current documents' : chatstatus['current documents'],
         }
     }
-#    print(chatlog)
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
     return chatlog
@@ -113,10 +111,8 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     chatlog = {
         'llm'           : str(chatstatus['llm'])
     }
-    #    'llm'               : llm,
-    #}
     while True:
-        print('=========================')
+        print('==================================================')
         print('I'+str(len(chatlog))+':') # get query from user
         chatstatus['prompt'] = input()
 
@@ -127,15 +123,12 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         else:
             route = chatstatus['prompt'].split(' ')[1]
 
-        # Code to handle recursive inputs
-        # prompt += getPreviousInput(log, prompt.split(' ')[2].upper()) if len(prompt.split(' ')) >= 2 and prompt.split(' ')[1].upper() == 'R' else ''
-
-        print('=========================')
+        print('==================================================')
         print('O' + str(len(chatlog)) + ':')
         # Query database
         if route == 'GGET':
             print('GGET')
-            output, loggedOutput = queryGGET(chatstatus['prompt'])
+            chatstatus['output'], chatstatus['process'] = queryEnrichr(chatstatus['prompt'])
         elif route == 'LOAD':
             print('LOAD')
             output, loggedOutput, docsearch = loadFile(chatstatus['prompt'])
@@ -143,13 +136,11 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
             tables[tableNum] = docsearch
             # output, loggedOutput, datadb = queryData(prompt)
         elif route == 'SCRAPE':
-        #    Marc's code
             print('SCRAPE')
             loggedOutput = webScraping(chatstatus['prompt'])
         else:
             print('RAG')
-            chatstatus['output'], loggedOutput = queryDocs(chatstatus['prompt'], chatstatus, llm)
-
+            chatstatus['output'], chatstatus['process'] = queryDocs(chatstatus['prompt'], chatstatus, llm)
         chatlog = logger(chatlog, chatstatus, chatname)
 
         
