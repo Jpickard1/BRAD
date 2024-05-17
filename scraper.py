@@ -25,90 +25,116 @@ import requests
 from requests.exceptions import ConnectionError
 
 def webScraping(query):
-    searched = None
-    if 'ARXIV' in query.upper().split(' '):
-        print('searching on arxiv')
-        arxivscrape(query)
-        searched = 'ARXIV'
-    elif 'BIORXIV' in query.upper().split(' '):
-        print('searching on bioRxiv')
-        biorxiv_scrape(query)
-        searched = 'BIORXIV'
-    elif 'PUBMED' in query.upper().split(' '):
-        print('searching on PubMed')
-        pubmedscrape(query)
-        searched = 'PUBMED'
-    else:
-        print('by default, searching on PUBMED')
-        pubmedscrape(query)
-        searched = 'PUBMED'
-    return searched
+    # Define the mapping of keywords to functions
+    scraping_functions = {
+        'ARXIV'   : arxiv,
+        'BIORXIV' : biorxiv,
+        'PUBMED'  : pubmed
+    }
     
-def arxivscrape(query):
+    # Normalize the query
+    query_tokens = query.upper().split()
+    
+    # Determine the target source
+    source = next((key for key in scraping_functions if key in query_tokens), 'PUBMED')
+    process = {'searched': source}
+    scrape_function = scraping_functions[source]
+    
+    # Execute the scraping function and handle errors
+    try:
+        output = f'searching on {source}'
+        print(output)
+        scrape_function(query)
+    except Exception as e:
+        output = f'Error occurred while searching on {source}: {e}'
+        print(output)
+        process = {'searched': 'ERROR'}
+    
+    return output, process['searched']
+
+def arxiv(query):
     """
-    Scrape research papers from the arXiv repository based on a query and download the PDFs.
+    Search for articles on arXiv, display results, and optionally download the articles as PDFs.
 
-    Parameters:
-    query (str): The search term to filter papers by their abstracts.
+    Args:
+        query (str): The search query for arXiv.
 
-    Functionality:
-    1. Initializes the scraper with specific parameters for the q-bio category and a specified date range.
-    2. Uses the query to filter papers by their abstracts.
-    3. Scrapes the metadata of the filtered papers and stores it in a DataFrame.
-    4. Extracts the IDs of the papers from the DataFrame.
-    5. Creates a directory named 'specialized_docs' in the current working directory to store the downloaded PDFs.
-    6. Iterates over the list of paper IDs, constructs the PDF URLs, and downloads the PDFs.
-    7. Saves each PDF in the 'specialized_docs' directory.
-    8. Handles connection errors during the download process.
-
-    Requirements:
-    - arxivscraper: A module to scrape arXiv metadata.
-    - requests_html: Used for handling HTTP sessions and downloading PDFs.
-    - pandas: For handling data in DataFrame format.
-    - os: For creating directories and handling file paths.
-
-    Example:
-    arxivscrape('machine learning')
-    This will scrape papers related to 'machine learning' in their abstracts within the specified category and date range, and download their PDFs.
-
-    Notes:
-    - Ensure you have the necessary packages installed: arxivscraper, requests_html, pandas.
-    - Modify the category and date range in the Scraper initialization as needed.
+    Returns:
+        tuple: A tuple containing the output message (str) and a process dictionary (dict).
     """
+    process = {}
+    output = 'searching the following on arxiv: ' + query
+    print(output)
+    df = arxiv_search(query)
+    process['search results'] = df
+    displayDf = df[['title', 'authors', 'abstract']]
+    display(displayDf)
+    output += '\n would you like to download these articles [Y/N]?'
+    print('would you like to download these articles [Y/N]?')
+    download = input().strip().upper()
+    process['download'] = (download == 'Y')
+    if download == 'Y':
+        id_list = df['id'].to_list()
+        output += arxiv_scrape(id_list)
+    return output, process
+
+def arxiv_search(query):
+    """
+    Search for articles on arXiv based on the given query.
+
+    Args:
+        query (str): The search query for arXiv.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the search results with columns 'id', 'title', 'categories', 
+                      'abstract', 'doi', 'created', 'updated', and 'authors'.
+    """
+    pd.set_option('display.max_colwidth', None)
     scraper = arxivscraper.Scraper(category='q-bio', date_from='2024-04-01',date_until='2024-05-01',t=10, filters={'abstract':[query]})
     output = scraper.scrape()
     cols = ('id', 'title', 'categories', 'abstract', 'doi', 'created', 'updated', 'authors')
     df = pd.DataFrame(output,columns=cols)
-    id_list = df['id'].to_list()
-    s = HTMLSession()
+    return df
 
+def arxiv_scrape(id_list):
+    """
+    Download articles from arXiv as PDFs based on the given list of IDs.
+
+    Args:
+        id_list (list): A list of article IDs to download from arXiv.
+
+    Returns:
+        str: A string indicating the outcome of the download process.
+    """
+    output = ''
+    session = HTMLSession()
     headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
-
-    #Create directory to store pdfs
-    try: 
-        path = os.path.abspath(os.getcwd()) + '/specialized_docs'
+    try:
+        path = os.path.join(os.getcwd(), 'specialized_docs')
         os.makedirs(path, exist_ok = True) 
-        print("Directory '%s' created successfully" % path) 
-    except OSError as error: 
-        print("Directory '%s' can not be created" % path) 
+        output = f"Directory '{path}' created successfully"
+    except OSError:
+        output = f"Directory '{path}' could not be created"
+    print(output)
 
-    #Scrape arxiv and 
-    for ids in id_list:
+    #Scrape arxiv and
+    for arxiv_id  in id_list:
         try:
-            base_url = 'https://arxiv.org/pdf/'
-        #r = s.get(base_url + ids + '/', headers = headers, timeout = 5)
-            pdf_url = base_url+ids
-            print(pdf_url)
-            r = s.get(pdf_url, stream=True)
-            print(r)
+            pdf_url = f'https://arxiv.org/pdf/{arxiv_id}'
+            local_path = os.path.join(path, f'{arxiv_id}.pdf')
+            print(f'{pdf_url} --> {local_path}')
+            output += f'\n{pdf_url} --> {local_path}'
+
+            response = session.get(pdf_url, stream=True)
+            response.raise_for_status()
+
             with open(os.path.join(path, ids + '.pdf'), 'wb') as f:
-                for chunk in r.iter_content(chunk_size = 1024):
-                    if chunk:
-                        f.write(chunk)
-                    
-        except ConnectionError as e:
-            pass
-            print(f"{ids} could not be gathered.")
+                for chunk in response.iter_content(chunk_size = 1024):
+                    f.write(chunk)
+        except (ConnectionError, requests.exceptions.RequestException) as e:
+            print(f"{arxiv_id} could not be gathered: {e}")
+            output += f"\n{arxiv_id} could not be gathered."
+    return output
 
 def search_pubmed_article(query, number_of_articles=10):
     """
@@ -142,7 +168,7 @@ def search_pubmed_article(query, number_of_articles=10):
     return record['IdList']
     #return record
 
-def pubmedscrape(query):
+def pubmed(query):
     """
     Scrapes PubMed for articles matching the query, retrieves their PMIDs, and downloads available PDFs.
 
@@ -198,18 +224,60 @@ def pubmedscrape(query):
         print("no articles found")
     print("pdf collection complete!")
 
+def biorxiv(query):
+    """
+    Scrapes the bioRxiv preprint server for articles matching a specific query.
 
-def real_search(start_date  = datetime.date.today().replace(day=1), 
-                end_date    = datetime.date.today(), 
-                subjects    = [], 
-                journal     = 'biorxiv',
-                kwd         = [], 
-                kwd_type    = 'all', 
-                athr        = [], 
-                max_records = 75, 
-                max_time    = 300,
-                cols        = ['title', 'authors', 'url'],
-                abstracts   = False):
+    This function uses the `biorxiv_real_search` method to search bioRxiv for articles
+    based on the provided query. The search is conducted within the current 
+    month by default, and retrieves a maximum of 75 records within 300 seconds.
+    
+    Parameters:
+    query (str): The keyword to search for in bioRxiv articles.
+
+    Returns:
+    None
+
+    Example:
+    >>> biorxiv_scrape('machine learning')
+    This will search for bioRxiv articles related to 'machine learning' published 
+    within the current month and print the titles, authors, and URLs of the articles found.
+
+    Notes:
+    - The search is restricted to articles in the 'biorxiv' journal.
+    - The search is conducted within the time frame from the first day of the current 
+      month to the current date.
+    - By default, the function does not include abstracts in the output.
+    - The columns retrieved for each article include the title, authors, and URL.
+    - The `kwd_type` parameter is set to 'all', meaning all specified keywords must be 
+      present in the search results.
+    - Adjusting parameters like `subjects`, `athr`, and `abstracts` might be necessary 
+      for more refined searches.
+    """
+    biorxiv_real_search(start_date  = datetime.date.today().replace(day=1), 
+                        end_date    = datetime.date.today(),
+                        subjects    = [], 
+                        journal     = 'biorxiv',
+                        kwd         = [query], 
+                        kwd_type    = 'all', 
+                        athr        = [], 
+                        max_records = 75, 
+                        max_time    = 300,
+                        cols        = ['title', 'authors', 'url'],
+                        abstracts   = False
+                       )
+
+def biorxiv_real_search(start_date  = datetime.date.today().replace(day=1), 
+                        end_date    = datetime.date.today(), 
+                        subjects    = [], 
+                        journal     = 'biorxiv',
+                        kwd         = [], 
+                        kwd_type    = 'all', 
+                        athr        = [], 
+                        max_records = 75, 
+                        max_time    = 300,
+                        cols        = ['title', 'authors', 'url'],
+                        abstracts   = False):
     """
     Searches a specified journal for articles matching given criteria and returns their details.
 
@@ -233,7 +301,7 @@ def real_search(start_date  = datetime.date.today().replace(day=1),
     pd.DataFrame: A DataFrame containing the details of the articles found.
 
     Example:
-    >>> df = real_search(start_date=datetime.date(2023, 1, 1), end_date=datetime.date(2023, 1, 31), subjects=['neuroscience'], kwd=['brain'], max_records=10)
+    >>> df = biorxiv_real_search(start_date=datetime.date(2023, 1, 1), end_date=datetime.date(2023, 1, 31), subjects=['neuroscience'], kwd=['brain'], max_records=10)
     >>> print(df)
        title        authors                                                url
     0  Title1  [Author1, Author2]  http://www.biorxiv.org/content/10.1101/2023...
@@ -388,49 +456,6 @@ def real_search(start_date  = datetime.date.today().replace(day=1),
 	## return the results
     return(records_df)
 
-def biorxiv_scrape(query):
-    """
-    Scrapes the bioRxiv preprint server for articles matching a specific query.
-
-    This function uses the `real_search` method to search bioRxiv for articles
-    based on the provided query. The search is conducted within the current 
-    month by default, and retrieves a maximum of 75 records within 300 seconds.
-    
-    Parameters:
-    query (str): The keyword to search for in bioRxiv articles.
-
-    Returns:
-    None
-
-    Example:
-    >>> biorxiv_scrape('machine learning')
-    This will search for bioRxiv articles related to 'machine learning' published 
-    within the current month and print the titles, authors, and URLs of the articles found.
-
-    Notes:
-    - The search is restricted to articles in the 'biorxiv' journal.
-    - The search is conducted within the time frame from the first day of the current 
-      month to the current date.
-    - By default, the function does not include abstracts in the output.
-    - The columns retrieved for each article include the title, authors, and URL.
-    - The `kwd_type` parameter is set to 'all', meaning all specified keywords must be 
-      present in the search results.
-    - Adjusting parameters like `subjects`, `athr`, and `abstracts` might be necessary 
-      for more refined searches.
-    """
-    real_search(start_date  = datetime.date.today().replace(day=1), 
-                end_date    = datetime.date.today(),
-                subjects    = [], 
-                journal     = 'biorxiv',
-                kwd         = [query], 
-                kwd_type    = 'all', 
-                athr        = [], 
-                max_records = 75, 
-                max_time    = 300,
-                cols        = ['title', 'authors', 'url'],
-                abstracts   = False
-               )
-
 #Parsers
 def create_db(query, query2):
     """
@@ -548,3 +573,95 @@ def fetch_details(pmid):
     records = Entrez.read(handle)
     handle.close()
     return records
+
+def webScraping2(query):
+    process = {}
+    if 'ARXIV' in query.upper().split(' '):
+        output = 'searching on arxiv'
+        print(output)
+        arxivscrape(query)
+        process['searched'] = 'ARXIV'
+    elif 'BIORXIV' in query.upper().split(' '):
+        output = 'searching on bioRxiv'
+        print(output)
+        biorxiv_scrape(query)
+        process['searched'] = 'BIORXIV'
+    elif 'PUBMED' in query.upper().split(' '):
+        output = 'searching on PubMed'
+        print(output)
+        pubmedscrape(query)
+        process['searched'] = 'PUBMED'
+    else:
+        output = 'by default, searching on PUBMED'
+        print(output)
+        pubmedscrape(query)
+        process['searched'] = 'PUBMED'
+    return output, process['searched']
+
+
+'''
+def arxiv(query):
+    """
+    Scrape research papers from the arXiv repository based on a query and download the PDFs.
+
+    Parameters:
+    query (str): The search term to filter papers by their abstracts.
+
+    Functionality:
+    1. Initializes the scraper with specific parameters for the q-bio category and a specified date range.
+    2. Uses the query to filter papers by their abstracts.
+    3. Scrapes the metadata of the filtered papers and stores it in a DataFrame.
+    4. Extracts the IDs of the papers from the DataFrame.
+    5. Creates a directory named 'specialized_docs' in the current working directory to store the downloaded PDFs.
+    6. Iterates over the list of paper IDs, constructs the PDF URLs, and downloads the PDFs.
+    7. Saves each PDF in the 'specialized_docs' directory.
+    8. Handles connection errors during the download process.
+
+    Requirements:
+    - arxivscraper: A module to scrape arXiv metadata.
+    - requests_html: Used for handling HTTP sessions and downloading PDFs.
+    - pandas: For handling data in DataFrame format.
+    - os: For creating directories and handling file paths.
+
+    Example:
+    arxivscrape('machine learning')
+    This will scrape papers related to 'machine learning' in their abstracts within the specified category and date range, and download their PDFs.
+
+    Notes:
+    - Ensure you have the necessary packages installed: arxivscraper, requests_html, pandas.
+    - Modify the category and date range in the Scraper initialization as needed.
+    """
+    scraper = arxivscraper.Scraper(category='q-bio', date_from='2024-04-01',date_until='2024-05-01',t=10, filters={'abstract':[query]})
+    output = scraper.scrape()
+    cols = ('id', 'title', 'categories', 'abstract', 'doi', 'created', 'updated', 'authors')
+    df = pd.DataFrame(output,columns=cols)
+    id_list = df['id'].to_list()
+    s = HTMLSession()
+
+    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
+
+    #Create directory to store pdfs
+    try:
+        path = os.path.abspath(os.getcwd()) + '/specialized_docs'
+        os.makedirs(path, exist_ok = True) 
+        print("Directory '%s' created successfully" % path)
+    except OSError as error:
+        print("Directory '%s' can not be created" % path)
+
+    #Scrape arxiv and
+    for ids in id_list:
+        try:
+            base_url = 'https://arxiv.org/pdf/'
+            pdf_url = base_url+ids
+            print(pdf_url)
+            r = s.get(pdf_url, stream=True)
+            print(r)
+            with open(os.path.join(path, ids + '.pdf'), 'wb') as f:
+                for chunk in r.iter_content(chunk_size = 1024):
+                    if chunk:
+                        f.write(chunk)
+                    
+        except ConnectionError as e:
+            pass
+            print(f"{ids} could not be gathered.")
+'''

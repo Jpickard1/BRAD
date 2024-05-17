@@ -45,6 +45,9 @@ from scraper import *
 from router import *
 from RAG import *
 
+def helloWorld():
+    print('hi')
+
 def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'):
     # load llama model
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
@@ -79,7 +82,7 @@ def logger(chatlog, chatstatus, chatname):
     return chatlog
     
 
-def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf', persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/", ):
+def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf', persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/", llm=None, ragvectordb=None, embeddings_model=None):
     chatname = 'RAG' + str(dt.now()) + '.json'
     chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
@@ -87,8 +90,10 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     databases = {} # a dictionary to look up databases
     tables = {}    # a dictionary to look up tables
     
-    llm, callback_manager = load_llama(model_path) # load the llama
-    ragvectordb, embeddings_model = load_literature_db(persist_directory) # load the literature database
+    if llm is None:
+        llm, callback_manager = load_llama(model_path) # load the llama
+    if ragvectordb is None:
+        ragvectordb, embeddings_model = load_literature_db(persist_directory) # load the literature database
     
     databases['RAG'] = ragvectordb
     externalDatabases = ['docs', 'GO', 'GGET']
