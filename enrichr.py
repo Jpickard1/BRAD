@@ -86,24 +86,3 @@ def queryEnrichr(prompt, k=10):
     if plot:
         plt.show()
     return output, process
-
-def extract_csv_word(text):
-    pattern = r'\b\w+\.csv\b'
-    match = re.search(pattern, text)
-    if match:
-        return match.group()
-    else:
-        return None
-
-def loadFile(prompt):
-    '''
-    implemented for csv files only
-    '''
-    file = extract_csv_word(prompt)
-    loader = CSVLoader(loadfile)
-    data = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=20)
-    text_chunks = text_splitter.split_documents(data)
-    embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')
-    docsearch = FAISS.from_documents(text_chunks, embeddings_model)
-    return docsearch

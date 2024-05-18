@@ -43,6 +43,7 @@ from semantic_router.layer import RouteLayer
 from enrichr import *
 from scraper import *
 from router import *
+from tables import *
 from RAG import *
 
 def helloWorld():
@@ -64,19 +65,32 @@ def load_literature_db(persist_directory = "/nfs/turbo/umms-indikar/shared/proje
         warnings.warn('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
     return vectordb, embeddings_model
 
+def is_json_serializable(value):
+    try:
+        json.dumps(value)
+        return True
+    except (TypeError, OverflowError):
+        return False
+
 def logger(chatlog, chatstatus, chatname):
-    print(chatname)
-    print(chatlog)
+    # print(chatname)
+    # print(chatlog)
+    process_serializable = {
+            key: value if is_json_serializable(value) else str(value)
+            for key, value in chatstatus['process'].items()
+        }
+
     chatlog[len(chatlog)] = {
         'prompt' : chatstatus['prompt'],  # the input to the user
         'output' : chatstatus['output'],  # the output to the user
-        'process': chatstatus['process'], # information about the process that ran
+        'process': process_serializable,  #chatstatus['process'], # information about the process that ran
         'status' : {                      # information about the chat at that time
             'databases'         : str(chatstatus['databases']),
-            'current table'     : chatstatus['current table'],
+            'current table'     : chatstatus['current table'], #.to_json(),
             'current documents' : chatstatus['current documents'],
         }
     }
+    print(chatlog)
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
     return chatlog
@@ -134,11 +148,11 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         if route == 'GGET':
             print('GGET')
             chatstatus['output'], chatstatus['process'] = queryEnrichr(chatstatus['prompt'])
-        elif route == 'LOAD':
+        elif route == 'LOAD' or True:
             print('LOAD')
-            output, loggedOutput, docsearch = loadFile(chatstatus['prompt'])
-            tableNum += 1
-            tables[tableNum] = docsearch
+            chatstatus['output'], chatstatus['process'] = loadFile(chatstatus['prompt'])
+            # tableNum += 1
+            # tables[tableNum] = docsearch
             # output, loggedOutput, datadb = queryData(prompt)
         elif route == 'SCRAPE':
             print('SCRAPE')
