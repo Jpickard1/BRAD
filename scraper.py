@@ -315,7 +315,7 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(day=1),
     ## keep track of timing
     overall_time = time.time()
 
-	## url
+    ## url
     BASE = 'http://{:s}.org/search/'.format(journal)
     url = BASE
     ## format dates
@@ -326,9 +326,9 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(day=1),
     journal = journal.lower()
     kwd_type = kwd_type.lower()
 
-	### build the url string
+    ### build the url string
 
-	## journal selection
+    ## journal selection
     journal_str = 'jcode%3A' + journal
     url += journal_str
 
