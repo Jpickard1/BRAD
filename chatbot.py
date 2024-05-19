@@ -15,6 +15,7 @@ import string
 import warnings
 import re
 import json
+import logging
 
 # Bioinformatics
 import gget
@@ -114,11 +115,11 @@ def logger(chatlog, chatstatus, chatname):
         'process': process_serializable,  #chatstatus['process'], # information about the process that ran
         'status' : {                      # information about the chat at that time
             'databases'         : str(chatstatus['databases']),
-            'current table'     : chatstatus['current table'], #.to_json(),
+            'current table'     : chatstatus['current table'].to_json() if chatstatus['current table'] is not None else None,
             'current documents' : chatstatus['current documents'],
         }
     }
-    print(chatlog)
+    # print(chatlog)
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
     return chatlog
@@ -155,6 +156,8 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         'databases'         : databases,
         'current table'     : None,
         'current documents' : None,
+        'tables'            : {},
+        'documents'         : {}
     }
     chatlog = {
         'llm'           : str(chatstatus['llm'])
@@ -177,16 +180,16 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
             chatstatus = reconfig(chatstatus)
         # Query database
         elif route == 'GGET':
-            print('GGET')
+            logging.info('GGET')
             chatstatus['output'], chatstatus['process'] = queryEnrichr(chatstatus)
-        elif route == 'LOAD':
-            print('LOAD')
-            chatstatus['output'], chatstatus['process'] = loadFile(chatstatus['prompt'])
+        elif route == 'DATA' or True:
+            logging.info('DATA')
+            chatstatus = manipulateTable(chatstatus)
         elif route == 'SCRAPE':
-            print('SCRAPE')
+            logging.info('SCRAPE')
             loggedOutput = webScraping(chatstatus['prompt'])
         else:
-            print('RAG')
+            logging.info('RAG')
             chatstatus['output'], chatstatus['process'] = queryDocs(chatstatus['prompt'], chatstatus, llm)
         chatlog = logger(chatlog, chatstatus, chatname)
 
