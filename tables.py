@@ -29,29 +29,40 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 
 
-def extract_csv_word(text):
+def extract_csv_word(text, file_types):
     words = text.split(' ')
     for word in words:
-        if word.endswith(".csv"):
-            return word
+        for file_type in file_types:
+            if word.endswith(file_type):
+                return word
     return False
 
-def loadFile(prompt):
+def loadFile(chatstatus):
     '''
-    implemented for csv files only
+    implemented for csv files only (tsv should work as well)
     '''
-    file = extract_csv_word(prompt)
-    if file is None:
+    prompt              = chatstatus['prompt']
+    file_types          = chatstatus['config']['acceptable_data_files']
+    num_df_rows_display = chatstatus['config']['num_df_rows_display']
+    
+    file = extract_csv_word(prompt, file_types)
+    if not file:
         output = 'no file found'
         print(output)
         return output, {'Load': 'Failed'}
     output = 'loading: ' + file
     print(output)
     process = {'filename' : file}
-    df = pd.read_csv(file)
+    
+    # load the file
+    if file.endswith('.csv'):
+        sep = ','
+    elif file.endswith('.tsv'):
+        sep = '\t'
+    df = pd.read_csv(file, sep=sep)
     process['table'] = df.to_json()
-    display(df)
-    loader = CSVLoader(file)
+    display(df[:num_df_rows_display].style)
+    loader = CSVLoader(file)  # I am not sure how this line works with .tsv data
     data = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=20)
     text_chunks = text_splitter.split_documents(data)

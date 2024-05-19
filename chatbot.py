@@ -49,6 +49,34 @@ from RAG import *
 def helloWorld():
     print('hi')
 
+def load_config():
+    file_path = 'config.json'
+    with open(file_path, 'r') as f:
+        return json.load(f)
+
+def save_config(config):
+    file_path = 'config.json'
+    with open(file_path, 'w') as f:
+        json.dump(config, f, indent=4)
+
+def reconfig(chat_status):
+    prompt = chat_status['prompt']
+    _, key, value = prompt.split(maxsplit=2)
+    try:
+        value = int(value)
+    except ValueError:
+        try:
+            value = float(value)
+        except ValueError:
+            value = str(value)
+    if key in chat_status['config']:
+        chat_status['config'][key] = value
+        save_config(chat_status['config'])
+        print("Configuration " + str(key) + " updated to " + str(value))
+    else:
+        print("Configuration " + str(key) + " not found")
+    return chat_status
+
 def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'):
     # load llama model
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
@@ -119,9 +147,10 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     router = getRouter()
     
     chatstatus = {
+        'config'            : load_config(),
         'prompt'            : None,
         'output'            : None,
-        'process'           : None,
+        'process'           : {},
         'llm'               : llm,
         'databases'         : databases,
         'current table'     : None,
@@ -133,9 +162,7 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     while True:
         print('==================================================')
         print('I'+str(len(chatlog))+':') # get query from user
-        chatstatus['prompt'] = input()
-
-        if chatstatus['prompt'] in ['exit', 'quit', 'q']: break  # parse prompt for user commands
+        chatstatus['prompt'] = input('Input >> ')
 
         if '--force' not in chatstatus['prompt'].split(' '):
             route = router(chatstatus['prompt']).name # determine which path to use
@@ -144,16 +171,17 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
 
         print('==================================================')
         print('O' + str(len(chatlog)) + ':')
+        if chatstatus['prompt'] in ['exit', 'quit', 'q']:
+            break
+        elif chatstatus['prompt'].startswith('/set'):
+            chatstatus = reconfig(chatstatus)
         # Query database
-        if route == 'GGET':
+        elif route == 'GGET':
             print('GGET')
-            chatstatus['output'], chatstatus['process'] = queryEnrichr(chatstatus['prompt'])
-        elif route == 'LOAD' or True:
+            chatstatus['output'], chatstatus['process'] = queryEnrichr(chatstatus)
+        elif route == 'LOAD':
             print('LOAD')
             chatstatus['output'], chatstatus['process'] = loadFile(chatstatus['prompt'])
-            # tableNum += 1
-            # tables[tableNum] = docsearch
-            # output, loggedOutput, datadb = queryData(prompt)
         elif route == 'SCRAPE':
             print('SCRAPE')
             loggedOutput = webScraping(chatstatus['prompt'])
