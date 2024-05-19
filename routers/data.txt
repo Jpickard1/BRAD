@@ -1,0 +1,30 @@
+How can I filter rows based on a condition?
+What is the average value of a numeric column?
+Can you show me a summary of the dataset?
+How do I sort the data in ascending/descending order?
+What are the unique categories/values in a specific column?
+How can I group the data and calculate aggregations?
+Can you visualize the data in a chart or plot?
+What is the maximum/minimum value in the dataset?
+How do I handle missing or null values?
+Can you show me the top/bottom rows of the dataset?
+How can I find rows with specific text or pattern?
+What are the correlations between different columns?
+How do I create a pivot table or cross-tabulation?
+Can you calculate percentages or proportions?
+How can I export the dataset to a file?
+What are the steps to perform data cleaning?
+How do I detect and handle outliers in the data?
+Can you summarize statistical measures for numerical columns?
+How can I perform time series analysis on the data?
+What techniques can I use for feature engineering?
+How do I split the data into training and testing sets?
+What is the best way to handle categorical variables?
+How do I evaluate the performance of a model or analysis?
+Can you show me examples of data visualization?
+How can I calculate cumulative or rolling aggregates?
+What is the purpose of data normalization or standardization?
+How do I merge or join multiple datasets?
+Can you explain the concept of cross-validation?
+How can I automate data analysis or reporting tasks?
+What are the steps to prepare data for a machine learning model?
