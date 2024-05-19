@@ -115,7 +115,10 @@ def logger(chatlog, chatstatus, chatname):
         'process': process_serializable,  #chatstatus['process'], # information about the process that ran
         'status' : {                      # information about the chat at that time
             'databases'         : str(chatstatus['databases']),
-            'current table'     : chatstatus['current table'].to_json() if chatstatus['current table'] is not None else None,
+            'current table'     : {
+                    'key'       : chatstatus['current table']['key'],
+                    'tab'       : chatstatus['current table']['tab'].to_json() if chatstatus['current table']['tab'] is not None else None,
+                },
             'current documents' : chatstatus['current documents'],
         }
     }
@@ -123,7 +126,30 @@ def logger(chatlog, chatstatus, chatname):
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
     return chatlog
+
+def chatbotHelp():
+    help_message = """
+    Welcome to our RAG chatbot Help!
     
+    You can chat with the llama-2 llm and several scientifici databases including:
+    - literature augmented generation
+    - spreadsheet manipulation
+    - web scraping
+    - enrichr
+    - gene ontology
+
+    Special commands:
+    /set   - Allows the user to change configuration variables.
+    /force - Allows the user to specify which database to use.
+
+    For example:
+    /set config_variable_name new_value
+    --force option_name
+
+    Enjoy chatting with the chatbot!
+    """
+    print(help_message)
+    return
 
 def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf', persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/", llm=None, ragvectordb=None, embeddings_model=None):
     chatname = 'RAG' + str(dt.now()) + '.json'
@@ -154,7 +180,7 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         'process'           : {},
         'llm'               : llm,
         'databases'         : databases,
-        'current table'     : None,
+        'current table'     : {'key':None, 'tab':None},
         'current documents' : None,
         'tables'            : {},
         'documents'         : {}
@@ -164,10 +190,12 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     }
     while True:
         print('==================================================')
-        print('I'+str(len(chatlog))+':') # get query from user
-        chatstatus['prompt'] = input('Input >> ')
+        chatstatus['prompt'] = input('Input >> ') # get query from user
+        if chatstatus['prompt'].lower() == 'help':
+            chatbotHelp()
+            continue
 
-        if '--force' not in chatstatus['prompt'].split(' '):
+        if '/force' not in chatstatus['prompt'].split(' '):
             route = router(chatstatus['prompt']).name # determine which path to use
         else:
             route = chatstatus['prompt'].split(' ')[1]
