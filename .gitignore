@@ -2,3 +2,5 @@
 *.json
 __pycache__/*
 *.csv
+*/.ipynb_checkpoints/*
+02-dynamic-routes.ipynb
