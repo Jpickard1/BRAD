@@ -7,5 +7,9 @@
     "max_enrichr_pval": 0.5,
     "enable_logging": true,
     "num_df_rows_display": 3,
-    "default_enrichr_db": "GO_Biological_Process_2021"
+    "default_enrichr_db": "GO_Biological_Process_2021",
+    "figsize": [
+        5,
+        3
+    ]
 }

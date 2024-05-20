@@ -50,7 +50,7 @@ def manipulateTable(chatstatus):
     elif operation != 'merge':
         # select table
         df = chatstatus['current table']['tab']          # select the most recent table
-        if df is not None:
+        if df is None:
             selectTable = None
             for word in prompt.split(' '):
                 for table in chatstatus['tables'].keys():
@@ -239,272 +239,229 @@ def visualizeTable(df, chatstatus):
     prompt = chatstatus['prompt'].lower()
     output = "Visualization created."
 
+    plt.figure(figsize=chatstatus['config']['figsize'])
+    ax = None
     if "line" in prompt:
-        return line_plot(df, prompt)
+        ax = line_plot(df, prompt)
     elif "bar" in prompt:
-        return bar_plot(df, prompt)
-    elif "horizontal bar" in prompt:
-        return horizontal_bar_plot(df, prompt)
+        ax = bar_plot(df, prompt)
     elif "histogram" in prompt:
-        return histogram(df, prompt)
+        ax = histogram(df, prompt)
     elif "box" in prompt or "boxplot" in prompt:
-        return box_plot(df, prompt)
+        ax = box_plot(df, prompt)
     elif "violin" in prompt:
-        return violin_plot(df, prompt)
+        ax = violin_plot(df, prompt)
     elif "scatter" in prompt:
-        return scatter_plot(df, prompt)
+        ax = scatter_plot(df, prompt)
     elif "pair" in prompt:
-        return pair_plot(df, prompt)
+        ax = pair_plot(df, prompt)
     elif "heatmap" in prompt:
-        return heatmap(df, prompt)
+        ax = heatmap(df, prompt)
     elif "pie" in prompt:
-        return pie_chart(df, prompt)
+        ax = pie_chart(df, prompt)
     elif "area" in prompt:
-        return area_plot(df, prompt)
+        ax = area_plot(df, prompt)
     elif "hexbin" in prompt:
-        return hexbin_plot(df, prompt)
+        ax = hexbin_plot(df, prompt)
     elif "kde" in prompt:
-        return kde_plot(df, prompt)
+        ax = kde_plot(df, prompt)
     elif "facet grid" in prompt:
-        return facet_grid(df, prompt)
+        ax = facet_grid(df, prompt)
     elif "joint" in prompt:
-        return joint_plot(df, prompt)
+        ax = joint_plot(df, prompt)
     elif "strip" in prompt:
-        return strip_plot(df, prompt)
+        ax = strip_plot(df, prompt)
     elif "swarm" in prompt:
-        return swarm_plot(df, prompt)
+        ax = swarm_plot(df, prompt)
     elif "count" in prompt:
-        return count_plot(df, prompt)
+        ax = count_plot(df, prompt)
     elif "cat" in prompt:
-        return cat_plot(df, prompt)
+        ax = cat_plot(df, prompt)
     elif "reg" in prompt:
-        return reg_plot(df, prompt)
+        ax = reg_plot(df, prompt)
     elif "dist" in prompt or "distribution" in prompt:
-        return dist_plot(df, prompt)
+        ax = dist_plot(df, prompt)
     else:
         output = "No valid visualization command found in the prompt."
-
+    if ax is not None:
+        plt.show()
     print(output)
     return chatstatus
 
 def line_plot(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
         ax = df[column].plot(kind='line', title=f'Line Plot of {column}')
         plt.xlabel(column)
         plt.ylabel('Value')
-        plt.show()
         return ax
 
 def bar_plot(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
+    kind = 'bar'
+    if 'horizontal' in prompt.lower() or 'flip' in prompt.lower():
+        kind = 'barh'
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
-        ax = df[column].value_counts().plot(kind='bar', title=f'Bar Plot of {column}')
-        plt.xlabel(column)
-        plt.ylabel('Frequency')
-        plt.show()
-        return ax
-
-def horizontal_bar_plot(df, prompt):
-    column = [col for col in df.columns if col in prompt]
-    if column:
-        column = column[0]
-        plt.figure(figsize=(10, 6))
-        ax = df[column].value_counts().plot(kind='barh', title=f'Horizontal Bar Plot of {column}')
-        plt.xlabel('Frequency')
-        plt.ylabel(column)
-        plt.show()
+        ax = df[column].value_counts().plot(kind=kind, title=f'Bar Plot of {column}')
+        if kind == 'bar':
+            plt.xlabel(column)
+            plt.ylabel('Frequency')
+        else:
+            plt.xlabel('Frequency')
+            plt.ylabel(column)
         return ax
 
 def histogram(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
         ax = sns.histplot(df[column].dropna(), kde=True)
         plt.title(f'Histogram of {column}')
         plt.xlabel(column)
         plt.ylabel('Frequency')
-        plt.show()
         return ax
 
 def box_plot(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
         ax = sns.boxplot(x=df[column].dropna())
         plt.title(f'Box Plot of {column}')
         plt.xlabel(column)
-        plt.show()
         return ax
 
 def violin_plot(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
         ax = sns.violinplot(x=df[column].dropna())
         plt.title(f'Violin Plot of {column}')
         plt.xlabel(column)
-        plt.show()
         return ax
 
 def scatter_plot(df, prompt):
-    columns = [col for col in df.columns if col in prompt]
+    columns = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
-        plt.figure(figsize=(10, 6))
         ax = sns.scatterplot(x=df[columns[0]], y=df[columns[1]])
         plt.title(f'Scatter Plot between {columns[0]} and {columns[1]}')
         plt.xlabel(columns[0])
         plt.ylabel(columns[1])
-        plt.show()
         return ax
 
 def pair_plot(df, prompt):
-    plt.figure(figsize=(10, 6))
     ax = sns.pairplot(df)
     plt.title('Pair Plot')
-    plt.show()
     return ax
 
 def heatmap(df, prompt):
-    plt.figure(figsize=(10, 6))
     ax = sns.heatmap(df.corr(), annot=True)
     plt.title('Heatmap')
-    plt.show()
     return ax
 
 def pie_chart(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
         ax = df[column].value_counts().plot(kind='pie', autopct='%1.1f%%', title=f'Pie Chart of {column}')
         plt.ylabel('')
-        plt.show()
         return ax
 
 def area_plot(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
         ax = df[column].plot(kind='area', title=f'Area Plot of {column}')
         plt.xlabel(column)
         plt.ylabel('Value')
-        plt.show()
         return ax
 
 def hexbin_plot(df, prompt):
-    columns = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
-        plt.figure(figsize=(10, 6))
         ax = df.plot.hexbin(x=columns[0], y=columns[1], gridsize=25, cmap='Blues')
         plt.title(f'Hexbin Plot between {columns[0]} and {columns[1]}')
         plt.xlabel(columns[0])
         plt.ylabel(columns[1])
-        plt.show()
         return ax
 
 def kde_plot(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
         ax = sns.kdeplot(df[column].dropna(), shade=True)
         plt.title(f'KDE Plot of {column}')
         plt.xlabel(column)
         plt.ylabel('Density')
-        plt.show()
         return ax
 
 def facet_grid(df, prompt):
-    columns = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) >= 2:
-        plt.figure(figsize=(10, 6))
         ax = sns.FacetGrid(df, col=columns[0], row=columns[1]).map(plt.hist, columns[2] if len(columns) > 2 else df.columns[0])
-        plt.show()
         return ax
 
 def joint_plot(df, prompt):
-    columns = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
-        plt.figure(figsize=(10, 6))
-        ax = sns.jointplot(x=columns[0], y=columns[1], data=df, kind="scatter")
-        plt.show()
+        ax = sns.jointplot(x=column[0], y=column[1], data=df, kind="scatter")
         return ax
 
 def strip_plot(df, prompt):
-    columns = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
-        plt.figure(figsize=(10, 6))
-        ax = sns.stripplot(x=columns[0], y=columns[1], data=df)
+        ax = sns.stripplot(x=column[0], y=column[1], data=df)
         plt.title(f'Strip Plot of {columns[1]} by {columns[0]}')
         plt.xlabel(columns[0])
         plt.ylabel(columns[1])
-        plt.show()
         return ax
 
 def swarm_plot(df, prompt):
-    columns = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
-        plt.figure(figsize=(10, 6))
-        ax = sns.swarmplot(x=columns[0], y=columns[1], data=df)
+        ax = sns.swarmplot(x=column[0], y=column[1], data=df)
         plt.title(f'Swarm Plot of {columns[1]} by {columns[0]}')
         plt.xlabel(columns[0])
         plt.ylabel(columns[1])
-        plt.show()
         return ax
 
 def count_plot(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
         ax = sns.countplot(x=column, data=df)
         plt.title(f'Count Plot of {column}')
         plt.xlabel(column)
         plt.ylabel('Count')
-        plt.show()
         return ax
 
 def cat_plot(df, prompt):
-    columns = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) >= 2:
-        plt.figure(figsize=(10, 6))
-        ax = sns.catplot(x=columns[0], y=columns[1], kind="box", data=df)
-        plt.title(f'Cat Plot of {columns[1]} by {columns[0]}')
-        plt.xlabel(columns[0])
-        plt.ylabel(columns[1])
-        plt.show()
+        ax = sns.catplot(x=column[0], y=column[1], kind="box", data=df)
+        plt.title(f'Cat Plot of {column[1]} by {column[0]}')
+        plt.xlabel(column[0])
+        plt.ylabel(column[1])
         return ax
 
 def reg_plot(df, prompt):
-    columns = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
-        plt.figure(figsize=(10, 6))
-        ax = sns.regplot(x=columns[0], y=columns[1], data=df)
-        plt.title(f'Regression Plot of {columns[1]} by {columns[0]}')
+        ax = sns.regplot(x=column[0], y=column[1], data=df)
+        plt.title(f'Regression Plot of {column[1]} by {column[0]}')
         plt.xlabel(columns[0])
         plt.ylabel(columns[1])
-        plt.show()
         return ax
 
 def dist_plot(df, prompt):
-    column = [col for col in df.columns if col in prompt]
+    column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
-        plt.figure(figsize=(10, 6))
         ax = sns.distplot(df[column].dropna(), kde=True)
         plt.title(f'Distribution Plot of {column}')
         plt.xlabel(column)
         plt.ylabel('Density')
-        plt.show()
         return ax
 
 '''

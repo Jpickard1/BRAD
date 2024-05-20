@@ -210,7 +210,7 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         elif route == 'GGET':
             logging.info('GGET')
             chatstatus['output'], chatstatus['process'] = queryEnrichr(chatstatus)
-        elif route == 'DATA' or True:
+        elif route == 'DATA':
             logging.info('DATA')
             chatstatus = manipulateTable(chatstatus)
         elif route == 'SCRAPE':
