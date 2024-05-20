@@ -333,7 +333,7 @@ def violin_plot(df, prompt):
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         # column = column[0]
-        ax = sns.violinplot(x=df[column].dropna())
+        ax = sns.violinplot(data=df[column].dropna())
         plt.title(f'Violin Plot of {column}')
         plt.xlabel(column)
         return ax
