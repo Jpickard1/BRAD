@@ -30,3 +30,31 @@ How can I automate data analysis or reporting tasks?
 What are the steps to prepare data for a machine learning model?
 load test_dataframe.csv
 load test_dataframe.csv
+load test_dataframe.csv
+make a scatter plot of the Age relative to the Weight in this current table
+load test_dataframe.csv
+make a scatter plot of the Age relative to the Weight in this current table
+load test_dataframe.csv
+make a scatter plot of the Age relative to the Weight in this current table
+load test_dataframe.csv
+make a scatter plot of the Age relative to the Weight in this current table
+make a line plot of the Age relative to the Weight in this current table
+make a bar plot of the Age relative to the Weight in this current table
+make a scatter plot of the Department and 'Email Domain'
+make a bar plot of the Department and 'Email Domain'
+make a scatter plot of the 'Email Domain'
+make a histogram of the weights
+plot a histogram of the weights
+load test_dataframe.csv
+plot a histogram of the weights
+plot a histogram of the weights and ages
+plot a box plot of the weights and ages
+load test_dataframe.csv
+plot a histogram of the weights
+plot a histogram of the weights and ages
+plot a scatter of the weights
+plot a scatter of the weights and ages
+make a line plot of the weights and Ages
+make a violin plot of the weights
+load test_dataframe.csv
+make a violin plot of the weights

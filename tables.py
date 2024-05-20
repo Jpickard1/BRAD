@@ -21,6 +21,7 @@ import io
 import logging
 from matplotlib import pyplot as plt
 import seaborn as sns
+import random
 
 from langchain.llms import Replicate
 from langchain.vectorstores import Pinecone
@@ -238,60 +239,56 @@ def handleMissingData(df, chatstatus):
 def visualizeTable(df, chatstatus):
     prompt = chatstatus['prompt'].lower()
     output = "Visualization created."
-
-    plt.figure(figsize=chatstatus['config']['figsize'])
+    plot_functions = plottingMethods()
+    plt.figure(figsize = chatstatus['config']['display']['figsize'],
+               dpi     = chatstatus['config']['display']['dpi'],
+              )
     ax = None
-    if "line" in prompt:
-        ax = line_plot(df, prompt)
-    elif "bar" in prompt:
-        ax = bar_plot(df, prompt)
-    elif "histogram" in prompt:
-        ax = histogram(df, prompt)
-    elif "box" in prompt or "boxplot" in prompt:
-        ax = box_plot(df, prompt)
-    elif "violin" in prompt:
-        ax = violin_plot(df, prompt)
-    elif "scatter" in prompt:
-        ax = scatter_plot(df, prompt)
-    elif "pair" in prompt:
-        ax = pair_plot(df, prompt)
-    elif "heatmap" in prompt:
-        ax = heatmap(df, prompt)
-    elif "pie" in prompt:
-        ax = pie_chart(df, prompt)
-    elif "area" in prompt:
-        ax = area_plot(df, prompt)
-    elif "hexbin" in prompt:
-        ax = hexbin_plot(df, prompt)
-    elif "kde" in prompt:
-        ax = kde_plot(df, prompt)
-    elif "facet grid" in prompt:
-        ax = facet_grid(df, prompt)
-    elif "joint" in prompt:
-        ax = joint_plot(df, prompt)
-    elif "strip" in prompt:
-        ax = strip_plot(df, prompt)
-    elif "swarm" in prompt:
-        ax = swarm_plot(df, prompt)
-    elif "count" in prompt:
-        ax = count_plot(df, prompt)
-    elif "cat" in prompt:
-        ax = cat_plot(df, prompt)
-    elif "reg" in prompt:
-        ax = reg_plot(df, prompt)
-    elif "dist" in prompt or "distribution" in prompt:
-        ax = dist_plot(df, prompt)
+    for key in plot_functions:
+        if key in prompt:
+            plot_func = plot_functions[key]
+            break
     else:
-        output = "No valid visualization command found in the prompt."
+        plot_func = random.choice(list(plot_functions.values()))
+        logging.info("No matching plot type found in the prompt.")
+    ax = plot_func(df, prompt)
+
     if ax is not None:
         plt.show()
     print(output)
     return chatstatus
 
+def plottingMethods():
+    plot_functions = {
+        "line"         : line_plot   ,
+        "bar"          : bar_plot    ,
+        "histogram"    : histogram   ,
+        "box"          : box_plot    ,
+        "boxplot"      : box_plot    ,
+        "violin"       : violin_plot ,
+        "scatter"      : scatter_plot,
+        "pair"         : pair_plot   ,
+        "heatmap"      : heatmap     ,
+        "pie"          : pie_chart   ,
+        "area"         : area_plot   ,
+        "hexbin"       : hexbin_plot ,
+        "kde"          : kde_plot    ,
+        "facet grid"   : facet_grid  ,
+        "joint"        : joint_plot  ,
+        "strip"        : strip_plot  ,
+        "swarm"        : swarm_plot  ,
+        "count"        : count_plot  ,
+        "cat"          : cat_plot    ,
+        "reg"          : reg_plot    ,
+        "dist"         : dist_plot   ,
+        "distribution" : dist_plot
+    }
+    return plot_functions
+
 def line_plot(df, prompt):
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
-        column = column[0]
+        # column = column[0]
         ax = df[column].plot(kind='line', title=f'Line Plot of {column}')
         plt.xlabel(column)
         plt.ylabel('Value')
@@ -316,7 +313,7 @@ def bar_plot(df, prompt):
 def histogram(df, prompt):
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
-        column = column[0]
+        # column = column[0]
         ax = sns.histplot(df[column].dropna(), kde=True)
         plt.title(f'Histogram of {column}')
         plt.xlabel(column)
@@ -326,7 +323,7 @@ def histogram(df, prompt):
 def box_plot(df, prompt):
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
-        column = column[0]
+        # column = column[0]
         ax = sns.boxplot(x=df[column].dropna())
         plt.title(f'Box Plot of {column}')
         plt.xlabel(column)
@@ -335,7 +332,7 @@ def box_plot(df, prompt):
 def violin_plot(df, prompt):
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
-        column = column[0]
+        # column = column[0]
         ax = sns.violinplot(x=df[column].dropna())
         plt.title(f'Violin Plot of {column}')
         plt.xlabel(column)
@@ -506,4 +503,48 @@ def visualizeTable(df, chatstatus):
         output = "No valid visualization command found in the prompt."
     print(output)
     return chatstatus
+    
+    if "line" in prompt:
+        ax = line_plot(df, prompt)
+    elif "bar" in prompt:
+        ax = bar_plot(df, prompt)
+    elif "histogram" in prompt:
+        ax = histogram(df, prompt)
+    elif "box" in prompt or "boxplot" in prompt:
+        ax = box_plot(df, prompt)
+    elif "violin" in prompt:
+        ax = violin_plot(df, prompt)
+    elif "scatter" in prompt:
+        ax = scatter_plot(df, prompt)
+    elif "pair" in prompt:
+        ax = pair_plot(df, prompt)
+    elif "heatmap" in prompt:
+        ax = heatmap(df, prompt)
+    elif "pie" in prompt:
+        ax = pie_chart(df, prompt)
+    elif "area" in prompt:
+        ax = area_plot(df, prompt)
+    elif "hexbin" in prompt:
+        ax = hexbin_plot(df, prompt)
+    elif "kde" in prompt:
+        ax = kde_plot(df, prompt)
+    elif "facet grid" in prompt:
+        ax = facet_grid(df, prompt)
+    elif "joint" in prompt:
+        ax = joint_plot(df, prompt)
+    elif "strip" in prompt:
+        ax = strip_plot(df, prompt)
+    elif "swarm" in prompt:
+        ax = swarm_plot(df, prompt)
+    elif "count" in prompt:
+        ax = count_plot(df, prompt)
+    elif "cat" in prompt:
+        ax = cat_plot(df, prompt)
+    elif "reg" in prompt:
+        ax = reg_plot(df, prompt)
+    elif "dist" in prompt or "distribution" in prompt:
+        ax = dist_plot(df, prompt)
+    else:
+        output = "No valid visualization command found in the prompt."
+    
 '''
