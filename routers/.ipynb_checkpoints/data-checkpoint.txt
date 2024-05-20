@@ -28,3 +28,5 @@ How do I merge or join multiple datasets?
 Can you explain the concept of cross-validation?
 How can I automate data analysis or reporting tasks?
 What are the steps to prepare data for a machine learning model?
+load test_dataframe.csv
+load test_dataframe.csv

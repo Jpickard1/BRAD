@@ -199,6 +199,7 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
             route = router(chatstatus['prompt']).name # determine which path to use
         else:
             route = chatstatus['prompt'].split(' ')[1]
+            buildRoutes(chatstatus['prompt'])
 
         print('==================================================')
         print('O' + str(len(chatlog)) + ':')

@@ -20,7 +20,7 @@ def add_sentence(file_path, sentence):
     Adds a new sentence to the text file.
     """
     with open(file_path, 'a') as file:
-        file.write(sentence + '\n')
+        file.write(sentence.strip() + '\n')
 add_sentence('routers/load.txt', 'pull up that data in the .csv file')
 
 routeGget = Route(
@@ -45,6 +45,28 @@ def getRouter():
     routes = [routeGget, routeScrape, routeTable, routeRAG]
     router = RouteLayer(encoder=encoder, routes=routes)    
     return router
+
+def buildRoutes(prompt):
+    words = prompt.split(' ')
+    rebuiltPrompt = ''
+    i = 0
+    while i < (len(words)):
+        if words[i] == '/force':
+            route = words[i + 1].upper()
+            i += 1
+        else:
+            rebuiltPrompt += (' ' + words[i])
+        i += 1
+    paths = {
+        'GGET':'routers/enrichr.txt',
+        'SCRAPE':'routers/scrape.txt',
+        'RAG':'routers/rag.txt',
+        'TABLE':'routers/table.txt',
+        'DATA':'routers/data.txt'
+    }
+    filepath = paths[route]
+    add_sentence(filepath, rebuiltPrompt)
+    
 
 routeData = Route(
     name = 'DATA',
