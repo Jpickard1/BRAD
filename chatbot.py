@@ -202,7 +202,7 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
             buildRoutes(chatstatus['prompt'])
 
         print('==================================================')
-        print('O' + str(len(chatlog)) + ':')
+        print('RAG >> ' + str(len(chatlog)) + ': ', end='')
         if chatstatus['prompt'] in ['exit', 'quit', 'q']:
             break
         elif chatstatus['prompt'].startswith('/set'):
@@ -210,16 +210,16 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         # Query database
         elif route == 'GGET':
             logging.info('GGET')
-            chatstatus['output'], chatstatus['process'] = queryEnrichr(chatstatus)
+            chatstatus = queryEnrichr(chatstatus)
         elif route == 'DATA':
             logging.info('DATA')
             chatstatus = manipulateTable(chatstatus)
         elif route == 'SCRAPE':
             logging.info('SCRAPE')
-            loggedOutput = webScraping(chatstatus['prompt'])
+            chatstatus = webScraping(chatstatus)
         else:
             logging.info('RAG')
-            chatstatus['output'], chatstatus['process'] = queryDocs(chatstatus['prompt'], chatstatus, llm)
+            chatstatus = queryDocs(chatstatus)
         chatlog = logger(chatlog, chatstatus, chatname)
 
         

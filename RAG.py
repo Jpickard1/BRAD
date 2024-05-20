@@ -12,8 +12,9 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.output_parsers import CommaSeparatedListOutputParser
 from semantic_router.layer import RouteLayer
 
-def queryDocs(prompt, chatstatus, llm):
-    # llm = chatstatus['llm']
+def queryDocs(chatstatus):
+    llm      = chatstatus['llm']
+    prompt   = chatstatus['prompt']
     vectordb = chatstatus['databases']['RAG']
     # query to database
     v = vectordb.similarity_search(prompt)
@@ -21,7 +22,8 @@ def queryDocs(prompt, chatstatus, llm):
     res = chain({"input_documents": v, "question": prompt})
     # change inputs to be json readable
     res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
-    return res['output_text'], res
+    chatstatus['output'], chatstatus['process'] = res['output_text'], res
+    return chatstatus
 
 def getPreviousInput(log, key):
     num = key[:-1]

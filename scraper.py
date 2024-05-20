@@ -24,7 +24,8 @@ from requests_html import HTMLSession
 import requests
 from requests.exceptions import ConnectionError
 
-def webScraping(query):
+def webScraping(chatstatus):
+    query = chatstatus['prompt']
     # Define the mapping of keywords to functions
     scraping_functions = {
         'ARXIV'   : arxiv,
@@ -49,8 +50,10 @@ def webScraping(query):
         output = f'Error occurred while searching on {source}: {e}'
         print(output)
         process = {'searched': 'ERROR'}
-    
-    return output, process['searched']
+
+    chatstatus['process'] = process
+    chatstatus['output']  = output
+    return chatstatus
 
 def arxiv(query):
     """

@@ -30,7 +30,7 @@ def queryEnrichr(chatstatus):
     default_enrichr_db  = chatstatus['config']['default_enrichr_db']
     process = {}
     db, save, plot, dbfound = None, False, False, False
-    
+
     # Remove any punctuation except for - and _, which are used in gget database names
     punctuation_to_remove = string.punctuation.replace('-', '').replace('_', '')
     translator = str.maketrans('', '', punctuation_to_remove)
@@ -90,4 +90,6 @@ def queryEnrichr(chatstatus):
 
     if plot:
         plt.show()
-    return output, process
+    chatstatus['process'] = process
+    chatstatus['output']  = output
+    return chatstatus
