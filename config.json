@@ -8,15 +8,13 @@
     "enable_logging": true,
     "num_df_rows_display": 3,
     "default_enrichr_db": "GO_Biological_Process_2021",
-    "figsize": [
-        5,
-        3
-    ],
     "display": {
         "dpi": 300,
         "figsize": [
             5,
             3
-        ]
+        ],
+        "colormap": "viridis",
+        "fontsize": null
     }
 }

@@ -22,6 +22,8 @@ import logging
 from matplotlib import pyplot as plt
 import seaborn as sns
 import random
+import string
+import matplotlib.colors as mcolors
 
 from langchain.llms import Replicate
 from langchain.vectorstores import Pinecone
@@ -36,7 +38,26 @@ from langchain.vectorstores import FAISS
 
 def manipulateTable(chatstatus):
     logging.info('manipulateTable')
-    process = {'name' : 'table'}
+    chatstatus['process'] : {
+        'name'            : 'table',
+        'edgecolor'       : None,
+        'markersize'      : None,
+        'linewidth'       : None,
+        'xticks'          : None,
+        'yticks'          : None,
+        'markerfacecolor' : None,
+        'legend'          : True,
+        'hue'             : None,
+        'bins'            : 10,
+        'kde'             : True,
+        'xlim'            : None,
+        'ylim'            : None,
+        'title'           : None,
+        'xlabel'          : None,
+        'ylabel'          : None,
+        'linestyle'       : '-',
+        'despine'         : False,
+    },
     prompt  = chatstatus['prompt']
 
     # select operation
@@ -240,6 +261,8 @@ def visualizeTable(df, chatstatus):
     prompt = chatstatus['prompt'].lower()
     output = "Visualization created."
     plot_functions = plottingMethods()
+    chatstatus = checkPlottingConfigurations(chatstatus, df)
+    sns.set_palette(chatstatus['config']['display']['colormap'])
     plt.figure(figsize = chatstatus['config']['display']['figsize'],
                dpi     = chatstatus['config']['display']['dpi'],
               )
@@ -251,8 +274,17 @@ def visualizeTable(df, chatstatus):
     else:
         plot_func = random.choice(list(plot_functions.values()))
         logging.info("No matching plot type found in the prompt.")
-    ax = plot_func(df, prompt)
-
+    ax = plot_func(df, chatstatus)
+    plt.xlim(chatstatus['process']['xlim'])
+    plt.ylim(chatstatus['process']['ylim'])
+    if chatstatus['process']['despine']:
+        sns.despine()
+    if chatstatus['process']['title'] is not None:
+        plt.title(chatstatus['process']['title'])
+    if chatstatus['process']['xlabel'] is not None:
+        plt.xlabel(chatstatus['process']['xlabel'])
+    if chatstatus['process']['ylabel'] is not None:
+        plt.ylabel(chatstatus['process']['ylabel'])
     if ax is not None:
         plt.show()
     print(output)
@@ -285,48 +317,100 @@ def plottingMethods():
     }
     return plot_functions
 
-def line_plot(df, prompt):
+def line_plot(df, chatstatus):
+    prompt = chatstatus['prompt']
     column = [col for col in df.columns if col.lower() in prompt.lower()]
-    if column:
-        # column = column[0]
-        ax = df[column].plot(kind='line', title=f'Line Plot of {column}')
-        plt.xlabel(column)
-        plt.ylabel('Value')
-        return ax
+    if column == []:
+        return
+    ax = df[column].plot(kind='line',
+                         title=f'Line Plot of {column}',
+                         colormap=chatstatus['config']['display']['colormap'],
+                        )
+    plt.xlabel(column)
+    plt.ylabel('Value')
+    return ax
 
-def bar_plot(df, prompt):
-    column = [col for col in df.columns if col.lower() in prompt.lower()]
+def bar_plot(df, chatstatus):
+    prompt = chatstatus['prompt']
+    cols = [col.lower() for col in df.columns]
+    column = None
+    for word in prompt.split():
+        if word.lower() in cols:
+            column = word
+            break
+    if column is None:
+        return
+    # Make dataframe
+    hue = chatstatus['process']['hue']
+    if hue is not None:
+        category_counts = df.groupby([column, hue]).size().reset_index(name='Count')
+    else:
+        category_counts = df.groupby([column]).size().reset_index(name='Count')
+    # make plot
     kind = 'bar'
     if 'horizontal' in prompt.lower() or 'flip' in prompt.lower():
         kind = 'barh'
-    if column:
-        column = column[0]
-        ax = df[column].value_counts().plot(kind=kind, title=f'Bar Plot of {column}')
-        if kind == 'bar':
-            plt.xlabel(column)
-            plt.ylabel('Frequency')
-        else:
-            plt.xlabel('Frequency')
-            plt.ylabel(column)
-        return ax
-
-def histogram(df, prompt):
-    column = [col for col in df.columns if col.lower() in prompt.lower()]
-    if column:
-        # column = column[0]
-        ax = sns.histplot(df[column].dropna(), kde=True)
-        plt.title(f'Histogram of {column}')
+    if kind == 'bar':
+        ax = sns.barplot(x=column,
+                         y='Count',
+                         hue=hue,
+                         data=category_counts,
+                         palette=chatstatus['config']['display']['colormap'],
+                         edgecolor=chatstatus['process']['edgecolor']
+                        )
+    else:
+        ax = sns.barplot(x='Count',
+                         y=column,
+                         hue=hue,
+                         data=category_counts,
+                         palette=chatstatus['config']['display']['colormap'],
+                         edgecolor=chatstatus['process']['edgecolor']
+                        )
+    # Add labels
+    if kind == 'bar':
         plt.xlabel(column)
+        plt.ylabel('Frequency')
+    else:
+        plt.xlabel('Frequency')
+        plt.ylabel(column)
+    return ax
+
+def histogram(df, chatstatus):
+    prompt = chatstatus['prompt']
+    columns = [col for col in df.columns if col.lower() in prompt.lower()]
+    if columns:
+        # column = column[0]
+        ax = sns.histplot(df[columns].dropna(),
+                          kde       = chatstatus['process']['kde'],
+                          bins      = chatstatus['process']['bins'],
+                          edgecolor = chatstatus['process']['edgecolor'],
+                          color     = chatstatus['config']['display']['colormap']
+                         )
+        plt.title(f'Histogram of {columns}')
+        plt.xlabel(columns)
         plt.ylabel('Frequency')
         return ax
 
-def box_plot(df, prompt):
-    column = [col for col in df.columns if col.lower() in prompt.lower()]
-    if column:
-        # column = column[0]
-        ax = sns.boxplot(x=df[column].dropna())
-        plt.title(f'Box Plot of {column}')
-        plt.xlabel(column)
+def box_plot(df, chatstatus):
+    prompt = chatstatus['prompt']
+    columns = [col for col in df.columns if col.lower() in prompt.lower()]
+    if columns:
+        scalar = list(set(columns).intersection(set(df.select_dtypes(include=['number']).columns.tolist())))[0]
+        catego = list(set(columns).intersection(set(df.select_dtypes(include=['object', 'category']).columns.tolist())))[0]
+        if 'horizontal' in prompt.lower() or 'flip' in prompt.lower():
+            scalar, catego = catego, scalar
+        ax = sns.boxplot(data      = df,
+                         x         = scalar,
+                         y         = catego,
+                         # linecolor = chatstatus['process']['edgecolor']
+                         #kde       = chatstatus['process']['kde'],
+                         #bins      = chatstatus['process']['bins'],
+                         #edgecolor = chatstatus['process']['edgecolor'],
+                         #color     = chatstatus['config']['display']['colormap']
+                        )
+        plt.title(f'Box Plot of {columns}')
+        plt.xlabel(catego)
+        plt.xlabel(scalar)
         return ax
 
 def violin_plot(df, prompt):
@@ -338,10 +422,18 @@ def violin_plot(df, prompt):
         plt.xlabel(column)
         return ax
 
-def scatter_plot(df, prompt):
-    columns = [col for col in df.columns if col.lower() in prompt.lower()]
+def scatter_plot(df, chatstatus):
+    prompt = chatstatus['prompt']
+    columns = [col for col in df.columns if (col.lower() in prompt.lower() and col.lower() != chatstatus['process']['hue'].lower())]
+    if chatstatus['debug']: print(columns)
     if len(columns) == 2:
-        ax = sns.scatterplot(x=df[columns[0]], y=df[columns[1]])
+        ax = sns.scatterplot(data = df,
+                             x    = columns[0],
+                             y    = columns[1],
+                             size = chatstatus['process']['markersize'],
+                             hue  = chatstatus['process']['hue'],
+                             # markerfacecolor = chatstatus['config']['display']['markerfacecolor']
+                            )
         plt.title(f'Scatter Plot between {columns[0]} and {columns[1]}')
         plt.xlabel(columns[0])
         plt.ylabel(columns[1])
@@ -461,6 +553,170 @@ def dist_plot(df, prompt):
         plt.ylabel('Density')
         return ax
 
+def separate_punctuation_with_spaces(text):
+    # Use regular expression to replace each punctuation mark with ' <punctuation> '
+    return re.sub(r'([.,!?;:"(){}\[\]])', r' \1 ', text)
+
+def is_valid_colormap(colormap_name):
+    return colormap_name in plt.colormaps()
+
+def is_valid_color(color_string):
+    try:
+        mcolors.to_rgba(color_string)
+        return True
+    except ValueError:
+        return False    
+
+def should_apply_hue(promptWords, data, max_categories=15):
+    '''
+    Detect if hue should be applied and determine the hue variable based on the prompt and data.
+
+    Parameters:
+    - promptWords: List of words parsed from the prompt.
+    - data: Pandas DataFrame containing the data.
+
+    Returns:
+    - hue_var: String indicating the variable to use as hue, or None if hue is not needed.
+    '''
+    if 'hue' in promptWords:
+        loc = promptWords.index('hue')
+        hue_var = promptWords[loc + 1]
+        if hue_var in data.columns:
+            return hue_var
+    
+    # Check if there is a categorical column that could be used as hue
+    categorical_columns = [col for col in data.columns if pd.api.types.is_categorical_dtype(data[col]) or data[col].dtype == 'object']
+    categorical_columns = [col for col in categorical_columns if data[col].nunique() <= max_categories]
+
+    if categorical_columns:
+        return random.choice(categorical_columns)  # Return the first categorical column
+    
+    return None  # No hue variable detected
+
+def checkPlottingConfigurations(chatstatus, df):
+    '''
+    check if any variables need to be changed
+    '''
+    prompt = separate_punctuation_with_spaces(chatstatus['prompt']) # we don't mess with the '-' character
+    promptWords = prompt.split(' ')
+    unwanted_strings = {'', ' ', 'of', 'as', 'use', 'is', 'to', 'by', 'the', ';', '(', '[', '.', ',', '!', '?', ';', ':', '"', '(', ')', '{', '}', '\[', '\]' ']', ')' } # we don't mess with the '-' character
+    promptWords = [s for s in promptWords if s not in unwanted_strings]
+    # if chatstatus['debug']: logging.info(promptWords)
+
+    if 'dpi' in promptWords:
+        loc = promptWords.index('dpi')
+        try:
+            chatstatus['config']['display']['dpi'] = int(promptWords[loc+1])
+        except ValueError:
+            print('The dpi value is unclear')
+    if 'figsize' in promptWords:
+        loc = promptWords.index('figsize')
+        try:
+            chatstatus['config']['display']['figsize'] = (int(promptWords[loc+1]), int(promptWords[loc+2]))
+        except ValueError:
+            print('The figsize value is unclear')
+    if 'cm' in prompt or 'colormap' in prompt:
+        loc = promptWords.index('cm') if 'cm' in promptWords else promptWords.index('colormap')
+        if is_valid_colormap(promptWords[loc + 1]):
+            chatstatus['config']['display']['colormap'] = promptWords[loc + 1]
+        else:
+            print('The colormap is unclear')
+    if 'ec' in promptWords or 'edgecolor' in prompt or 'edge-color' in prompt:
+        if 'ec' in promptWords:
+            loc = promptWords.index('ec')
+        elif 'edge-color' in prompt:
+            loc = promptWords.index('edge-color')
+        else:
+            loc = promptWords.index('edgecolor')
+        if is_valid_color(promptWords[loc + 1]):
+            chatstatus['process']['edgecolor'] = promptWords[loc + 1]
+        else:
+            print('The colormap is unclear')
+    if 'markersize' in promptWords:
+        loc = promptWords.index('markersize')
+        try:
+            chatstatus['process']['markersize'] = int(promptWords[loc + 1])
+        except ValueError:
+            print('The markersize value is unclear')
+    if 'linewidth' in promptWords:
+        loc = promptWords.index('linewidth')
+        try:
+            chatstatus['process']['linewidth'] = int(promptWords[loc + 1])
+        except ValueError:
+            print('The linewidth value is unclear')
+    #if 'grid' in promptWords:
+    #    chatstatus['process']['grid'] = not chatstatus['config']['display']['grid']
+    if 'xlim' in promptWords:
+        loc = promptWords.index('xlim')
+        try:
+            chatstatus['process']['xlim'] = (int(promptWords[loc + 1]), int(promptWords[loc + 2]))
+        except ValueError:
+            print('The xlim value is unclear')
+    if 'ylim' in promptWords:
+        loc = promptWords.index('ylim')
+        try:
+            chatstatus['process']['ylim'] = (int(promptWords[loc + 1]), int(promptWords[loc + 2]))
+        except ValueError:
+            print('The ylim value is unclear')
+    if 'markerfacecolor' in promptWords:
+        loc = promptWords.index('markerfacecolor')
+        if is_valid_color(promptWords[loc + 1]):
+            chatstatus['process']['markerfacecolor'] = promptWords[loc + 1]
+        else:
+            print('The markerfacecolor is unclear')
+    
+    if 'legend' in promptWords:
+        loc = promptWords.index('legend')
+        chatstatus['process']['legend'] = promptWords[loc + 1].lower() == 'true'
+    
+    if 'fontsize' in promptWords:
+        loc = promptWords.index('fontsize')
+        try:
+            chatstatus['process']['fontsize'] = int(promptWords[loc + 1])
+        except ValueError:
+            print('The fontsize value is unclear')
+            
+    if 'bins' in promptWords:
+        loc = promptWords.index('bins')
+        try:
+            chatstatus['process']['bins'] = int(promptWords[loc + 1])
+        except ValueError:
+            try:
+                chatstatus['process']['bins'] = int(promptWords[loc - 1])
+            except ValueError:
+                print('The bins value is unclear')
+    
+    if "spine" in prompt.lower():
+        chatstatus['process']['despine'] = not chatstatus['process']['despine']
+
+    if "kde" in prompt.lower():
+        chatstatus['process']['kde'] = not chatstatus['process']['kde']
+            
+    hue_var = should_apply_hue(promptWords, df)
+    if hue_var:
+        chatstatus['process']['hue'] = hue_var
+        
+    # get string based parameters such as title, xlabel, and ylabel
+    chatstatus = checkPlotLabels(chatstatus)
+
+    return chatstatus
+
+def checkPlotLabels(chatstatus):
+    '''
+    Parses title, xlabel, and ylabel
+    '''
+    prompt = chatstatus['prompt']
+    patterns = {
+        'title': r"title\s*'([^']*)'",
+        'xlabel': r"x\s*label\s*'([^']*)'",
+        'ylabel': r"y\s*label\s*'([^']*)'"
+    }
+    for label, pattern in patterns.items():
+        match = re.search(pattern, prompt, re.IGNORECASE)
+        if match:
+            chatstatus['process'][label] = match.group(1)
+    return chatstatus
+    
 '''
 def visualizeTable(df, chatstatus):
     prompt = chatstatus['prompt'].lower()
@@ -547,4 +803,26 @@ def visualizeTable(df, chatstatus):
     else:
         output = "No valid visualization command found in the prompt."
     
+    
+def visualizeTable(df, chatstatus):
+    prompt = chatstatus['prompt'].lower()
+    output = "Visualization created."
+    plot_functions = plottingMethods()
+    plt.figure(figsize = chatstatus['config']['display']['figsize'],
+               dpi     = chatstatus['config']['display']['dpi'],
+              )
+    ax = None
+    for key in plot_functions:
+        if key in prompt:
+            plot_func = plot_functions[key]
+            break
+    else:
+        plot_func = random.choice(list(plot_functions.values()))
+        logging.info("No matching plot type found in the prompt.")
+    ax = plot_func(df, prompt)
+
+    if ax is not None:
+        plt.show()
+    print(output)
+    return chatstatus
 '''
