@@ -16,5 +16,6 @@
         ],
         "colormap": "viridis",
         "fontsize": null
-    }
+    },
+    "debug": true
 }

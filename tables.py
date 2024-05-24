@@ -57,7 +57,7 @@ def manipulateTable(chatstatus):
         'ylabel'          : None,
         'linestyle'       : '-',
         'despine'         : False,
-    },
+    }
     prompt  = chatstatus['prompt']
 
     # select operation

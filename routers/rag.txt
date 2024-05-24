@@ -98,3 +98,4 @@ What are transcription factor arrays?
 Explain the interaction between transcription factors and enhancers.
 What is the role of transcription factors in hematopoiesis?
 How do transcription factors regulate hormone response?
+do pluripotent genes activate simultaneously or sequentially during reprogramming?

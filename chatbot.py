@@ -46,6 +46,7 @@ from scraper import *
 from router import *
 from tables import *
 from RAG import *
+from seabornCaller import *
 
 def helloWorld():
     print('hi')
@@ -81,7 +82,7 @@ def reconfig(chat_status):
 def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'):
     # load llama model
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-    llm = LlamaCpp(model_path=model_path, n_ctx = 4098, max_tokens = 1000, callback_manager=callback_manager, verbose=True)
+    llm = LlamaCpp(model_path=model_path, n_ctx = 4098, max_tokens = 4098, callback_manager=callback_manager, verbose=True)
     return llm, callback_manager
 
 def load_literature_db(persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/"):
@@ -183,7 +184,8 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         'current table'     : {'key':None, 'tab':None},
         'current documents' : None,
         'tables'            : {},
-        'documents'         : {}
+        'documents'         : {},
+        'plottingParams'    : {}
     }
     chatlog = {
         'llm'           : str(chatstatus['llm'])
@@ -208,19 +210,24 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         elif chatstatus['prompt'].startswith('/set'):
             chatstatus = reconfig(chatstatus)
         # Query database
-        elif route == 'GGET':
+        elif route.upper() == 'GGET':
             logging.info('GGET')
             chatstatus = queryEnrichr(chatstatus)
-        elif route == 'DATA':
+        elif route.upper() == 'DATA':
             logging.info('DATA')
             chatstatus = manipulateTable(chatstatus)
-        elif route == 'SCRAPE':
+        elif route.upper() == 'SCRAPE':
             logging.info('SCRAPE')
             chatstatus = webScraping(chatstatus)
+        elif route.upper() == 'SNS':
+            chatstatus = callSnsV3(chatstatus, chatlog)
         else:
             logging.info('RAG')
             chatstatus = queryDocs(chatstatus)
+
+        # Log and reset these values
         chatlog = logger(chatlog, chatstatus, chatname)
+        chatstatus['process'] = None
 
         
 # log output

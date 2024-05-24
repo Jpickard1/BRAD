@@ -62,7 +62,8 @@ def buildRoutes(prompt):
         'SCRAPE':'routers/scrape.txt',
         'RAG':'routers/rag.txt',
         'TABLE':'routers/table.txt',
-        'DATA':'routers/data.txt'
+        'DATA':'routers/data.txt',
+        'SNS':'routers/sns.txt'
     }
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)
