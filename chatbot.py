@@ -153,7 +153,7 @@ def chatbotHelp():
     return
 
 def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf', persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/", llm=None, ragvectordb=None, embeddings_model=None):
-    chatname = 'RAG' + str(dt.now()) + '.json'
+    chatname = 'logs/RAG' + str(dt.now()) + '.json'
     chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
     
