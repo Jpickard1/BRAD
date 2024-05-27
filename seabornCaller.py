@@ -255,7 +255,7 @@ def callSns(chatstatus, chatlog):
 def setSeabornConfigurations(chatstatus):
     '''this function currently does nothing'''
     # load the configurations
-    with open('configSeaborn.json', 'r') as f:
+    with open('config/configSeaborn.json', 'r') as f:
         configSns = json.load(f)
             
     # check palette

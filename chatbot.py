@@ -59,14 +59,14 @@ def getModules():
         'SCRAPE' : webScraping,      # webscrapping
         'SNS'    : callSnsV3,        # seaborn
         'RAG'    : queryDocs,        # standard rag
-        'MATLAB' : callMatlab        # matlab
+        'MATLAB' : callMatlab,       # matlab
         'SNAKE'  : callSnakemake     # snakemake
     }
     return module_functions
 
 
 def load_config():
-    file_path = 'config.json'
+    file_path = 'config/config.json'
     with open(file_path, 'r') as f:
         return json.load(f)
 
@@ -99,8 +99,6 @@ def loadChatStatus():
         'prompt'            : None,
         'output'            : None,
         'process'           : {},
-        'llm'               : llm,
-        'databases'         : databases,
         'current table'     : {'key':None, 'tab':None},
         'current documents' : None,
         'tables'            : {},
@@ -208,7 +206,10 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     router = getRouter()
     
     # Initialize the chatlog
-    chatlog = {
+    chatstatus        = loadChatStatus()
+    chatstatus['llm'] = llm
+    chatstatus['databases'] = [databases]
+    chatlog           = {
         'llm'           : str(chatstatus['llm'])
     }
     
@@ -240,13 +241,13 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
             routeName = route.upper()
         else:
             routeName = 'RAG'
-        logging.info(routeName) if chatstatus['debug'] else None
+        logging.info(routeName) if chatstatus['config']['debug'] else None
 
         # get the specific module to use
         module = module_functions[routeName]
         
         # Query database
-        chatstatus = queryEnrichr(module)
+        chatstatus = module(chatstatus)
 
         # Log and reset these values
         chatlog, chatstatus = logger(chatlog, chatstatus, chatname)
