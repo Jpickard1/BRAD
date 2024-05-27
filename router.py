@@ -21,23 +21,26 @@ def add_sentence(file_path, sentence):
     """
     with open(file_path, 'a') as file:
         file.write(sentence.strip() + '\n')
-add_sentence('routers/load.txt', 'pull up that data in the .csv file')
 
 routeGget = Route(
     name = 'GGET',
-    utterances = read_prompts('routers/enrichr.txt')
+    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/enrichr.txt')
 )
 routeScrape = Route(
     name = 'SCRAPE',
-    utterances = read_prompts('routers/scrape.txt')
+    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/scrape.txt')
 )
 routeRAG = Route(
     name = 'RAG',
-    utterances = read_prompts('routers/rag.txt')
+    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/rag.txt')
 )
 routeTable = Route(
     name = 'TABLE',
-    utterances = read_prompts('routers/table.txt')
+    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/table.txt')
+)
+routeData = Route(
+    name = 'DATA',
+    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/data.txt')
 )
 
 def getRouter():
@@ -58,21 +61,16 @@ def buildRoutes(prompt):
             rebuiltPrompt += (' ' + words[i])
         i += 1
     paths = {
-        'GGET':'routers/enrichr.txt',
-        'SCRAPE':'routers/scrape.txt',
-        'RAG':'routers/rag.txt',
-        'TABLE':'routers/table.txt',
-        'DATA':'routers/data.txt',
-        'SNS':'routers/sns.txt'
+        'GGET'   : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/enrichr.txt',
+        'SCRAPE' : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/scrape.txt',
+        'RAG'    : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/rag.txt',
+        'TABLE'  : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/table.txt',
+        'DATA'   : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/data.txt',
+        'SNS'    : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/sns.txt'
     }
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)
     
-
-routeData = Route(
-    name = 'DATA',
-    utterances = read_prompts('routers/data.txt')
-)
 
 def getTableRouter():
     encoder = HuggingFaceEncoder()
