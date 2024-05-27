@@ -47,9 +47,23 @@ from router import *
 from tables import *
 from RAG import *
 from seabornCaller import *
+from matlabCaller import *
+from snakemakeCaller import *
 
-def helloWorld():
-    print('hi')
+
+def getModules():
+    # this + imports should be the only code someone needs to write to add a new module
+    module_functions = {
+        'GGET'   : queryEnrichr,     # gget
+        'DATA'   : manipulateTable,  #
+        'SCRAPE' : webScraping,      # webscrapping
+        'SNS'    : callSnsV3,        # seaborn
+        'RAG'    : queryDocs,        # standard rag
+        'MATLAB' : callMatlab        # matlab
+        'SNAKE'  : callSnakemake     # snakemake
+    }
+    return module_functions
+
 
 def load_config():
     file_path = 'config.json'
@@ -78,6 +92,22 @@ def reconfig(chat_status):
     else:
         print("Configuration " + str(key) + " not found")
     return chat_status
+
+def loadChatStatus():
+    chatstatus = {
+        'config'            : load_config(),
+        'prompt'            : None,
+        'output'            : None,
+        'process'           : {},
+        'llm'               : llm,
+        'databases'         : databases,
+        'current table'     : {'key':None, 'tab':None},
+        'current documents' : None,
+        'tables'            : {},
+        'documents'         : {},
+        'plottingParams'    : {}
+    }
+    return chatstatus
 
 def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'):
     # load llama model
@@ -126,7 +156,8 @@ def logger(chatlog, chatstatus, chatname):
     # print(chatlog)
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
-    return chatlog
+    chatstatus['process'] = None
+    return chatlog, chatstatus
 
 def chatbotHelp():
     help_message = """
@@ -156,15 +187,16 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     chatname = 'logs/RAG' + str(dt.now()) + '.json'
     chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
-    
+
+    # Initialize the dictionaries of tables and databases accessible to BRAD
     databases = {} # a dictionary to look up databases
     tables = {}    # a dictionary to look up tables
     
+    # Initialize the RAG database
     if llm is None:
         llm, callback_manager = load_llama(model_path) # load the llama
     if ragvectordb is None:
         ragvectordb, embeddings_model = load_literature_db(persist_directory) # load the literature database
-    
     databases['RAG'] = ragvectordb
     externalDatabases = ['docs', 'GO', 'GGET']
     retriever = ragvectordb.as_retriever(search_kwargs={"k": 4}) ## Pick top 4 results from the search
@@ -172,62 +204,52 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     template = """Context: {context}\n Question: {question}\n Answer:"""
     QA_CHAIN_PROMPT = PromptTemplate(template=template, input_variables=["context" ,"question"],)
 
+    # Initialize the routers from router.py
     router = getRouter()
     
-    chatstatus = {
-        'config'            : load_config(),
-        'prompt'            : None,
-        'output'            : None,
-        'process'           : {},
-        'llm'               : llm,
-        'databases'         : databases,
-        'current table'     : {'key':None, 'tab':None},
-        'current documents' : None,
-        'tables'            : {},
-        'documents'         : {},
-        'plottingParams'    : {}
-    }
+    # Initialize the chatlog
     chatlog = {
         'llm'           : str(chatstatus['llm'])
     }
+    
+    # Initialize all modules
+    module_functions = getModules()
+    
     while True:
         print('==================================================')
-        chatstatus['prompt'] = input('Input >> ') # get query from user
-        if chatstatus['prompt'].lower() == 'help':
+        chatstatus['prompt'] = input('Input >> ')                 # get query from user
+        if chatstatus['prompt'] in ['exit', 'quit', 'q']:         # check to exit
+            break
+        elif chatstatus['prompt'].lower() == 'help':              # print man to the screen
             chatbotHelp()
             continue
-
-        if '/force' not in chatstatus['prompt'].split(' '):
-            route = router(chatstatus['prompt']).name # determine which path to use
+        elif chatstatus['prompt'].startswith('/set'):             # set a configuration variable
+            chatstatus = reconfig(chatstatus)
+            continue
+        elif '/force' not in chatstatus['prompt'].split(' '):     # use the router
+            route = router(chatstatus['prompt']).name
         else:
-            route = chatstatus['prompt'].split(' ')[1]
+            route = chatstatus['prompt'].split(' ')[1]            # use the forced router
             buildRoutes(chatstatus['prompt'])
 
         print('==================================================')
         print('RAG >> ' + str(len(chatlog)) + ': ', end='')
-        if chatstatus['prompt'] in ['exit', 'quit', 'q']:
-            break
-        elif chatstatus['prompt'].startswith('/set'):
-            chatstatus = reconfig(chatstatus)
-        # Query database
-        elif route.upper() == 'GGET':
-            logging.info('GGET')
-            chatstatus = queryEnrichr(chatstatus)
-        elif route.upper() == 'DATA':
-            logging.info('DATA')
-            chatstatus = manipulateTable(chatstatus)
-        elif route.upper() == 'SCRAPE':
-            logging.info('SCRAPE')
-            chatstatus = webScraping(chatstatus)
-        elif route.upper() == 'SNS':
-            chatstatus = callSnsV3(chatstatus, chatlog)
+
+        # select appropriate routeing function
+        if route.upper() in module_functions.keys():
+            routeName = route.upper()
         else:
-            logging.info('RAG')
-            chatstatus = queryDocs(chatstatus)
+            routeName = 'RAG'
+        logging.info(routeName) if chatstatus['debug'] else None
+
+        # get the specific module to use
+        module = module_functions[routeName]
+        
+        # Query database
+        chatstatus = queryEnrichr(module)
 
         # Log and reset these values
-        chatlog = logger(chatlog, chatstatus, chatname)
-        chatstatus['process'] = None
+        chatlog, chatstatus = logger(chatlog, chatstatus, chatname)
 
         
 # log output

@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import logging
 import random
 
-def callSnsV3(chatstatus, chatlog):
+def callSnsV3(chatstatus):
     prompt = chatstatus['prompt']                                                    # Get the user prompt
     df = chatstatus['current table']['tab']                                          # Get the data to plot
     df.dropna(inplace=True)

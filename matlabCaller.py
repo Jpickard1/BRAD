@@ -1,10 +1,7 @@
 import matlab.engine
 
-def callSnakemake(chatstatus, chatlog):
+def callMatlab(chatstatus, chatlog):
     prompt = chatstatus['prompt']                                        # Get the user prompt
     chatstatus['process'] = {}                                           # Begin saving plotting arguments
-    chatstatus['process']['name'] = 'Snakemake'    
-    config_file_path = 'configSnakemake.json'
-    chatstatus['process']['params'] = read_config(config_file_path)
-    chatstatus['process']['params'] = getFunctionArgs(chatstatus)            # Apply t5-small fine tuned to extract plotting args
-    run_snakemake(chatstatus['process']['params'])
+    chatstatus['process']['name'] = 'Matlab'    
+    config_file_path = 'configMatlab.json' # we could use this to add matlab files to path
