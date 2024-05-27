@@ -144,3 +144,18 @@ make a bar plot of y=Department and x= Age with dpi of 200
 make a scatter plot with x=Age and y=Weight with dpi of 200
 make a scatter plot with x=Age and y=Weight with dpi of 200
 make a scatter plot with x=Age and y=Weight with dpi of 100 and title of MyPlot
+make a scatter plot with x=Age and y=Weight with dpi of 100 and title of MyPlot
+make a scatter plot with x=Age and y=Weight with dpi of 100 and title of MyPlot and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and title of MyPlot and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and title of MyPlot and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and title of MyPlot and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and Age=x
+make a scatter plot with x=Age and y=Weight with dpi of 100 and Age=x
+make a bar plot of Age vs Grade
+make a bar plot of y=Department and x= Age with dpi of 200
+make a bar plot of y=Department and x= Age with dpi of 200

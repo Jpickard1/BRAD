@@ -10,6 +10,7 @@ from matplotlib.colors import Normalize
 from seaborn.palettes import color_palette
 import random
 import json
+import matplotlib
 
 from functionCaller import *
 
@@ -21,6 +22,7 @@ import random
 def callSnsV3(chatstatus, chatlog):
     prompt = chatstatus['prompt']                                                    # Get the user prompt
     df = chatstatus['current table']['tab']                                          # Get the data to plot
+    df.dropna(inplace=True)
     newPrompt = True
     plot_functions = plottingMethods()                                       # Identify the plotting function from keyword
     for key in plot_functions:
@@ -251,6 +253,7 @@ def callSns(chatstatus, chatlog):
     return chatstatus
 
 def setSeabornConfigurations(chatstatus):
+    '''this function currently does nothing'''
     # load the configurations
     with open('configSeaborn.json', 'r') as f:
         configSns = json.load(f)
@@ -272,8 +275,8 @@ def setSeabornConfigurations(chatstatus):
     chatstatus['process']['params']['context'] = configSns['context']
     
     # check style
-    configSns['style'] = chatstatus['process']['params'].get('style', configSns['style'])
-    chatstatus['process']['params']['style'] = configSns['style']
+    configSns['snsStyle'] = chatstatus['process']['params'].get('snsStyle', configSns['snsStyle'])
+    chatstatus['process']['params']['snsStyle'] = configSns['snsStyle']
     
     # check font_scale
     configSns['font_scale'] = chatstatus['process']['params'].get('font_scale', configSns['font_scale'])
@@ -296,10 +299,10 @@ def setSeabornConfigurations(chatstatus):
     chatstatus['process']['params']['ytick.labelsize'] = configSns['rc']['ytick.labelsize']
 
     # Apply the seaborn configurations
-    sns.set_context(context=configSns['context'])
-    sns.set_style(style=configSns['style'], rc=configSns['rc'])
-    sns.set_palette(palette=configSns['palette'])
-    sns.set(font_scale=configSns['font_scale'])
+    # sns.set_context(context=configSns['context'])
+    # sns.set_style(style=configSns['snsStyle'], rc=configSns['rc'])
+    # sns.set_palette(palette=configSns['palette'])
+    # sns.set(font_scale=configSns['font_scale'])
 
     # save all to a file again
     with open('configSeaborn.json', 'w') as f:
@@ -351,7 +354,8 @@ def functionArgs(func):
         'ylim'     : None,
         'colormap' : None,
         'despine'  : None,
-        'marker'   : '*'
+        'marker'   : '*',
+        'snsStyle' : None,
     }
     signature = inspect.signature(func)
     for param in signature.parameters.values():
@@ -588,9 +592,9 @@ def validate_arguments(func, arguments):
                     if value not in ["x", "y", "v", "h"]:
                         incorrect_args[param.name] = 'Expected "x", "y", "v", or "h".'
                 
-                elif param.name == 'palette':
-                    if not (isinstance(value, (str, list, dict, plt.Colormap)) or callable(value)):
-                        incorrect_args[param.name] = "Expected a string, list, dictionary, or matplotlib.colors.Colormap."
+                #elif param.name == 'palette':
+                #    if not (isinstance(value, (str, list, dict, plt.Colormap)) or callable(value)):
+                #        incorrect_args[param.name] = "Expected a string, list, dictionary, or matplotlib.colors.Colormap."
 
                 elif param.name == 'palette':
                     if not isinstance(value, (str, list, dict, matplotlib.colors.Colormap)):
@@ -988,6 +992,9 @@ def violinplotCaller(args):
 
 def barplotCaller(args):
     '''Call seaborn barplot function based on the Transformer input.'''
+    print('Debug BarPlot')
+    print(args)
+    display(args['data'])
     ax = sns.barplot(
         data           = args['data'],
         estimator      = args['estimator'],
