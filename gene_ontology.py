@@ -8,6 +8,26 @@ from requests.exceptions import ConnectionError
 import os
 import copy
 
+def geneOntology(goQuery, chatstatus):
+    with open('helperData/gene_list.txt', 'r') as file:
+        contents = file.read()
+    gene_list = contents.split('\n')
+    real_list = []
+    for words in goQuery.split(' '):
+        words = words.upper()
+        if words in gene_list:
+            real_list.append(words)
+    if len(real_list) > 0:
+        print(real_list)
+        chatstatus['output'] += '\n would you search Gene Ontology for these terms [Y/N]?'
+        print('\n would you search Gene Ontology for these terms [Y/N]?')
+        go = input().strip().upper()
+        chatstatus['process']['search'] = (go == 'Y')
+        if go == 'Y':
+            go_process = gonto.goSearch(real_list)
+            chatstatus['process']['GO'] = go_process
+    return chatstatus
+            
 def goSearch(query):
     process = {}
     output = {}

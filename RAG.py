@@ -45,25 +45,7 @@ def queryDocs(chatstatus):
 
     # update and return the chatstatus
     chatstatus['output'], chatstatus['process'] = res['output_text'], res
-    goQuery = list(set(extract_non_english_words(chatstatus['output'])))
-    with open('gene_list.txt', 'r') as file:
-        contents = file.read()
-    gene_list = contents.split('\n')
-    real_list = []
-    for words in goQuery:
-        words = words.upper()
-        if words in gene_list:
-            real_list.append(words)
-    if len(real_list) > 0:
-        print(real_list)
-        chatstatus['output'] += '\n would you search Gene Ontology for these terms [Y/N]?'
-        print('\n would you search Gene Ontology for these terms [Y/N]?')
-        go = input().strip().upper()
-        process['search'] = (go == 'Y')
-        if go == 'Y':
-        #id_list = df['id'].to_list()
-            go_process = gonto.goSearch(real_list)
-            chatstatus['process']['GO'] = go_process
+    chatstatus = gonto.geneOntology(chatstatus['output'], chatstatus)
     return chatstatus
 
 def getPreviousInput(log, key):

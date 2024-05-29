@@ -232,6 +232,8 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
             continue
         elif '/force' not in chatstatus['prompt'].split(' '):     # use the router
             route = router(chatstatus['prompt']).name
+            if route is None:
+                route = 'RAG'
         else:
             route = chatstatus['prompt'].split(' ')[1]            # use the forced router
             buildRoutes(chatstatus['prompt'])
