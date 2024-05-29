@@ -4,7 +4,6 @@ from langchain.document_loaders import UnstructuredPDFLoader
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 import chromadb
-import arxivscraper
 import pandas as pd
 from requests_html import HTMLSession
 import requests
@@ -18,14 +17,15 @@ import time
 import sys
 import string
 import gc
-import requests
 from bs4 import BeautifulSoup as bs
+from urllib.parse import urljoin
 from requests_html import HTMLSession
 import requests
 from requests.exceptions import ConnectionError
 
 def webScraping(chatstatus):
     query = chatstatus['prompt']
+    
     # Define the mapping of keywords to functions
     scraping_functions = {
         'ARXIV'   : arxiv,
@@ -35,6 +35,13 @@ def webScraping(chatstatus):
     
     # Normalize the query
     query_tokens = query.upper().split()
+    query = query.lower()
+    query = query.replace('arxiv', '')
+    query = query.replace('biorxiv', '')
+    query = query.replace('pubmed', '')
+    query = ' '.join(query.split())
+    remove_punctuation = str.maketrans('', '', string.punctuation)
+    query = query.translate(remove_punctuation)
     
     # Determine the target source
     source = next((key for key in scraping_functions if key in query_tokens), 'PUBMED')
@@ -68,21 +75,22 @@ def arxiv(query):
     process = {}
     output = 'searching the following on arxiv: ' + query
     print(output)
-    df = arxiv_search(query)
+    df, pdfs = arxiv_search(query, 10)
     process['search results'] = df
-    displayDf = df[['title', 'authors', 'abstract']]
+    displayDf = df[['Title', 'Authors', 'Abstract']]
     display(displayDf)
     output += '\n would you like to download these articles [Y/N]?'
     print('would you like to download these articles [Y/N]?')
     download = input().strip().upper()
     process['download'] = (download == 'Y')
     if download == 'Y':
-        id_list = df['id'].to_list()
-        output += arxiv_scrape(id_list)
+        #id_list = df['id'].to_list()
+        output += arxiv_scrape(pdfs)
     return output, process
 
-def arxiv_search(query):
+def arxiv_search1(query):
     """
+    DEPRECATED
     Search for articles on arXiv based on the given query.
 
     Args:
@@ -93,14 +101,17 @@ def arxiv_search(query):
                       'abstract', 'doi', 'created', 'updated', and 'authors'.
     """
     pd.set_option('display.max_colwidth', None)
-    scraper = arxivscraper.Scraper(category='q-bio', date_from='2024-04-01',date_until='2024-05-01',t=10, filters={'abstract':[query]})
+    #date_from='2024-04-01',date_until='2024-05-01',
+    #
+    scraper = arxivscraper.Scraper(category='q-bio', date_from='2023-05-01',date_until='2024-05-01', filters={'abstract':[query]})
     output = scraper.scrape()
     cols = ('id', 'title', 'categories', 'abstract', 'doi', 'created', 'updated', 'authors')
     df = pd.DataFrame(output,columns=cols)
     return df
 
-def arxiv_scrape(id_list):
+def arxiv_scrape1(id_list):
     """
+    DEPRECATED
     Download articles from arXiv as PDFs based on the given list of IDs.
 
     Args:
@@ -189,7 +200,6 @@ def pubmed(query):
     """
     pmid_list = search_pubmed_article(query)
     citation_arr = []
-    abstract_arr = []
     if pmid_list:
         for pmid in pmid_list:
             citation = pmid
@@ -211,13 +221,17 @@ def pubmed(query):
                 if "doi" in pdf_url:
                     continue
                 r = s.get(pdf_url, headers = headers, timeout = 5)
-                pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']
-                print(pdf_real)
-                r = s.get(pdf_real, stream=True)
-                with open(os.path.join(path, pmc + '.pdf'), 'wb') as f:
-                    for chunk in r.iter_content(chunk_size = 1024):
-                        if chunk:
-                            f.write(chunk)
+                try:
+                    pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']
+                    r = s.get(pdf_real, stream=True)
+                    with open(os.path.join(path, pmc + '.pdf'), 'wb') as f:
+                        for chunk in r.iter_content(chunk_size = 1024):
+                            if chunk:
+                                f.write(chunk)
+                except AttributeError as e:
+                    pass
+                    print(f"{pmc} could not be gathered.")
+                
                     
             except ConnectionError as e:
                 pass
@@ -257,7 +271,7 @@ def biorxiv(query):
     - Adjusting parameters like `subjects`, `athr`, and `abstracts` might be necessary 
       for more refined searches.
     """
-    biorxiv_real_search(start_date  = datetime.date.today().replace(day=1), 
+    biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015), 
                         end_date    = datetime.date.today(),
                         subjects    = [], 
                         journal     = 'biorxiv',
@@ -270,7 +284,7 @@ def biorxiv(query):
                         abstracts   = False
                        )
 
-def biorxiv_real_search(start_date  = datetime.date.today().replace(day=1), 
+def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015), 
                         end_date    = datetime.date.today(), 
                         subjects    = [], 
                         journal     = 'biorxiv',
@@ -392,7 +406,6 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(day=1),
             num_fetch_results = min(max_records, num_results)
         else:
             page_url = url + '?page=' + str(page)
-            print(page_url)
             url_response = requests.post(page_url)
             html = bs(url_response.text, features='html.parser')
         # list of articles on page
@@ -668,3 +681,79 @@ def arxiv(query):
             pass
             print(f"{ids} could not be gathered.")
 '''
+
+def arxiv_search(query, count):
+    #get the url
+    split_query = query.split()
+    url = "https://arxiv.org/search/?searchtype=all&query="
+    for term in split_query:
+        url = url+term+"+"
+    url = url[:-1]+"&abstracts=show&size=50&order="
+    print(url)
+    try: 
+        path = os.path.abspath(os.getcwd()) + '/arxiv'
+        os.makedirs(path, exist_ok = True) 
+        print("Directory '%s' created successfully" % path) 
+    except OSError as error: 
+        print("Directory '%s' can not be created" % path) 
+
+    # query the website and return the html to the variable 'page'
+    page = requests.get(url)
+    # parse the html using beautiful soup and store in variable 'soup'
+    soup = bs(page.content, 'html.parser')
+    paper_block = soup.find_all(class_='arxiv-result')
+    paper_list = []
+    arxiv_urls = []
+    i = 0
+    for paper in paper_block:
+        arxiv_title = paper.find_all(class_='title is-5 mathjax')
+        arxiv_authors = paper.find_all(class_='authors')
+        paper_authors = [author.get_text(strip=True) for author in arxiv_authors]
+        arxiv_abstracts = paper.find_all(class_ = 'abstract-short has-text-grey-dark mathjax')
+        arxiv_results = paper.find_all(class_='list-title is-inline-block')
+        # Assuming URLs are within <a> tags inside the arxiv-result class
+        for result in arxiv_results:
+        # Assuming URLs are within <a> tags inside the arxiv-result class
+            for a_tag in result.find_all('a', href=True):
+                full_url = urljoin(url, a_tag['href'])
+                arxiv_urls.append(full_url)
+        arxiv_title = result_set_to_string(arxiv_title)
+        arxiv_abstracts = result_set_to_string(arxiv_abstracts)
+        arxiv_authors = ', '.join(paper_authors)
+        arxiv_authors = arxiv_authors[8:]
+        paper_list.append({'Title': arxiv_title, 'Authors': arxiv_authors, 'Abstract': arxiv_abstracts})
+        i += 1
+        if i >= count:
+            break
+    df = pd.DataFrame(paper_list)
+    pdf_urls = [attempt for attempt in arxiv_urls if 'pdf' in attempt.lower()]
+    return df, pdf_urls
+    
+def arxiv_scrape(pdf_urls):
+    s = HTMLSession()
+
+    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
+    for papers in pdf_urls:
+        try:
+            r = s.get(papers, stream=True)
+            paper_id = papers[-10:]
+            with open(os.path.join(path, paper_id + '.pdf'), 'wb') as f:
+                for chunk in r.iter_content(chunk_size = 1024):
+                    if chunk:
+                        f.write(chunk)
+                    
+        except ConnectionError as e:
+            pass
+            print(f"{pmc} could not be gathered.")
+            
+def result_set_to_string(result_set):
+    """
+    Converts a BeautifulSoup ResultSet to a single string.
+    
+    Args:
+        result_set (bs4.element.ResultSet): The ResultSet to convert.
+        
+    Returns:
+        str: A string containing the text content of all elements in the ResultSet.
+    """
+    return ' '.join([element.get_text(strip=True) for element in result_set])
