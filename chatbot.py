@@ -219,6 +219,8 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     while True:
         print('==================================================')
         chatstatus['prompt'] = input('Input >> ')                 # get query from user
+        
+        # Handle explicit commands and routing
         if chatstatus['prompt'] in ['exit', 'quit', 'q']:         # check to exit
             break
         elif chatstatus['prompt'].lower() == 'help':              # print man to the screen
@@ -252,11 +254,3 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         # Log and reset these values
         chatlog, chatstatus = logger(chatlog, chatstatus, chatname)
 
-        
-# log output
-#chatlog[len(chatlog)] = {
-#    'prompt' : prompt,
-#    'output' : output,
-#    'process': loggedOutput,
-#    'status' : chatstatus,
-#}
