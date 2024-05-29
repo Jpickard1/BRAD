@@ -46,6 +46,7 @@ from scraper import *
 from router import *
 from tables import *
 from RAG import *
+from gene_ontology import *
 from seabornCaller import *
 from matlabCaller import *
 from snakemakeCaller import *
@@ -64,17 +65,16 @@ def getModules():
     }
     return module_functions
 
-
 def load_config():
     file_path = 'config/config.json'
     with open(file_path, 'r') as f:
         return json.load(f)
-
+    
 def save_config(config):
     file_path = 'config.json'
     with open(file_path, 'w') as f:
         json.dump(config, f, indent=4)
-
+        
 def reconfig(chat_status):
     prompt = chat_status['prompt']
     _, key, value = prompt.split(maxsplit=2)
@@ -110,7 +110,7 @@ def loadChatStatus():
 def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'):
     # load llama model
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-    llm = LlamaCpp(model_path=model_path, n_ctx = 4098, max_tokens = 4098, callback_manager=callback_manager, verbose=True)
+    llm = LlamaCpp(model_path=model_path, n_ctx = 4098, max_tokens = 1000, callback_manager=callback_manager, verbose=True)
     return llm, callback_manager
 
 def load_literature_db(persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/"):
@@ -185,7 +185,7 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     chatname = 'logs/RAG' + str(dt.now()) + '.json'
     chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
-
+    
     # Initialize the dictionaries of tables and databases accessible to BRAD
     databases = {} # a dictionary to look up databases
     tables = {}    # a dictionary to look up tables
@@ -195,6 +195,7 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
         llm, callback_manager = load_llama(model_path) # load the llama
     if ragvectordb is None:
         ragvectordb, embeddings_model = load_literature_db(persist_directory) # load the literature database
+    
     databases['RAG'] = ragvectordb
     externalDatabases = ['docs', 'GO', 'GGET']
     retriever = ragvectordb.as_retriever(search_kwargs={"k": 4}) ## Pick top 4 results from the search
@@ -253,4 +254,5 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
 
         # Log and reset these values
         chatlog, chatstatus = logger(chatlog, chatstatus, chatname)
+        
 

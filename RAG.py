@@ -13,11 +13,25 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.output_parsers import CommaSeparatedListOutputParser
 from semantic_router.layer import RouteLayer
 
+#Extraction
+import re
+from nltk.corpus import words
+from unidecode import unidecode
+import nltk
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+nltk.download('words')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
+import gene_ontology as gonto
+
 def queryDocs(chatstatus):
+    process = {}
     llm      = chatstatus['llm']              # get the llm
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
-
+    
     # query to database
     documentSearch = vectordb.similarity_search_with_relevance_scores(prompt)
     docs, scores = getDocumentSimilarity(documentSearch)
@@ -31,6 +45,25 @@ def queryDocs(chatstatus):
 
     # update and return the chatstatus
     chatstatus['output'], chatstatus['process'] = res['output_text'], res
+    goQuery = list(set(extract_non_english_words(chatstatus['output'])))
+    with open('gene_list.txt', 'r') as file:
+        contents = file.read()
+    gene_list = contents.split('\n')
+    real_list = []
+    for words in goQuery:
+        words = words.upper()
+        if words in gene_list:
+            real_list.append(words)
+    if len(real_list) > 0:
+        print(real_list)
+        chatstatus['output'] += '\n would you search Gene Ontology for these terms [Y/N]?'
+        print('\n would you search Gene Ontology for these terms [Y/N]?')
+        go = input().strip().upper()
+        process['search'] = (go == 'Y')
+        if go == 'Y':
+        #id_list = df['id'].to_list()
+            go_process = gonto.goSearch(real_list)
+            chatstatus['process']['GO'] = go_process
     return chatstatus
 
 def getPreviousInput(log, key):
@@ -59,3 +92,36 @@ def getDocumentSimilarity(documents):
         docs.append(doc[0])
         scores.append(doc[1])
     return docs, np.array(scores)
+
+
+# Define a function to get the wordnet POS tag
+def get_wordnet_pos(word):
+    """Map POS tag to first character lemmatize() accepts"""
+    tag = nltk.pos_tag([word])[0][1][0].upper()
+    tag_dict = {"J": wordnet.ADJ,
+                "N": wordnet.NOUN,
+                "V": wordnet.VERB,
+                "R": wordnet.ADV}
+    return tag_dict.get(tag, wordnet.NOUN)
+
+def extract_non_english_words(text):
+
+    # Set of English words
+    custom_word_list = ["pluripotency", "differentiation", "stem", "cell", "biology", "genomics", "reprogramming"]
+    english_words = set(words.words()+custom_word_list)
+    # Normalize text to ASCII
+    normalized_text = unidecode(text)
+    
+    # Extract words from the text using regex
+    word_list = re.findall(r'\b\w+\b', normalized_text.lower())
+    
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_words = [lemmatizer.lemmatize(word, get_wordnet_pos(word)) for word in word_list]
+    filtered_words = [word for word in lemmatized_words if not word.isnumeric()]
+    
+    # Filter out English words
+    non_english_words = [word for word in filtered_words if word not in english_words]
+    
+    return non_english_words
+
+
