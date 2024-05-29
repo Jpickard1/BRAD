@@ -208,7 +208,7 @@ def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-
     # Initialize the chatlog
     chatstatus        = loadChatStatus()
     chatstatus['llm'] = llm
-    chatstatus['databases'] = [databases]
+    chatstatus['databases'] = databases
     chatlog           = {
         'llm'           : str(chatstatus['llm'])
     }

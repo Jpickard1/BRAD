@@ -1,3 +1,4 @@
+import numpy as np
 import chromadb
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
@@ -13,15 +14,22 @@ from langchain.output_parsers import CommaSeparatedListOutputParser
 from semantic_router.layer import RouteLayer
 
 def queryDocs(chatstatus):
-    llm      = chatstatus['llm']
-    prompt   = chatstatus['prompt']
-    vectordb = chatstatus['databases']['RAG']
+    llm      = chatstatus['llm']              # get the llm
+    prompt   = chatstatus['prompt']           # get the user prompt
+    vectordb = chatstatus['databases']['RAG'] # get the vector database
+
     # query to database
-    v = vectordb.similarity_search(prompt)
+    documentSearch = vectordb.similarity_search_with_relevance_scores(prompt)
+    docs, scores = getDocumentSimilarity(documentSearch)
+
+    # pass the database output to the llm
     chain = load_qa_chain(llm, chain_type="stuff")
-    res = chain({"input_documents": v, "question": prompt})
+    res = chain({"input_documents": docs, "question": prompt})
+
     # change inputs to be json readable
     res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
+
+    # update and return the chatstatus
     chatstatus['output'], chatstatus['process'] = res['output_text'], res
     return chatstatus
 
@@ -43,4 +51,11 @@ def getInputDocumentJSONs(input_documents):
             }
         }
     return inputDocsJSON
-        
+
+def getDocumentSimilarity(documents):
+    scores = []
+    docs   = []
+    for doc in documents:
+        docs.append(doc[0])
+        scores.append(doc[1])
+    return docs, np.array(scores)
