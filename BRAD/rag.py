@@ -20,12 +20,9 @@ from unidecode import unidecode
 import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
-nltk.download('words')
-nltk.download('wordnet')
-nltk.download('omw-1.4')
 
-import gene_ontology as gonto
-from gene_ontology import geneOntology
+import BRAD.gene_ontology as gonto
+from BRAD.gene_ontology import geneOntology
 
 def queryDocs(chatstatus):
     process = {}

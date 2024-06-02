@@ -42,26 +42,26 @@ from semantic_router.layer import RouteLayer
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
 
 # Put your modules here:
-from enrichr import *
-from scraper import *
-from router import *
-from tables import *
-from RAG import *
-from gene_ontology import *
-from seabornCaller import *
-from matlabCaller import *
-from snakemakeCaller import *
+from BRAD.enrichr import *
+from BRAD.scraper import *
+from BRAD.router import *
+from BRAD.tables import *
+from BRAD.rag import *
+from BRAD.gene_ontology import *
+from BRAD.seabornCaller import *
+# from matlabCaller import *
+from BRAD.snakemakeCaller import *
 
 
 def getModules():
     # this + imports should be the only code someone needs to write to add a new module
     module_functions = {
         'GGET'   : queryEnrichr,     # gget
-        'DATA'   : manipulateTable,  #
+#        'DATA'   : manipulateTable,  #
         'SCRAPE' : webScraping,      # webscrapping
         'SNS'    : callSnsV3,        # seaborn
         'RAG'    : queryDocs,        # standard rag
-        'MATLAB' : callMatlab,       # matlab
+#        'MATLAB' : callMatlab,       # matlab
         'SNAKE'  : callSnakemake     # snakemake
     }
     return module_functions

@@ -12,7 +12,7 @@ import random
 import json
 import matplotlib
 
-from functionCaller import *
+from BRAD.functionCaller import *
 
 import seaborn as sns
 import matplotlib.pyplot as plt
