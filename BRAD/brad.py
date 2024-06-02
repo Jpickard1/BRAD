@@ -54,6 +54,17 @@ from BRAD.snakemakeCaller import *
 
 
 def getModules():
+    """
+    Retrieve a dictionary mapping module names to their corresponding functions.
+
+    This function provides a central place to define and access different modules 
+    by their identifiers. The dictionary returned maps module identifiers (keys) 
+    to their respective functions (values).
+
+    Returns:
+        dict: A dictionary where the keys are module identifiers (str) and the 
+              values are function references.
+    """
     # this + imports should be the only code someone needs to write to add a new module
     module_functions = {
         'GGET'   : queryEnrichr,     # gget
@@ -67,16 +78,49 @@ def getModules():
     return module_functions
 
 def load_config():
+    """
+    Load configuration from a JSON file.
+
+    This function reads the configuration settings from a JSON file located at 
+    'config/config.json' and returns the data as a dictionary.
+
+    Returns:
+        dict: The configuration data loaded from the JSON file.
+    """
     file_path = 'config/config.json'
     with open(file_path, 'r') as f:
         return json.load(f)
     
 def save_config(config):
-    file_path = 'config.json'
+    """
+    Save configuration to a JSON file.
+
+    This function writes the provided configuration data to a JSON file named 
+    'config.json', ensuring the data is formatted with an indentation of 4 spaces.
+
+    Args:
+        config (dict): The configuration data to be saved.
+    """
+    file_path = 'config/config.json'
     with open(file_path, 'w') as f:
         json.dump(config, f, indent=4)
         
 def reconfig(chat_status):
+    """
+    Update a specific configuration in the chat status based on the provided prompt.
+
+    This function parses a prompt string from the chat status to extract a key-value 
+    pair and updates the corresponding configuration in the chat status. The function 
+    attempts to convert the value to an integer or float if possible. The updated 
+    configuration is then saved to a JSON file.
+
+    Args:
+        chat_status (dict): A dictionary containing the current chat status, including
+                            the prompt and configuration.
+
+    Returns:
+        dict: The updated chat status.
+    """
     prompt = chat_status['prompt']
     _, key, value = prompt.split(maxsplit=2)
     try:
@@ -95,6 +139,26 @@ def reconfig(chat_status):
     return chat_status
 
 def loadChatStatus():
+    """
+    Load the initial chat status.
+
+    This function initializes the chat status with default values, including loading 
+    the configuration from a JSON file. The chat status dictionary contains various 
+    fields to manage the chat session.
+
+    Returns:
+        dict: A dictionary representing the initial chat status with the following keys:
+            - config (dict): The configuration settings loaded from the JSON file.
+            - prompt (str or None): The current prompt string, initially set to None.
+            - output (str or None): The current output string, initially set to None.
+            - process (dict): A dictionary to manage ongoing processes, initially empty.
+            - current table (dict): A dictionary with keys 'key' and 'tab' representing
+                                    the current table key and table object, both initially None.
+            - current documents (None): The current documents, initially set to None.
+            - tables (dict): A dictionary to store table data, initially empty.
+            - documents (dict): A dictionary to store document data, initially empty.
+            - plottingParams (dict): A dictionary to store parameters for plotting, initially empty.
+    """
     chatstatus = {
         'config'            : load_config(),
         'prompt'            : None,
@@ -108,11 +172,59 @@ def loadChatStatus():
     }
     return chatstatus
 
-def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf', nvidia_api_key=None, nvidia_model=None):
+def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
+               nvidia_api_key=None,
+               nvidia_model=None):
+    """
+    Load a language model, either locally or via an NVIDIA endpoint.
+
+    This function loads a language model either from a local file path or through 
+    an NVIDIA endpoint, based on the provided parameters.
+
+    Args:
+        model_path (str): The file path to the local model. Defaults to a specific 
+                          Llama model path.
+        nvidia_api_key (str or None): The API key for accessing NVIDIA's model 
+                                      endpoint. If None, the local model is loaded.
+        nvidia_model (str or None): The NVIDIA model identifier to use. Required 
+                                    if nvidia_api_key is provided.
+
+    Returns:
+        tuple: A tuple containing the loaded model and its callback manager. If the 
+               NVIDIA endpoint is used, the callback manager is None.
+
+    Local LLMs vs NVIDIA Endpoints:
+        - Local LLMs: Running a local LLM (Large Language Model) like Llama provides 
+          greater control over the model, including customization and privacy. It is 
+          suitable for environments where data security is critical and internet 
+          access may be limited. However, it requires significant computational 
+          resources and setup.
+
+        - NVIDIA Endpoints: Using NVIDIA's model endpoints allows for leveraging 
+          powerful models hosted by NVIDIA without needing extensive local 
+          computational resources. This approach can be more convenient and scalable, 
+          particularly for applications that require rapid deployment and can 
+          benefit from cloud-based resources. However, it requires an active 
+          internet connection and may involve additional costs.
+
+        For more information on NVIDIA's model endpoints, refer to the 
+        [NVIDIA documentation](https://developer.nvidia.com/).
+
+    Example:
+        # Load a local Llama model
+        llm, callback_manager = load_llama()
+
+        # Load a model from NVIDIA's endpoint
+        llm, _ = load_llama(nvidia_api_key='your_api_key', nvidia_model='your_model')
+    """
     if nvidia_api_key is None:
         # load llama model
         callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        llm = LlamaCpp(model_path=model_path, n_ctx = 4098, max_tokens = 1000, callback_manager=callback_manager, verbose=True)
+        llm = LlamaCpp(model_path       = model_path,
+                       n_ctx            = 4098,
+                       max_tokens       = 1000,
+                       callback_manager = callback_manager,
+                       verbose          = True)
         return llm, callback_manager
     else:
         model = ChatNVIDIA(model   = nvidia_model,
@@ -120,7 +232,44 @@ def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/
                   )
         return model, None
 
-def load_literature_db(persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/"):
+def load_literature_db(
+    persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/"
+):
+    """
+    Load a literature database with embedding models and persistent client settings.
+
+    This function loads a literature database from a specified directory, using a 
+    HuggingFace embedding model and Chroma for vector database management. It checks 
+    if the database contains any articles and issues a warning if it is empty.
+
+    Args:
+        persist_directory (str): The directory path where the database is stored. 
+                                 Defaults to a predefined path for transcription factors.
+
+    Returns:
+        tuple: A tuple containing:
+            - vectordb (Chroma): The loaded vector database.
+            - embeddings_model (HuggingFaceEmbeddings): The embeddings model used 
+                                                        for generating embeddings.
+
+    Notes:
+        - The function uses the 'BAAI/bge-base-en-v1.5' model from HuggingFace for 
+          embedding text.
+        - The database is named dynamically based on collection size and overlap 
+          parameters.
+
+    Example:
+        # Load the literature database from the default directory
+        vectordb, embeddings_model = load_literature_db()
+
+        # Load the literature database from a custom directory
+        custom_directory = "/path/to/custom/directory/"
+        vectordb, embeddings_model = load_literature_db(persist_directory=custom_directory)
+
+    Warnings:
+        If the database contains no articles, a warning is issued.
+
+    """
     # load database
     embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')        # Embedding model
     db_name = "DB_cosine_cSize_%d_cOver_%d" % (700, 200)
@@ -131,6 +280,31 @@ def load_literature_db(persist_directory = "/nfs/turbo/umms-indikar/shared/proje
     return vectordb, embeddings_model
 
 def is_json_serializable(value):
+    """
+    Check if a value is JSON serializable.
+
+    This function attempts to serialize a given value to a JSON-formatted string. 
+    If the serialization is successful, the function returns True, indicating that 
+    the value is JSON serializable. If a TypeError or OverflowError is raised during 
+    serialization, the function returns False, indicating that the value is not JSON 
+    serializable.
+
+    Args:
+        value: The value to be checked for JSON serializability. This can be of any 
+               data type.
+
+    Returns:
+        bool: True if the value is JSON serializable, False otherwise.
+
+    Example:
+        # Check if a dictionary is JSON serializable
+        data = {"key": "value"}
+        is_serializable = is_json_serializable(data)  # Returns True
+
+        # Check if a complex number is JSON serializable
+        complex_num = 1 + 2j
+        is_serializable = is_json_serializable(complex_num)  # Returns False
+    """
     try:
         json.dumps(value)
         return True
@@ -138,8 +312,46 @@ def is_json_serializable(value):
         return False
 
 def logger(chatlog, chatstatus, chatname):
-    # print(chatname)
-    # print(chatlog)
+    """
+    Log the current chat status and process information to a log file.
+
+    This function updates the chat log with the current status and process 
+    information from `chatstatus`. It ensures that all process information is 
+    JSON serializable. The updated log is then saved to a specified file.
+
+    Args:
+        chatlog (dict): The current log of the chat, containing previous chat 
+                        entries.
+        chatstatus (dict): The current status of the chat, including prompt, 
+                           output, process, and other metadata.
+        chatname (str): The name of the file where the updated chat log will be 
+                        saved.
+
+    Returns:
+        tuple: A tuple containing:
+            - chatlog (dict): The updated chat log.
+            - chatstatus (dict): The updated chat status with the process 
+                                 information reset to None.
+
+    Notes:
+        - The `process` information in `chatstatus` is checked for JSON 
+          serializability. Any non-serializable values are converted to strings.
+        - The current table information is converted to JSON if it is not None.
+
+    Example:
+        # Update and save the chat log
+        chatlog = {}
+        chatstatus = {
+            "prompt": "What is the weather today?",
+            "output": "The weather is sunny.",
+            "process": {"step1": "fetch_data", "step2": {"result": [1, 2, 3]}},
+            "databases": ["weather_db"],
+            "current table": {"key": "weather", "tab": some_dataframe},
+            "current documents": ["doc1", "doc2"]
+        }
+        chatname = "chatlog.json"
+        updated_chatlog, updated_chatstatus = logger(chatlog, chatstatus, chatname)
+    """
     process_serializable = {
             key: value if is_json_serializable(value) else str(value)
             for key, value in chatstatus['process'].items()
@@ -158,13 +370,19 @@ def logger(chatlog, chatstatus, chatname):
             'current documents' : chatstatus['current documents'],
         }
     }
-    # print(chatlog)
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
     chatstatus['process'] = None
     return chatlog, chatstatus
 
 def chatbotHelp():
+    """
+    Display the help message for the RAG chatbot.
+
+    This function prints a help message that provides an overview of the capabilities 
+    of the RAG chatbot, including the various databases it can interact with and 
+    special commands available to the user.
+    """
     help_message = """
     Welcome to our RAG chatbot Help!
     
@@ -188,7 +406,50 @@ def chatbotHelp():
     print(help_message)
     return
 
-def main(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf', persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/", llm=None, ragvectordb=None, embeddings_model=None):
+def main(
+        model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
+        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/",
+        llm=None,
+        ragvectordb=None,
+        embeddings_model=None
+    ):
+    """
+    Main function for the RAG chatbot.
+
+    This function initializes and manages the RAG chatbot session. It loads the 
+    necessary models and databases, sets up routing for user queries, handles 
+    special commands (/set, /force), interacts with the selected modules, logs 
+    the chat interactions, and continues the conversation until the user exits.
+
+    Args:
+        model_path (str, optional): File path to the llama model. Defaults to 
+                                    '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'.
+        persist_directory (str, optional): Directory path where the literature 
+                                           database is stored. Defaults to 
+                                           '/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/'.
+        llm (LlamaCpp, optional): Preloaded llama model instance. Defaults to None.
+        ragvectordb (Chroma, optional): Preloaded literature database instance. 
+                                        Defaults to None.
+        embeddings_model (HuggingFaceEmbeddings, optional): Preloaded embeddings 
+                                                            model instance. Defaults to None.
+
+    Returns:
+        None
+
+    Notes:
+        - The chat log is saved to a JSON file named based on the current date and 
+          time.
+        - The function initializes the llama model, the literature database, and 
+          necessary configurations.
+        - It handles user commands like 'help', '/set', and '/force' to provide 
+          assistance, change configurations, or force database usage.
+        - The function continues to prompt the user for input until an exit command 
+          is received ('exit', 'quit', 'q').
+
+    Example:
+        # Run the RAG chatbot session
+        main()
+    """
     chatname = 'logs/RAG' + str(dt.now()) + '.json'
     chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
