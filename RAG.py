@@ -25,6 +25,7 @@ nltk.download('wordnet')
 nltk.download('omw-1.4')
 
 import gene_ontology as gonto
+from gene_ontology import geneOntology
 
 def queryDocs(chatstatus):
     process = {}
@@ -39,13 +40,14 @@ def queryDocs(chatstatus):
     # pass the database output to the llm
     chain = load_qa_chain(llm, chain_type="stuff")
     res = chain({"input_documents": docs, "question": prompt})
+    print(res['output_text'])
 
     # change inputs to be json readable
     res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
 
     # update and return the chatstatus
     chatstatus['output'], chatstatus['process'] = res['output_text'], res
-    chatstatus = gonto.geneOntology(chatstatus['output'], chatstatus)
+    chatstatus = geneOntology(chatstatus['output'], chatstatus)
     return chatstatus
 
 def getPreviousInput(log, key):
