@@ -80,5 +80,4 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 
 html_static_path = ['_static']
-
-nbsphinx_execute = 'always'
+PYDEVD_DISABLE_FILE_VALIDATION=1

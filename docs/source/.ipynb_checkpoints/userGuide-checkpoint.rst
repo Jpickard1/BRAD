@@ -11,7 +11,7 @@ This section provides tutorials on how to use BRAD.
 .. include:: tutorials/working-with-data/working-with-data
 
 
-.. toctree::
+.. nbgallery::
    :maxdepth: 2
    :glob:
 
