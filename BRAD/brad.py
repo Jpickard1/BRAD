@@ -395,7 +395,8 @@ def chat(
     
     # Initialize the RAG database
     if llm is None:
-        llm = load_llama(model_path) # load the llama
+        llm = load_nvidia()
+        # llm = load_llama(model_path) # load the llama
     if ragvectordb is None:
         ragvectordb, embeddings_model = load_literature_db(persist_directory) # load the literature database
     
@@ -425,7 +426,7 @@ def chat(
         chatstatus['prompt'] = input('Input >> ')                 # get query from user
         
         # Handle explicit commands and routing
-        if chatstatus['prompt'] in ['exit', 'quit', 'q']:         # check to exit
+        if chatstatus['prompt'] in ['exit', 'quit', 'q', 'bye']:         # check to exit
             break
         elif chatstatus['prompt'].lower() == 'help':              # print man to the screen
             chatbotHelp()
@@ -459,5 +460,5 @@ def chat(
 
         # Log and reset these values
         chatlog, chatstatus = logger(chatlog, chatstatus, chatname)
-        
+    print("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + chatname)
 

@@ -9,6 +9,17 @@ import os
 import copy
 
 def geneOntology(goQuery, chatstatus):
+    """
+    Searches for gene terms in a provided query using a predefined gene list, 
+    and optionally initiates a Gene Ontology search based on user input.
+
+    Parameters:
+    goQuery (str): The query string containing potential gene terms to be searched.
+    chatstatus (dict): A dictionary containing the status of the chat and process information.
+
+    Returns:
+    dict: Updated chatstatus dictionary with the results of the Gene Ontology search if initiated.
+    """
     current_script_path = os.path.abspath(__file__)
     current_script_dir = os.path.dirname(current_script_path)
     file_path = os.path.join(current_script_dir, 'helperData', 'gene_list.txt')
@@ -32,6 +43,17 @@ def geneOntology(goQuery, chatstatus):
     return chatstatus
             
 def goSearch(query):
+    """
+    Performs a Gene Ontology search for the given query terms and prompts the user
+    for various actions based on the search results.
+
+    Parameters:
+    query (list of str): A list of gene terms to search for in the Gene Ontology database.
+
+    Returns:
+    dict: A dictionary containing the process status and user decisions on downloading charts,
+          papers, and gene product annotations.
+    """
     process = {}
     output = {}
     for terms in query:

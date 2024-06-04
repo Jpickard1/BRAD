@@ -2,9 +2,9 @@ import os
 import getpass
 
 def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
-              n_ctx = 4096,
-              max_tokens = 1000,
-              verbose = False):
+               n_ctx = 4096,
+               max_tokens = 1000,
+               verbose = False):
     """
     Load and initialize the Llama model with specified parameters.
 
