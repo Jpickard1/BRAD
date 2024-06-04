@@ -54,7 +54,9 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.extlinks'
+    'sphinx.ext.extlinks',
+    'sphinx_rtd_theme',
+    'nbsphinx'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -78,3 +80,5 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 
 html_static_path = ['_static']
+
+nbsphinx_execute = 'always'

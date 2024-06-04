@@ -337,20 +337,6 @@ def logger(chatlog, chatstatus, chatname):
         - The `process` information in `chatstatus` is checked for JSON 
           serializability. Any non-serializable values are converted to strings.
         - The current table information is converted to JSON if it is not None.
-
-    Example:
-        # Update and save the chat log
-        chatlog = {}
-        chatstatus = {
-            "prompt": "What is the weather today?",
-            "output": "The weather is sunny.",
-            "process": {"step1": "fetch_data", "step2": {"result": [1, 2, 3]}},
-            "databases": ["weather_db"],
-            "current table": {"key": "weather", "tab": some_dataframe},
-            "current documents": ["doc1", "doc2"]
-        }
-        chatname = "chatlog.json"
-        updated_chatlog, updated_chatstatus = logger(chatlog, chatstatus, chatname)
     """
     process_serializable = {
             key: value if is_json_serializable(value) else str(value)

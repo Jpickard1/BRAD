@@ -6,27 +6,15 @@
 Welcome to BRAD: Bioinformatics Retrieval Augmented Data's documentation!
 =========================================================================
 
-This is where the welcome/project descriptino will go!
+This is where the welcome/project description will go!
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-BRAD.brad module
-----------------
-
-.. automodule:: BRAD.brad
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-BRAD.rag module
----------------
-
-.. automodule:: BRAD.rag
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   userGuide
+   about
+   devGuide
 
 
 Indices and tables

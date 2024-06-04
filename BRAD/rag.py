@@ -51,17 +51,6 @@ def queryDocs(chatstatus):
         - The function interacts with the RAG database and may call additional 
           functions, such as `getDocumentSimilarity` and `geneOntology`, to process 
           the retrieved documents.
-
-    Example:
-        # Query the RAG database and interact with the llama model
-        chatstatus = {
-            'llm': llama_model_instance,
-            'prompt': "What is the latest research on COVID-19?",
-            'databases': {'RAG': ragvectordb_instance},
-            'output': None,
-            'process': {}
-        }
-        updated_chatstatus = queryDocs(chatstatus)
     """
     process = {}
     llm      = chatstatus['llm']              # get the llm
@@ -110,19 +99,6 @@ def getPreviousInput(log, key):
         - The 'log' parameter should be a dictionary where keys are integers 
           representing chat session indices, and values are dictionaries containing 
           'prompt' (input) and 'output' (output) keys.
-
-    Example:
-        # Retrieve previous input text from the chat log
-        log = {
-            1: {'prompt': 'What is the weather today?', 'output': 'The weather is sunny.'},
-            2: {'prompt': 'Tell me about COVID-19.', 'output': 'COVID-19 is caused by...'}
-        }
-        key = '1I'
-        previous_input = getPreviousInput(log, key)  # returns 'What is the weather today?'
-
-        # Retrieve previous output text from the chat log
-        key = '2O'
-        previous_output = getPreviousInput(log, key)  # returns 'COVID-19 is caused by...'
     """
     num = key[:-1]
     text = key[-1]
@@ -152,19 +128,6 @@ def getInputDocumentJSONs(input_documents):
         - Each input document should be an object with attributes 'page_content' 
           and 'metadata', where 'metadata' is a dictionary containing at least 
           a 'source' key.
-
-    Example:
-        # Convert input documents to JSON-compatible format
-        input_documents = [
-            {'page_content': 'Document text 1.', 'metadata': {'source': 'PubMed'}},
-            {'page_content': 'Document text 2.', 'metadata': {'source': 'arXiv'}}
-        ]
-        input_docs_json = getInputDocumentJSONs(input_documents)
-        # input_docs_json would be:
-        # {
-        #     0: {'page_content': 'Document text 1.', 'metadata': {'source': 'PubMed'}},
-        #     1: {'page_content': 'Document text 2.', 'metadata': {'source': 'arXiv'}}
-        # }
     """
     inputDocsJSON = {}
     for i, doc in enumerate(input_documents):
@@ -195,17 +158,6 @@ def getDocumentSimilarity(documents):
     Notes:
         - Each tuple in the 'documents' list should be in the format (document, score).
         - The function separates the documents and scores into two separate lists.
-
-    Example:
-        # Extract documents and scores from a list of tuples
-        documents = [
-            ('Document 1 text.', 0.85),
-            ('Document 2 text.', 0.78),
-            ('Document 3 text.', 0.92)
-        ]
-        docs, scores = getDocumentSimilarity(documents)
-        # docs would be: ['Document 1 text.', 'Document 2 text.', 'Document 3 text.']
-        # scores would be: array([0.85, 0.78, 0.92])
     """
     scores = []
     docs   = []
