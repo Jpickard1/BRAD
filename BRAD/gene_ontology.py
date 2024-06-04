@@ -9,7 +9,10 @@ import os
 import copy
 
 def geneOntology(goQuery, chatstatus):
-    with open('helperData/gene_list.txt', 'r') as file:
+    current_script_path = os.path.abspath(__file__)
+    current_script_dir = os.path.dirname(current_script_path)
+    file_path = os.path.join(current_script_dir, 'helperData', 'gene_list.txt')
+    with open(file_path, 'r') as file:
         contents = file.read()
     gene_list = contents.split('\n')
     real_list = []

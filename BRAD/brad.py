@@ -51,6 +51,7 @@ from BRAD.gene_ontology import *
 from BRAD.seabornCaller import *
 # from matlabCaller import *
 from BRAD.snakemakeCaller import *
+from BRAD.llms import *
 
 
 def getModules():
@@ -87,7 +88,9 @@ def load_config():
     Returns:
         dict: The configuration data loaded from the JSON file.
     """
-    file_path = 'config/config.json'
+    current_script_path = os.path.abspath(__file__)
+    current_script_dir = os.path.dirname(current_script_path)
+    file_path = os.path.join(current_script_dir, 'config', 'config.json')
     with open(file_path, 'r') as f:
         return json.load(f)
     
@@ -101,7 +104,9 @@ def save_config(config):
     Args:
         config (dict): The configuration data to be saved.
     """
-    file_path = 'config/config.json'
+    current_script_path = os.path.abspath(__file__)
+    current_script_dir = os.path.dirname(current_script_path)
+    file_path = os.path.join(current_script_dir, 'config', 'config.json')
     with open(file_path, 'w') as f:
         json.dump(config, f, indent=4)
         
@@ -171,66 +176,6 @@ def loadChatStatus():
         'plottingParams'    : {}
     }
     return chatstatus
-
-def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
-               nvidia_api_key=None,
-               nvidia_model=None):
-    """
-    Load a language model, either locally or via an NVIDIA endpoint.
-
-    This function loads a language model either from a local file path or through 
-    an NVIDIA endpoint, based on the provided parameters.
-
-    Args:
-        model_path (str): The file path to the local model. Defaults to a specific 
-                          Llama model path.
-        nvidia_api_key (str or None): The API key for accessing NVIDIA's model 
-                                      endpoint. If None, the local model is loaded.
-        nvidia_model (str or None): The NVIDIA model identifier to use. Required 
-                                    if nvidia_api_key is provided.
-
-    Returns:
-        tuple: A tuple containing the loaded model and its callback manager. If the 
-               NVIDIA endpoint is used, the callback manager is None.
-
-    Local LLMs vs NVIDIA Endpoints:
-        - Local LLMs: Running a local LLM (Large Language Model) like Llama provides 
-          greater control over the model, including customization and privacy. It is 
-          suitable for environments where data security is critical and internet 
-          access may be limited. However, it requires significant computational 
-          resources and setup.
-
-        - NVIDIA Endpoints: Using NVIDIA's model endpoints allows for leveraging 
-          powerful models hosted by NVIDIA without needing extensive local 
-          computational resources. This approach can be more convenient and scalable, 
-          particularly for applications that require rapid deployment and can 
-          benefit from cloud-based resources. However, it requires an active 
-          internet connection and may involve additional costs.
-
-        For more information on NVIDIA's model endpoints, refer to the 
-        [NVIDIA documentation](https://developer.nvidia.com/).
-
-    Example:
-        # Load a local Llama model
-        llm, callback_manager = load_llama()
-
-        # Load a model from NVIDIA's endpoint
-        llm, _ = load_llama(nvidia_api_key='your_api_key', nvidia_model='your_model')
-    """
-    if nvidia_api_key is None:
-        # load llama model
-        callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-        llm = LlamaCpp(model_path       = model_path,
-                       n_ctx            = 4098,
-                       max_tokens       = 1000,
-                       callback_manager = callback_manager,
-                       verbose          = True)
-        return llm, callback_manager
-    else:
-        model = ChatNVIDIA(model   = nvidia_model,
-                           api_key = nvidia_api_key,
-                  )
-        return model, None
 
 def load_literature_db(
     persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/"
@@ -392,7 +337,7 @@ def chatbotHelp():
     print(help_message)
     return
 
-def main(
+def chat(
         model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
         persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/",
         llm=None,
@@ -436,7 +381,11 @@ def main(
         # Run the RAG chatbot session
         main()
     """
-    chatname = 'logs/RAG' + str(dt.now()) + '.json'
+    config = load_config()
+    log_dir = os.path.join(config['log_path'], 'BRAD')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    chatname = os.path.join(log_dir, str(dt.now()) + '.json')
     chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
     
@@ -446,7 +395,7 @@ def main(
     
     # Initialize the RAG database
     if llm is None:
-        llm, callback_manager = load_llama(model_path) # load the llama
+        llm = load_llama(model_path) # load the llama
     if ragvectordb is None:
         ragvectordb, embeddings_model = load_literature_db(persist_directory) # load the literature database
     

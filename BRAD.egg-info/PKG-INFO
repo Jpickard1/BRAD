@@ -1,0 +1,39 @@
+Metadata-Version: 2.1
+Name: BRAD
+Version: 0.1
+Summary: This package connects large language models with bioinformatics workflows.
+Author-email: Joshua Pickard <jpic@umich.edu>
+Project-URL: Homepage, https://github.com/Jpickard1/RAG-DEV
+Project-URL: Bug Tracker, https://github.com/Jpickard1/RAG-DEV
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=2.7
+Description-Content-Type: text/markdown
+
+# RAG-V1
+
+## Installation
+
+### Local Install
+
+### Install with PIP
+
+## Usage
+
+### Locall LLMs
+
+### NVIDIA Hosted LLMs
+
+## Development
+
+### Documentation
+
+To build the projects documentation in the ReadTheDocs html formatting, in the `docs/` directory, run the command `make html`. This will populate the `docs/build/html` directory with the webpages. The `docs/build/` directory is excluded from git but *will* automatically be built when pushing to main.
+
+During the build, the `tutorials/` directory is automatically pulled in to the source by copying all jupyter notebooks. These are included in the user guide section of the documentation.
+
+To remove the documentation from `docs/build/` run `make clean` from the same directory where you built it.
+
+### Coding
+

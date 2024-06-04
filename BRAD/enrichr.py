@@ -38,7 +38,10 @@ def queryEnrichr(chatstatus):
     
     gene_list = []
     # Get list of gene names
-    with open("gene_list.txt", "r") as file:
+    current_script_path = os.path.abspath(__file__)
+    current_script_dir = os.path.dirname(current_script_path)
+    file_path = os.path.join(current_script_dir, 'helperData', 'gene_list.txt')
+    with open(file_path, "r") as file:
         g_from_file = [line.strip() for line in file]
     df = pd.read_csv('ggetEnrichrDatabases.tsv', delimiter='\t')
     dbs = list(df['Gene-set Library'].values)
