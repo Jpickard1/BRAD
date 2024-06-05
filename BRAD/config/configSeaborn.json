@@ -1,0 +1,15 @@
+{
+    "palette": null,
+    "default_marker": null,
+    "despine": null,
+    "context": "notebook",
+    "snsStyle": null,
+    "font_scale": 1.0,
+    "rc": {
+        "figure.figsize": null,
+        "axes.titlesize": 18,
+        "axes.labelsize": 14,
+        "xtick.labelsize": 12,
+        "ytick.labelsize": 12
+    }
+}

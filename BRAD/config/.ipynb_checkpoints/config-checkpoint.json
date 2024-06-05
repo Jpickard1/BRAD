@@ -1,0 +1,8 @@
+{
+    "num_articles_retrieved": 4,
+    "max_articles_download": 10,
+    "acceptable_data_files": [
+        ".csv"
+    ],
+    "enable_logging": true
+}

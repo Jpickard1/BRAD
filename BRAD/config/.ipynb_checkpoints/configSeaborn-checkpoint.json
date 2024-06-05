@@ -1,0 +1,18 @@
+{
+    "palette": "deep",
+    "default_marker": "o",
+    "despine": true,
+    "context": "notebook",
+    "style": "whitegrid",
+    "font_scale": 1.0,
+    "rc": {
+        "figure.figsize": [
+            10,
+            6
+        ],
+        "axes.titlesize": 18,
+        "axes.labelsize": 14,
+        "xtick.labelsize": 12,
+        "ytick.labelsize": 12
+    }
+}
