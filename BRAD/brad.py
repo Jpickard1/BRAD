@@ -40,6 +40,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.output_parsers import CommaSeparatedListOutputParser
 from semantic_router.layer import RouteLayer
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
+from langchain.memory import ConversationBufferMemory
 
 # Put your modules here:
 from BRAD.enrichr import *
@@ -66,6 +67,10 @@ def getModules():
         dict: A dictionary where the keys are module identifiers (str) and the 
               values are function references.
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     # this + imports should be the only code someone needs to write to add a new module
     module_functions = {
         'GGET'   : queryEnrichr,     # gget
@@ -88,6 +93,10 @@ def load_config():
     Returns:
         dict: The configuration data loaded from the JSON file.
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     current_script_path = os.path.abspath(__file__)
     current_script_dir = os.path.dirname(current_script_path)
     file_path = os.path.join(current_script_dir, 'config', 'config.json')
@@ -104,6 +113,10 @@ def save_config(config):
     Args:
         config (dict): The configuration data to be saved.
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     current_script_path = os.path.abspath(__file__)
     current_script_dir = os.path.dirname(current_script_path)
     file_path = os.path.join(current_script_dir, 'config', 'config.json')
@@ -126,6 +139,10 @@ def reconfig(chat_status):
     Returns:
         dict: The updated chat status.
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     prompt = chat_status['prompt']
     _, key, value = prompt.split(maxsplit=2)
     try:
@@ -164,6 +181,10 @@ def loadChatStatus():
             - documents (dict): A dictionary to store document data, initially empty.
             - plottingParams (dict): A dictionary to store parameters for plotting, initially empty.
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     chatstatus = {
         'config'            : load_config(),
         'prompt'            : None,
@@ -215,6 +236,10 @@ def load_literature_db(
         If the database contains no articles, a warning is issued.
 
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     # load database
     embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')        # Embedding model
     db_name = "DB_cosine_cSize_%d_cOver_%d" % (700, 200)
@@ -250,6 +275,10 @@ def is_json_serializable(value):
         complex_num = 1 + 2j
         is_serializable = is_json_serializable(complex_num)  # Returns False
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     try:
         json.dumps(value)
         return True
@@ -283,6 +312,10 @@ def logger(chatlog, chatstatus, chatname):
           serializability. Any non-serializable values are converted to strings.
         - The current table information is converted to JSON if it is not None.
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     process_serializable = {
             key: value if is_json_serializable(value) else str(value)
             for key, value in chatstatus['process'].items()
@@ -291,7 +324,7 @@ def logger(chatlog, chatstatus, chatname):
     chatlog[len(chatlog)] = {
         'prompt' : chatstatus['prompt'],  # the input to the user
         'output' : chatstatus['output'],  # the output to the user
-        'process': process_serializable,  #chatstatus['process'], # information about the process that ran
+        'process': process_serializable,  # chatstatus['process'], # information about the process that ran
         'status' : {                      # information about the chat at that time
             'databases'         : str(chatstatus['databases']),
             'current table'     : {
@@ -334,6 +367,10 @@ def chatbotHelp():
 
     Enjoy chatting with the chatbot!
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     print(help_message)
     return
 
@@ -381,6 +418,10 @@ def chat(
         # Run the RAG chatbot session
         main()
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 4, 2024
+    
     config = load_config()
     log_dir = os.path.join(config['log_path'], 'BRAD')
     if not os.path.exists(log_dir):
@@ -398,14 +439,20 @@ def chat(
         llm = load_nvidia()
         # llm = load_llama(model_path) # load the llama
     if ragvectordb is None:
-        ragvectordb, embeddings_model = load_literature_db(persist_directory) # load the literature database
+        print('\nWould you like to use a database with BRAD [Y/N]?')
+        loadDB = input().strip().upper()
+        if loadDB == 'Y':
+            ragvectordb, embeddings_model = load_literature_db(persist_directory) # load the literature database
+        else:
+            ragvectordb, embeddings_model = None, None
     
     databases['RAG'] = ragvectordb
-    externalDatabases = ['docs', 'GO', 'GGET']
-    retriever = ragvectordb.as_retriever(search_kwargs={"k": 4}) ## Pick top 4 results from the search
-    template = """At the end of each question, print all the genes named in the answer separated by commas.\n Context: {context}\n Question: {question}\n Answer:"""
-    template = """Context: {context}\n Question: {question}\n Answer:"""
-    QA_CHAIN_PROMPT = PromptTemplate(template=template, input_variables=["context" ,"question"],)
+    memory = ConversationBufferMemory(ai_prefix="BRAD")
+    # externalDatabases = ['docs', 'GO', 'GGET']
+    # retriever = ragvectordb.as_retriever(search_kwargs={"k": 4}) ## Pick top 4 results from the search
+    # template = """At the end of each question, print all the genes named in the answer separated by commas.\n Context: {context}\n Question: {question}\n Answer:"""
+    # template = """Context: {context}\n Question: {question}\n Answer:"""
+    # QA_CHAIN_PROMPT = PromptTemplate(template=template, input_variables=["context" ,"question"],)
 
     # Initialize the routers from router.py
     router = getRouter()
@@ -413,6 +460,7 @@ def chat(
     # Initialize the chatlog
     chatstatus        = loadChatStatus()
     chatstatus['llm'] = llm
+    chatstatus['memory'] = memory
     chatstatus['databases'] = databases
     chatlog           = {
         'llm'           : str(chatstatus['llm'])

@@ -12,6 +12,9 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains.question_answering import load_qa_chain
 from langchain.output_parsers import CommaSeparatedListOutputParser
 from semantic_router.layer import RouteLayer
+from langchain.chains import ConversationChain
+from langchain.prompts import PromptTemplate
+from langchain_core.prompts.prompt import PromptTemplate
 
 #Extraction
 import re
@@ -56,21 +59,35 @@ def queryDocs(chatstatus):
     llm      = chatstatus['llm']              # get the llm
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
+    memory   = chatstatus['memory']           # get the memory of the model
     
     # query to database
-    documentSearch = vectordb.similarity_search_with_relevance_scores(prompt)
-    docs, scores = getDocumentSimilarity(documentSearch)
+    if vectordb is not None:
+        documentSearch = vectordb.similarity_search_with_relevance_scores(prompt)
+        docs, scores = getDocumentSimilarity(documentSearch)
 
-    # pass the database output to the llm
-    chain = load_qa_chain(llm, chain_type="stuff")
-    res = chain({"input_documents": docs, "question": prompt})
-    print(res['output_text'])
-
-    # change inputs to be json readable
-    res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
-
+        # pass the database output to the llm
+        chain = load_qa_chain(llm, chain_type="stuff")
+        res = chain({"input_documents": docs, "question": prompt})
+        print(res['output_text'])
+    
+        # change inputs to be json readable
+        res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
+        chatstatus['output'], chatstatus['process'] = res['output_text'], res
+    else:
+        template = """Current conversation:\n{history}\n\n\nNew Input:\n{input}"""
+        PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
+        conversation = ConversationChain(prompt  = PROMPT,
+                                         llm     = llm,
+                                         verbose = True,
+                                         memory  = memory,
+                                        )
+        prompt = getDefaultContext() + prompt
+        response = conversation.predict(input=prompt)
+        print(response)
+        chatstatus['output'] = response
     # update and return the chatstatus
-    chatstatus['output'], chatstatus['process'] = res['output_text'], res
+    # chatstatus['output'], chatstatus['process'] = res['output_text'], res
     chatstatus = geneOntology(chatstatus['output'], chatstatus)
     return chatstatus
 
@@ -241,4 +258,14 @@ def extract_non_english_words(text):
     
     return non_english_words
 
+def getDefaultContext():
+    llmContext = """Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,
+bioinformatics, genetics, and data science. You can be connected to a text database to augment your answers
+based on the literature with Retrieval Augmented Generation, or you can use several additional modules including
+searching the web for new articles, searching Gene Ontology or Enrichr bioinformatics databases, running snakemake
+and matlab pipelines, or analyzing your own codes. Please answer the following questions to the best of your
+ability.
+
+Prompt: """
+    return llmContext
 
