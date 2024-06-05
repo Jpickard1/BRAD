@@ -12,8 +12,6 @@ BRAD.brad module
 
 .. automodule:: BRAD.brad
    :members:
-   :undoc-members:
-   :show-inheritance:
 
 BRAD.rag module
 ---------------
@@ -22,3 +20,9 @@ BRAD.rag module
    :members:
    :undoc-members:
    :show-inheritance:
+   
+BRAD.functionCaller module
+---------------
+
+.. automodule:: BRAD.functionCaller
+   :members:
