@@ -22,8 +22,66 @@ from urllib.parse import urljoin
 from requests_html import HTMLSession
 import requests
 from requests.exceptions import ConnectionError
+from langchain import PromptTemplate, LLMChain
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
 
 def webScraping(chatstatus):
+    query    = chatstatus['prompt']
+    llm      = chatstatus['llm']              # get the llm
+    memory   = chatstatus['memory']           # get the memory of the model
+    
+    # Define the mapping of keywords to functions
+    scraping_functions = {
+        'ARXIV'   : arxiv,
+        'BIORXIV' : biorxiv,
+        'PUBMED'  : pubmed
+    }
+    
+    # Identify the database and the search terms
+    template = """Current conversation:\n{history}
+    
+    Query:{input}
+    
+    From the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose no more than 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Format your output as follows with no additions:
+    
+    Database: <ARXIV, PUBMED, or BIORXIV>
+    Search Terms: <improved search terms>
+    """
+    PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
+    conversation = ConversationChain(prompt  = PROMPT,
+                                     llm     = llm,
+                                     verbose = chatstatus['config']['debug'],
+                                     memory  = memory,
+                                    )
+    response = conversation.predict(input=query)
+    llmResponse = parse_llm_response(response)
+    llmKey, searchTerms = llmResponse['database'], llmResponse['search_terms']
+
+    # Determine the target source
+    source = next((key for key in scraping_functions if key == llmKey), 'PUBMED')
+    process = {'searched': source}
+    scrape_function = scraping_functions[source]
+    
+    # Execute the scraping function and handle errors
+    try:
+        output = f'searching on {source}...'
+        print(output)
+        print('Search Terms: ' + str(searchTerms)) if chatstatus['config']['debug'] else None
+        for st in searchTerms:
+            scrape_function(st)
+        searchTerms = ' '.join(searchTerms)
+        scrape_function(searchTerms)
+    except Exception as e:
+        output = f'Error occurred while searching on {source}: {e}'
+        print(output)
+        process = {'searched': 'ERROR'}
+
+    chatstatus['process'] = process
+    chatstatus['output']  = output
+    return chatstatus
+
+def webScraping_depricated(chatstatus):
     query = chatstatus['prompt']
     
     # Define the mapping of keywords to functions
@@ -757,3 +815,30 @@ def result_set_to_string(result_set):
         str: A string containing the text content of all elements in the ResultSet.
     """
     return ' '.join([element.get_text(strip=True) for element in result_set])
+
+def parse_llm_response(response):
+    """
+    Parses the LLM response to extract the database name and search terms.
+    
+    Parameters:
+    response (str): The response from the LLM.
+    
+    Returns:
+    dict: A dictionary with the database name and a list of search terms.
+    """
+    # Initialize an empty dictionary to hold the parsed data
+    parsed_data = {}
+
+    # Split the response into lines
+    lines = response.strip().split('\n')
+
+    # Extract the database name
+    database_line = lines[0].replace("Database:", "").strip()
+    parsed_data["database"] = database_line
+
+    # Extract the search terms
+    search_terms_line = lines[1].replace("Search Terms:", "").strip()
+    search_terms = [term.strip() for term in search_terms_line.split(',')]
+    parsed_data["search_terms"] = search_terms
+
+    return parsed_data
