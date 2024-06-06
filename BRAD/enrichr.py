@@ -25,20 +25,17 @@ import gget
 # gene enrichment
 def queryEnrichr(chatstatus):
     """
-    Queries the Enrichr gene enrichment database based on the provided chat status and user prompt,
-    and optionally saves or plots the results.
+    Performs gene enrichment analysis using the Enrichr service and updates the chat status with the results.
 
-    Parameters:
-    chatstatus (dict): A dictionary containing the chat status, user prompt, and configuration settings.
-                       Expected keys in chatstatus:
-                       - 'prompt' (str): The user prompt containing gene names and optional commands.
-                       - 'config' (dict): Configuration settings, including:
-                           - 'max_enrichr_pval' (float): Maximum p-value threshold for enrichment results.
-                           - 'num_df_rows_display' (int): Number of rows to display from the results.
-                           - 'default_enrichr_db' (str): Default database to use for the Enrichr query.
+    :param chatstatus: The current status of the chat, including the prompt, configuration, and process details.
+    :type chatstatus: dict
 
-    Returns:
-    dict: Updated chatstatus dictionary with the process details and output messages.
+    :raises FileNotFoundError: If the gene list or Enrichr databases file is not found.
+    :raises ValueError: If the gene list or prompt contains invalid entries.
+    :raises Warning: If multiple potential databases are provided or no database is specified.
+
+    :return: The updated chat status dictionary containing the enrichment results and process details.
+    :rtype: dict
     """
     prompt              = chatstatus['prompt']
     max_p_val           = chatstatus['config']['max_enrichr_pval']

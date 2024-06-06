@@ -24,6 +24,18 @@ import requests
 from requests.exceptions import ConnectionError
 
 def webScraping(chatstatus):
+    """
+    Performs web scraping based on the provided chat status, executing specific scraping functions for different sources like arXiv, bioRxiv, and PubMed.
+
+    :param chatstatus: The status of the chat, containing information about the current prompt and configuration.
+    :type chatstatus: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The updated chat status after executing the web scraping process.
+    :rtype: dict
+
+    """
     query = chatstatus['prompt']
     
     # Define the mapping of keywords to functions
@@ -64,13 +76,16 @@ def webScraping(chatstatus):
 
 def arxiv(query):
     """
-    Search for articles on arXiv, display results, and optionally download the articles as PDFs.
+    Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.
 
-    Args:
-        query (str): The search query for arXiv.
+    :param query: The search query for arXiv.
+    :type query: str
 
-    Returns:
-        tuple: A tuple containing the output message (str) and a process dictionary (dict).
+    :raises None: This function does not raise any specific errors.
+
+    :return: A tuple containing the output message and a process dictionary.
+    :rtype: tuple
+
     """
     process = {}
     output = 'searching the following on arxiv: ' + query
@@ -90,15 +105,15 @@ def arxiv(query):
 
 def arxiv_search1(query):
     """
-    DEPRECATED
-    Search for articles on arXiv based on the given query.
+    DEPRECATED: Searches for articles on the arXiv repository based on the given query.
 
-    Args:
-        query (str): The search query for arXiv.
+    :param query: The search query for arXiv.
+    :type query: str
 
-    Returns:
-        pd.DataFrame: A DataFrame containing the search results with columns 'id', 'title', 'categories', 
-                      'abstract', 'doi', 'created', 'updated', and 'authors'.
+    :raises None: This function does not raise any specific errors.
+
+    :return: A DataFrame containing the search results.
+    :rtype: pd.DataFrame
     """
     pd.set_option('display.max_colwidth', None)
     #date_from='2024-04-01',date_until='2024-05-01',
@@ -111,14 +126,15 @@ def arxiv_search1(query):
 
 def arxiv_scrape1(id_list):
     """
-    DEPRECATED
-    Download articles from arXiv as PDFs based on the given list of IDs.
+    DEPRECATED: Downloads articles from arXiv as PDFs based on the given list of IDs.
 
-    Args:
-        id_list (list): A list of article IDs to download from arXiv.
+    :param id_list: A list of article IDs to download from arXiv.
+    :type id_list: list
 
-    Returns:
-        str: A string indicating the outcome of the download process.
+    :raises None: This function does not raise any specific errors.
+
+    :return: A string indicating the outcome of the download process.
+    :rtype: str
     """
     output = ''
     session = HTMLSession()
@@ -154,24 +170,15 @@ def search_pubmed_article(query, number_of_articles=10):
     """
     Searches PubMed for articles matching the specified query and retrieves their PMIDs.
 
-    This function uses the NCBI Entrez E-utilities to search the PubMed database for articles 
-    that match the given query. It returns a list of PMIDs for the articles found.
+    :param query: The keyword or phrase to search for in PubMed articles.
+    :type query: str
+    :param number_of_articles: The maximum number of article PMIDs to return. Defaults to 10.
+    :type number_of_articles: int
 
-    Parameters:
-    query (str): The keyword or phrase to search for in PubMed articles.
-    number_of_articles (int, optional): The maximum number of article PMIDs to return. Defaults to 10.
+    :raises None: This function does not raise any specific errors.
 
-    Returns:
-    list: A list of PMIDs (str) for articles matching the query.
-
-    Example:
-    >>> pmids = search_pubmed_article('cancer research')
-    >>> print(pmids)
-    ['12345678', '23456789', ...]
-
-    Notes:
-    - Ensure you have set up your email address with Entrez before making requests to NCBI.
-    - The search results are sorted by relevance by default.
+    :return: A list of PMIDs for articles matching the query.
+    :rtype: list
 
     """
     Entrez.email = 'inhyak@gmail.com'
@@ -186,17 +193,13 @@ def pubmed(query):
     """
     Scrapes PubMed for articles matching the query, retrieves their PMIDs, and downloads available PDFs.
 
-    Parameters:
-    query (str): The keyword to search for in PubMed articles.
+    :param query: The keyword to search for in PubMed articles.
+    :type query: str
 
-    Returns:
-    None
+    :raises None: This function does not raise any specific errors.
 
-    Example:
-    >>> pubmedscrape('cancer research')
-    This will search for PubMed articles related to 'cancer research', retrieve their PMIDs,
-    and download available PDFs to the 'specialized_docs' directory.
-
+    :return: None
+    :rtype: None
     """
     pmid_list = search_pubmed_article(query)
     citation_arr = []
@@ -245,31 +248,14 @@ def biorxiv(query):
     """
     Scrapes the bioRxiv preprint server for articles matching a specific query.
 
-    This function uses the `biorxiv_real_search` method to search bioRxiv for articles
-    based on the provided query. The search is conducted within the current 
-    month by default, and retrieves a maximum of 75 records within 300 seconds.
-    
-    Parameters:
-    query (str): The keyword to search for in bioRxiv articles.
+    :param query: The keyword to search for in bioRxiv articles.
+    :type query: str
 
-    Returns:
-    None
+    :raises None: This function does not raise any specific errors.
 
-    Example:
-    >>> biorxiv_scrape('machine learning')
-    This will search for bioRxiv articles related to 'machine learning' published 
-    within the current month and print the titles, authors, and URLs of the articles found.
+    :return: None
+    :rtype: None
 
-    Notes:
-    - The search is restricted to articles in the 'biorxiv' journal.
-    - The search is conducted within the time frame from the first day of the current 
-      month to the current date.
-    - By default, the function does not include abstracts in the output.
-    - The columns retrieved for each article include the title, authors, and URL.
-    - The `kwd_type` parameter is set to 'all', meaning all specified keywords must be 
-      present in the search results.
-    - Adjusting parameters like `subjects`, `athr`, and `abstracts` might be necessary 
-      for more refined searches.
     """
     biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015), 
                         end_date    = datetime.date.today(),
@@ -295,40 +281,39 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
                         max_time    = 300,
                         cols        = ['title', 'authors', 'url'],
                         abstracts   = False):
+
     """
-    Searches a specified journal for articles matching given criteria and returns their details.
+    Searches for articles on arXiv, bioRxiv, or PubMed based on the given queries and creates a database from the scraped articles and PDFs.
 
-    This function builds a search query URL based on the given parameters, fetches the search results
-    from the specified journal, and returns a DataFrame with the details of the articles found.
+    :param start_date: The start date for the search query. Defaults to today's date.
+    :type start_date: datetime.date
+    :param end_date: The end date for the search query. Defaults to today's date.
+    :type end_date: datetime.date
+    :param subjects: The subjects to search for in the specified journal. Defaults to an empty list.
+    :type subjects: list
+    :param journal: The journal to search for articles. Defaults to 'biorxiv'.
+    :type journal: str
+    :param kwd: The keywords to search for in the abstract or title. Defaults to an empty list.
+    :type kwd: list
+    :param kwd_type: The type of keyword search to perform. Defaults to 'all'.
+    :type kwd_type: str
+    :param athr: The authors to search for in the articles. Defaults to an empty list.
+    :type athr: list
+    :param max_records: The maximum number of records to fetch. Defaults to 75.
+    :type max_records: int
+    :param max_time: The maximum time (in seconds) to spend fetching records. Defaults to 300.
+    :type max_time: int
+    :param cols: The columns to include in the database. Defaults to ['title', 'authors', 'url'].
+    :type cols: list
+    :param abstracts: Whether to include abstracts in the database. Defaults to False.
+    :type abstracts: bool
 
-    Parameters:
-    start_date (datetime.date, optional): The start date for the search. Defaults to the first day of the current month.
-    end_date (datetime.date, optional): The end date for the search. Defaults to today.
-    subjects (list, optional): List of subjects to filter the search by. Defaults to an empty list.
-    journal (str, optional): The journal to search. Defaults to 'biorxiv'.
-    kwd (list, optional): List of keywords to filter the search by. Defaults to an empty list.
-    kwd_type (str, optional): Type of keyword matching ('all', 'any'). Defaults to 'all'.
-    athr (list, optional): List of author names to filter the search by. Defaults to an empty list.
-    max_records (int, optional): Maximum number of records to fetch. Defaults to 75.
-    max_time (int, optional): Maximum time (in seconds) to spend on the search. Defaults to 300.
-    cols (list, optional): List of columns to include in the returned DataFrame. Defaults to ['title', 'authors', 'url'].
-    abstracts (bool, optional): Whether to fetch abstracts for the articles. Defaults to False.
+    :raises None: This function does not raise any specific errors.
 
-    Returns:
-    pd.DataFrame: A DataFrame containing the details of the articles found.
+    :return: The DataFrame containing the records fetched and processed.
+    :rtype: pd.DataFrame
 
-    Example:
-    >>> df = biorxiv_real_search(start_date=datetime.date(2023, 1, 1), end_date=datetime.date(2023, 1, 31), subjects=['neuroscience'], kwd=['brain'], max_records=10)
-    >>> print(df)
-       title        authors                                                url
-    0  Title1  [Author1, Author2]  http://www.biorxiv.org/content/10.1101/2023...
-
-    Notes:
-    - The function assumes that the BeautifulSoup, pandas, and requests libraries are installed and properly configured.
-    - The search is performed on the specified journal's website, and the articles' details are extracted from the search results.
-    - If `abstracts` is set to True, the function will also fetch the abstracts of the articles, which can increase the execution time.
     """
-
     ## keep track of timing
     overall_time = time.time()
 
@@ -477,28 +462,15 @@ def create_db(query, query2):
     """
     Creates a database from scraped articles and PDFs based on given queries.
 
-    This function performs the following steps:
-    1. Scrapes articles from arXiv, bioRxiv, and PubMed using the provided queries.
-    2. Loads the scraped documents.
-    3. Splits the loaded documents into chunks.
-    4. Initializes a Chroma database with the chunked documents and embeddings.
+    :param query: The keyword to search for in PubMed articles.
+    :param query2: The keyword to search for in arXiv and bioRxiv articles.
+    :type query: str
+    :type query2: str
 
-    Parameters:
-    query (str): The keyword to search for in PubMed articles.
-    query2 (str): The keyword to search for in arXiv and bioRxiv articles.
+    :raises None: This function does not raise any specific errors.
 
-    Returns:
-    None
-
-    Example:
-    >>> create_db('machine learning', 'artificial intelligence')
-    This will scrape articles related to 'machine learning' from PubMed and 'artificial intelligence' from arXiv and bioRxiv,
-    load the documents, split them into chunks, and create a Chroma database.
-
-    Notes:
-    - The function assumes that the arxivscrape, biorxiv_scrape, and pubmedscrape functions are defined and properly importable.
-    - Ensure that the HuggingFaceEmbeddings and Chroma configurations are correct for your use case.
-    - The Chroma database is created with cosine similarity as the distance metric.
+    :return: None
+    :rtype: None
 
     """
     print('creating database (this might take a while)')
@@ -565,24 +537,13 @@ def fetch_details(pmid):
     """
     Fetches detailed information for a given PubMed article using its PMID.
 
-    This function uses the NCBI Entrez E-utilities to fetch detailed information 
-    about a PubMed article specified by its PMID. The details are returned in XML format.
+    :param pmid: The PubMed ID of the article to fetch details for.
+    :type pmid: str
 
-    Parameters:
-    pmid (str): The PubMed ID of the article to fetch details for.
+    :raises None: This function does not raise any specific errors.
 
-    Returns:
-    dict: A dictionary containing detailed information about the PubMed article.
-
-    Example:
-    >>> details = fetch_details('12345678')
-    >>> print(details)
-    {'PubmedArticle': [...], 'PubmedBookArticle': [...], ...}
-
-    Notes:
-    - Ensure you have set up your email address with Entrez before making requests to NCBI.
-    - The returned dictionary contains various fields with detailed information about the article,
-      including title, authors, abstract, and more.
+    :return: A dictionary containing detailed information about the PubMed article.
+    :rtype: dict
 
     """
     handle = Entrez.efetch(db='pubmed', id=pmid, retmode = 'xml')
@@ -591,6 +552,18 @@ def fetch_details(pmid):
     return records
 
 def webScraping2(query):
+    """
+    Performs web scraping based on the provided query, searching arXiv, bioRxiv, or PubMed.
+
+    :param query: The keyword to search for in the specified sources.
+    :type query: str
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: A tuple containing the output message and the source searched.
+    :rtype: tuple
+
+    """
     process = {}
     if 'ARXIV' in query.upper().split(' '):
         output = 'searching on arxiv'
@@ -683,6 +656,20 @@ def arxiv(query):
 '''
 
 def arxiv_search(query, count):
+    """
+    Searches for articles on arXiv based on the given query and retrieves a specified number of results.
+
+    :param query: The search query for arXiv.
+    :param count: The number of search results to retrieve.
+    :type query: str
+    :type count: int
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: A tuple containing a DataFrame with the search results and a list of PDF URLs.
+    :rtype: tuple
+
+    """
     #get the url
     split_query = query.split()
     url = "https://arxiv.org/search/?searchtype=all&query="
@@ -730,6 +717,18 @@ def arxiv_search(query, count):
     return df, pdf_urls
     
 def arxiv_scrape(pdf_urls):
+    """
+    Downloads PDFs from a list of URLs pointing to arXiv articles.
+
+    :param pdf_urls: A list of URLs pointing to arXiv articles in PDF format.
+    :type pdf_urls: list
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: None
+    :rtype: None
+
+    """
     s = HTMLSession()
 
     headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
@@ -748,12 +747,15 @@ def arxiv_scrape(pdf_urls):
             
 def result_set_to_string(result_set):
     """
-    Converts a BeautifulSoup ResultSet to a single string.
-    
-    Args:
-        result_set (bs4.element.ResultSet): The ResultSet to convert.
-        
-    Returns:
-        str: A string containing the text content of all elements in the ResultSet.
+    Converts a BeautifulSoup result set to a string.
+
+    :param result_set: The result set to convert to a string.
+    :type result_set: bs4.element.ResultSet
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The string representation of the result set.
+    :rtype: str
     """
+
     return ' '.join([element.get_text(strip=True) for element in result_set])

@@ -37,6 +37,20 @@ from langchain.vectorstores import FAISS
 
 
 def manipulateTable(chatstatus):
+    """
+    Call manipulateTable with parameters extracted from chatstatus.
+
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    The function sets up the process for manipulating tables by initializing various parameters related to table manipulation. It then determines the desired operation from the user prompt and proceeds accordingly. Supported operations include loading, saving, summarizing, handling missing data, and visualizing tables.
+
+    If no specific table is selected, it attempts to find a table with a similar name in the chatstatus. If the operation is 'merge', it handles merging tables (this part is commented out).
+
+    :return: Updated chatstatus with the results of the table manipulation.
+    :rtype: dict
+
+    """
     logging.info('manipulateTable')
     chatstatus['process'] : {
         'name'            : 'table',
@@ -95,6 +109,18 @@ def manipulateTable(chatstatus):
     return chatstatus
 
 def selectOperation(prompt):
+    """
+    Determine the operation to perform based on the user prompt.
+
+    :param prompt: The user prompt containing instructions.
+    :type prompt: str
+
+    The function analyzes the user prompt to identify the desired operation. It checks for keywords related to different operations such as saving, loading, summarizing, handling missing data, and plotting.
+
+    :return: The identified operation as a string. If the operation is unclear, it returns 'unsure'.
+    :rtype: str
+
+    """
     logging.info('selectOperation')
     tokens = set(prompt.lower().split(' '))
     if set(['save']).intersection(tokens):                   # save
@@ -112,6 +138,20 @@ def selectOperation(prompt):
     return 'unsure'
         
 def extract_csv_word(text, file_types):
+    """
+    Extract the first word from the text that ends with a specified file type.
+
+    :param text: The input text to search through.
+    :type text: str
+    :param file_types: A list of file types/extensions to look for.
+    :type file_types: list
+
+    The function splits the input text into words and checks each word to see if it ends with any of the specified file types. If a match is found, it returns the word.
+
+    :return: The first word that ends with a specified file type, or False if no such word is found.
+    :rtype: str or bool
+
+    """
     words = text.split(' ')
     for word in words:
         for file_type in file_types:
@@ -120,6 +160,18 @@ def extract_csv_word(text, file_types):
     return False
 
 def getColumns(df, prompt):
+    """
+    Extract columns from a DataFrame based on the user's prompt.
+
+    :param df: The DataFrame to extract columns from.
+    :type df: pandas.DataFrame
+    :param prompt: The user's prompt containing column names to keep.
+    :type prompt: str
+
+    :return: A list of column names to keep.
+    :rtype: list
+
+    """
     cols = df.columns
     colsKeep = []
     for col in cols:
@@ -130,6 +182,19 @@ def getColumns(df, prompt):
     return colsKeep
 
 def loadFile(chatstatus):
+    """
+    Load a CSV or TSV file based on the user's prompt and update the chat status.
+
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    The function reads the file name from the user's prompt, loads the file into a DataFrame,
+    and updates the chat status with the loaded data and relevant process information.
+
+    :return: The updated chat status.
+    :rtype: dict
+    """
+    
     '''
     implemented for csv files only (tsv should work as well)
     '''
@@ -169,6 +234,21 @@ def loadFile(chatstatus):
     return chatstatus
         
 def saveTable(df, chatstatus):
+    """
+    Save the DataFrame to a CSV file based on the user's prompt and update the chat status.
+
+    :param df: The DataFrame to save.
+    :type df: pandas.DataFrame
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    The function reads the file name from the user's prompt, saves the DataFrame to the file,
+    and updates the chat status with relevant information.
+
+    :return: The updated chat status.
+    :rtype: dict
+
+    """
     prompt              = chatstatus['prompt']
     file_types          = chatstatus['config']['acceptable_data_files']
     file = extract_csv_word(prompt, file_types)
@@ -181,6 +261,20 @@ def saveTable(df, chatstatus):
     return chatstatus
     
 def extract_summary_command(prompt):
+    """
+    Extract a summary command based on keywords in the user prompt.
+
+    :param prompt: The user prompt containing the command.
+    :type prompt: str
+
+    The function checks the prompt for specific keywords to determine
+    which summary command to return. It searches for keywords that match
+    specific commands such as 'info', 'describe', 'head', 'tail', 'shape', and 'columns'.
+
+    :return: The summary command corresponding to the keywords in the prompt.
+    :rtype: str
+
+    """
     logging.info('extract_summary_command')
     commands = {
         'info': ['info', 'information', 'details'],
@@ -197,6 +291,22 @@ def extract_summary_command(prompt):
     return 'info'  # Default command if none match
 
 def summarizeTable(df, chatstatus):
+    """
+    Summarize a DataFrame based on a command extracted from the user prompt.
+
+    :param df: The DataFrame to be summarized.
+    :type df: pandas.DataFrame
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    The function extracts a summary command from the user prompt and
+    generates the appropriate summary of the DataFrame. It supports commands
+    such as 'info', 'describe', 'head', 'tail', 'shape', and 'columns'.
+
+    :return: The updated chatstatus dictionary with the summary output.
+    :rtype: dict
+
+    """
     logging.info('summarizeTable')
     prompt  = chatstatus['prompt']
     command = extract_summary_command(prompt)
@@ -233,6 +343,24 @@ def summarizeTable(df, chatstatus):
     return chatstatus
 
 def handleMissingData(df, chatstatus):
+    """
+    Handle missing data in a DataFrame based on the user prompt.
+
+    :param df: The DataFrame with missing data.
+    :type df: pandas.DataFrame
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    The function processes the user prompt to determine how to handle
+    missing data in the DataFrame. It supports dropping rows with missing
+    data and filling missing data with specific values (mean, median, or zero).
+    It updates the chatstatus dictionary with the cleaned DataFrame and
+    the corresponding output message.
+
+    :return: The updated chatstatus dictionary with the missing data handling output.
+    :rtype: dict
+
+    """
     logging.info('handleMissingData')
     prompt  = chatstatus['prompt']
     if "drop" in prompt:
@@ -258,6 +386,24 @@ def handleMissingData(df, chatstatus):
     return chatstatus
 
 def visualizeTable(df, chatstatus):
+    """
+    Visualize a DataFrame based on the user prompt and chat status configuration.
+
+    :param df: The DataFrame to be visualized.
+    :type df: pandas.DataFrame
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    The function determines the appropriate visualization method based
+    on the user prompt and chat status configuration. It applies the
+    specified plotting configurations and generates the corresponding
+    visualization. If no specific plot type is found in the prompt, a
+    random plot type is chosen.
+
+    :return: The updated chatstatus dictionary with the visualization output.
+    :rtype: dict
+
+    """
     prompt = chatstatus['prompt'].lower()
     output = "Visualization created."
     plot_functions = plottingMethods()
@@ -291,6 +437,13 @@ def visualizeTable(df, chatstatus):
     return chatstatus
 
 def plottingMethods():
+    """
+    Return a dictionary of plot function mappings.
+
+    :return: A dictionary where the keys are plot types and the values are corresponding plot functions.
+    :rtype: dict
+    
+    """
     plot_functions = {
         "line"         : line_plot   ,
         "bar"          : bar_plot    ,
@@ -318,6 +471,18 @@ def plottingMethods():
     return plot_functions
 
 def line_plot(df, chatstatus):
+    """
+    Create a line plot based on the user prompt and DataFrame.
+
+    :param df: The DataFrame containing the data to plot.
+    :type df: pandas.DataFrame
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    :return: A matplotlib Axes object representing the line plot.
+    :rtype: matplotlib.axes.Axes
+
+    """
     prompt = chatstatus['prompt']
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column == []:
@@ -331,6 +496,18 @@ def line_plot(df, chatstatus):
     return ax
 
 def bar_plot(df, chatstatus):
+    """
+    Create a bar plot based on the user prompt and DataFrame.
+
+    :param df: The DataFrame containing the data to plot.
+    :type df: pandas.DataFrame
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    :return: A seaborn Axes object representing the bar plot.
+    :rtype: seaborn.axisgrid.FacetGrid
+
+    """
     prompt = chatstatus['prompt']
     cols = [col.lower() for col in df.columns]
     column = None
@@ -376,6 +553,18 @@ def bar_plot(df, chatstatus):
     return ax
 
 def histogram(df, chatstatus):
+    """
+    Create a histogram based on the user prompt and DataFrame.
+
+    :param df: The DataFrame containing the data to plot.
+    :type df: pandas.DataFrame
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    :return: A seaborn Axes object representing the histogram.
+    :rtype: seaborn.axisgrid.FacetGrid
+
+    """
     prompt = chatstatus['prompt']
     columns = [col for col in df.columns if col.lower() in prompt.lower()]
     if columns:
@@ -392,6 +581,18 @@ def histogram(df, chatstatus):
         return ax
 
 def box_plot(df, chatstatus):
+    """
+    Create a box plot based on the user prompt and DataFrame.
+
+    :param df: The DataFrame containing the data to plot.
+    :type df: pandas.DataFrame
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    :return: A seaborn Axes object representing the box plot.
+    :rtype: seaborn.axisgrid.FacetGrid
+
+    """
     prompt = chatstatus['prompt']
     columns = [col for col in df.columns if col.lower() in prompt.lower()]
     if columns:
@@ -414,6 +615,18 @@ def box_plot(df, chatstatus):
         return ax
 
 def violin_plot(df, prompt):
+    """
+    Create a violin plot based on the user prompt and DataFrame.
+
+    :param df: The DataFrame containing the data to plot.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt containing plot specifications.
+    :type prompt: str
+
+    :return: A seaborn Axes object representing the violin plot.
+    :rtype: seaborn.axisgrid.FacetGrid
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         # column = column[0]
@@ -423,6 +636,18 @@ def violin_plot(df, prompt):
         return ax
 
 def scatter_plot(df, chatstatus):
+    """
+    Create a scatter plot based on the user prompt and DataFrame.
+
+    :param df: The DataFrame containing the data to plot.
+    :type df: pandas.DataFrame
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    :return: A seaborn Axes object representing the scatter plot.
+    :rtype: seaborn.axisgrid.FacetGrid
+
+    """
     prompt = chatstatus['prompt']
     columns = [col for col in df.columns if (col.lower() in prompt.lower() and col.lower() != chatstatus['process']['hue'].lower())]
     if chatstatus['debug']: print(columns)
@@ -440,16 +665,52 @@ def scatter_plot(df, chatstatus):
         return ax
 
 def pair_plot(df, prompt):
+    """
+    Create a pair plot for the given DataFrame.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt containing additional information.
+    :type prompt: str
+
+    :return: The Seaborn pair plot axis object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot
+
+    """
     ax = sns.pairplot(df)
     plt.title('Pair Plot')
     return ax
 
 def heatmap(df, prompt):
+    """
+    Create a heatmap for the given DataFrame's correlation matrix.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt containing additional information.
+    :type prompt: str
+
+    :return: The Seaborn heatmap axis object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot
+
+    """
     ax = sns.heatmap(df.corr(), annot=True)
     plt.title('Heatmap')
     return ax
 
 def pie_chart(df, prompt):
+    """
+    Create a pie chart for a specified column in the DataFrame.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt specifying the column to plot.
+    :type prompt: str
+
+    :return: The pie chart axis object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
@@ -458,6 +719,18 @@ def pie_chart(df, prompt):
         return ax
 
 def area_plot(df, prompt):
+    """
+    Create an area plot for a specified column in the DataFrame.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt specifying the column to plot.
+    :type prompt: str
+
+    :return: The area plot axis object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
@@ -467,6 +740,18 @@ def area_plot(df, prompt):
         return ax
 
 def hexbin_plot(df, prompt):
+    """
+    Create a hexbin plot for two specified columns in the DataFrame.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt specifying the columns to plot.
+    :type prompt: str
+
+    :return: The hexbin plot axis object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
         ax = df.plot.hexbin(x=columns[0], y=columns[1], gridsize=25, cmap='Blues')
@@ -476,6 +761,18 @@ def hexbin_plot(df, prompt):
         return ax
 
 def kde_plot(df, prompt):
+    """
+    Create a KDE plot for a specified column in the DataFrame.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt specifying the column to plot.
+    :type prompt: str
+
+    :return: The KDE plot axis object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
@@ -486,18 +783,62 @@ def kde_plot(df, prompt):
         return ax
 
 def facet_grid(df, prompt):
+    """
+    Create a facet grid for the specified columns in the DataFrame.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt specifying the columns to use for the grid.
+    :type prompt: str
+
+    :return: The Seaborn facet grid object.
+    :rtype: seaborn.axisgrid.FacetGrid
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) >= 2:
         ax = sns.FacetGrid(df, col=columns[0], row=columns[1]).map(plt.hist, columns[2] if len(columns) > 2 else df.columns[0])
         return ax
 
 def joint_plot(df, prompt):
+    """
+    This function creates a joint plot based on the provided DataFrame and prompt.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt.
+    :type prompt: str
+
+    The function searches for columns in the DataFrame that match words in the prompt.
+    If exactly two matching columns are found, it creates a joint plot using seaborn's jointplot function.
+    The joint plot displays the relationship between these two columns.
+
+    :return: The seaborn jointplot object.
+    :rtype: seaborn.axisgrid.JointGrid or None
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
         ax = sns.jointplot(x=column[0], y=column[1], data=df, kind="scatter")
         return ax
 
 def strip_plot(df, prompt):
+    """
+    This function creates a strip plot based on the provided DataFrame and prompt.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt.
+    :type prompt: str
+
+    The function searches for columns in the DataFrame that match words in the prompt.
+    If exactly two matching columns are found, it creates a strip plot using seaborn's stripplot function.
+    The strip plot displays the distribution of one variable across levels of another variable.
+
+    :return: The seaborn stripplot object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot or None
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
         ax = sns.stripplot(x=column[0], y=column[1], data=df)
@@ -507,6 +848,22 @@ def strip_plot(df, prompt):
         return ax
 
 def swarm_plot(df, prompt):
+    """
+    This function creates a swarm plot based on the provided DataFrame and prompt.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt.
+    :type prompt: str
+
+    The function searches for columns in the DataFrame that match words in the prompt.
+    If exactly two matching columns are found, it creates a swarm plot using seaborn's swarmplot function.
+    The swarm plot displays the distribution of one variable across levels of another variable.
+
+    :return: The seaborn swarmplot object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot or None
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
         ax = sns.swarmplot(x=column[0], y=column[1], data=df)
@@ -516,6 +873,22 @@ def swarm_plot(df, prompt):
         return ax
 
 def count_plot(df, prompt):
+    """
+    This function creates a count plot based on the provided DataFrame and prompt.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt.
+    :type prompt: str
+
+    The function searches for columns in the DataFrame that match words in the prompt.
+    If a matching column is found, it creates a count plot using seaborn's countplot function.
+    The count plot displays the count of observations in each category.
+
+    :return: The seaborn countplot object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot or None
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
@@ -526,6 +899,22 @@ def count_plot(df, prompt):
         return ax
 
 def cat_plot(df, prompt):
+    """
+    This function creates a categorical plot based on the provided DataFrame and prompt.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt.
+    :type prompt: str
+
+    The function searches for columns in the DataFrame that match words in the prompt.
+    If at least two matching columns are found, it creates a categorical plot using seaborn's catplot function.
+    The categorical plot displays the distribution of one variable across levels of another variable using boxes.
+
+    :return: The seaborn catplot object.
+    :rtype: seaborn.axisgrid.FacetGrid or None
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) >= 2:
         ax = sns.catplot(x=column[0], y=column[1], kind="box", data=df)
@@ -535,6 +924,22 @@ def cat_plot(df, prompt):
         return ax
 
 def reg_plot(df, prompt):
+    """
+    This function creates a regression plot based on the provided DataFrame and prompt.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt.
+    :type prompt: str
+
+    The function searches for columns in the DataFrame that match words in the prompt.
+    If exactly two matching columns are found, it creates a regression plot using seaborn's regplot function.
+    The regression plot displays the relationship between two variables with a regression line.
+
+    :return: The seaborn regplot object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot or None
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if len(columns) == 2:
         ax = sns.regplot(x=column[0], y=column[1], data=df)
@@ -544,6 +949,22 @@ def reg_plot(df, prompt):
         return ax
 
 def dist_plot(df, prompt):
+    """
+    This function creates a distribution plot based on the provided DataFrame and prompt.
+
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+    :param prompt: The user prompt.
+    :type prompt: str
+
+    The function searches for columns in the DataFrame that match words in the prompt.
+    If a matching column is found, it creates a distribution plot using seaborn's distplot function.
+    The distribution plot displays the distribution of a single variable.
+
+    :return: The seaborn distplot object.
+    :rtype: matplotlib.axes._subplots.AxesSubplot or None
+
+    """
     column = [col for col in df.columns if col.lower() in prompt.lower()]
     if column:
         column = column[0]
@@ -554,13 +975,45 @@ def dist_plot(df, prompt):
         return ax
 
 def separate_punctuation_with_spaces(text):
+    """
+    This function separates punctuation marks in a text with spaces.
+
+    :param text: The input text.
+    :type text: str
+
+    The function uses regular expressions to replace each punctuation mark with ' <punctuation> '.
+
+    :return: The text with separated punctuation.
+    :rtype: str
+
+    """
     # Use regular expression to replace each punctuation mark with ' <punctuation> '
     return re.sub(r'([.,!?;:"(){}\[\]])', r' \1 ', text)
 
 def is_valid_colormap(colormap_name):
+    """
+    Check if a colormap name is valid.
+
+    :param colormap_name: The name of the colormap.
+    :type colormap_name: str
+
+    :return: True if the colormap name is valid, False otherwise.
+    :rtype: bool
+
+    """
     return colormap_name in plt.colormaps()
 
 def is_valid_color(color_string):
+    """
+    Check if a color string is valid.
+
+    :param color_string: The color string to check.
+    :type color_string: str
+
+    :return: True if the color string is valid, False otherwise.
+    :rtype: bool
+
+    """
     try:
         mcolors.to_rgba(color_string)
         return True
@@ -568,16 +1021,21 @@ def is_valid_color(color_string):
         return False    
 
 def should_apply_hue(promptWords, data, max_categories=15):
-    '''
+    """
     Detect if hue should be applied and determine the hue variable based on the prompt and data.
 
-    Parameters:
-    - promptWords: List of words parsed from the prompt.
-    - data: Pandas DataFrame containing the data.
+    :param promptWords: List of words parsed from the prompt.
+    :type promptWords: list
+    :param data: Pandas DataFrame containing the data.
+    :type data: pandas.DataFrame
+    :param max_categories: Maximum number of categories for a variable to be considered as hue.
+    :type max_categories: int
 
-    Returns:
-    - hue_var: String indicating the variable to use as hue, or None if hue is not needed.
-    '''
+    :return: The hue variable to use, or None if hue is not needed.
+    :rtype: str or None
+
+    """
+
     if 'hue' in promptWords:
         loc = promptWords.index('hue')
         hue_var = promptWords[loc + 1]
@@ -594,9 +1052,19 @@ def should_apply_hue(promptWords, data, max_categories=15):
     return None  # No hue variable detected
 
 def checkPlottingConfigurations(chatstatus, df):
-    '''
-    check if any variables need to be changed
-    '''
+    """
+    Check if any plotting configurations need to be changed based on the user prompt.
+
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+    :param df: The DataFrame containing the data.
+    :type df: pandas.DataFrame
+
+    :return: The updated chat status information.
+    :rtype: dict
+
+    """
+
     prompt = separate_punctuation_with_spaces(chatstatus['prompt']) # we don't mess with the '-' character
     promptWords = prompt.split(' ')
     unwanted_strings = {'', ' ', 'of', 'as', 'use', 'is', 'to', 'by', 'the', ';', '(', '[', '.', ',', '!', '?', ';', ':', '"', '(', ')', '{', '}', '\[', '\]' ']', ')' } # we don't mess with the '-' character
@@ -702,9 +1170,16 @@ def checkPlottingConfigurations(chatstatus, df):
     return chatstatus
 
 def checkPlotLabels(chatstatus):
-    '''
-    Parses title, xlabel, and ylabel
-    '''
+    """
+    Parses title, xlabel, and ylabel from the prompt.
+
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+
+    :return: The updated chat status information.
+    :rtype: dict
+
+    """
     prompt = chatstatus['prompt']
     patterns = {
         'title': r"title\s*'([^']*)'",
