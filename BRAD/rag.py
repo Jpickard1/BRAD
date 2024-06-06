@@ -1,5 +1,9 @@
 import numpy as np
 import chromadb
+import subprocess
+import os
+from langchain.document_loaders import DirectoryLoader
+from langchain.document_loaders import UnstructuredPDFLoader
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
@@ -52,7 +56,10 @@ def queryDocs(chatstatus):
         docs, scores = getDocumentSimilarity(documentSearch)
 
         # pass the database output to the llm
-        chain = load_qa_chain(llm, chain_type="stuff")
+        chain = load_qa_chain(llm,
+                              chain_type="stuff",
+                              verbose   = chatstatus['config']['debug'],
+                             )
         res = chain({"input_documents": docs, "question": prompt})
         print(res['output_text'])
     
@@ -64,13 +71,14 @@ def queryDocs(chatstatus):
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
         conversation = ConversationChain(prompt  = PROMPT,
                                          llm     = llm,
-                                         verbose = True,
+                                         verbose = chatstatus['config']['debug'],
                                          memory  = memory,
                                         )
         prompt = getDefaultContext() + prompt
         response = conversation.predict(input=prompt)
         print(response)
         chatstatus['output'] = response
+        chatstatus['process'] = {'type': 'LLM Conversation'}
     # update and return the chatstatus
     # chatstatus['output'], chatstatus['process'] = res['output_text'], res
     chatstatus = geneOntology(chatstatus['output'], chatstatus)
@@ -210,3 +218,66 @@ ability.
 Prompt: """
     return llmContext
 
+def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunck_overlap=[200], v=False):
+    """
+    Create a Chroma database from PDF documents.
+
+    Args:
+        docsPath (str, optional): Path where the document files are located. Default is '/nfs/turbo/umms-indikar/shared/projects/RAG/papers/'.
+        dbName (str, optional): Name of the database to create. Default is None.
+        dbPath (str, optional): Path where the database will be saved. Default is '/nfs/turbo/umms-indikar/shared/projects/RAG/databases/'.
+        HuggingFaceEmbeddingsModel (str, optional): Model name for HuggingFace embeddings. Default is 'BAAI/bge-base-en-v1.5'.
+        chunk_size (list, optional): List of chunk sizes for splitting documents. Default is [700].
+        chunk_overlap (list, optional): List of chunk overlaps for splitting documents. Default is [200].
+        v (bool, optional): Verbose mode. If True, print progress messages. Default is False.
+    """
+    # Handle arguments
+    dbPath   += dbName
+    
+    local = os.getcwd()  ## Get local dir
+    os.chdir(local)      ## shift the work dir to local dir
+    
+    print('\nWork Directory: {}'.format(local)) if v else None
+
+    #%% Phase 1 - Load DB
+    embeddings_model = HuggingFaceEmbeddings(model_name=HuggingFaceEmbeddingsModel)
+    
+    print('\nDocuments loading from:', docsPath) if v else None
+
+    text_loader_kwargs={'autodetect_encoding': True}
+    loader = DirectoryLoader(docsPath,
+                             glob="**/*.pdf",
+                             loader_cls=UnstructuredPDFLoader, 
+                             loader_kwargs=text_loader_kwargs,
+                             show_progress=True,
+                             use_multithreading=True)
+    docs_data = loader.load()
+
+    print('\nDocuments loaded...') if v else None
+    
+    chunk_size = [700] #Chunk size 
+    chunk_overlap = [200] #Chunk overlap
+
+    for i in range(len(chunk_size)):
+        for j in range(len(chunk_overlap)):
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size = chunk_size[i],
+                                                            chunk_overlap = chunk_overlap[j],
+                                                            separators=[" ", ",", "\n", ". "])
+            data_splits = text_splitter.split_documents(docs_data)
+            
+            print('Documents split into chunks...') if v else None
+            print('Initializing Chroma Database...') if v else None
+
+            dbName = "DB_cosine_cSize_%d_cOver_%d" %(chunk_size[i], chunk_overlap[j])
+
+            p2_2 = subprocess.run('mkdir  %s/*'%(dbPath+dbName), shell=True)
+            _client_settings = chromadb.PersistentClient(path=(dbPath+dbName))
+
+            vectordb = Chroma.from_documents(documents           = data_splits,
+                                             embedding           = embeddings_model,
+                                             client              = _client_settings,
+                                             collection_name     = dbName,
+                                             collection_metadata = {"hnsw:space": "cosine"})
+
+            print('Completed Chroma Database: ', dbName) if v else None
+            del vectordb, text_splitter, data_splits
