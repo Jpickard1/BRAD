@@ -19,6 +19,14 @@ from semantic_router.layer import RouteLayer
 from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
+from langchain.docstore.document import Document
+from langchain_chroma import Chroma
+from langchain_community.document_loaders import TextLoader
+from langchain_community.embeddings.sentence_transformer import (
+    SentenceTransformerEmbeddings,
+)
+from langchain_text_splitters import CharacterTextSplitter
+
 
 #BERTscore
 import bert_score
@@ -68,7 +76,7 @@ def queryDocs(chatstatus):
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
         #bertscores
         if experiment is True:
-            scoring_experiment(chain, docs)
+            scoring_experiment(chain, docs, scores, prompt)
         else:
         # pass the database output to the llm       
             res = chain({"input_documents": docs, "question": prompt})
@@ -294,10 +302,11 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
             del vectordb, text_splitter, data_splits
 
             
-def scoring_experiment(chain, docs):
+def scoring_experiment(chain, docs, scores, prompt):
     print(f"output of similarity search: {scores}")
     candidates = []
     reference = []
+    document_list = []
     # Iterate through the indices of the original list
     for i in range(len(docs)):
         # removes one of the documents
@@ -308,6 +317,18 @@ def scoring_experiment(chain, docs):
         print(f"RAG response: {res['output_text']}")
         # Add the new list to the combinations list
         candidates.append(res['output_text'])
-    scorer = BERTScorer(lang="en", rescale_with_baseline=True)
-    P, R, F1 = scorer.score(candidates, reference)
-    print(F1)
+        document_list.append(Document(page_content = res['output_text']))
+    text_splitter = CharacterTextSplitter(chunk_size=700, chunk_overlap=200)
+    embedding_docs= text_splitter.split_documents(document_list)
+    # create the open-source embedding function
+    embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+
+    # load it into Chroma
+    db = Chroma.from_documents(embedding_docs, embedding_function)
+    new_docs, new_scores = getDocumentSimilarity(db.similarity_search_with_relevance_scores(prompt))
+    
+    # print results
+    print(new_scores)
+    #scorer = BERTScorer(lang="en", rescale_with_baseline=True)
+    #P, R, F1 = scorer.score(candidates, reference)
+    #print(F1)
