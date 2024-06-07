@@ -60,27 +60,27 @@ def goSearch(query):
         output, geneStatus = textGO(terms)
         process['output'] = output
         if geneStatus == True:
-            print('\n would you like to download charts associated with these genes [Y/N]?')
-            download = input().strip().upper()
-            process['chart_download'] = (download == 'Y')
-            if download == 'Y':   
-                for term in output:
-                    go_id = str(term[0])
-                    chartGO(go_id)
-                    print('\n would you like to download the paper associated with these genes [Y/N]?')
-                    download2 = input().strip().upper()
-                    process['paper_download'] = (download2 == 'Y')
-                    if download2 == 'Y':
-                        pubmedPaper(go_id)
+            #print('\n would you like to download charts associated with these genes [Y/N]?')
+            #download = input().strip().upper()
+            #process['chart_download'] = (download == 'Y')
+            #if download == 'Y':   
+            for term in output:
+                go_id = str(term[0])
+                chartGO(go_id)
+                # print('\n would you like to download the paper associated with these genes [Y/N]?')
+                # download2 = input().strip().upper()
+                # process['paper_download'] = (download2 == 'Y')
+                # if download2 == 'Y':
+                pubmedPaper(go_id)
                     
         else:
-            print('\n would you like to download the gene product annotation [Y/N]?')
-            download = input().strip().upper()
-            process['annotation_download'] = (download == 'Y')
-            if download == 'Y':
-                for term in query:
-                    print(term)
-                    annotations(term)
+            # print('\n would you like to download the gene product annotation [Y/N]?')
+            # download = input().strip().upper()
+            # process['annotation_download'] = (download == 'Y')
+            # if download == 'Y':
+            for term in query:
+                print(term)
+                annotations(term)
     return process
 
 
