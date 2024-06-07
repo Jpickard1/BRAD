@@ -424,7 +424,8 @@ def chat(
     # Date: June 4, 2024
     
     config = load_config()
-    log_dir = os.path.join(config['log_path'], 'BRAD')
+    base_dir = os.path.expanduser('~')
+    log_dir = os.path.join(base_dir, config['log_path'])
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     chatname = os.path.join(log_dir, str(dt.now()) + '.json')
