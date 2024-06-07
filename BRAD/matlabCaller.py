@@ -5,3 +5,7 @@ def callMatlab(chatstatus, chatlog):
     chatstatus['process'] = {}                                           # Begin saving plotting arguments
     chatstatus['process']['name'] = 'Matlab'    
     config_file_path = 'configMatlab.json' # we could use this to add matlab files to path
+    eng = matlab.engine.start_matlab()
+
+
+def 

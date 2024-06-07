@@ -1,4 +1,4 @@
-function output = myFunc()
+function [] = myFunc()
     % myFunc - A simple function to multiply each element of the input array by 2.
     %
     % Syntax: outputArray = myFunc(inputArray)
@@ -14,5 +14,5 @@ function output = myFunc()
     %    disp(result); % Output will be [2, 4, 6]
 
     disp("Hello Python World from MATLAB!");
-    output = 5;
+    output = [];
 end
