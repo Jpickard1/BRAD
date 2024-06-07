@@ -16,6 +16,16 @@ from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
 
+#BERTscore
+import bert_score
+import logging
+import transformers
+transformers.tokenization_utils.logger.setLevel(logging.ERROR)
+transformers.configuration_utils.logger.setLevel(logging.ERROR)
+transformers.modeling_utils.logger.setLevel(logging.ERROR)
+from bert_score import BERTScorer
+
+
 #Extraction
 import re
 from nltk.corpus import words
@@ -60,20 +70,41 @@ def queryDocs(chatstatus):
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
+    experiment = chatstatus['experiment']     # boolean value whether or not to calculate cross validated scores
     
     # query to database
     if vectordb is not None:
         documentSearch = vectordb.similarity_search_with_relevance_scores(prompt)
         docs, scores = getDocumentSimilarity(documentSearch)
-
-        # pass the database output to the llm
         chain = load_qa_chain(llm, chain_type="stuff")
-        res = chain({"input_documents": docs, "question": prompt})
-        print(res['output_text'])
+        #bertscores
+        if experiment is True:
+            print(f"output of similarity search: {scores}")
+            candidates = []
+            reference = []
+            # Iterate through the indices of the original list
+            for i in range(len(docs)):
+                # removes one of the documents
+                new_list = docs[:i] + docs[i + 1:]
+                reference.append(docs[i].dict()['page_content'])
+                print(f"Masked Document: {docs[i].dict()['page_content']}\n")
+                res = chain({"input_documents": new_list, "question": prompt})
+                print(f"RAG response: {res['output_text']}")
+                # Add the new list to the combinations list
+                candidates.append(res['output_text'])
+            scorer = BERTScorer(lang="en", rescale_with_baseline=True)
+            P, R, F1 = scorer.score(candidates, reference)
+            print(F1)
+                
+        else:
+        # pass the database output to the llm
+            
+            res = chain({"input_documents": docs, "question": prompt})
+            print(res['output_text'])
     
         # change inputs to be json readable
-        res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
-        chatstatus['output'], chatstatus['process'] = res['output_text'], res
+            res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
+            chatstatus['output'], chatstatus['process'] = res['output_text'], res
     else:
         template = """Current conversation:\n{history}\n\n\nNew Input:\n{input}"""
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
@@ -88,7 +119,8 @@ def queryDocs(chatstatus):
         chatstatus['output'] = response
     # update and return the chatstatus
     # chatstatus['output'], chatstatus['process'] = res['output_text'], res
-    chatstatus = geneOntology(chatstatus['output'], chatstatus)
+    if experiment is False:
+        chatstatus = geneOntology(chatstatus['output'], chatstatus)
     return chatstatus
 
 def getPreviousInput(log, key):

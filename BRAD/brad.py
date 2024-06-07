@@ -194,7 +194,8 @@ def loadChatStatus():
         'current documents' : None,
         'tables'            : {},
         'documents'         : {},
-        'plottingParams'    : {}
+        'plottingParams'    : {},
+        'experiment' : False
     }
     return chatstatus
 
@@ -472,6 +473,9 @@ def chat(
     while True:
         print('==================================================')
         chatstatus['prompt'] = input('Input >> ')                 # get query from user
+        if 'BERTscore' in chatstatus['prompt'].split(' '):
+            chatstatus['experiment'] = True
+            chatstatus['prompt'] = chatstatus['prompt'][10:]
         
         # Handle explicit commands and routing
         if chatstatus['prompt'] in ['exit', 'quit', 'q', 'bye']:         # check to exit
@@ -479,6 +483,7 @@ def chat(
         elif chatstatus['prompt'].lower() == 'help':              # print man to the screen
             chatbotHelp()
             continue
+        
         elif chatstatus['prompt'].startswith('/set'):             # set a configuration variable
             chatstatus = reconfig(chatstatus)
             continue
