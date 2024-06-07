@@ -5,11 +5,12 @@ import json
 
 def callSnakemake(chatstatus, chatlog):
     """
-    Call Snakemake with parameters extracted from chatstatus.
+    This function calls Snakemake with parameters extracted from chatstatus.
 
-    Parameters:
-    - chatstatus: A dictionary containing chat status information.
-    - chatlog: A log of the chat.
+    :param chatstatus: A dictionary containing chat status information.
+    :type chatstatus: dict
+    :param chatlog: A log of the chat.
+    :type chatlog: str
 
     The function retrieves the user prompt from chatstatus, reads Snakemake
     parameters from a JSON configuration file, and then executes Snakemake
@@ -17,9 +18,11 @@ def callSnakemake(chatstatus, chatlog):
 
     It also updates chatstatus with information about the Snakemake process.
 
-    Returns:
-    - None
+    :return: None
+    :rtype: None
+
     """
+    
     prompt = chatstatus['prompt']                                        # Get the user prompt
     chatstatus['process'] = {}                                           # Begin saving plotting arguments
     chatstatus['process']['name'] = 'Snakemake'    
@@ -32,11 +35,12 @@ def read_config(file_path='configSnakemake.json') -> Dict[str, Any]:
     """
     Read JSON configuration from a file.
 
-    Parameters:
-    - file_path: Path to the JSON file containing the configuration.
+    :param file_path: Path to the JSON file containing the configuration.
+    :type file_path: str
 
-    Returns:
-    - A dictionary representing the configuration.
+    :return: A dictionary representing the configuration.
+    :rtype: dict
+
     """
     with open(file_path, 'r') as file:
         config = json.load(file)
@@ -46,9 +50,10 @@ def run_snakemake(params: Dict[str, Any]):
     """
     Run a Snakemake workflow with the given parameters.
 
-    Parameters:
-    - params: A dictionary of parameters where the keys are the Snakemake options
-              and the values are the corresponding arguments.
+    :param params: A dictionary of parameters where the keys are the Snakemake options
+                   and the values are the corresponding arguments.
+    :type params: dict
+
     """
     command = ["snakemake"]
     

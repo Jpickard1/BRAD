@@ -57,15 +57,15 @@ from BRAD.geneDatabaseCaller import *
 
 def getModules():
     """
-    Retrieve a dictionary mapping module names to their corresponding functions.
+    Returns a dictionary mapping module names to their corresponding function handles for various tasks.
 
-    This function provides a central place to define and access different modules 
-    by their identifiers. The dictionary returned maps module identifiers (keys) 
-    to their respective functions (values).
+    :param None: This function does not take any parameters.
 
-    Returns:
-        dict: A dictionary where the keys are module identifiers (str) and the 
-              values are function references.
+    :raises None: This function does not raise any specific errors.
+
+    :return: A dictionary where the keys are module names and the values are function handles for tasks such as querying Enrichr, web scraping, generating seaborn plots, querying documents, and calling Snakemake.
+    :rtype: dict
+
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -86,13 +86,15 @@ def getModules():
 
 def load_config():
     """
-    Load configuration from a JSON file.
+    Loads the configuration settings from a JSON file.
 
-    This function reads the configuration settings from a JSON file located at 
-    'config/config.json' and returns the data as a dictionary.
+    :param None: This function does not take any parameters.
 
-    Returns:
-        dict: The configuration data loaded from the JSON file.
+    :raises FileNotFoundError: If the configuration file is not found.
+    :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
+
+    :return: A dictionary containing the configuration settings.
+    :rtype: dict
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -106,13 +108,17 @@ def load_config():
     
 def save_config(config):
     """
-    Save configuration to a JSON file.
+    Saves the configuration settings to a JSON file.
 
-    This function writes the provided configuration data to a JSON file named 
-    'config.json', ensuring the data is formatted with an indentation of 4 spaces.
+    :param config: A dictionary containing the configuration settings to be saved.
+    :type config: dict
 
-    Args:
-        config (dict): The configuration data to be saved.
+    :raises FileNotFoundError: If the directory for the configuration file is not found.
+    :raises TypeError: If the configuration dictionary contains non-serializable values.
+
+    :return: None
+    :rtype: None
+
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -126,19 +132,17 @@ def save_config(config):
         
 def reconfig(chat_status):
     """
-    Update a specific configuration in the chat status based on the provided prompt.
+    Updates a specific configuration setting based on the given chat status and saves the updated configuration.
 
-    This function parses a prompt string from the chat status to extract a key-value 
-    pair and updates the corresponding configuration in the chat status. The function 
-    attempts to convert the value to an integer or float if possible. The updated 
-    configuration is then saved to a JSON file.
+    :param chat_status: A dictionary containing the current chat status, including the prompt and configuration.
+    :type chat_status: dict
 
-    Args:
-        chat_status (dict): A dictionary containing the current chat status, including
-                            the prompt and configuration.
+    :raises KeyError: If the specified configuration key is not found in the chat status.
+    :raises ValueError: If the value cannot be converted to an integer or float when applicable.
 
-    Returns:
-        dict: The updated chat status.
+    :return: The updated chat status dictionary.
+    :rtype: dict
+
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -163,24 +167,16 @@ def reconfig(chat_status):
 
 def loadChatStatus():
     """
-    Load the initial chat status.
+    Initializes and loads the chat status with default values and configuration settings from a file.
 
-    This function initializes the chat status with default values, including loading 
-    the configuration from a JSON file. The chat status dictionary contains various 
-    fields to manage the chat session.
+    :param None: This function does not take any parameters.
 
-    Returns:
-        dict: A dictionary representing the initial chat status with the following keys:
-            - config (dict): The configuration settings loaded from the JSON file.
-            - prompt (str or None): The current prompt string, initially set to None.
-            - output (str or None): The current output string, initially set to None.
-            - process (dict): A dictionary to manage ongoing processes, initially empty.
-            - current table (dict): A dictionary with keys 'key' and 'tab' representing
-                                    the current table key and table object, both initially None.
-            - current documents (None): The current documents, initially set to None.
-            - tables (dict): A dictionary to store table data, initially empty.
-            - documents (dict): A dictionary to store document data, initially empty.
-            - plottingParams (dict): A dictionary to store parameters for plotting, initially empty.
+    :raises FileNotFoundError: If the configuration file is not found.
+    :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
+
+    :return: A dictionary representing the chat status with initial values and loaded configuration.
+    :rtype: dict
+
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -204,38 +200,16 @@ def load_literature_db(
     persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/"
 ):
     """
-    Load a literature database with embedding models and persistent client settings.
+    Loads a literature database using specified embedding model and settings.
 
-    This function loads a literature database from a specified directory, using a 
-    HuggingFace embedding model and Chroma for vector database management. It checks 
-    if the database contains any articles and issues a warning if it is empty.
+    :param persist_directory: The directory where the database is stored, defaults to "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/"
+    :type persist_directory: str, optional
 
-    Args:
-        persist_directory (str): The directory path where the database is stored. 
-                                 Defaults to a predefined path for transcription factors.
+    :raises FileNotFoundError: If the specified directory does not exist or is inaccessible.
+    :raises Warning: If the loaded database contains no articles.
 
-    Returns:
-        tuple: A tuple containing:
-            - vectordb (Chroma): The loaded vector database.
-            - embeddings_model (HuggingFaceEmbeddings): The embeddings model used 
-                                                        for generating embeddings.
-
-    Notes:
-        - The function uses the 'BAAI/bge-base-en-v1.5' model from HuggingFace for 
-          embedding text.
-        - The database is named dynamically based on collection size and overlap 
-          parameters.
-
-    Example:
-        # Load the literature database from the default directory
-        vectordb, embeddings_model = load_literature_db()
-
-        # Load the literature database from a custom directory
-        custom_directory = "/path/to/custom/directory/"
-        vectordb, embeddings_model = load_literature_db(persist_directory=custom_directory)
-
-    Warnings:
-        If the database contains no articles, a warning is issued.
+    :return: A tuple containing the vector database and the embeddings model.
+    :rtype: tuple
 
     """
     # Auth: Joshua Pickard
@@ -253,29 +227,14 @@ def load_literature_db(
 
 def is_json_serializable(value):
     """
-    Check if a value is JSON serializable.
+    Checks if a given value is JSON serializable.
 
-    This function attempts to serialize a given value to a JSON-formatted string. 
-    If the serialization is successful, the function returns True, indicating that 
-    the value is JSON serializable. If a TypeError or OverflowError is raised during 
-    serialization, the function returns False, indicating that the value is not JSON 
-    serializable.
+    :param value: The value to be checked for JSON serializability.
+    :type value: Any
 
-    Args:
-        value: The value to be checked for JSON serializability. This can be of any 
-               data type.
+    :return: True if the value is JSON serializable, False otherwise.
+    :rtype: bool
 
-    Returns:
-        bool: True if the value is JSON serializable, False otherwise.
-
-    Example:
-        # Check if a dictionary is JSON serializable
-        data = {"key": "value"}
-        is_serializable = is_json_serializable(data)  # Returns True
-
-        # Check if a complex number is JSON serializable
-        complex_num = 1 + 2j
-        is_serializable = is_json_serializable(complex_num)  # Returns False
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -289,31 +248,22 @@ def is_json_serializable(value):
 
 def logger(chatlog, chatstatus, chatname):
     """
-    Log the current chat status and process information to a log file.
+    Logs the chat status and process details into a specified chat log file.
 
-    This function updates the chat log with the current status and process 
-    information from `chatstatus`. It ensures that all process information is 
-    JSON serializable. The updated log is then saved to a specified file.
+    :param chatlog: The dictionary containing the chat log entries.
+    :type chatlog: dict
+    :param chatstatus: The current status of the chat, including prompt, output, and process details.
+    :type chatstatus: dict
+    :param chatname: The name of the file where the chat log will be saved.
+    :type chatname: str
 
-    Args:
-        chatlog (dict): The current log of the chat, containing previous chat 
-                        entries.
-        chatstatus (dict): The current status of the chat, including prompt, 
-                           output, process, and other metadata.
-        chatname (str): The name of the file where the updated chat log will be 
-                        saved.
+    :raises FileNotFoundError: If the specified chat log file cannot be created or accessed.
+    :raises TypeError: If the chat log or status contains non-serializable data that cannot be converted to a string.
 
-    Returns:
-        tuple: A tuple containing:
-            - chatlog (dict): The updated chat log.
-            - chatstatus (dict): The updated chat status with the process 
-                                 information reset to None.
-
-    Notes:
-        - The `process` information in `chatstatus` is checked for JSON 
-          serializability. Any non-serializable values are converted to strings.
-        - The current table information is converted to JSON if it is not None.
+    :return: A tuple containing the updated chat log and chat status.
+    :rtype: tuple
     """
+
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
@@ -343,11 +293,15 @@ def logger(chatlog, chatstatus, chatname):
 
 def chatbotHelp():
     """
-    Display the help message for the RAG chatbot.
+    Displays a help message with information about the RAG chatbot's capabilities and special commands.
 
-    This function prints a help message that provides an overview of the capabilities 
-    of the RAG chatbot, including the various databases it can interact with and 
-    special commands available to the user.
+    :param None: This function does not take any parameters.
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: None
+    :rtype: None
+
     """
     help_message = """
     Welcome to our RAG chatbot Help!
@@ -384,41 +338,26 @@ def chat(
         embeddings_model=None
     ):
     """
-    Main function for the RAG chatbot.
+    Initializes and runs the RAG chatbot, allowing interaction with various models and databases, and logs the conversation.
 
-    This function initializes and manages the RAG chatbot session. It loads the 
-    necessary models and databases, sets up routing for user queries, handles 
-    special commands (/set, /force), interacts with the selected modules, logs 
-    the chat interactions, and continues the conversation until the user exits.
+    :param model_path: The path to the Llama model file, defaults to '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'.
+    :type model_path: str, optional
+    :param persist_directory: The directory where the literature database is stored, defaults to "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/".
+    :type persist_directory: str, optional
+    :param llm: The language model to be used. If None, it will be loaded within the function.
+    :type llm: PreTrainedModel, optional
+    :param ragvectordb: The RAG vector database to be used. If None, it will prompt the user to load it.
+    :type ragvectordb: Chroma, optional
+    :param embeddings_model: The embeddings model to be used. If None, it will be loaded within the function.
+    :type embeddings_model: HuggingFaceEmbeddings, optional
 
-    Args:
-        model_path (str, optional): File path to the llama model. Defaults to 
-                                    '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'.
-        persist_directory (str, optional): Directory path where the literature 
-                                           database is stored. Defaults to 
-                                           '/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/'.
-        llm (LlamaCpp, optional): Preloaded llama model instance. Defaults to None.
-        ragvectordb (Chroma, optional): Preloaded literature database instance. 
-                                        Defaults to None.
-        embeddings_model (HuggingFaceEmbeddings, optional): Preloaded embeddings 
-                                                            model instance. Defaults to None.
+    :raises FileNotFoundError: If the specified model or database directories do not exist.
+    :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
+    :raises KeyError: If required keys are missing from the configuration or chat status.
 
-    Returns:
-        None
+    :return: None
+    :rtype: None
 
-    Notes:
-        - The chat log is saved to a JSON file named based on the current date and 
-          time.
-        - The function initializes the llama model, the literature database, and 
-          necessary configurations.
-        - It handles user commands like 'help', '/set', and '/force' to provide 
-          assistance, change configurations, or force database usage.
-        - The function continues to prompt the user for input until an exit command 
-          is received ('exit', 'quit', 'q').
-
-    Example:
-        # Run the RAG chatbot session
-        main()
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu

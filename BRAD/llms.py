@@ -6,17 +6,22 @@ def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/
                max_tokens = 1000,
                verbose = False):
     """
-    Load and initialize the Llama model with specified parameters.
+    Loads the Llama language model from the specified model path with given parameters.
 
-    Parameters:
-    model_path (str): The file path to the Llama model. Defaults to 
-                      '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'.
-    n_ctx (int): The context length for the model. Defaults to 4096.
-    max_tokens (int): The maximum number of tokens to generate. Defaults to 1000.
-    verbose (bool): If True, enable verbose logging. Defaults to False.
+    :param model_path: Path to the Llama model file.
+    :type model_path: str, optional
+    :param n_ctx: Number of context tokens for the model.
+    :type n_ctx: int, optional
+    :param max_tokens: Maximum number of tokens for the model's output.
+    :type max_tokens: int, optional
+    :param verbose: If True, enables verbose logging.
+    :type verbose: bool, optional
 
-    Returns:
-    LlamaCpp: An instance of the LlamaCpp model initialized with the specified parameters.
+    :return: The loaded Llama model.
+    :rtype: langchain.llms.LlamaCpp
+
+    :example:
+    >>> llama_model = load_llama()
     """
     from langchain.llms import LlamaCpp
     from langchain.callbacks.manager import CallbackManager
@@ -31,18 +36,20 @@ def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/
 
 def load_nvidia(nvidia_model='mistral_7b', nvidia_api_key=None):
     """
-    Load and initialize an NVIDIA model with the specified parameters.
+    Loads the NVIDIA language model with the specified model name and API key.
 
-    Parameters:
-    nvidia_model (str): The name of the NVIDIA model to load. Defaults to 'mistral_7b'.
-    nvidia_api_key (str, optional): The API key for accessing NVIDIA's services. If not provided,
-                                    the function will prompt for it.
+    :param nvidia_model: Name of the NVIDIA model to load.
+    :type nvidia_model: str, optional
+    :param nvidia_api_key: API key for accessing NVIDIA's services. If not provided, it will be prompted.
+    :type nvidia_api_key: str, optional
 
-    Returns:
-    ChatNVIDIA: An instance of the ChatNVIDIA model initialized with the specified parameters.
+    :raises AssertionError: If the provided NVIDIA API key is not valid.
 
-    Raises:
-    AssertionError: If the provided or entered API key does not start with "nvapi-".
+    :return: The loaded NVIDIA language model.
+    :rtype: langchain_nvidia_ai_endpoints.ChatNVIDIA
+
+    :example:
+    >>> nvidia_model = load_nvidia()
     """
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
     if not os.environ.get("NVIDIA_API_KEY", "").startswith("nvapi-"):
