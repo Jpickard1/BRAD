@@ -788,9 +788,17 @@ def arxiv_scrape(pdf_urls):
 
     """
     s = HTMLSession()
+    try: 
+        path = os.path.abspath(os.getcwd()) + '/specialized_docs'
+        os.makedirs(path, exist_ok = True) 
+        print("Directory '%s' created successfully" % path) 
+    except OSError as error: 
+        print("Directory '%s' can not be created" % path) 
 
     headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
+    pdf_string = ""
     for papers in pdf_urls:
+        pdf_string += papers+"\n"
         try:
             r = s.get(papers, stream=True)
             paper_id = papers[-10:]
@@ -802,6 +810,7 @@ def arxiv_scrape(pdf_urls):
         except ConnectionError as e:
             pass
             print(f"{pmc} could not be gathered.")
+    return pdf_string
             
 def result_set_to_string(result_set):
     """
