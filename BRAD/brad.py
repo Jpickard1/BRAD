@@ -53,7 +53,7 @@ from BRAD.seabornCaller import *
 # from matlabCaller import *
 from BRAD.snakemakeCaller import *
 from BRAD.llms import *
-
+from BRAD.geneDatabaseCaller import *
 
 def getModules():
     """
@@ -73,7 +73,8 @@ def getModules():
     
     # this + imports should be the only code someone needs to write to add a new module
     module_functions = {
-        'GGET'   : queryEnrichr,     # gget
+        'GGET'   : geneDBRetriever,     # gget
+#        'GGET'   : queryEnrichr,     # gget
 #        'DATA'   : manipulateTable,  #
         'SCRAPE' : webScraping,      # webscrapping
         'SNS'    : callSnsV3,        # seaborn
