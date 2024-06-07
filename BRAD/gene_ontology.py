@@ -8,7 +8,7 @@ from requests.exceptions import ConnectionError
 import os
 import copy
 
-def geneOntology(goQuery, chatstatus):
+def geneOntology(chatstatus, goQuery):
     """
     Searches for gene terms in a provided query using a predefined gene list, 
     and optionally initiates a Gene Ontology search based on user input.
@@ -26,20 +26,20 @@ def geneOntology(goQuery, chatstatus):
     with open(file_path, 'r') as file:
         contents = file.read()
     gene_list = contents.split('\n')
-    real_list = []
-    for words in goQuery.split(' '):
-        words = words.upper()
-        if words in gene_list:
-            real_list.append(words)
+    real_list = goQuery # []
+    #for words in goQuery.split(' '):
+    #    words = words.upper()
+    #    if words in gene_list:
+    #        real_list.append(words)
     if len(real_list) > 0:
         print(real_list)
-        chatstatus['output'] += '\n would you search Gene Ontology for these terms [Y/N]?'
-        print('\n would you search Gene Ontology for these terms [Y/N]?')
-        go = input().strip().upper()
-        chatstatus['process']['search'] = (go == 'Y')
-        if go == 'Y':
-            go_process = gonto.goSearch(real_list)
-            chatstatus['process']['GO'] = go_process
+        #chatstatus['output'] += '\n would you search Gene Ontology for these terms [Y/N]?'
+        #print('\n would you search Gene Ontology for these terms [Y/N]?')
+        #go = input().strip().upper()
+        #chatstatus['process']['search'] = (go == 'Y')
+        #if go == 'Y':
+        go_process = goSearch(real_list)
+        chatstatus['process']['GO'] = go_process
     return chatstatus
             
 def goSearch(query):
@@ -60,27 +60,27 @@ def goSearch(query):
         output, geneStatus = textGO(terms)
         process['output'] = output
         if geneStatus == True:
-            print('\n would you like to download charts associated with these genes [Y/N]?')
-            download = input().strip().upper()
-            process['chart_download'] = (download == 'Y')
-            if download == 'Y':   
-                for term in output:
-                    go_id = str(term[0])
-                    chartGO(go_id)
-                    print('\n would you like to download the paper associated with these genes [Y/N]?')
-                    download2 = input().strip().upper()
-                    process['paper_download'] = (download2 == 'Y')
-                    if download2 == 'Y':
-                        pubmedPaper(go_id)
+            #print('\n would you like to download charts associated with these genes [Y/N]?')
+            #download = input().strip().upper()
+            #process['chart_download'] = (download == 'Y')
+            #if download == 'Y':   
+            for term in output:
+                go_id = str(term[0])
+                chartGO(go_id)
+                # print('\n would you like to download the paper associated with these genes [Y/N]?')
+                # download2 = input().strip().upper()
+                # process['paper_download'] = (download2 == 'Y')
+                # if download2 == 'Y':
+                pubmedPaper(go_id)
                     
         else:
-            print('\n would you like to download the gene product annotation [Y/N]?')
-            download = input().strip().upper()
-            process['annotation_download'] = (download == 'Y')
-            if download == 'Y':
-                for term in query:
-                    print(term)
-                    annotations(term)
+            # print('\n would you like to download the gene product annotation [Y/N]?')
+            # download = input().strip().upper()
+            # process['annotation_download'] = (download == 'Y')
+            # if download == 'Y':
+            for term in query:
+                print(term)
+                annotations(term)
     return process
 
 

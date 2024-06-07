@@ -1,0 +1,64 @@
+Can you retrieve information on the BRCA1, TP53, and EGFR from the NCBI database?
+Find the functional annotations for the APC, KRAS, and MYC in the Ensembl database.
+Get the expression profiles for CDK2, CDK4, and CDK6 from the GTEx database.
+Look up the ontology terms for the PIK3CA, PTEN, and AKT1 in the Gene Ontology database.
+Can you provide the chromosomal locations of the RB1, MDM2, and VHL from the UCSC Genome Browser?
+Fetch the mutation data for BRAF, NRAS, and KIT from the COSMIC database.
+Retrieve the pathways associated with the JAK2, STAT3, and IL6 from the KEGG database.
+Obtain the protein-protein interaction networks for the ESR1, AR, and HER2 from the STRING database.
+Can you find the clinical variant information for the CFTR, HBB, and SMN1 in the ClinVar database?
+Look up the transcript variants for the ALK, ROS1, and RET in the RefSeq database.
+Retrieve the expression data for the BRCA2, CHEK2, and PALB2 from the TCGA database.
+Find the genetic associations for the FTO, MC4R, and TCF7L2 in the GWAS Catalog.
+Get the protein domain information for the LRRK2, SNCA, and PARK2 from the Pfam database.
+Look up the epigenetic modifications for the DNMT1, TET2, and HDAC1 in the Roadmap Epigenomics database.
+Can you provide the drug-gene interactions for the CYP2D6, CYP3A4, and CYP2C19 from the PharmGKB database?
+Fetch the expression data for the HIF1A, VEGFA, and EPO from the Gene Expression Omnibus (GEO) database.
+Retrieve the disease associations for the APP, PSEN1, and PSEN2 from the OMIM database.
+Obtain the microRNA targets for the BCL2, BAX, and MCL1 from the miRTarBase database.
+Can you find the structural variants for the NOTCH1, NOTCH2, and NOTCH3 in the dbVar database?
+Look up the conservation scores for the SOX2, NANOG, and POU5F1 in the UCSC Genome Browser.
+Retrieve the methylation data for the CDKN2A, MGMT, and MLH1 from the Illumina Human Methylation database.
+Find the expression quantitative trait loci (eQTLs) for the GATA3, GATA4, and GATA6 in the GTEx database.
+Get the single nucleotide polymorphism (SNP) information for the APOE, LPL, and CETP from the dbSNP database.
+Look up the orthologs for the FOXP2, FOXP3, and FOXP4 in the OrthoDB database.
+Can you provide the evolutionary conservation data for the P53, P21, and P27 from the PhyloP database?
+Fetch the RNA-seq data for the MYOD1, MYOG, and MYF5 from the SRA database.
+Retrieve the fusion information for the EML4, ALK, and KIF5B from the ChimerDB database.
+Obtain the variant allele frequencies for the EGFR, KRAS, and BRAF from the ExAC database.
+Can you find the protein expression data for the TGFBR1, TGFBR2, and SMAD4 in the Human Protein Atlas?
+Look up the co-expression networks for the MDM4, CDK6, and CCND1 in the COEXPEDIA database.
+Retrieve the exon-intron structure for the BRIP1, RAD51, and RAD52 from the UCSC Genome Browser.
+Find the promoter sequences for the ABL1, BCR, and JAK2 in the EPD database.
+Get the regulatory elements for the MYC, MAX, and MAD in the ENCODE database.
+Look up the clinical trial information for the HER2, BRCA1, and BRCA2 in the ClinicalTrials.gov database.
+Can you provide the RNA binding protein interactions for the FMR1, FXR1, and FXR2 from the RBPDB database?
+Fetch the disease relationships for the GNAS, GNAQ, and GNA11 from the DisGeNET database.
+Retrieve the alternative splicing events for the SRSF1, SRSF2, and SRSF3 from the ASAP database.
+Obtain the enhancer regions for the HOXA1, HOXB1, and HOXD1 from the EnhancerAtlas database.
+Can you find the chromatin state segmentation for the TP63, TP73, and TP53 from the ENCODE database?
+Look up the proteomic data for the MAPK1, MAPK3, and MAPK8 in the ProteomicsDB database.
+Retrieve the binding sites for the transcription factors JUN, FOS, and ATF2 in the JASPAR database.
+Find the phenotypic information for the TERT, TERC, and DKC1 in the Human Phenotype Ontology (HPO) database.
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on enrichr: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on BioCarta_2015: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG
+look up the following genes on gene ontology: PCNA, CDT1, GEM cMYC, MYOD, MYOG

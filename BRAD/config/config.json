@@ -17,6 +17,6 @@
         "colormap": "viridis",
         "fontsize": null
     },
-    "debug": false,
-    "log_path": "~"
+    "debug": true,
+    "log_path": "BRAD"
 }
