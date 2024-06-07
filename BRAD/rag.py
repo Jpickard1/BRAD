@@ -82,7 +82,7 @@ def queryDocs(chatstatus):
         res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
         chatstatus['output'], chatstatus['process'] = res['output_text'], res
     else:
-        template = """Current conversation:\n{history}\n\n\nNew Input:\n{input}"""
+        template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
         conversation = ConversationChain(prompt  = PROMPT,
                                          llm     = llm,
@@ -96,7 +96,7 @@ def queryDocs(chatstatus):
         chatstatus['process'] = {'type': 'LLM Conversation'}
     # update and return the chatstatus
     # chatstatus['output'], chatstatus['process'] = res['output_text'], res
-    chatstatus = geneOntology(chatstatus['output'], chatstatus)
+    # chatstatus = geneOntology(chatstatus['output'], chatstatus)
     return chatstatus
 
 def getPreviousInput(log, key):

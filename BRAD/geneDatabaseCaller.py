@@ -77,13 +77,13 @@ def geneDBRetriever(chatstatus):
 
     # Print gene list if debugging
     print(geneList) if chatstatus['config']['debug'] else None
-    
+
+    chatstatus['process'] = {'name':'geneDatabaseCaller'}
     try:
         dbCaller(chatstatus, geneList)
     except Exception as e:
         output = f'Error occurred while searching database: {e}'
         print(output)
-    chatstatus['process'] = {'name':'geneDatabaseCaller'}
     return chatstatus
 
 def parse_llm_response(response):
