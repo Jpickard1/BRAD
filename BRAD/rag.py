@@ -20,6 +20,16 @@ from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
 
+#BERTscore
+import bert_score
+import logging
+import transformers
+transformers.tokenization_utils.logger.setLevel(logging.ERROR)
+transformers.configuration_utils.logger.setLevel(logging.ERROR)
+transformers.modeling_utils.logger.setLevel(logging.ERROR)
+from bert_score import BERTScorer
+
+
 #Extraction
 import re
 from nltk.corpus import words
@@ -33,54 +43,41 @@ from BRAD.gene_ontology import geneOntology
 
 def queryDocs(chatstatus):
     """
-    Query the RAG database and interact with the llama model.
+    Queries documents based on the user prompt and updates the chat status with the results.
 
-    This function queries the RAG (Related Articles Generator) database using 
-    the user's prompt, obtains relevant documents and their relevance scores, 
-    passes them to the llama-2 language model (LLM) for question answering, 
-    processes the LLm output, updates the chat status, and returns the updated 
-    chat status.
+    :param chatstatus: A dictionary containing the current chat status, including the prompt, LLM, vector database, and memory.
+    :type chatstatus: dict
 
-    Args:
-        chatstatus (dict): The current status of the chat, including the LLM 
-                           instance, user prompt, RAG database instance, and 
-                           other metadata.
+    :raises KeyError: If required keys are not found in the chatstatus dictionary.
+    :raises AttributeError: If methods on the vector database or LLM objects are called incorrectly.
 
-    Returns:
-        dict: The updated chat status, including the LLm output text, LLm process 
-              information, and any additional metadata.
-
-    Notes:
-        - The function uses the LLM to answer questions based on the retrieved 
-          documents.
-        - It updates the chat status with the LLm's output text, process information, 
-          and any relevant metadata.
-        - The function interacts with the RAG database and may call additional 
-          functions, such as `getDocumentSimilarity` and `geneOntology`, to process 
-          the retrieved documents.
+    :return: The updated chat status dictionary with the query results.
+    :rtype: dict
     """
     process = {}
     llm      = chatstatus['llm']              # get the llm
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
+    experiment = chatstatus['experiment']     # boolean value whether or not to calculate cross validated scores
     
     # query to database
     if vectordb is not None:
         documentSearch = vectordb.similarity_search_with_relevance_scores(prompt)
         docs, scores = getDocumentSimilarity(documentSearch)
+        chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
+        #bertscores
+        if experiment is True:
+            scoring_experiment(chain, docs)
+        else:
+        # pass the database output to the llm       
+            res = chain({"input_documents": docs, "question": prompt})
+            print(res['output_text'])
 
-        # pass the database output to the llm
-        chain = load_qa_chain(llm,
-                              chain_type="stuff",
-                              verbose   = chatstatus['config']['debug'],
-                             )
-        res = chain({"input_documents": docs, "question": prompt})
-        print(res['output_text'])
     
         # change inputs to be json readable
-        res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
-        chatstatus['output'], chatstatus['process'] = res['output_text'], res
+            res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
+            chatstatus['output'], chatstatus['process'] = res['output_text'], res
     else:
         template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
@@ -96,34 +93,23 @@ def queryDocs(chatstatus):
         chatstatus['process'] = {'type': 'LLM Conversation'}
     # update and return the chatstatus
     # chatstatus['output'], chatstatus['process'] = res['output_text'], res
-    # chatstatus = geneOntology(chatstatus['output'], chatstatus)
     return chatstatus
 
 def getPreviousInput(log, key):
     """
-    Retrieve previous input or output text from the chat log.
+    Retrieves previous input or output from the log based on the specified key.
 
-    This function retrieves and returns either the previous user input or the 
-    output text from the chat log, based on the provided key.
+    :param log: A list containing the chat log or history of interactions.
+    :type log: list
+    :param key: A string key indicating which previous input or output to retrieve.
+    :type key: str
 
-    Warnings:
-        This function is in the process of being depricated.
+    :raises IndexError: If the specified index is out of bounds in the log.
+    :raises KeyError: If the specified key is not found in the log entry.
 
-    Args:
-        log (dict): The chat log dictionary containing previous chat entries.
-        key (str): The key indicating which previous input or output to retrieve. 
-                   It should be in the format 'nI' or 'nO', where 'n' is an integer 
-                   representing the index in the log, and 'I' or 'O' specifies 
-                   whether to retrieve the input or output text.
+    :return: The previous input or output corresponding to the specified key.
+    :rtype: str
 
-    Returns:
-        str: The previous input text if 'key' ends with 'I', or the previous output 
-             text if 'key' ends with 'O'.
-
-    Notes:
-        - The 'log' parameter should be a dictionary where keys are integers 
-          representing chat session indices, and values are dictionaries containing 
-          'prompt' (input) and 'output' (output) keys.
     """
     num = key[:-1]
     text = key[-1]
@@ -134,25 +120,14 @@ def getPreviousInput(log, key):
     
 def getInputDocumentJSONs(input_documents):
     """
-    Convert a list of input documents into a JSON-compatible format.
+    Converts a list of input documents into a JSON serializable dictionary format.
 
-    This function iterates through a list of input documents, extracts 
-    relevant information (page content and source metadata), and returns 
-    a dictionary where each document is represented as a JSON object.
+    :param input_documents: A list of document objects containing page content and metadata.
+    :type input_documents: list
 
-    Args:
-        input_documents (list): A list of input documents, each containing 
-                                page content and metadata.
+    :return: A dictionary where keys are indices and values are JSON serializable representations of the input documents.
+    :rtype: dict
 
-    Returns:
-        dict: A dictionary where each key is an index and each value is a 
-              JSON object representing a document, containing 'page_content' 
-              and 'metadata'.
-
-    Notes:
-        - Each input document should be an object with attributes 'page_content' 
-          and 'metadata', where 'metadata' is a dictionary containing at least 
-          a 'source' key.
     """
     inputDocsJSON = {}
     for i, doc in enumerate(input_documents):
@@ -166,24 +141,16 @@ def getInputDocumentJSONs(input_documents):
 
 def getDocumentSimilarity(documents):
     """
-    Extract documents and their similarity scores from a list of tuples.
+    Extracts documents and their similarity scores from a list of document-score pairs.
 
-    This function extracts the documents and their similarity scores from 
-    a list of tuples and returns them separately.
+    :param documents: A list of tuples where each tuple contains a document object and its similarity score.
+    :type documents: list
 
-    Args:
-        documents (list): A list of tuples, where each tuple contains a 
-                          document and its similarity score.
-
-    Returns:
-        tuple: A tuple containing:
-            - list: The list of documents.
-            - numpy.ndarray: An array of similarity scores.
-
-    Notes:
-        - Each tuple in the 'documents' list should be in the format (document, score).
-        - The function separates the documents and scores into two separate lists.
-    """
+    :return: A tuple containing two elements: 
+        - A list of document objects.
+        - A numpy array of similarity scores.
+    :rtype: tuple
+"""
     scores = []
     docs   = []
     for doc in documents:
@@ -194,26 +161,14 @@ def getDocumentSimilarity(documents):
 # Define a function to get the wordnet POS tag
 def get_wordnet_pos(word):
     """
-    Map POS tag to first character lemmatize() accepts.
+    Gets the WordNet part of speech (POS) tag for a given word.
 
-    This function maps a Part-Of-Speech (POS) tag to the first character 
-    that the WordNetLemmatizer in NLTK accepts for lemmatization.
+    :param word: The word for which to retrieve the POS tag.
+    :type word: str
 
-    Args:
-        word (str): A word for which the POS tag needs to be mapped.
+    :return: The WordNet POS tag corresponding to the given word. Defaults to noun if no specific tag is found.
+    :rtype: str
 
-    Returns:
-        str: The corresponding WordNet POS tag.
-
-    Notes:
-        - This function uses NLTK's `pos_tag` function to get the POS tag 
-          of the input word.
-        - It maps POS tags to WordNet's POS tag format for lemmatization.
-
-    Example:
-        # Get WordNet POS tag for a word
-        word = "running"
-        pos_tag = get_wordnet_pos(word)  # returns 'v' for verb
     """
     tag = nltk.pos_tag([word])[0][1][0].upper()
     tag_dict = {"J": wordnet.ADJ,
@@ -224,29 +179,16 @@ def get_wordnet_pos(word):
 
 def extract_non_english_words(text):
     """
-    Extract non-English words from a given text.
+    Extracts non-English words from a given text.
 
-    This function extracts words from the given text, lemmatizes them, filters 
-    out English words using a set of English words and a custom word list, and 
-    returns non-English words.
+    :param text: The input text from which to extract non-English words.
+    :type text: str
 
-    Args:
-        text (str): The input text from which non-English words need to be extracted.
+    :raises LookupError: If the necessary NLTK data (like word lists or lemmatizer models) is not found.
 
-    Returns:
-        list: A list of non-English words extracted from the input text.
+    :return: A list of words from the input text that are not recognized as English words.
+    :rtype: list
 
-    Notes:
-        - English words are filtered out using a set of words from NLTK's words 
-          corpus and a custom word list.
-        - The function uses NLTK's WordNetLemmatizer and part-of-speech tagging.
-        - The input text is normalized to ASCII using the unidecode library.
-
-    Example:
-        # Extract non-English words from a text
-        text = "The pluripotency of stem cells in biology is fascinating."
-        non_english_words = extract_non_english_words(text)
-        # non_english_words would be: ['pluripotency', 'biology', 'genomics', 'reprogramming']
     """
     # Set of English words
     custom_word_list = ["pluripotency", "differentiation", "stem", "cell", "biology", "genomics", "reprogramming"]
@@ -267,6 +209,16 @@ def extract_non_english_words(text):
     return non_english_words
 
 def getDefaultContext():
+    """
+    Returns the default context string for the chatbot, which provides background information and capabilities.
+
+    :param None: This function does not take any parameters.
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: A string containing the default context for the chatbot.
+    :rtype: str
+    """
     llmContext = """Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,
 bioinformatics, genetics, and data science. You can be connected to a text database to augment your answers
 based on the literature with Retrieval Augmented Generation, or you can use several additional modules including
@@ -340,3 +292,22 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
 
             print('Completed Chroma Database: ', dbName) if v else None
             del vectordb, text_splitter, data_splits
+
+            
+def scoring_experiment(chain, docs):
+    print(f"output of similarity search: {scores}")
+    candidates = []
+    reference = []
+    # Iterate through the indices of the original list
+    for i in range(len(docs)):
+        # removes one of the documents
+        new_list = docs[:i] + docs[i + 1:]
+        reference.append(docs[i].dict()['page_content'])
+        print(f"Masked Document: {docs[i].dict()['page_content']}\n")
+        res = chain({"input_documents": new_list, "question": prompt})
+        print(f"RAG response: {res['output_text']}")
+        # Add the new list to the combinations list
+        candidates.append(res['output_text'])
+    scorer = BERTScorer(lang="en", rescale_with_baseline=True)
+    P, R, F1 = scorer.score(candidates, reference)
+    print(F1)

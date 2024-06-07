@@ -20,6 +20,17 @@ import logging
 import random
 
 def callSnsV3(chatstatus):
+    """
+    Handles the plotting of data using Seaborn based on the user's prompt and the current data table.
+
+    :param chatstatus: The current status of the chatbot, including user prompts and data tables.
+    :type chatstatus: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The updated chatstatus after processing the plot request.
+    :rtype: dict
+    """
     prompt = chatstatus['prompt']                                                    # Get the user prompt
     df = chatstatus['current table']['tab']                                          # Get the data to plot
     df.dropna(inplace=True)
@@ -126,6 +137,20 @@ for param in chatstatus['process']['params'].keys():
 '''
 
 def callSnsV2(chatstatus, chatlog):
+    """
+    Handles the plotting of data using Seaborn based on the user's prompt and the current data table.
+
+    :param chatstatus: The current status of the chatbot, including user prompts and data tables.
+    :type chatstatus: dict
+
+    :param chatlog: The log of the chat session.
+    :type chatlog: list
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The updated chatstatus after processing the plot request.
+    :rtype: dict
+    """
     prompt = chatstatus['prompt']                                                                     # Get the user prompt
     df = chatstatus['current table']['tab']                                                           # Get the data to plot    
 
@@ -185,6 +210,20 @@ def callSnsV2(chatstatus, chatlog):
     return chatstatus
 
 def callSns(chatstatus, chatlog):
+    """
+    This function processes a plot request based on the user's prompt and the current data table.
+
+    :param chatstatus: The current status of the chatbot, including user prompts and data tables.
+    :type chatstatus: dict
+
+    :param chatlog: The log of the chat session.
+    :type chatlog: list
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The updated chatstatus after processing the plot request.
+    :rtype: dict
+    """
     prompt = chatstatus['prompt'].lower()
     
     # Determine the plotting function to use (the name must be given)
@@ -253,6 +292,18 @@ def callSns(chatstatus, chatlog):
     return chatstatus
 
 def setSeabornConfigurations(chatstatus):
+    """
+    This function updates the Seaborn configurations based on the provided chat status parameters.
+
+    :param chatstatus: The current status of the chatbot, including user prompts and data tables.
+    :type chatstatus: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The updated chatstatus after setting the Seaborn configurations.
+    :rtype: dict
+
+    """
     '''this function currently does nothing'''
     # load the configurations
     with open('config/configSeaborn.json', 'r') as f:
@@ -313,6 +364,17 @@ def setSeabornConfigurations(chatstatus):
     
 
 def plottingMethods():
+    """
+    This function returns a dictionary containing pairs of plotting method names and corresponding functions to call for each plot type.
+
+    :param None: This function takes no parameters.
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: A dictionary where keys are plot types and values are lists containing two elements: the caller function and the Seaborn plotting function.
+    :rtype: dict
+
+    """
     plot_functions = {
         "line"         : [lineplotCaller   , sns.lineplot   ],
         "bar"          : [barplotCaller    , sns.barplot    ],
@@ -342,6 +404,18 @@ def plottingMethods():
 
 
 def functionArgs(func):
+    """
+    This function generates a dictionary of potential arguments for a given function.
+
+    :param func: The function for which argument information is needed.
+    :type func: function
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: A dictionary containing potential arguments for the given function, with initial values set to None.
+    :rtype: dict
+
+    """
     plot_args = {
         'title'    : None,
         'x'        : None,
@@ -362,24 +436,22 @@ def functionArgs(func):
         plot_args[param.name] = None
     return plot_args
 
-import inspect
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize
-from seaborn.palettes import color_palette
-
 def validate_arguments(func, arguments):
     """
-    Validates arguments against the function's signature and specific requirements.
-    
-    Parameters:
-    func (function): The seaborn plotting function.
-    arguments (dict): The dictionary of arguments to be passed to the function.
-    
-    Returns:
-    (list, dict): A tuple containing a list of missing arguments and a dictionary of incorrect arguments with error messages.
+    This function validates the arguments passed to a given function based on its signature.
+
+    :param func: The function for which arguments need validation.
+    :type func: function
+    :param arguments: The arguments to be validated.
+    :type arguments: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: A tuple containing two lists: `missing_args` containing arguments that are missing, and `incorrect_args` containing arguments with incorrect types or values.
+    :rtype: tuple
+
     """
+
     signature = inspect.signature(func)
     missing_args = []
     incorrect_args = {}
@@ -681,9 +753,18 @@ def validate_arguments(func, arguments):
     return missing_args, incorrect_args
 
 def checkPlotLabels(chatstatus):
-    '''
-    Parses title, xlabel, and ylabel
-    '''
+    """
+    This function parses the title, xlabel, and ylabel from the user prompt using regular expressions.
+
+    :param chatstatus: The current status of the chat, including the user prompt.
+    :type chatstatus: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The updated chatstatus dictionary with parsed title, xlabel, and ylabel if found in the prompt.
+    :rtype: dict
+
+    """
     prompt = chatstatus['prompt']
     patterns = {
         'title': r"title\s*'([^']*)'",
@@ -697,13 +778,49 @@ def checkPlotLabels(chatstatus):
     return chatstatus
 
 def separate_punctuation_with_spaces(text):
+    """
+    This function takes a text input and separates each punctuation mark with spaces.
+
+    :param text: The input text to be processed.
+    :type text: str
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The processed text with each punctuation mark separated by spaces.
+    :rtype: str
+
+    """
     # Use regular expression to replace each punctuation mark with ' <punctuation> '
     return re.sub(r'([.,!?;:"(){}\[\]])', r' \1 ', text)
 
 def is_valid_colormap(colormap_name):
+    """
+    This function checks whether a given colormap name is valid.
+
+    :param colormap_name: The name of the colormap to be checked.
+    :type colormap_name: str
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: True if the colormap name is valid, False otherwise.
+    :rtype: bool
+
+    """
     return colormap_name in plt.colormaps()
 
 def is_valid_color(color_string):
+    """
+    This function checks whether a given color string is valid.
+
+    :param color_string: The color string to be checked.
+    :type color_string: str
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: True if the color string is valid, False otherwise.
+    :rtype: bool
+
+    """
     try:
         mcolors.to_rgba(color_string)
         return True
@@ -711,16 +828,22 @@ def is_valid_color(color_string):
         return False    
 
 def should_apply_hue(promptWords, data, max_categories=15):
-    '''
-    Detect if hue should be applied and determine the hue variable based on the prompt and data.
+    """
+    This function determines whether a hue variable should be applied based on the input prompt words and the data.
 
-    Parameters:
-    - promptWords: List of words parsed from the prompt.
-    - data: Pandas DataFrame containing the data.
+    :param promptWords: The words extracted from the input prompt.
+    :type promptWords: list
+    :param data: The dataset to be analyzed.
+    :type data: pandas.DataFrame
+    :param max_categories: The maximum number of categories allowed for a categorical variable to be considered for hue.
+    :type max_categories: int, optional
 
-    Returns:
-    - hue_var: String indicating the variable to use as hue, or None if hue is not needed.
-    '''
+    :raises None: This function does not raise any specific errors.
+
+    :return: The name of the hue variable if found, otherwise None.
+    :rtype: str or None
+
+    """
     if 'hue' in promptWords:
         loc = promptWords.index('hue')
         hue_var = promptWords[loc + 1]
@@ -737,9 +860,20 @@ def should_apply_hue(promptWords, data, max_categories=15):
     return None  # No hue variable detected
 
 def checkPlottingConfigurations(chatstatus, df):
-    '''
-    check if any variables need to be changed
-    '''
+    """
+    This function checks the plotting configurations based on the input prompt and updates the chat status accordingly.
+
+    :param chatstatus: The status of the chat including the configuration details.
+    :type chatstatus: dict
+    :param df: The dataset used for plotting.
+    :type df: pandas.DataFrame
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The updated chat status with the plotting configurations applied.
+    :rtype: dict
+
+    """
     prompt = separate_punctuation_with_spaces(chatstatus['prompt']) # we don't mess with the '-' character
     promptWords = prompt.split(' ')
     unwanted_strings = {'', ' ', 'of', 'as', 'use', 'is', 'to', 'by', 'the', ';', '(', '[', '.', ',', '!', '?', ';', ':', '"', '(', ')', '{', '}', '\[', '\]' ']', ')' } # we don't mess with the '-' character
@@ -850,6 +984,18 @@ It defines helper functions for each seaborn function specified in functionArgs.
 '''
 
 def scatterplotCaller(args):
+    """
+    This function calls the seaborn scatterplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the scatterplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the scatterplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn scatterplot function based on the Transformer input.'''
     #print(args)
     #print(args['data'].dtypes)
@@ -876,6 +1022,18 @@ def scatterplotCaller(args):
     return ax
 
 def lineplotCaller(args):
+    """
+    This function calls the seaborn lineplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the lineplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the lineplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn lineplot function based on the Transformer input.'''
     ax = sns.lineplot(
         data           = args['data'],
@@ -910,6 +1068,18 @@ def lineplotCaller(args):
     return ax
 
 def stripplotCaller(args):
+    """
+    This function calls the seaborn stripplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the stripplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the stripplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn stripplot function based on the Transformer input.'''
     ax = sns.stripplot(
         data           = args['data'],
@@ -930,6 +1100,18 @@ def stripplotCaller(args):
     return ax
 
 def swarmplotCaller(args):
+    """
+    This function calls the seaborn swarmplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the swarmplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the swarmplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn swarmplot function based on the Transformer input.'''
     ax = sns.swarmplot(
         data           = args['data'],
@@ -949,6 +1131,18 @@ def swarmplotCaller(args):
     return ax
 
 def boxplotCaller(args):
+    """
+    This function calls the seaborn boxplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the boxplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the boxplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn boxplot function based on the Transformer input.'''
     ax = sns.boxplot(
         data           = args['data'],
@@ -969,6 +1163,18 @@ def boxplotCaller(args):
     return ax
 
 def violinplotCaller(args):
+    """
+    This function calls the seaborn violinplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the violinplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the violinplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn violinplot function based on the Transformer input.'''
     ax = sns.violinplot(
         data           = args['data'],
@@ -991,6 +1197,18 @@ def violinplotCaller(args):
     return ax
 
 def barplotCaller(args):
+    """
+    This function calls the seaborn barplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the barplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the barplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn barplot function based on the Transformer input.'''
     print('Debug BarPlot')
     print(args)
@@ -1017,6 +1235,18 @@ def barplotCaller(args):
     return ax
 
 def countplotCaller(args):
+    """
+    This function calls the seaborn countplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the countplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the countplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn countplot function based on the Transformer input.'''
     ax = sns.countplot(
         data           = args['data'],
@@ -1031,6 +1261,18 @@ def countplotCaller(args):
     return ax
 
 def histplotCaller(args):
+    """
+    This function calls the seaborn histplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the histplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the histplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn histplot function based on the Transformer input.'''
     ax = sns.histplot(
         data           = args['data'],
@@ -1068,6 +1310,18 @@ def histplotCaller(args):
     return ax
 
 def kdeplotCaller(args):
+    """
+    This function calls the seaborn kdeplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the kdeplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the kdeplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn kdeplot function based on the Transformer input.'''
     ax = sns.kdeplot(
         data           = args['data'],
@@ -1100,6 +1354,18 @@ def kdeplotCaller(args):
     return ax
 
 def ecdfplotCaller(args):
+    """
+    This function calls the seaborn ecdfplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the ecdfplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the ecdfplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn ecdfplot function based on the Transformer input.'''
     ax = sns.ecdfplot(
         data           = args['data'],
@@ -1117,6 +1383,18 @@ def ecdfplotCaller(args):
     return ax
 
 def rugplotCaller(args):
+    """
+    This function calls the seaborn rugplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the rugplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the rugplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn rugplot function based on the Transformer input.'''
     ax = sns.rugplot(
         data           = args['data'],
@@ -1132,6 +1410,18 @@ def rugplotCaller(args):
     return ax
 
 def regplotCaller(args):
+    """
+    This function calls the seaborn regplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the regplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the regplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn regplot function based on the Transformer input.'''
     ax = sns.regplot(
         data           = args['data'],
@@ -1158,6 +1448,18 @@ def regplotCaller(args):
     return ax
 
 def lmplotCaller(args):
+    """
+    This function calls the seaborn lmplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the lmplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the lmplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn lmplot function based on the Transformer input.'''
     ax = sns.lmplot(
         data           = args['data'],
@@ -1188,6 +1490,18 @@ def lmplotCaller(args):
     return ax
 
 def residplotCaller(args):
+    """
+    This function calls the seaborn residplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the residplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the residplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn residplot function based on the Transformer input.'''
     ax = sns.residplot(
         data           = args['data'],
@@ -1204,6 +1518,18 @@ def residplotCaller(args):
     return ax
 
 def heatmapCaller(args):
+    """
+    This function calls the seaborn heatmap function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the heatmap function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the heatmap drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn heatmap function based on the Transformer input.'''
     ax = sns.heatmap(
         data           = args['data'],
@@ -1226,6 +1552,18 @@ def heatmapCaller(args):
     return ax
 
 def clustermapCaller(args):
+    """
+    This function calls the seaborn clustermap function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the clustermap function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the clustermap drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn clustermap function based on the Transformer input.'''
     ax = sns.clustermap(
         data           = args['data'],
@@ -1244,6 +1582,18 @@ def clustermapCaller(args):
     return ax
 
 def pairplotCaller(args):
+    """
+    This function calls the seaborn pairplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the pairplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the pairplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn pairplot function based on the Transformer input.'''
     ax = sns.pairplot(
         data           = args['data'],
@@ -1262,6 +1612,18 @@ def pairplotCaller(args):
     return ax
 
 def jointplotCaller(args):
+    """
+    This function calls the seaborn jointplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the jointplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the jointplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn jointplot function based on the Transformer input.'''
     ax = sns.jointplot(
         data           = args['data'],
@@ -1280,16 +1642,52 @@ def jointplotCaller(args):
     return ax
 
 def PairGridCaller(args):
+    """
+    This function calls the seaborn PairGrid function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the PairGrid function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: None
+    :rtype: None
+
+    """
     '''Call seaborn PairGrid function based on the Transformer input.'''
     sns.PairGrid(
     )
 
 def JointGridCaller(args):
+    """
+    This function calls the seaborn JointGrid function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the JointGrid function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: None
+    :rtype: None
+
+    """
     '''Call seaborn JointGrid function based on the Transformer input.'''
     sns.JointGrid(
     )
 
 def catplotCaller(args):
+    """
+    This function calls the seaborn catplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the catplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the catplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn catplot function based on the Transformer input.'''
     ax = sns.catplot(
         data           = args['data'],
@@ -1317,6 +1715,18 @@ def catplotCaller(args):
     return ax
 
 def relplotCaller(args):
+    """
+    This function calls the seaborn relplot function based on the Transformer input.
+
+    :param args: A dictionary containing the arguments for the relplot function.
+    :type args: dict
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: The axis object with the relplot drawn.
+    :rtype: matplotlib.axes.Axes
+
+    """
     '''Call seaborn relplot function based on the Transformer input.'''
     ax = sns.relplot(
         data           = args['data'],
