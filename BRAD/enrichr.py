@@ -23,7 +23,7 @@ import gget
 
 
 # gene enrichment
-def queryEnrichr(chatstatus):
+def queryEnrichr(chatstatus, gene_list):
     """
     Performs gene enrichment analysis using the Enrichr service and updates the chat status with the results.
 
@@ -49,30 +49,30 @@ def queryEnrichr(chatstatus):
     translator = str.maketrans('', '', punctuation_to_remove)
     prompt = prompt.translate(translator)
     
-    gene_list = []
     # Get list of gene names
     current_script_path = os.path.abspath(__file__)
     current_script_dir = os.path.dirname(current_script_path)
     file_path = os.path.join(current_script_dir, 'helperData', 'gene_list.txt')
     with open(file_path, "r") as file:
         g_from_file = [line.strip() for line in file]
-    df = pd.read_csv('ggetEnrichrDatabases.tsv', delimiter='\t')
+    file_path = os.path.join(current_script_dir, 'helperData', 'ggetEnrichrDatabases.tsv')
+    df = pd.read_csv(file_path, delimiter='\t')
     dbs = list(df['Gene-set Library'].values)
     dbs = [dbi.upper() for dbi in dbs]
     for gene in prompt.split(' '):
-        if gene.upper() in g_from_file:
-            gene_list.append(gene)
+        #if gene.upper() in g_from_file:
+        #    gene_list.append(gene)
         if gene.upper() in dbs:
             if db is not None:
                 warnings.warn('Two potential databases were provided!')
             else:
                 db = gene
                 dbfound = True
-        if gene.upper() == 'SAVE':
-            save = True
+        #if gene.upper() == 'SAVE':
+        #    save = True
         if gene.upper() == 'PLOT':
             plot = True
-    
+    save = True
     if db is None:
         warnings.warn('warning: setting db to default')
         db = default_enrichr_db

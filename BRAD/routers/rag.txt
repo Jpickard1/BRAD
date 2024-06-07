@@ -1,0 +1,103 @@
+What is the latest research on cancer genomics?
+Can you find articles about protein-protein interactions?
+Retrieve studies on RNA sequencing.
+I'm interested in recent research on computational biology.
+Find literature about genetic epidemiology.
+Search for papers on metagenomics.
+Can you fetch articles on personalized medicine?
+Retrieve studies on transcriptomics.
+What is the latest research on chromatin remodeling?
+Find articles discussing immunogenomics.
+Can you fetch papers on CRISPR-Cas9 applications?
+Retrieve literature about gene function annotation.
+I want to read about chromosomal abnormalities.
+Search for reviews on integrative genomics.
+Retrieve studies on cancer immunogenomics.
+What is the latest research on gene expression regulation?
+Can you find articles about stem cell therapy?
+Retrieve studies on infectious disease genomics.
+I'm interested in recent research on single-cell RNA sequencing.
+Find literature about drug discovery using machine learning.
+Search for papers on systems biology.
+Can you fetch articles on non-coding RNA function?
+Retrieve literature about rare disease genomics.
+What is the latest research on metabolic diseases?
+Find articles discussing computational methods in genomics.
+Retrieve studies on protein structure prediction.
+I want to read about RNA therapeutics.
+Search for papers on computational biology algorithms.
+Can you fetch articles on evolutionary genomics?
+Retrieve literature about pharmacogenomics.
+What is the latest research on epigenomic profiling?
+Find articles discussing genomic instability.
+Can you fetch papers on data-driven genomics?
+Retrieve studies on cancer genomics.
+I'm interested in recent research on personalized cancer treatment.
+Find literature about gene regulation networks.
+Can you fetch articles on gene editing advancements?
+Retrieve literature about cancer biomarkers.
+What is the latest research on gene-environment interactions?
+Find articles discussing high-throughput sequencing.
+Search for reviews on epigenetic regulation.
+Search for papers on multi-omics integration.
+Search for papers on viral genomics.
+Can you fetch articles on computational genomics?
+Retrieve studies on stem cell therapies.
+I'm interested in recent research on CRISPR-based diagnostics.
+Find literature about protein-protein interactions.
+Search for reviews on cardiovascular disease research.
+Can you fetch papers on synthetic biology?
+Retrieve literature about gene expression profiling.
+What are transcription factors?
+How do transcription factors regulate gene expression?
+What are the main types of transcription factors?
+Explain the role of transcription factors in cell differentiation.
+How do transcription factors bind to DNA?
+What is the structure of a transcription factor?
+How are transcription factors classified?
+Describe the mechanism of action of transcription factors.
+What are enhancer and silencer sequences in transcription factor binding?
+What role do transcription factors play in cancer?
+How do mutations in transcription factors lead to disease?
+What are the methods to study transcription factors?
+Explain the role of transcription factors in development.
+What are some common transcription factors in humans?
+How do transcription factors interact with other proteins?
+What is the difference between activators and repressors?
+How are transcription factors involved in signal transduction?
+What is a transcription factor binding site?
+How do transcription factors affect chromatin structure?
+Explain the concept of transcription factor networks.
+What are pioneer transcription factors?
+How do transcription factors regulate immune responses?
+What is the role of transcription factors in stem cells?
+Describe the role of transcription factors in metabolism.
+How do environmental factors influence transcription factor activity?
+What are the techniques for identifying transcription factor binding sites?
+How do transcription factors contribute to evolutionary processes?
+What is the role of transcription factors in epigenetics?
+How do transcription factors regulate stress responses?
+What are co-factors and how do they interact with transcription factors?
+Explain the role of transcription factors in neurological diseases.
+What is the significance of transcription factor binding motifs?
+How do transcription factors influence RNA polymerase activity?
+What are some examples of transcription factor families?
+How do post-translational modifications affect transcription factors?
+What is the role of transcription factors in plant biology?
+How do transcription factors regulate apoptosis?
+What are inducible transcription factors?
+Explain the role of transcription factors in muscle development.
+What is a transcription factor knockout experiment?
+How do transcription factors interact with microRNAs?
+What are synthetic transcription factors?
+How do transcription factors contribute to circadian rhythms?
+Describe the role of transcription factors in liver function.
+What is the function of transcription factors in adipogenesis?
+How are transcription factors involved in hypoxia response?
+What are transcription factor arrays?
+Explain the interaction between transcription factors and enhancers.
+What is the role of transcription factors in hematopoiesis?
+How do transcription factors regulate hormone response?
+do pluripotent genes activate simultaneously or sequentially during reprogramming?
+what role does MYOD play as a transcription factor in reprogramming?
+I am working on a tutorial on how to use BRAD, and the tutorial is focused on working with the ENRICHR and Gene Ontology databases. Please write a few paragraphs that should be included in the tutorial

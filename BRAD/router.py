@@ -1,3 +1,4 @@
+import os
 from semantic_router import Route
 from semantic_router.layer import RouteLayer
 from semantic_router.encoders import HuggingFaceEncoder
@@ -42,25 +43,31 @@ def add_sentence(file_path, sentence):
     with open(file_path, 'a') as file:
         file.write(sentence.strip() + '\n')
 
+def getRouterPath(file):
+    current_script_path = os.path.abspath(__file__)
+    current_script_dir = os.path.dirname(current_script_path)
+    file_path = os.path.join(current_script_dir, 'routers', file) #'enrichr.txt')
+    return file_path
+    
 routeGget = Route(
     name = 'GGET',
-    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/enrichr.txt')
+    utterances = read_prompts(getRouterPath('enrichr.txt'))
 )
 routeScrape = Route(
     name = 'SCRAPE',
-    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/scrape.txt')
+    utterances = read_prompts(getRouterPath('scrape.txt'))
 )
 routeRAG = Route(
     name = 'RAG',
-    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/rag.txt')
+    utterances = read_prompts(getRouterPath('rag.txt'))
 )
 routeTable = Route(
     name = 'TABLE',
-    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/table.txt')
+    utterances = read_prompts(getRouterPath('table.txt'))
 )
 routeData = Route(
     name = 'DATA',
-    utterances = read_prompts('/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/data.txt')
+    utterances = read_prompts(getRouterPath('data.txt'))
 )
 
 def getRouter():
@@ -104,12 +111,12 @@ def buildRoutes(prompt):
             rebuiltPrompt += (' ' + words[i])
         i += 1
     paths = {
-        'GGET'   : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/enrichr.txt',
-        'SCRAPE' : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/scrape.txt',
-        'RAG'    : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/rag.txt',
-        'TABLE'  : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/table.txt',
-        'DATA'   : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/data.txt',
-        'SNS'    : '/nfs/turbo/umms-indikar/shared/projects/RAG/BRAD/routers/sns.txt'
+        'GGET'   : getRouterPath('enrichr.txt'),
+        'SCRAPE' : getRouterPath('scrape.txt'),
+        'RAG'    : getRouterPath('rag.txt'),
+        'TABLE'  : getRouterPath('table.txt'),
+        'DATA'   : getRouterPath('data.txt'),
+        'SNS'    : getRouterPath('sns.txt')
     }
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)
