@@ -407,6 +407,9 @@ def chat(
     chatlog           = {
         'llm'           : str(chatstatus['llm'])
     }
+    if chatstatus['config']['experiment']:
+        experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
+        chatstatus['experiment-output'] = '-'.join(experimentName.split())
     
     # Initialize all modules
     module_functions = getModules()
@@ -414,9 +417,6 @@ def chat(
     while True:
         print('==================================================')
         chatstatus['prompt'] = input('Input >> ')                 # get query from user
-        if 'BERTscore' in chatstatus['prompt'].split(' '):
-            chatstatus['experiment'] = True
-            chatstatus['prompt'] = chatstatus['prompt'][10:]
         
         # Handle explicit commands and routing
         if chatstatus['prompt'] in ['exit', 'quit', 'q', 'bye']:         # check to exit

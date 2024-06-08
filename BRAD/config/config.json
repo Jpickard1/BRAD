@@ -1,5 +1,5 @@
 {
-    "num_articles_retrieved": 4,
+    "num_articles_retrieved": 10,
     "max_articles_download": 10,
     "acceptable_data_files": [
         ".csv"
@@ -18,5 +18,6 @@
         "fontsize": null
     },
     "debug": true,
-    "log_path": "BRAD"
+    "log_path": "BRAD",
+    "experiment": true
 }

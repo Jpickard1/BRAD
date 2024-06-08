@@ -101,3 +101,4 @@ How do transcription factors regulate hormone response?
 do pluripotent genes activate simultaneously or sequentially during reprogramming?
 what role does MYOD play as a transcription factor in reprogramming?
 I am working on a tutorial on how to use BRAD, and the tutorial is focused on working with the ENRICHR and Gene Ontology databases. Please write a few paragraphs that should be included in the tutorial
+What are the potential applications of cell reprogramming in regenerative medicine?

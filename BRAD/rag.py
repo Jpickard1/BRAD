@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 import chromadb
 import subprocess
@@ -67,16 +68,17 @@ def queryDocs(chatstatus):
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
-    experiment = chatstatus['experiment']     # boolean value whether or not to calculate cross validated scores
     
     # query to database
     if vectordb is not None:
-        documentSearch = vectordb.similarity_search_with_relevance_scores(prompt)
+        documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['num_articles_retrieved'])
         docs, scores = getDocumentSimilarity(documentSearch)
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
         #bertscores
-        if experiment is True:
-            scoring_experiment(chain, docs, scores, prompt)
+        if chatstatus['config']['experiment'] is True:
+            # scoring_experiment(chain, docs, scores, prompt)
+            crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus)
+            chatstatus['process'] = {'type': 'docs cross validation experiment'}
         else:
         # pass the database output to the llm       
             res = chain({"input_documents": docs, "question": prompt})
@@ -301,7 +303,47 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
             print('Completed Chroma Database: ', dbName) if v else None
             del vectordb, text_splitter, data_splits
 
-            
+def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus):
+    scores = list(scores)
+    outputs = {
+        'prompt':[],
+        'response':[],
+        'hidden':[],
+        'hiddenRef':[],
+        'hiddenScore':[]
+    }
+    for i in range(len(docs) - 1):
+        outputs['known' + str(i)] = []
+        outputs['knownRef' + str(i)] = []
+        outputs['knownScore' + str(i)] = []
+    for i in range(len(docs)):
+        # query the model
+        usedDocs = docs[:i] + docs[i + 1:]
+        usedScores = scores[:i] + scores[i + 1:]
+        hiddenDoc = docs[i]
+        hiddenScore = scores[i]
+        response   = chain({"input_documents": usedDocs, "question": prompt})
+        # save the info
+        outputs['prompt'].append(prompt)
+        outputs['response'].append(response['output_text'])
+        outputs['hidden'].append(hiddenDoc.page_content)
+        outputs['hiddenRef'].append(hiddenDoc.metadata)
+        outputs['hiddenScore'].append(scores[i])
+        for j in range(len(docs) - 1):
+            outputs['known' + str(j)].append(usedDocs[j].page_content)
+            outputs['knownRef' + str(j)].append(usedDocs[j].metadata)
+            outputs['knownScore' + str(j)].append(scores[j])
+
+    df = pd.DataFrame(outputs)            
+    # Check if the file exists
+    if os.path.isfile(chatstatus['experiment-output']):
+        # File exists, append to it
+        df.to_csv(chatstatus['experiment-output'], mode='a', header=False, index=False)
+    else:
+        # File does not exist, create a new file
+        df.to_csv(chatstatus['experiment-output'], mode='w', header=True, index=False)
+
+
 def scoring_experiment(chain, docs, scores, prompt):
     print(f"output of similarity search: {scores}")
     candidates = []
