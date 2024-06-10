@@ -7,3 +7,4 @@ elife-71356-v2.pdf
 docs/build/*
 BRAD/__pycache__/*
 docs/source/tutorials/
+BRAD/config/config.json
