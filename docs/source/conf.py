@@ -34,8 +34,8 @@ MOCK_MODULES = ['numpy',
 # -- Project information -----------------------------------------------------
 
 project = 'BRAD: Bioinformatics Retrieval Augmented Data'
-copyright = '2024, Joshua Pickard, Marc Choi, and the Rajapakse Lab Group'
-author = 'Joshua Pickard, Marc Choi, and the Rajapakse Lab Group'
+copyright = '2024, Joshua Pickard and the Rajapakse Lab Group'
+author = 'Joshua Pickard and the Rajapakse Lab Group'
 
 # The full version, including alpha/beta/rc tags
 release = '0.1'
