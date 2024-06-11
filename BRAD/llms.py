@@ -4,7 +4,9 @@ import getpass
 def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
                n_ctx = 4096,
                max_tokens = 1000,
-               verbose = False):
+               temperature = 0,
+               verbose = False,
+              ):
     """
     Loads the Llama language model from the specified model path with given parameters.
 
@@ -31,6 +33,7 @@ def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/
                    n_ctx            = n_ctx,
                    max_tokens       = max_tokens,
                    callback_manager = callback_manager,
+                   temperature      = temperature,
                    verbose          = verbose)
     return llm
 
