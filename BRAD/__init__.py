@@ -1,6 +1,8 @@
-import nltk
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import wordnet
+__version__ = '0.1.0'
+
+# import nltk
+# from nltk.stem import WordNetLemmatizer
+# from nltk.corpus import wordnet
 
 # We only need to do this when installing the package
 # nltk.download('words')
