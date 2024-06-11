@@ -32,8 +32,8 @@ MOCK_MODULES = ['numpy',
                 'langchain_community',
                 'langchain-community',
                ]
-#for mod_name in MOCK_MODULES:
-#    sys.modules[mod_name] = mock.Mock()
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 # -- Project information -----------------------------------------------------
 
