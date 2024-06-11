@@ -1,5 +1,5 @@
 sphinx_rtd_theme
 nbsphinx
-nltk
+nltk==3.8.1
 pandas
 mock

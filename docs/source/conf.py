@@ -32,6 +32,7 @@ MOCK_MODULES = ['numpy',
                 'langchain_community',
                 'langchain-community',
                 'nltk.stem',
+                'nltk.corpus',
                ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
