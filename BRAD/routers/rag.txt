@@ -102,3 +102,6 @@ do pluripotent genes activate simultaneously or sequentially during reprogrammin
 what role does MYOD play as a transcription factor in reprogramming?
 I am working on a tutorial on how to use BRAD, and the tutorial is focused on working with the ENRICHR and Gene Ontology databases. Please write a few paragraphs that should be included in the tutorial
 What are the potential applications of cell reprogramming in regenerative medicine?
+what can you tell me about bifurcation theory?
+what can you tell me about bifurcation theory?
+what did smale contribute to dynamical systems?
