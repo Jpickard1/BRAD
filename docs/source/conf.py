@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('../../BRAD/'))
 print('Building Documentation. Checking path:')
 print(sys.path)
 
-#import mock
+import mock
  
 MOCK_MODULES = ['numpy',
                 'scipy',
