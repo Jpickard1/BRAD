@@ -27,6 +27,7 @@ MOCK_MODULES = ['numpy',
                 'scipy.linalg',
                 'langchain',
                 'semantic-router',
+                'nltk',
                ]
 #for mod_name in MOCK_MODULES:
 #    sys.modules[mod_name] = mock.Mock()
