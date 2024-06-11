@@ -32,6 +32,16 @@ MOCK_MODULES = ['scipy',
                 'langchain-community',
                 'nltk.stem',
                 'nltk.corpus',
+                'gget',
+                'matplotlib',
+                'seaborn',
+                'chroma',
+                'semantic_router',
+                'langchain_nvidia_ai_endpoints',
+                'requests',
+                'requests_html',
+                'matplotlib',
+                'matplotlib.ticker',
                ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
