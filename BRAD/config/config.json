@@ -19,5 +19,5 @@
     },
     "debug": true,
     "log_path": "BRAD",
-    "experiment": true
+    "experiment": false
 }

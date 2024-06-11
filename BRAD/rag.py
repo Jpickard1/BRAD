@@ -22,6 +22,7 @@ from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
 from langchain.docstore.document import Document
 from langchain_chroma import Chroma
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings.sentence_transformer import (
     SentenceTransformerEmbeddings,
@@ -80,12 +81,12 @@ def queryDocs(chatstatus):
             crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus)
             chatstatus['process'] = {'type': 'docs cross validation experiment'}
         else:
-        # pass the database output to the llm       
+            # pass the database output to the llm       
             res = chain({"input_documents": docs, "question": prompt})
             print(res['output_text'])
 
     
-        # change inputs to be json readable
+            # change inputs to be json readable
             res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
             chatstatus['output'], chatstatus['process'] = res['output_text'], res
     else:
@@ -268,16 +269,13 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
     text_loader_kwargs={'autodetect_encoding': True}
     loader = DirectoryLoader(docsPath,
                              glob="**/*.pdf",
-                             loader_cls=UnstructuredPDFLoader, 
+                             loader_cls=PyPDFLoader, 
                              loader_kwargs=text_loader_kwargs,
                              show_progress=True,
                              use_multithreading=True)
     docs_data = loader.load()
 
     print('\nDocuments loaded...') if v else None
-    
-    chunk_size = [700] #Chunk size 
-    chunk_overlap = [200] #Chunk overlap
 
     for i in range(len(chunk_size)):
         for j in range(len(chunk_overlap)):
@@ -334,7 +332,7 @@ def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus
             outputs['knownRef' + str(j)].append(usedDocs[j].metadata)
             outputs['knownScore' + str(j)].append(scores[j])
 
-    df = pd.DataFrame(outputs)            
+    df = pd.DataFrame(outputs)
     # Check if the file exists
     if os.path.isfile(chatstatus['experiment-output']):
         # File exists, append to it
@@ -346,9 +344,9 @@ def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus
 
 def scoring_experiment(chain, docs, scores, prompt):
     print(f"output of similarity search: {scores}")
-    candidates = []
-    reference = []
-    document_list = []
+    candidates = []    # also llm respons (maybe remove this)
+    reference = []     # hidden dodument
+    document_list = [] # LLM RESPONSES
     # Iterate through the indices of the original list
     for i in range(len(docs)):
         # removes one of the documents
