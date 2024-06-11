@@ -19,8 +19,7 @@ print(sys.path)
 
 import mock
  
-MOCK_MODULES = ['numpy',
-                'scipy',
+MOCK_MODULES = ['scipy',
                 'scipy.io',
                 'matplotlib',
                 'matplotlib.pyplot',
