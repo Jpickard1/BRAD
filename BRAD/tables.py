@@ -1067,7 +1067,7 @@ def checkPlottingConfigurations(chatstatus, df):
 
     prompt = separate_punctuation_with_spaces(chatstatus['prompt']) # we don't mess with the '-' character
     promptWords = prompt.split(' ')
-    unwanted_strings = {'', ' ', 'of', 'as', 'use', 'is', 'to', 'by', 'the', ';', '(', '[', '.', ',', '!', '?', ';', ':', '"', '(', ')', '{', '}', '\[', '\]' ']', ')' } # we don't mess with the '-' character
+    # unwanted_strings = {'', ' ', 'of', 'as', 'use', 'is', 'to', 'by', 'the', ';', '(', '[', '.', ',', '!', '?', ';', ':', '"', '(', ')', '{', '}', '\[', '\]' ']', ')' } # we don't mess with the '-' character
     promptWords = [s for s in promptWords if s not in unwanted_strings]
     # if chatstatus['debug']: logging.info(promptWords)
 
