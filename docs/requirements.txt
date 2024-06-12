@@ -1,2 +1,15 @@
 sphinx_rtd_theme
 nbsphinx
+nltk==3.8.1
+pandas
+mock
+numpy
+IPython
+gget
+matplotlib
+seaborn
+chroma
+semantic_router
+langchain_nvidia_ai_endpoints
+requests
+requests_html

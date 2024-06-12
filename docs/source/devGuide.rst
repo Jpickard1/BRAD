@@ -7,62 +7,62 @@ System Architecture
 -------------------
 Explain the architecture here.
 
-BRAD.brad module
+BRAD
 ----------------
 
 .. automodule:: BRAD.brad
    :members:
 
-BRAD.rag module
----------------
+Retrieval Augmented Generation
+------------------------------
 
 .. automodule:: BRAD.rag
    :members:
    
-BRAD.functionCaller module
----------------
+Running Codes
+--------------------------
 
 .. automodule:: BRAD.functionCaller
    :members:
 
-BRAD.enrichr module
----------------
+Enrichr
+-------------------
 
 .. automodule:: BRAD.enrichr
    :members:
    
-BRAD.gene_ontology module
----------------
+Gene Ontology
+-------------------------
 
 .. automodule:: BRAD.gene_ontology
    :members:
    
-BRAD.llms module
+Language Models
 ---------------
 
 .. automodule:: BRAD.llms
    :members:
    
-BRAD.matlabCaller module
----------------
+MATLAB
+------------------------
 
 .. automodule:: BRAD.matlabCaller
    :members:
    
-BRAD.router module
----------------
+Routing
+------------------
 
 .. automodule:: BRAD.router
    :members:
    
-BRAD.scraper module
----------------
+Web Search
+-------------------
 
 .. automodule:: BRAD.scraper
    :members:
    
-BRAD.snakemakeCaller module
----------------
+Snakemake
+---------------------------
 
 .. automodule:: BRAD.scraper
    :members:
