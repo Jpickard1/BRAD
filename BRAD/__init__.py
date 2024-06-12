@@ -14,7 +14,7 @@ __all__     = ['brad',
                'tables'
               ]
 
-from .brad import *
+# from .brad import *
 
 # import nltk
 # from nltk.stem import WordNetLemmatizer
