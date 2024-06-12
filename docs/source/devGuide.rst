@@ -7,52 +7,28 @@ System Architecture
 -------------------
 Explain the architecture here.
 
-BRAD
-----------------
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
 
-.. automodule:: BRAD.brad
-   :members:
-
-Retrieval Augmented Generation
-------------------------------
-
-.. automodule:: BRAD.rag
-   :members:
+   bradPy
+   llmsPy
+   ragPy
+   bioinformaticsPy
+   webSearchPy
+   runningCodesPy
+   routingPy
    
 Running Codes
 --------------------------
 
 .. automodule:: BRAD.functionCaller
    :members:
-
-Enrichr
--------------------
-
-.. automodule:: BRAD.enrichr
-   :members:
-   
-Gene Ontology
--------------------------
-
-.. automodule:: BRAD.gene_ontology
-   :members:
-   
-Language Models
----------------
-
-.. automodule:: BRAD.llms
-   :members:
    
 MATLAB
 ------------------------
 
 .. automodule:: BRAD.matlabCaller
-   :members:
-   
-Routing
-------------------
-
-.. automodule:: BRAD.router
    :members:
    
 Web Search
