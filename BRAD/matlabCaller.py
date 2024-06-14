@@ -21,4 +21,3 @@ def callMatlab(chatstatus, chatlog):
     eng = matlab.engine.start_matlab()
 
 
-def 
