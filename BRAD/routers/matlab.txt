@@ -1,0 +1,67 @@
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+say helloWorld with MATLAB!
+say hello world from matlab
+say hello world from matlab
+say hello world from matlab
+say hello world from matlab
+say hello world from matlab
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+say hello world from matlab
+say hello world from matlab
+run my matlabPipeline: NewPipeline with singleCell data file: data.csv
+run the quality control pipeline
+run the quality control pipeline
+run the quality control pipeline with dataName=5
+run the quality control pipeline
+run the quality control pipeline with data="DATA.fastq"
+run the quality control pipeline with data=""DATA.fastq""
+run the quality control pipeline with data=10.6
+run the quality control pipeline
+run the quality control pipeline
+run the quality control pipeline. note, no data or inputs are required to this pipeline
+run the quality control pipeline with the file "SRR005164_1_50.fastq"
+run the quality control pipeline with the file SRR005164_1_50.fastq. Remember to use double quotes in matlab
+run the quality control pipeline with the file SRR005164_1_50.fastq. Remember to use double quotes in matlab
+run the quality control pipeline with the fileName SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control with the fileName=SRR005164_1_50.fastq
+run the quality control on fileName=SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline using file SRR005164_1_50.fastq
+run the quality control pipeline using file SRR005164_1_50.fastq
+run the quality control pipeline using file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+say hello world from matlab
+say hello world from matlab
+say hello world from matlab
+say hello world from matlab
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
+run the quality control pipeline with the file SRR005164_1_50.fastq
