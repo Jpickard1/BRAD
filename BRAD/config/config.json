@@ -17,7 +17,8 @@
         "colormap": "viridis",
         "fontsize": null
     },
-    "debug": true,
+    "debug": false,
     "log_path": "BRAD",
-    "experiment": false
+    "experiment": false,
+    "matlab-path": "/home/jpic/RAG-DEV/tutorials/running-codes/matlab/"
 }
