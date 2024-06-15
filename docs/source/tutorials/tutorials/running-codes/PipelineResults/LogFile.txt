@@ -1,0 +1,56 @@
+[INFO, 2024-06-14 15:32:21.121263]: Pipeline run started. The log file was opened here: /home/jpic/RAG-DEV/tutorials/running-codes/PipelineResults/LogFile.txt.
+[INFO, 2024-06-14 15:32:21.209410]: Pipeline compilation started.
+[INFO, 2024-06-14 15:32:21.245424]: Block 'FileChooser_1' compilation started.
+[INFO, 2024-06-14 15:32:21.332527]: Block 'FileChooser_1' compilation succeeded.
+[INFO, 2024-06-14 15:32:21.356391]: Block 'SeqFilter_1' compilation started.
+[INFO, 2024-06-14 15:32:21.417789]: Block 'SeqFilter_1' compilation succeeded.
+[INFO, 2024-06-14 15:32:21.422274]: Block 'UserFunction_1' compilation started.
+[INFO, 2024-06-14 15:32:21.493182]: Block 'UserFunction_1' compilation succeeded.
+[INFO, 2024-06-14 15:32:21.497538]: Block 'UserFunction_2' compilation started.
+[INFO, 2024-06-14 15:32:21.508293]: Block 'UserFunction_2' compilation succeeded.
+[INFO, 2024-06-14 15:32:21.511365]: Pipeline compilation succeeded.
+[DEBUG, 2024-06-14 15:32:21.515428]: Parallel pool check started.
+[INFO, 2024-06-14 15:32:21.580520]: Any previous results of blocks to be rerun have been cleared.
+[INFO, 2024-06-14 15:32:21.586756]: Found 4 blocks to run.
+[DEBUG, 2024-06-14 15:32:21.592652]: 
+  Input struct: 
+  <a href="matlab:helpPopup struct" style="font-weight:bold">struct</a> with no fields.
+
+
+[DEBUG, 2024-06-14 15:32:21.598159]: 
+  Run options: 
+         UseParallel: 0
+        DisplayLevel: Warn
+             RunMode: Minimal
+    ResultsDirectory: "/home/jpic/RAG-DEV/tutorials/running-codes/PipelineResults"
+                From: [1x0 string]
+                  To: [1x0 string]
+                Only: [1x0 string]
+         SaveResults: "-all"
+
+
+[INFO, 2024-06-14 15:32:21.702049]: Block 'FileChooser_1' is queued to run because the inputs to the block have changed since the last run.
+[INFO, 2024-06-14 15:32:21.707881]: Collecting inputs for FileChooser_1.
+[DEBUG, 2024-06-14 15:32:21.736601]: Block inputs were successfully split with the following number of processes in each dimension: [1 1]
+[INFO, 2024-06-14 15:32:21.839009]: Block 'FileChooser_1' run 1 of 1 started.
+[INFO, 2024-06-14 15:32:22.019759]: Block 'FileChooser_1' run 1 of 1 succeeded.
+[INFO, 2024-06-14 15:32:22.150809]: All block 'FileChooser_1' runs succeeded and outputs are merged.
+[INFO, 2024-06-14 15:32:22.183954]: Block 'SeqFilter_1' is queued to run because the inputs to the block have changed since the last run.
+[INFO, 2024-06-14 15:32:22.188494]: Collecting inputs for SeqFilter_1.
+[DEBUG, 2024-06-14 15:32:22.220987]: Block inputs were successfully split with the following number of processes in each dimension: [1 1]
+[INFO, 2024-06-14 15:32:22.259089]: Block 'SeqFilter_1' run 1 of 1 started.
+[INFO, 2024-06-14 15:32:22.375701]: Block 'SeqFilter_1' run 1 of 1 succeeded.
+[INFO, 2024-06-14 15:32:22.392137]: All block 'SeqFilter_1' runs succeeded and outputs are merged.
+[INFO, 2024-06-14 15:32:22.413571]: Block 'UserFunction_1' is queued to run because the inputs to the block have changed since the last run.
+[INFO, 2024-06-14 15:32:22.417543]: Collecting inputs for UserFunction_1.
+[DEBUG, 2024-06-14 15:32:22.433879]: Block inputs were successfully split with the following number of processes in each dimension: [1 1]
+[INFO, 2024-06-14 15:32:22.467983]: Block 'UserFunction_1' run 1 of 1 started.
+[INFO, 2024-06-14 15:32:31.749820]: Block 'UserFunction_1' run 1 of 1 succeeded.
+[INFO, 2024-06-14 15:32:31.775098]: All block 'UserFunction_1' runs succeeded and outputs are merged.
+[INFO, 2024-06-14 15:32:32.672608]: Block 'UserFunction_2' is queued to run because the inputs to the block have changed since the last run.
+[INFO, 2024-06-14 15:32:32.677491]: Collecting inputs for UserFunction_2.
+[DEBUG, 2024-06-14 15:32:32.705719]: Block inputs were successfully split with the following number of processes in each dimension: [1 1]
+[INFO, 2024-06-14 15:32:32.733090]: Block 'UserFunction_2' run 1 of 1 started.
+[INFO, 2024-06-14 15:32:36.476175]: Block 'UserFunction_2' run 1 of 1 succeeded.
+[INFO, 2024-06-14 15:32:36.499722]: All block 'UserFunction_2' runs succeeded and outputs are merged.
+[INFO, 2024-06-14 15:32:37.408270]: Pipeline run succeeded.
