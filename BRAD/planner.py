@@ -21,6 +21,7 @@ def planner(chatstatus):
                                     )
     response = conversation.predict(input=prompt)
     response += '\n\n'
+    print(response) if chatstatus['config']['debug'] else None
     processes = response2processes(response)
     chatstatus['planned'] = processes
     chatstatus['process'] = {'type': 'PLANNER', 'stages' : processes}
