@@ -14,5 +14,6 @@ This section provides tutorials on how to use BRAD.
    tutorials/online-bioinformatics-databases/bioinformatics-databases
    tutorials/RAG-with-BRAD/RAG-with-BRAD
    tutorials/running-codes/MATLAB
+   tutorials/running-codes/PYTHON
    tutorials/running-codes/running-codes
    tutorials/working-with-data/working-with-data
