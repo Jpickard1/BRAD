@@ -39,6 +39,8 @@ transformers.configuration_utils.logger.setLevel(logging.ERROR)
 transformers.modeling_utils.logger.setLevel(logging.ERROR)
 from bert_score import BERTScorer
 
+from BRAD.promptTemplates import historyChatTemplate
+
 
 #Extraction
 import re
@@ -89,7 +91,7 @@ def queryDocs(chatstatus):
             res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
             chatstatus['output'], chatstatus['process'] = res['output_text'], res
     else:
-        template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
+        template = historyChatTemplate()
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
         conversation = ConversationChain(prompt  = PROMPT,
                                          llm     = llm,

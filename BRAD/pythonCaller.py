@@ -9,6 +9,8 @@ import re
 import sys
 import subprocess
 
+from BRAD.promptTemplates import pythonPromptTemplate
+
 
 def callPython(chatstatus):
     print('Python Caller Start')
@@ -145,7 +147,7 @@ def get_py_description(file_path):
 def extract_python_code(llm_output, chatstatus):
     """
     Parses the LLM output and extracts the MATLAB code in the final line.
-    
+
     Args:
     llm_output (str): The complete output from the LLM.
 
@@ -173,54 +175,3 @@ def extract_python_code(llm_output, chatstatus):
     #    return match.group(1)
     #else:
     #    return None
-
-def pythonPromptTemplate():
-    template = """Current conversation:\n{{history}}
-
-**PYTHON SCRIPT**
-You must run this python script: 
-{scriptName}
-
-**PYTHON SCRIPT DOCUMENTATION**:
-This is the doc string of this python script:
-{scriptDocumentation}
-
-
-**CALL PYTHON SCRIPTS FROM PYTHON**:
-Use the `subprocess` module to call any Python script from another Python script. Here are some examples to call a few common Python scripts:
-
-To call a Python script `example_script.py` which has no arguments:
-    
-```
-Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py'])
-```
-
-To call a Python script `example_script.py` with one argument:
-
-```
-Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', 'arg1'])
-```
-
-To call a Python script `example_script.py` with two arguments:
-```
-Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', 'arg1', 'arg2'])
-```
-Query:{{input}}
-
-
-**INSTRUCTIONS**
-1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
-2. Using the `subprocess` module, provide the one line of code to execute the desired Python script with the given arguments. Assume the necessary modules (`subprocess` and `sys`) are already imported.
-3. The last line of your response should say "Execute: <Python code to execute>"
-4. Format the response/output as:
-    Arguments: 
-    Python Code Explanation: <2 sentences maximum>
-    Execute: <your code here>
-
-**IMPORTANT**
-The code to execute from your response must be formatted as:
-    Execute: subprocess.call([sys.executable, '<path to python script>', '<argument 1>', '<argument 2>', ..., '<argument n>'])
-This output should be exactly one line and no longer. Stop the response after this line.
-"""
-
-    return template

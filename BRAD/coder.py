@@ -1,4 +1,4 @@
-""""This file is responsible for running scripts from BRAD."""
+"""This file is responsible for running scripts from BRAD."""
 import os
 
 from langchain import PromptTemplate, LLMChain
@@ -6,6 +6,7 @@ from langchain.chains import ConversationChain
 
 from BRAD.matlabCaller import find_matlab_files, get_matlab_description, read_matlab_docstrings, matlabPromptTemplate, activateMatlabEngine, extract_matlab_code, execute_matlab_code
 from BRAD.pythonCaller import find_py_files, get_py_description, read_python_docstrings, pythonPromptTemplate, extract_python_code, execute_python_code
+from BRAD.promptTemplates import scriptSelectorTemplate
 
 def codeCaller(chatstatus):
     print('CODER') if chatstatus['config']['debug'] else None
@@ -89,21 +90,3 @@ def executeCode(chatstatus, code2execute, scriptType):
     print('Executing Code!!')
     executor(code2execute, chatstatus)
 
-
-def scriptSelectorTemplate():
-    template="""You must select which code to run to help a user.
-
-**Available Scripts**
-{script_list}
-
-**User Query**
-{{user_query}}
-
-**Task**
-Based on the user's query, select the best script from the available scripts. Provide the script name and explain why it is the best match. If no script is good, replace script with None
-
-**Response Template**
-SCRIPT: <selected script>
-REASON: <reasoning why the script fits the user prompt>
-"""
-    return template

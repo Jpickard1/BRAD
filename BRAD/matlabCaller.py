@@ -6,6 +6,7 @@ import matlab.engine
 import os
 import glob
 import re
+from BRAD.promptTemplate import matlabPromptTemplate
 
 def callMatlab(chatstatus):
     print('Matlab Caller Start')
@@ -167,52 +168,6 @@ def extract_matlab_code(llm_output, chatstatus):
     #    return match.group(1)
     #else:
     #    return None
-
-def matlabPromptTemplate():
-    template = """Current conversation:\n{{history}}
-
-**MATLAB SCRIPT**
-You must run this python script: 
-{scriptName}
-
-**MATLAB FUNCTION DOCUMENTATION**:
-{scriptDocumentation}
-
-**CALL MATLAB FUNCTIONS FROM PYTHON**:
-Use MATLAB® Engine API for Python® to call any MATLAB function on the MATLAB path. Some examples to call a few common matlab functions include:
-
-To call the matlab function myFnc which has no arguments:
-```
-Execute: eng.myFnc()
-```
-
-To use the is prime function which requires an input argument:
-```
-Execute: tf = eng.isprime(37)
-```
-
-To determine the greatest common denominator of two numbers, use the gcd function. Set nargout to return the three output arguments from gcd.
-```
-Execute: t = eng.gcd(100.0,80.0,nargout=3)
-```
-
-Query:{{input}}
-
-**INSTRUCTIONS**
-1. Given the user query and the documentation, identify each of the arguments found in the users query that should be passed to the matlab function.
-2. Using the matlab enging eng, provide the one line of code to execute the desired matlab commands. Assume all functions are added to the path and eng already exist.
-3. The last line of your response should say "Execute: <MATLAB codes to execute>"
-4. Format the response/output as:
-Arguments: 
-MATLAB Code Explanation: <2 sentences maximum>
-Execute: <your code here>
-
-**IMPORTANT**
-The code to execute from your response must be formatted as:
-    Execute: eng.<function name>(<arguments>)>
-This output should be exactly one line and no longer. Stop the response after this line.
-"""
-    return template
 
 
 def callMatlab_depricated(chatstatus, chatlog):
