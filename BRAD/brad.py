@@ -51,6 +51,7 @@ from BRAD.rag import *
 from BRAD.gene_ontology import *
 from BRAD.seabornCaller import *
 from BRAD.matlabCaller import *
+from BRAD.pythonCaller import *
 from BRAD.snakemakeCaller import *
 from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
@@ -80,6 +81,7 @@ def getModules():
         'SNS'    : callSnsV3,        # seaborn
         'RAG'    : queryDocs,        # standard rag
         'MATLAB' : callMatlab,       # matlab
+        'PYTHON' : callPython,
         'SNAKE'  : callSnakemake     # snakemake
     }
     return module_functions

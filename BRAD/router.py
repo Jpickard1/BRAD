@@ -69,9 +69,13 @@ routeData = Route(
     name = 'DATA',
     utterances = read_prompts(getRouterPath('data.txt'))
 )
-routeData = Route(
+routeMATLAB = Route(
     name = 'MATLAB',
     utterances = read_prompts(getRouterPath('matlab.txt'))
+)
+routePython = Route(
+    name = 'PYTHON',
+    utterances = read_prompts(getRouterPath('python.txt'))
 )
 def getRouter():
     """
@@ -120,7 +124,8 @@ def buildRoutes(prompt):
         'TABLE'  : getRouterPath('table.txt'),
         'DATA'   : getRouterPath('data.txt'),
         'SNS'    : getRouterPath('sns.txt'),
-        'MATLAB' : getRouterPath('matlab.txt')
+        'MATLAB' : getRouterPath('matlab.txt'),
+        'PYTHON' : getRouterPath('python.txt'),
     }
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)
