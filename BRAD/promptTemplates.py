@@ -7,10 +7,10 @@ Available Methods:
 1. **Retrieval Augmented Generation**(RAG): Look up literature and documents from a text database.
 2. **Web Search for New Literature**(SCRAPE): Search platforms like arXiv, bioRxiv, and PubMed for the latest research.
 3. **Bioinformatics Databases**(DATABASE): Utilize databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.
-4. **Run Codes**(CODE): Execute bioinformatics pipelines using Python and MATLAB. Utilize prebuilt pipelines or develop new ones as needed.
+4. **Run Codes**(CODE): Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.
 5. **Write a Report**(WRITE): Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.
 
-Based on the user's query, create a detailed plan outlining the steps of the analysis. Ensure that each step is clearly defined and makes use of the appropriate method(s) listed above.
+Based on the user's query, create a detailed plan outlining the steps of the analysis. Ensure that each step is clearly defined and makes use of the appropriate method(s) listed above. Clarify which steps are dependent on one another, such as if information from a CODE step is used by DATABASE step, if information from a RAG step is used by a SCRAPE step, or if all previous steps are needed in a WRITE step, or any other dependencies.
 
 Current conversation: {history}\n
 
@@ -144,6 +144,6 @@ This output should be exactly one line and no longer. Stop the response after th
 """
     return template
 
-def historyChatTemplate()
+def historyChatTemplate():
     template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
     return template

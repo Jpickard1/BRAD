@@ -126,7 +126,7 @@ def buildRoutes(prompt):
             rebuiltPrompt += (' ' + words[i])
         i += 1
     paths = {
-        'GGET'    : getRouterPath('enrichr.txt'),
+        'DATABASE': getRouterPath('enrichr.txt'),
         'SCRAPE'  : getRouterPath('scrape.txt'),
         'RAG'     : getRouterPath('rag.txt'),
         'TABLE'   : getRouterPath('table.txt'),

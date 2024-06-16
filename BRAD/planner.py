@@ -3,7 +3,7 @@ from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
 import re
-from BRAD.promptTemplate import plannerTemplate
+from BRAD.promptTemplates import plannerTemplate
 
 """This module is responsible for creating sequences of steps to be run by other modules of BRAD"""
 

@@ -6,7 +6,7 @@ import matlab.engine
 import os
 import glob
 import re
-from BRAD.promptTemplate import matlabPromptTemplate
+from BRAD.promptTemplates import matlabPromptTemplate
 
 def callMatlab(chatstatus):
     print('Matlab Caller Start')

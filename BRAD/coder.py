@@ -46,6 +46,7 @@ def codeCaller(chatstatus):
     template = scriptSelectorTemplate()
     template = template.format(script_list=script_list)
     PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
+    print(PROMPT) if chatstatus['config']['debug'] else None
     chain = PROMPT | llm # LCEL chain creation
     print('FIRST LLM CALL') if chatstatus['config']['debug'] else None
     res = chain.invoke(prompt)

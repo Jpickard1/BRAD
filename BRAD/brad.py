@@ -77,7 +77,7 @@ def getModules():
     
     # this + imports should be the only code someone needs to write to add a new module
     module_functions = {
-        'GGET'   : geneDBRetriever,     # gget
+        'DATABASE'   : geneDBRetriever,     # gget
 #        'GGET'   : queryEnrichr,     # gget
 #        'DATA'   : manipulateTable,  #
         'SCRAPE' : webScraping,      # webscrapping
@@ -443,6 +443,7 @@ def chat(
         else:
             route = chatstatus['prompt'].split(' ')[1]            # use the forced router
             buildRoutes(chatstatus['prompt'])
+            chatstatus['prompt'] = " ".join(chatstatus['prompt'].split(' ')[2:]).strip()
 
         print('==================================================')
         print('RAG >> ' + str(len(chatlog)) + ': ', end='')
