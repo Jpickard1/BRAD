@@ -41,7 +41,7 @@ def callPython(chatstatus):
     template = pythonPromptTemplate()
     print(template) if chatstatus['config']['debug'] else None
     # matlabDocStrings = callMatlab(chatstatus)
-    filled_template = template.format(pythonScript=pyScriptPath, pythonDocumentation=pyScriptDocStrings)
+    filled_template = template.format(scriptName=pyScriptPath, scriptDocumentation=pyScriptDocStrings)
     print(filled_template) if chatstatus['config']['debug'] else None
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     print(PROMPT) if chatstatus['config']['debug'] else None
@@ -62,7 +62,7 @@ def callPython(chatstatus):
 def execute_python_code(python_code, chatstatus):
     """
     Safely evaluates the extracted PYTHON code.
-    
+
     Args:
     python_code (str): The MATLAB code to execute.
 
@@ -137,6 +137,11 @@ def read_python_docstrings(file_path):
     
     return "\n".join(docstring_lines)
 
+def get_py_description(file_path):
+    docstrings = read_python_docstrings(file_path)
+    oneliner = docstrings.split('\n')[1]
+    return oneliner
+
 def extract_python_code(llm_output, chatstatus):
     """
     Parses the LLM output and extracts the MATLAB code in the final line.
@@ -174,11 +179,11 @@ def pythonPromptTemplate():
 
 **PYTHON SCRIPT**
 You must run this python script: 
-{pythonScript}
+{scriptName}
 
 **PYTHON SCRIPT DOCUMENTATION**:
 This is the doc string of this python script:
-{pythonDocumentation}
+{scriptDocumentation}
 
 
 **CALL PYTHON SCRIPTS FROM PYTHON**:
@@ -187,18 +192,18 @@ Use the `subprocess` module to call any Python script from another Python script
 To call a Python script `example_script.py` which has no arguments:
     
 ```
-Execute: subprocess.call([sys.executable, 'example_script.py'])
+Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py'])
 ```
 
 To call a Python script `example_script.py` with one argument:
 
 ```
-Execute: subprocess.call([sys.executable, 'example_script.py', 'arg1'])
+Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', 'arg1'])
 ```
 
 To call a Python script `example_script.py` with two arguments:
 ```
-Execute: subprocess.call([sys.executable, 'example_script.py', 'arg1', 'arg2'])
+Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', 'arg1', 'arg2'])
 ```
 Query:{{input}}
 

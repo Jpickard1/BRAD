@@ -16,16 +16,7 @@ def callMatlab(chatstatus):
     chatstatus['process']['name'] = 'Matlab'
 
     # Turn on matlab engine just before running the code
-    if chatstatus['matlabEng'] is None:
-        chatstatus['matlabEng'] = matlab.engine.start_matlab()
-    print('Matlab Engine On') if chatstatus['config']['debug'] else None
-    # Add matlab files to the path
-    if chatstatus['config']['matlab-path'] == 'matlab-tutorial/':
-        matlabPath = chatstatus['config']['matlab-path']
-    else:
-        base_dir = os.path.expanduser('~')
-        matlabPath = os.path.join(base_dir, chatstatus['config']['matlab-path'])
-    mpath = chatstatus['matlabEng'].addpath(chatstatus['matlabEng'].genpath(matlabPath))
+    chatstatus, mpath = activateMatlabEngine()
     print('Matlab PATH Extended') if chatstatus['config']['debug'] else None
     
     # Identify matlab files we are adding to the path of BRAD
@@ -43,7 +34,7 @@ def callMatlab(chatstatus):
     template = matlabPromptTemplate()
     print(template) if chatstatus['config']['debug'] else None
     # matlabDocStrings = callMatlab(chatstatus)
-    filled_template = template.format(matlabDocumentation=matlabDocStrings) #, history=None, input=None)
+    filled_template = template.format(scriptName=matlabFunction, scriptDocumentation=matlabDocStrings) #, history=None, input=None)
     print(filled_template) if chatstatus['config']['debug'] else None
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     print(PROMPT) if chatstatus['config']['debug'] else None
@@ -58,6 +49,19 @@ def callMatlab(chatstatus):
     print(matlabCode) if chatstatus['config']['debug'] else None
     execute_matlab_code(matlabCode, chatstatus)
     return chatstatus
+
+def activateMatlabEngine(chatstatus):
+    if chatstatus['matlabEng'] is None:
+        chatstatus['matlabEng'] = matlab.engine.start_matlab()
+    print('Matlab Engine On') if chatstatus['config']['debug'] else None
+    # Add matlab files to the path
+    if chatstatus['config']['matlab-path'] == 'matlab-tutorial/':
+        matlabPath = chatstatus['config']['matlab-path']
+    else:
+        base_dir = os.path.expanduser('~')
+        matlabPath = os.path.join(base_dir, chatstatus['config']['matlab-path'])
+    mpath = chatstatus['matlabEng'].addpath(chatstatus['matlabEng'].genpath(matlabPath))
+    return chatstatus, mpath
 
 def execute_matlab_code(matlab_code, chatstatus):
     """
@@ -127,6 +131,11 @@ def read_matlab_docstrings(file_path):
                 break
     return "\n".join(docstrings)
 
+def get_matlab_description(file_path):
+    docstrings = read_matlab_docstrings(file_path)
+    oneliner = docstrings.split('\n')[1][1:]
+    return oneliner
+
 def extract_matlab_code(llm_output, chatstatus):
     """
     Parses the LLM output and extracts the MATLAB code in the final line.
@@ -162,43 +171,47 @@ def extract_matlab_code(llm_output, chatstatus):
 def matlabPromptTemplate():
     template = """Current conversation:\n{{history}}
 
-    **MATLAB FUNCTION DOCUMENTATION**:
-    {matlabDocumentation}
-    
-    **CALL MATLAB FUNCTIONS FROM PYTHON**:
-    Use MATLAB® Engine API for Python® to call any MATLAB function on the MATLAB path. Some examples to call a few common matlab functions include:
-    
-    To call the matlab function myFnc which has no arguments:
-    ```
-    Execute: eng.myFnc()
-    ```
-    
-    To use the is prime function which requires an input argument:
-    ```
-    Execute: tf = eng.isprime(37)
-    ```
-    
-    To determine the greatest common denominator of two numbers, use the gcd function. Set nargout to return the three output arguments from gcd.
-    ```
-    Execute: t = eng.gcd(100.0,80.0,nargout=3)
-    ```
-    
-    Query:{{input}}
-    
-    **INSTRUCTIONS**
-    1. Given the user query and the documentation, identify each of the arguments found in the users query that should be passed to the matlab function.
-    2. Using the matlab enging eng, provide the one line of code to execute the desired matlab commands. Assume all functions are added to the path and eng already exist.
-    3. The last line of your response should say "Execute: <MATLAB codes to execute>"
-    4. Format the response/output as:
-    Arguments: 
-    MATLAB Code Explanation: <2 sentences maximum>
-    Execute: <your code here>
+**MATLAB SCRIPT**
+You must run this python script: 
+{scriptName}
 
-    **IMPORTANT**
-    The code to execute from your response must be formatted as:
-        Execute: eng.<function name>(<arguments>)>
-    This output should be exactly one line and no longer. Stop the response after this line.
-    """
+**MATLAB FUNCTION DOCUMENTATION**:
+{scriptDocumentation}
+
+**CALL MATLAB FUNCTIONS FROM PYTHON**:
+Use MATLAB® Engine API for Python® to call any MATLAB function on the MATLAB path. Some examples to call a few common matlab functions include:
+
+To call the matlab function myFnc which has no arguments:
+```
+Execute: eng.myFnc()
+```
+
+To use the is prime function which requires an input argument:
+```
+Execute: tf = eng.isprime(37)
+```
+
+To determine the greatest common denominator of two numbers, use the gcd function. Set nargout to return the three output arguments from gcd.
+```
+Execute: t = eng.gcd(100.0,80.0,nargout=3)
+```
+
+Query:{{input}}
+
+**INSTRUCTIONS**
+1. Given the user query and the documentation, identify each of the arguments found in the users query that should be passed to the matlab function.
+2. Using the matlab enging eng, provide the one line of code to execute the desired matlab commands. Assume all functions are added to the path and eng already exist.
+3. The last line of your response should say "Execute: <MATLAB codes to execute>"
+4. Format the response/output as:
+Arguments: 
+MATLAB Code Explanation: <2 sentences maximum>
+Execute: <your code here>
+
+**IMPORTANT**
+The code to execute from your response must be formatted as:
+    Execute: eng.<function name>(<arguments>)>
+This output should be exactly one line and no longer. Stop the response after this line.
+"""
     return template
 
 

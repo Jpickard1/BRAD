@@ -77,6 +77,14 @@ routePython = Route(
     name = 'PYTHON',
     utterances = read_prompts(getRouterPath('python.txt'))
 )
+routePlanner = Route(
+    name = 'PLANNER',
+    utterances = read_prompts(getRouterPath('planner.txt'))
+)
+routeCode = Route(
+    name = 'CODE',
+    utterances = read_prompts(getRouterPath('code.txt'))
+)
 def getRouter():
     """
     Returns a router layer configured with predefined routes for various tasks.
@@ -118,14 +126,16 @@ def buildRoutes(prompt):
             rebuiltPrompt += (' ' + words[i])
         i += 1
     paths = {
-        'GGET'   : getRouterPath('enrichr.txt'),
-        'SCRAPE' : getRouterPath('scrape.txt'),
-        'RAG'    : getRouterPath('rag.txt'),
-        'TABLE'  : getRouterPath('table.txt'),
-        'DATA'   : getRouterPath('data.txt'),
-        'SNS'    : getRouterPath('sns.txt'),
-        'MATLAB' : getRouterPath('matlab.txt'),
-        'PYTHON' : getRouterPath('python.txt'),
+        'GGET'    : getRouterPath('enrichr.txt'),
+        'SCRAPE'  : getRouterPath('scrape.txt'),
+        'RAG'     : getRouterPath('rag.txt'),
+        'TABLE'   : getRouterPath('table.txt'),
+        'DATA'    : getRouterPath('data.txt'),
+        'SNS'     : getRouterPath('sns.txt'),
+        'MATLAB'  : getRouterPath('matlab.txt'),
+        'PYTHON'  : getRouterPath('python.txt'),
+        'PLANNER' : getRouterPath('planner.txt'),
+        'CODE'    : getRouterPath('code.txt'),
     }
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)
