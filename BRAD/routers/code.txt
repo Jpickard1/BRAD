@@ -15,3 +15,4 @@ say hello world using python!
 say hello world using matlab
 say hello world using matlab
 say hello world using python!
+Extract relevant data from the HWG.mat file using a Python-based bioinformatics pipeline. This pipeline should be specifically designed to identify genes interacting with MYOD in the context of the hardwired genome.

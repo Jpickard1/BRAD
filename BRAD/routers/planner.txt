@@ -15,3 +15,5 @@ design an analysis pipeline to find the first order interactions of MYOD in the 
 design an analysis pipeline to find the first order interactions of MYOD in the hardwired genome from HWG.mat. Write a small report about which pathways and cell types these genes are implicated in
 design an analysis pipeline to find the first order interactions of MYOD in the hardwired genome from HWG.mat. Write a small report about which pathways and cell types these genes are implicated in
 design an analysis pipeline to find the first order interactions of MYOD in the hardwired genome from HWG.mat. Write a small report about which pathways and cell types these genes are implicated in
+design an analysis pipeline to find the first order interactions of MYOD in the hardwired genome from HWG.mat. Write a small report about which pathways and cell types these genes are implicated in
+design an analysis pipeline to find the first order interactions of MYOD in the hardwired genome from HWG.mat. Write a small report about which pathways and cell types these genes are implicated in
