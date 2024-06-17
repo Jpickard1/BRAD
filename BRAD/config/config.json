@@ -24,6 +24,6 @@
     "debug": "True",
     "log_path": "BRAD",
     "experiment": false,
-    "matlab-path": "/home/jpic/RAG-DEV/tutorials/running-codes/matlab/",
-    "py-path": "/home/jpic/RAG-DEV/tutorials/running-codes/python/"
+    "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
+    "py-path": "/home/jpic/RAG-DEV/tutorials/planner/python/"
 }

@@ -70,3 +70,6 @@ Utilize multiple databases, such as PathwayCommondb and Reactome, to determine w
 Perform gene set enrichment analysis using databases like Gene Ontology and Enrichr to identify pathways, cell types, and genes associated with MYOD. Use the retrieved information about the MYOD gene from the previous step as input.
 Perform an enrichment analysis using Enrichr to identify the pathways, cell types, and genes related to MYOD based on its sequences and neighboring genes.
 Perform an enrichment analysis using Enrichr to identify the pathways, cell types, and genes related to MYOD based on its sequences and neighboring genes.
+Perform an enrichment analysis using Enrichr to identify the pathways, cell types, and genes related to MYOD based on its sequences and neighboring genes.
+Perform an enrichment analysis using Enrichr to identify the pathways, cell types, and genes related to MYOD based on its sequences and neighboring genes.
+Perform an enrichment analysis using Enrichr to uncover the pathways, cell types, and genes related to MYOD based on its sequences and neighboring genes.
