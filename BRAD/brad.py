@@ -43,6 +43,7 @@ from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
 from langchain.memory import ConversationBufferMemory
 
 # Put your modules here:
+from BRAD.planner import *
 from BRAD.enrichr import *
 from BRAD.scraper import *
 from BRAD.router import *
@@ -51,9 +52,12 @@ from BRAD.rag import *
 from BRAD.gene_ontology import *
 from BRAD.seabornCaller import *
 from BRAD.matlabCaller import *
+from BRAD.pythonCaller import *
 from BRAD.snakemakeCaller import *
 from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
+from BRAD.planner import planner
+from BRAD.coder import codeCaller
 
 def getModules():
     """
@@ -73,14 +77,17 @@ def getModules():
     
     # this + imports should be the only code someone needs to write to add a new module
     module_functions = {
-        'GGET'   : geneDBRetriever,     # gget
+        'DATABASE'   : geneDBRetriever,     # gget
 #        'GGET'   : queryEnrichr,     # gget
 #        'DATA'   : manipulateTable,  #
         'SCRAPE' : webScraping,      # webscrapping
         'SNS'    : callSnsV3,        # seaborn
         'RAG'    : queryDocs,        # standard rag
         'MATLAB' : callMatlab,       # matlab
-        'SNAKE'  : callSnakemake     # snakemake
+        'PYTHON' : callPython,
+        'SNAKE'  : callSnakemake,    # snakemake,
+        'PLANNER': planner,
+        'CODE'   : codeCaller,
     }
     return module_functions
 
@@ -181,7 +188,7 @@ def loadChatStatus():
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
-    
+
     chatstatus = {
         'config'            : load_config(),
         'prompt'            : None,
@@ -193,7 +200,8 @@ def loadChatStatus():
         'documents'         : {},
         'plottingParams'    : {},
         'matlabEng'         : None,
-        'experiment' : False
+        'experiment'        : False,
+        'planned'           : []
     }
     return chatstatus
 
@@ -363,7 +371,7 @@ def chat(
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
-    
+
     config = load_config()
     base_dir = os.path.expanduser('~')
     log_dir = os.path.join(base_dir, config['log_path'])
@@ -372,7 +380,7 @@ def chat(
     chatname = os.path.join(log_dir, str(dt.now()) + '.json')
     chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
-    
+
     # Initialize the dictionaries of tables and databases accessible to BRAD
     databases = {} # a dictionary to look up databases
     tables = {}    # a dictionary to look up tables
@@ -391,11 +399,6 @@ def chat(
     
     databases['RAG'] = ragvectordb
     memory = ConversationBufferMemory(ai_prefix="BRAD")
-    # externalDatabases = ['docs', 'GO', 'GGET']
-    # retriever = ragvectordb.as_retriever(search_kwargs={"k": 4}) ## Pick top 4 results from the search
-    # template = """At the end of each question, print all the genes named in the answer separated by commas.\n Context: {context}\n Question: {question}\n Answer:"""
-    # template = """Context: {context}\n Question: {question}\n Answer:"""
-    # QA_CHAIN_PROMPT = PromptTemplate(template=template, input_variables=["context" ,"question"],)
 
     # Initialize the routers from router.py
     router = getRouter()
@@ -417,7 +420,11 @@ def chat(
     
     while True:
         print('==================================================')
-        chatstatus['prompt'] = input('Input >> ')                 # get query from user
+        if len(chatstatus['planned']) == 0:
+            chatstatus['prompt'] = input('Input >> ')                 # get query from user
+        else:
+            chatstatus['prompt'] = chatstatus['planned'][0]['prompt']
+            chatstatus['planned'].pop(0)
         
         # Handle explicit commands and routing
         if chatstatus['prompt'] in ['exit', 'quit', 'q', 'bye']:         # check to exit
@@ -436,6 +443,7 @@ def chat(
         else:
             route = chatstatus['prompt'].split(' ')[1]            # use the forced router
             buildRoutes(chatstatus['prompt'])
+            chatstatus['prompt'] = " ".join(chatstatus['prompt'].split(' ')[2:]).strip()
 
         print('==================================================')
         print('RAG >> ' + str(len(chatlog)) + ': ', end='')

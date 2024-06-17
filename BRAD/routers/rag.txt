@@ -106,3 +106,11 @@ what can you tell me about bifurcation theory?
 what can you tell me about bifurcation theory?
 what did smale contribute to dynamical systems?
 what is synthetic lethality?
+Perform a comprehensive literature search to identify any recent studies on the first order interactions of MYOD in the hardwired genome. Use both Retrieval Augmented Generation (RAG) and Web Search for New Literature (LITSEARCH) to gather relevant articles and documents.
+Fetch contextual information about MYOD's first order interactions and related background knowledge. Use Retrieval Augmented Generation (RAG) to search for relevant literature from the text database and Web Search for New Literature (SCRAPE) to check for any recent findings on the topic from platforms like bioRxiv, PubMed, and arXiv.
+Retrieve information about first order interactions of MYOD in the hardwired genome from existing literature and databases. Look up papers, articles, and reports that discuss MYOD's interactions in the context of HWG.mat.
+Retrieve information about first order interactions of MYOD in the hardwired genome from existing literature and databases. Look up papers, articles, and reports that discuss MYOD's interactions in the context of HWG.mat.
+Retrieve information about first order interactions of MYOD in the hardwired genome from existing literature and databases. Look up papers, articles, and reports that discuss MYOD's interactions in the context of HWG.mat.
+Retrieve information about first order interactions of MYOD in the hardwired genome from literature and databases. Look for publications and articles that have investigated the role of MYOD in gene interactions within the context of HWG.mat.
+Retrieve information about first order interactions of MYOD in the hardwired genome from literature and databases. Look for publications and articles that have investigated the role of MYOD in gene interactions within the context of HWG.mat.
+Retrieve information about "MYOD" in the context of genomic research from relevant literature and documents stored in text databases. Focus on interactions in the hardwired genome from HWG.mat.

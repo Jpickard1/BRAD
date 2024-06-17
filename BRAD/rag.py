@@ -37,6 +37,8 @@ transformers.tokenization_utils.logger.setLevel(logging.ERROR)
 transformers.configuration_utils.logger.setLevel(logging.ERROR)
 transformers.modeling_utils.logger.setLevel(logging.ERROR)
 
+from BRAD.promptTemplates import historyChatTemplate
+
 
 #Extraction
 import re
@@ -90,13 +92,11 @@ def queryDocs(chatstatus):
                 source = doc.metadata.get('source')
                 short_source = os.path.basename(source)
                 print(f"Source: {short_source}")
-
->>>>>>> refs/remotes/origin/main
             # change inputs to be json readable
             res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
             chatstatus['output'], chatstatus['process'] = res['output_text'], res
     else:
-        template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
+        template = historyChatTemplate()
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
         conversation = ConversationChain(prompt  = PROMPT,
                                          llm     = llm,
