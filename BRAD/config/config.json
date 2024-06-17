@@ -1,5 +1,8 @@
 {
-    "num_articles_retrieved": 10,
+    "RAG": {
+        "num_articles_retrieved": 10,
+	"multiquery": true,
+    },
     "max_articles_download": 10,
     "acceptable_data_files": [
         ".csv"

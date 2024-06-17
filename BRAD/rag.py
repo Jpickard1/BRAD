@@ -74,8 +74,7 @@ def queryDocs(chatstatus):
     
     # query to database
     if vectordb is not None:
-        documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['num_articles_retrieved'])
-        docs, scores = getDocumentSimilarity(documentSearch)
+        docs, scores = retrieval()
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
 
         if chatstatus['config']['experiment'] is True:
@@ -104,6 +103,25 @@ def queryDocs(chatstatus):
         chatstatus['output'] = response
         chatstatus['process'] = {'type': 'LLM Conversation'}
     return chatstatus
+
+def retrieval(chatstatus):
+    llm      = chatstatus['llm']              # get the llm
+    prompt   = chatstatus['prompt']           # get the user prompt
+    vectordb = chatstatus['databases']['RAG'] # get the vector database
+    memory   = chatstatus['memory']           # get the memory of the model
+
+    if chatstatus['config']['RAG']['multiquery']
+        documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
+        docs, scores = getDocumentSimilarity(documentSearch)
+    else:
+        logging.basicConfig()
+        logging.getLogger("langchain.retrievers.multi_query").setLevel(logging.INFO)
+        retriever = MultiQueryRetriever.from_llm(retriever=vectordb.as_retriever(),
+                                                 llm=llm
+                                                )
+        docs = retriever.similarity_search_with_relevance_scores(query=prompt)  # Note: No scores are generated when using multiquery
+        scores = []
+    return docs, scores
 
 def getPreviousInput(log, key):
     """
