@@ -463,5 +463,6 @@ def chat(
 
         # Log and reset these values
         chatlog, chatstatus = logger(chatlog, chatstatus, chatname)
+    
     print("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + chatname)
 

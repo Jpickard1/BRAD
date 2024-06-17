@@ -31,13 +31,11 @@ from langchain_text_splitters import CharacterTextSplitter
 
 
 #BERTscore
-import bert_score
 import logging
 import transformers
 transformers.tokenization_utils.logger.setLevel(logging.ERROR)
 transformers.configuration_utils.logger.setLevel(logging.ERROR)
 transformers.modeling_utils.logger.setLevel(logging.ERROR)
-from bert_score import BERTScorer
 
 from BRAD.promptTemplates import historyChatTemplate
 
@@ -52,6 +50,7 @@ import re
 
 import BRAD.gene_ontology as gonto
 from BRAD.gene_ontology import geneOntology
+
 
 def queryDocs(chatstatus):
     """
@@ -71,6 +70,8 @@ def queryDocs(chatstatus):
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
+
+
     
     # query to database
     if vectordb is not None:
@@ -85,7 +86,11 @@ def queryDocs(chatstatus):
             # pass the database output to the llm       
             res = chain({"input_documents": docs, "question": prompt})
             print(res['output_text'])
-
+            for item in documentSearch:
+                doc = item[0]
+                source = doc.metadata.get('source')
+                short_source = os.path.basename(source)
+                print(f"Source: {short_source}")
             # change inputs to be json readable
             res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
             chatstatus['output'], chatstatus['process'] = res['output_text'], res
@@ -100,6 +105,7 @@ def queryDocs(chatstatus):
         prompt = getDefaultContext() + prompt
         response = conversation.predict(input=prompt)
         print(response)
+        
         chatstatus['output'] = response
         chatstatus['process'] = {'type': 'LLM Conversation'}
     return chatstatus
