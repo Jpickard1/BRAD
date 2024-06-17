@@ -221,7 +221,7 @@ def getDocumentSimilarity(documents):
         - A list of document objects.
         - A numpy array of similarity scores.
     :rtype: tuple
-"""
+    """
     scores = []
     docs   = []
     for doc in documents:
