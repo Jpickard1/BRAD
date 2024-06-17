@@ -67,3 +67,4 @@ Use the Bioinformatics databases to further investigate the interactions between
 Perform gene set enrichment analysis (GSEA) using databases such as the Gene Ontology (GO) and Enrichr to identify significant pathways and functional terms related to the first-order MYOD interactions.
 Utilize Gene Ontology and Enrichr databases to perform gene set enrichment analyses on the identified genes. This will help to determine which specific cell types and pathways these genes are implicated in.
 Utilize multiple databases, such as PathwayCommondb and Reactome, to determine which cellular pathways these interacting genes are involved in.
+Perform gene set enrichment analysis using databases like Gene Ontology and Enrichr to identify pathways, cell types, and genes associated with MYOD. Use the retrieved information about the MYOD gene from the previous step as input.

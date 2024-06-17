@@ -144,6 +144,25 @@ This output should be exactly one line and no longer. Stop the response after th
 """
     return template
 
+def summarizeDocumentTemplate():
+    template = """**INSTRUCTIONS**
+You are an assistant responsible for compressing the important information in a document.
+You will be given a users query and a piece of text. Summarize the text with the following aims:
+1. remove information that is not complete ideas or unrelated to the topic of the user
+2. improve the clarity of the writing and information
+If there is no relevant information, say "None"
+
+**USER QUERY**
+{user_query}
+
+**TEXT**
+{text}
+
+**OUTPUT**
+<put summary output here>
+"""
+    return template
+
 def historyChatTemplate():
     template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
     return template
