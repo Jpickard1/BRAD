@@ -50,7 +50,7 @@ from BRAD.tables import *
 from BRAD.rag import *
 from BRAD.gene_ontology import *
 from BRAD.seabornCaller import *
-# from matlabCaller import *
+from BRAD.matlabCaller import *
 from BRAD.snakemakeCaller import *
 from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
@@ -79,7 +79,7 @@ def getModules():
         'SCRAPE' : webScraping,      # webscrapping
         'SNS'    : callSnsV3,        # seaborn
         'RAG'    : queryDocs,        # standard rag
-#        'MATLAB' : callMatlab,       # matlab
+        'MATLAB' : callMatlab,       # matlab
         'SNAKE'  : callSnakemake     # snakemake
     }
     return module_functions
@@ -192,6 +192,7 @@ def loadChatStatus():
         'tables'            : {},
         'documents'         : {},
         'plottingParams'    : {},
+        'matlabEng'         : None,
         'experiment' : False
     }
     return chatstatus
@@ -398,7 +399,7 @@ def chat(
 
     # Initialize the routers from router.py
     router = getRouter()
-    
+
     # Initialize the chatlog
     chatstatus        = loadChatStatus()
     chatstatus['llm'] = llm
@@ -410,7 +411,7 @@ def chat(
     if chatstatus['config']['experiment']:
         experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
         chatstatus['experiment-output'] = '-'.join(experimentName.split())
-    
+
     # Initialize all modules
     module_functions = getModules()
     

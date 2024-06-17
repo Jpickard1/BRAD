@@ -69,7 +69,10 @@ routeData = Route(
     name = 'DATA',
     utterances = read_prompts(getRouterPath('data.txt'))
 )
-
+routeData = Route(
+    name = 'MATLAB',
+    utterances = read_prompts(getRouterPath('matlab.txt'))
+)
 def getRouter():
     """
     Returns a router layer configured with predefined routes for various tasks.
@@ -116,7 +119,8 @@ def buildRoutes(prompt):
         'RAG'    : getRouterPath('rag.txt'),
         'TABLE'  : getRouterPath('table.txt'),
         'DATA'   : getRouterPath('data.txt'),
-        'SNS'    : getRouterPath('sns.txt')
+        'SNS'    : getRouterPath('sns.txt'),
+        'MATLAB' : getRouterPath('matlab.txt')
     }
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)

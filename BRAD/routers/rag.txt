@@ -105,3 +105,4 @@ What are the potential applications of cell reprogramming in regenerative medici
 what can you tell me about bifurcation theory?
 what can you tell me about bifurcation theory?
 what did smale contribute to dynamical systems?
+what is synthetic lethality?

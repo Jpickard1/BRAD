@@ -40,11 +40,11 @@ transformers.modeling_utils.logger.setLevel(logging.ERROR)
 
 #Extraction
 import re
-from nltk.corpus import words
-from unidecode import unidecode
-import nltk
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import wordnet
+#from nltk.corpus import words
+#from unidecode import unidecode
+#import nltk
+#from nltk.stem import WordNetLemmatizer
+#from nltk.corpus import wordnet
 
 import BRAD.gene_ontology as gonto
 from BRAD.gene_ontology import geneOntology
@@ -76,7 +76,7 @@ def queryDocs(chatstatus):
         documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['num_articles_retrieved'])
         docs, scores = getDocumentSimilarity(documentSearch)
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
-        #bertscores
+
         if chatstatus['config']['experiment'] is True:
             # scoring_experiment(chain, docs, scores, prompt)
             crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus)
@@ -90,6 +90,8 @@ def queryDocs(chatstatus):
                 source = doc.metadata.get('source')
                 short_source = os.path.basename(source)
                 print(f"Source: {short_source}")
+
+>>>>>>> refs/remotes/origin/main
             # change inputs to be json readable
             res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
             chatstatus['output'], chatstatus['process'] = res['output_text'], res
@@ -107,8 +109,6 @@ def queryDocs(chatstatus):
         
         chatstatus['output'] = response
         chatstatus['process'] = {'type': 'LLM Conversation'}
-    # update and return the chatstatus
-    # chatstatus['output'], chatstatus['process'] = res['output_text'], res
     return chatstatus
 
 def getPreviousInput(log, key):
