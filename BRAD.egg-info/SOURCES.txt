@@ -4,4 +4,3 @@ BRAD.egg-info/PKG-INFO
 BRAD.egg-info/SOURCES.txt
 BRAD.egg-info/dependency_links.txt
 BRAD.egg-info/top_level.txt
-BRAD.egg-info/.ipynb_checkpoints/SOURCES-checkpoint.txt
