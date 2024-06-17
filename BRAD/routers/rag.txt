@@ -126,3 +126,6 @@ Retrieve information about MYOD gene, specifically its role in the genome and ha
 Retrieve information about MYOD gene, specifically its role in the genome and hardwired interactions. Look up literature and documents from text databases and scientific articles.
 Retrieve information about MYOD gene, specifically its role in the genome and hardwired interactions. Look up literature and documents from text databases and scientific articles.
 Retrieve information about MYOD gene, specifically its role in the genome and hardwired interactions. Look up literature and documents from text databases and scientific articles.
+Retrieve information about MYOD gene, including its role in cellular processes, from Gene Ontology and other relevant databases using Retrieval Augmented Generation.
+Retrieve information about MYOD gene, including its role in cellular processes, from Gene Ontology and other relevant databases using Retrieval Augmented Generation.
+Retrieve and summarize the main findings of the retrieved papers using Retrieval Augmented Generation.

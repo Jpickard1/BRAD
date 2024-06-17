@@ -39,7 +39,6 @@ def geneDBRetriever(chatstatus):
     6. If there is code required, specify if it is a row or column
     Format your output as follows with no additional information:
 
-    **OUTPUT**
     database: <ENRICHR or GENEONTOLOGY>
     genes: <List of genes separated by commas in query or None if code is required>
     code: <True or None>
