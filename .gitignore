@@ -13,3 +13,7 @@ BRAD/config/config.json
 docs/source/.ipynb_checkpoints/conf-checkpoint.py
 *.out
 BRAD/config/config.json
+BRAD/BRAD_Chat.egg-info/
+tutorials/planner/GRCh38.p13.tsv
+tutorials/planner/HWG.mat
+tutorials/planner/specialized_docs/

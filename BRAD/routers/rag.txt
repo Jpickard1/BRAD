@@ -116,3 +116,7 @@ Retrieve information about first order interactions of MYOD in the hardwired gen
 Retrieve information about "MYOD" in the context of genomic research from relevant literature and documents stored in text databases. Focus on interactions in the hardwired genome from HWG.mat.
 Retrieve information about "MYOD" in the context of genomic research from relevant literature and documents stored in text databases. Focus on interactions in the hardwired genome from HWG.mat.
 Retrieve information about first order interactions of MYOD from literature and documents in various databases. This may include interaction databases and papers that discuss such interactions.
+what is the role of MYOD?
+what processes is MYOD involved in?
+what processes is MYOD involved in?
+what cellular processes is the MYOD gene involved in?

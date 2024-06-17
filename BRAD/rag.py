@@ -28,6 +28,7 @@ from langchain_community.embeddings.sentence_transformer import (
     SentenceTransformerEmbeddings,
 )
 from langchain_text_splitters import CharacterTextSplitter
+from langchain.retrievers.multi_query import MultiQueryRetriever
 
 
 #BERTscore
@@ -71,29 +72,29 @@ def queryDocs(chatstatus):
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
 
-
-    
     # query to database
     if vectordb is not None:
-        docs, scores = retrieval()
+
+        # solo & mutliquery retrieval determined by config.json
+        docs, scores = retrieval(chatstatus)
+
+        # We could put reranking here
+
+        # We could put contextual compression here
+
+        # Build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
 
-        if chatstatus['config']['experiment'] is True:
-            # scoring_experiment(chain, docs, scores, prompt)
-            crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus)
-            chatstatus['process'] = {'type': 'docs cross validation experiment'}
-        else:
-            # pass the database output to the llm       
-            res = chain({"input_documents": docs, "question": prompt})
-            print(res['output_text'])
-            for item in documentSearch:
-                doc = item[0]
-                source = doc.metadata.get('source')
-                short_source = os.path.basename(source)
-                print(f"Source: {short_source}")
-            # change inputs to be json readable
-            res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
-            chatstatus['output'], chatstatus['process'] = res['output_text'], res
+        # pass the database output to the llm       
+        res = chain({"input_documents": docs, "question": prompt})
+        print(res['output_text'])
+        for doc in docs:
+            source = doc.metadata.get('source')
+            short_source = os.path.basename(source)
+            print(f"Source: {short_source}")
+        # change inputs to be json readable
+        res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
+        chatstatus['output'], chatstatus['process'] = res['output_text'], res
     else:
         template = historyChatTemplate()
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
@@ -116,7 +117,7 @@ def retrieval(chatstatus):
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
 
-    if chatstatus['config']['RAG']['multiquery']
+    if not chatstatus['config']['RAG']['multiquery']:
         documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
         docs, scores = getDocumentSimilarity(documentSearch)
     else:
@@ -125,7 +126,7 @@ def retrieval(chatstatus):
         retriever = MultiQueryRetriever.from_llm(retriever=vectordb.as_retriever(),
                                                  llm=llm
                                                 )
-        docs = retriever.similarity_search_with_relevance_scores(query=prompt)  # Note: No scores are generated when using multiquery
+        docs = retriever.get_relevant_documents(query=prompt)  # Note: No scores are generated when using multiquery
         scores = []
     return docs, scores
 
