@@ -486,5 +486,6 @@ def chat(
 def remove_repeats(vectordb):
     df = pd.DataFrame({'id' :vectordb.get()['ids'] , 'documents' : vectordb.get()['documents']})
     repeated_ids = df[df.duplicated(subset='documents', keep='last')]['id'].tolist()
-    vectordb.delete(repeated_ids)
+    if len(repeated_ids) > 0:
+        vectordb.delete(repeated_ids)
     return vectordb
