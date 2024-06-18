@@ -21,6 +21,8 @@ import re
 # Bioinformatics
 import gget
 
+from BRAD import utils
+
 
 # gene enrichment
 def queryEnrichr(chatstatus, gene_list):
@@ -96,13 +98,14 @@ def queryEnrichr(chatstatus, gene_list):
     print(output)
     display(edf[:num_df_rows_display].style)
     if save:
-        filepath = 'RAG-gget-' + db + '-' + str(datetime.now()) + '.csv'
-        filepath = filepath.replace(" ", "")
-        edf.to_csv(filepath)
-        saveOutput = 'The table has been saved to: ' + str(filepath)
+        chatstatus = utils.save(chatstatus, edf, 'ENRICHR-' + db + '.csv')
+        #filepath = 'RAG-gget-' + db + '-' + str(datetime.now()) + '.csv'
+        #filepath = filepath.replace(" ", "")
+        #edf.to_csv(filepath)
+        saveOutput = 'The table has been saved.' # to: ' + str(filepath)
         output += (' \n ' + saveOutput)
-        print(saveOutput)
-        process['filepath'] = filepath
+        # print(saveOutput)
+        # process['filepath'] = filepath
 
     if plot:
         plt.show()

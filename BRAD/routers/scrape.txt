@@ -163,3 +163,6 @@ Perform a web search for the latest research on these pathways and cell types to
 Search biomedical literature platforms like bioRxiv, PubMed, and preprint servers for recent research on MYOD interactions with the hardwired genome in HWG.mat.
 Search platforms like arXiv, bioRxiv, and PubMed for the latest research on these gene interactions and their association with specific cell types and pathways. This information will be used to enhance and validate the findings from the previous database analysis.
 Scour arXiv, bioRxiv, and PubMed for the most recent literature on MYOD based on the keywords generated from the Enrichr analysis and the hardwired genome analysis pipeline results.
+Perform a comprehensive web search for the latest research on MYOD by querying platforms like arXiv, bioRxiv, and PubMed. Save the URLs of the top 20 results for later use.
+Perform a comprehensive web search for the latest research on MYOD by querying platforms like arXiv, bioRxiv, and PubMed. Save the URLs of the top 20 results for later use.
+Retrieve the latest research articles related to "MYOD" by using prebuilt bioinformatics pipelines or custom code that scrapes relevant sources like arXiv, bioRxiv, and PubMed. Utilize the information obtained from the Enrichr database to refine the search query.

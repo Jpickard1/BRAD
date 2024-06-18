@@ -134,3 +134,5 @@ Retrieve and summarize the main findings of the retrieved papers using Retrieval
 Retrieve information about MYOD gene, including its role in cellular processes, from Gene Ontology and other relevant databases using Retrieval Augmented Generation.
 Retrieve and summarize the main findings of the retrieved papers using Retrieval Augmented Generation.
 Retrieve detailed information on the role of MYOD in cellular processes and genome biology from reliable databases and literature sources.
+Retrieve and summarize the main findings of the retrieved papers using Retrieval Augmented Generation.
+Retrieve and summarize the background information and current knowledge about the MYOD gene, its role in cellular processes, and relevant literature. This step will help in providing an introduction for the report.

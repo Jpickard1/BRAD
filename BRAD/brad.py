@@ -377,14 +377,19 @@ def chat(
     log_dir = os.path.join(base_dir, config['log_path'])
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    chatname = os.path.join(log_dir, str(dt.now()) + '.json')
-    chatname = '-'.join(chatname.split())
+    new_dir_name = dt.now().strftime("%Y-%m-%d_%H-%M-%S")
+    new_log_dir = os.path.join(log_dir, new_dir_name)
+    os.makedirs(new_log_dir)
+    chatname = os.path.join(new_log_dir, 'log.json')
+
+    #chatname = os.path.join(log_dir, str(dt.now()) + '.json')
+    #chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
 
     # Initialize the dictionaries of tables and databases accessible to BRAD
     databases = {} # a dictionary to look up databases
     tables = {}    # a dictionary to look up tables
-    
+
     # Initialize the RAG database
     if llm is None:
         llm = load_nvidia()
@@ -408,6 +413,7 @@ def chat(
     chatstatus['llm'] = llm
     chatstatus['memory'] = memory
     chatstatus['databases'] = databases
+    chatstatus['output-directory'] = new_log_dir
     chatlog           = {
         'llm'           : str(chatstatus['llm'])
     }

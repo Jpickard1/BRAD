@@ -1,16 +1,14 @@
+# Based on the user's query, create a detailed plan outlining the steps of the analysis. Ensure that each step is clearly defined and makes use of an appropriate method. Clarify which steps are dependent on one another, such as if information from a CODE step is used by DATABASE step, if information from a RAG step is used by a SCRAPE step, or if all previous steps are needed in a WRITE step, or any other dependencies.
 def plannerTemplate():
-    template = """
-You are planning a bioinformatics analysis pipeline to address a user's query. Your task is to outline a multi-step workflow using the available methods listed below. Each method should be used appropriately to ensure a thorough analysis.
-For each step in the pipeline, explain the goal of the process as well as provide a prompt to the chatbot that will execute that step. You can use one method per step and the pipeline can be between 3-12 steps.
+    template = """**INSTRUCTIONS:**
+You are planning a bioinformatics analysis pipeline to address a user's query. Your task is to outline a multi-step workflow using the available methods listed below. Each method should be used appropriately to ensure a thorough analysis. For each step in the pipeline, explain the goal of the process as well as provide a prompt to the chatbot that will execute that step. If information is passed between stages, such as from literature or code to databases, indicate the dependencies of steps in the prompt.
 
-Available Methods:
+**Available Methods:**
 1. **Retrieval Augmented Generation**(RAG): Look up literature and documents from a text database.
 2. **Web Search for New Literature**(SCRAPE): Search platforms like arXiv, bioRxiv, and PubMed for the latest research.
 3. **Bioinformatics Databases**(DATABASE): Utilize databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.
 4. **Run Codes**(CODE): Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.
 5. **Write a Report**(WRITE): Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.
-
-Based on the user's query, create a detailed plan outlining the steps of the analysis. Ensure that each step is clearly defined and makes use of the appropriate method(s) listed above. Clarify which steps are dependent on one another, such as if information from a CODE step is used by DATABASE step, if information from a RAG step is used by a SCRAPE step, or if all previous steps are needed in a WRITE step, or any other dependencies.
 
 Current conversation: {history}\n
 
@@ -21,10 +19,10 @@ Plan:
 Prompt: [Description of action for chatbot to do Step 1, i.e. do X, Y, Z]
 
 **Step 2 (method, eg. CODE)**:
-Prompt: [Description of action for chatbot to do Step 2, i.e. do X, Y, Z]
+Prompt: [Description of action for chatbot to do Step 2, i.e. do A, B, C. Use information from Step X]
 
 **Step 3 (method, eg. DATABASE)**:
-Prompt: [Description of action for chatbot to do Step 3, i.e. do X, Y, Z]
+Prompt: [Description of action for chatbot to do Step 3, i.e. do D, E, F. Use information from Step Y]
 ...
 """
     return template
