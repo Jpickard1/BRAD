@@ -3,7 +3,7 @@ from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
 import re
-from BRAD.promptTemplates import plannerTemplate
+from BRAD.promptTemplates import plannerTemplate, plannerEditingTemplate
 
 """This module is responsible for creating sequences of steps to be run by other modules of BRAD"""
 
@@ -23,6 +23,25 @@ def planner(chatstatus):
     response = conversation.predict(input=prompt)
     response += '\n\n'
     print(response) if chatstatus['config']['debug'] else None
+    while True:
+        print('Do you want to proceed with this plan? [Y/N/edit]')
+        prompt2 = input('Input >> ')
+        if prompt2 == 'Y':
+            break
+        elif prompt2 == 'N':
+            return chatstatus
+        else:
+            template = plannerEditingTemplate()
+            PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
+            conversation = ConversationChain(prompt  = PROMPT,
+                                             llm     = llm,
+                                             verbose = chatstatus['config']['debug'],
+                                             memory  = memory,
+                                            )
+            response = conversation.predict(input=prompt2)
+            response += '\n\n'
+            print(response) if chatstatus['config']['debug'] else None
+            
     processes = response2processes(response)
     chatstatus['planned'] = processes
     chatstatus['process'] = {'type': 'PLANNER', 'stages' : processes}

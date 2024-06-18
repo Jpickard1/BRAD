@@ -29,6 +29,24 @@ Prompt: [Description of action for chatbot to do Step 3, i.e. do X, Y, Z]
 """
     return template
 
+def plannerEditingTemplate():
+    template = """Based on the most recently proposed Plan and the user's new requirements and requested changes,
+create a revised plan.
+
+Current conversation: {history}\n
+
+User's requested changes: {input}
+
+Plan:
+**Step 1 (method, eg. RAG)**:
+Prompt: [Description of action for chatbot to do Step 1, i.e. do X, Y, Z]
+
+**Step 2 (method, eg. CODE)**:
+Prompt: [Description of action for chatbot to do Step 2, i.e. do X, Y, Z]
+...
+"""
+    return template
+
 def scriptSelectorTemplate():
     template="""You must select which code to run to help a user.
 
@@ -141,6 +159,25 @@ Execute: <your code here>
 The code to execute from your response must be formatted as:
     Execute: eng.<function name>(<arguments>)>
 This output should be exactly one line and no longer. Stop the response after this line.
+"""
+    return template
+
+def summarizeDocumentTemplate():
+    template = """**INSTRUCTIONS**
+You are an assistant responsible for compressing the important information in a document.
+You will be given a users query and a piece of text. Summarize the text with the following aims:
+1. remove information that is not complete ideas or unrelated to the topic of the user
+2. improve the clarity of the writing and information
+If there is no relevant information, say "None"
+
+**USER QUERY**
+{user_query}
+
+**TEXT**
+{text}
+
+**OUTPUT**
+<put summary output here>
 """
     return template
 

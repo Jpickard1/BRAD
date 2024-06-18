@@ -38,7 +38,7 @@ transformers.tokenization_utils.logger.setLevel(logging.ERROR)
 transformers.configuration_utils.logger.setLevel(logging.ERROR)
 transformers.modeling_utils.logger.setLevel(logging.ERROR)
 
-from BRAD.promptTemplates import historyChatTemplate
+from BRAD.promptTemplates import historyChatTemplate, summarizeDocumentTemplate
 
 
 #Extraction
@@ -89,6 +89,7 @@ def queryDocs(chatstatus):
         docs = pagerank_rerank(docs, scores)
         
         # We could put contextual compression here
+        docs = contextualCompression(docs, chatstatus)
 
         # Build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
@@ -137,6 +138,41 @@ def retrieval(chatstatus):
         docs = retriever.get_relevant_documents(query=prompt)  # Note: No scores are generated when using multiquery
         scores = []
     return docs, scores
+
+def contextualCompression(docs, chatstatus):
+    """
+    Summarizes the content of documents based on a user query, updating the 
+    document search results with these summaries.
+
+    Args:
+        docs (list): A list of documents where each document has an attribute 
+                     `page_content` containing the text content of the document.
+        chatstatus (dict): BRAD chatstatus used to track debuging
+
+    Returns:
+        list: The modified `documentSearch` list with updated `page_content` for each 
+              document, replaced by their summaries.
+
+    Example:
+        documentSearch = [Document(page_content="..."), ...]
+        chatstatus = {'config': {'debug': True}}
+        updatedDocs = contextualCompression(documentSearch, chatstatus)
+    """
+    template = summarizeDocumentTemplate()
+    PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
+    reducedDocs = []
+    for i, doc in enumerate(docs):
+        pageContent = doc.page_content
+        prompt = PROMPT.format(text=pageContent, user_query=chatstatus['prompt'])
+        res = chatstatus['llm'].invoke(input=prompt)
+        summary = res.content.strip()
+        if chatstatus['config']['debug']:
+            print('============')
+            print(pageContent)
+            print('Summary: ' + summary)
+        doc.page_content = summary
+        docs[i] = doc
+    return docs
 
 def getPreviousInput(log, key):
     """
@@ -193,7 +229,7 @@ def getDocumentSimilarity(documents):
         - A list of document objects.
         - A numpy array of similarity scores.
     :rtype: tuple
-"""
+    """
     scores = []
     docs   = []
     for doc in documents:
