@@ -51,13 +51,13 @@ from BRAD.tables import *
 from BRAD.rag import *
 from BRAD.gene_ontology import *
 from BRAD.seabornCaller import *
-from BRAD.matlabCaller import *
-from BRAD.pythonCaller import *
-from BRAD.snakemakeCaller import *
+#from BRAD.matlabCaller import *
+#from BRAD.pythonCaller import *
+#from BRAD.snakemakeCaller import *
 from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
-from BRAD.planner import planner
-from BRAD.coder import codeCaller
+#from BRAD.planner import planner
+#from BRAD.coder import codeCaller
 
 def getModules():
     """
@@ -232,6 +232,7 @@ def load_literature_db(
     vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings_model, client=_client_settings, collection_name=db_name)
     if len(vectordb.get()['ids']) == 0:
         warnings.warn('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
+    vectordb = remove_repeats(vectordb)
     return vectordb, embeddings_model
 
 def is_json_serializable(value):
@@ -466,3 +467,10 @@ def chat(
     
     print("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + chatname)
 
+
+#removes repeat chunks in vectordb
+def remove_repeats(vectordb):
+    df = pd.DataFrame({'id' :vectordb.get()['ids'] , 'documents' : vectordb.get()['documents']})
+    repeated_ids = df[df.duplicated(subset='documents', keep='last')]['id'].tolist()
+    vectordb.delete(repeated_ids)
+    return vectordb

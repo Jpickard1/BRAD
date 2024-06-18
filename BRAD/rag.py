@@ -74,12 +74,20 @@ def queryDocs(chatstatus):
 
     # query to database
     if vectordb is not None:
+        
+        #Ask Joshua about easy way to get path of database?
+        path = "/nfs/turbo/umms-indikar/shared/projects/RAG/papers/EXP2/"
+        best_score, text = restrictedDB(prompt, vectordb, path)
+        #threshold to invoke new vector database
+        if best_score > 0.75:
+            chatstatus['databases']['RAG'] = text
 
         # solo & mutliquery retrieval determined by config.json
         docs, scores = retrieval(chatstatus)
 
-        # We could put reranking here
-
+        # We could put reranking here\
+        docs = pagerank_rerank(docs, scores)
+        
         # We could put contextual compression here
 
         # Build chain
@@ -396,3 +404,92 @@ def scoring_experiment(chain, docs, scores, prompt):
     #scorer = BERTScorer(lang="en", rescale_with_baseline=True)
     #P, R, F1 = scorer.score(candidates, reference)
     #print(F1)
+    
+    
+
+
+#To get a single document
+
+#ASK JOSHUA ABOUT PATHING
+def restrictedDB(prompt, vectordb, path):
+    #path = "/nfs/turbo/umms-indikar/shared/projects/RAG/papers/EXP2/"
+    embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')
+    db_name = "new_DB_cosine_cSize_%d_cOver_%d" % (700, 200)
+    title_list, real_id_list = get_all_sources(prompt, path)
+    best_title, best_score = best_match(prompt, title_list)
+    title_list, real_id_list = get_all_sources(best_title, path)
+    text = vectordb.get(ids=real_id_list)['documents']
+    #maybe make this a new path argument idk
+    newdb = Chroma(persist_directory='/nfs/turbo/umms-indikar/shared/projects/RAG/databases/new_EXP3/', embedding_function=embeddings_model, collection_name=db_name)
+    newdb.add_texts(text)
+    return best_score, newdb
+
+
+#Given the prompt, find the title and corresponding score that is the best match
+def best_match(prompt, title_list):
+    sentence_model = SentenceTransformer('multi-qa-MiniLM-L6-cos-v1')
+    unique_title_list = list(set(title_list))
+    query_embedding = sentence_model.encode(prompt)
+    passage_embedding = sentence_model.encode(unique_title_list)
+
+    save_title = ""
+    #adjust the save_score to be the threshold cutoff - set to 0.75 but maybe thats too high
+    #So far this is for single papers, to make it multiple - change save_title into a list
+    save_score = 0.50
+
+    for score, title in zip(util.cos_sim(query_embedding, passage_embedding)[0], unique_title_list):
+        if score > save_score:
+            save_score = score
+            save_title = title
+    print(f"The best match is {save_title} with a score of {save_score}")
+    return save_title, save_score
+
+#Split into two methods?
+def get_all_sources(prompt, path):
+    prompt = prompt.lower()
+    metadata_full = vectordb.get()['metadatas']
+    source_list = [item['source'] for item in metadata_full]   
+    real_source_list = [((item.replace(path, '')).removesuffix('.pdf')).lower() for item in source_list]
+    db = pd.DataFrame({'id' :vectordb.get()['ids'] , 'metadatas' : real_source_list})
+    filtered_df = db[db['metadatas'].apply(lambda x: x in prompt)]
+    return real_source_list, filtered_df['id'].to_list()
+
+
+#Given the prompt, find the title and corresponding score that is the best match
+def adj_matrix_builder(docs, scores):
+    dimension = len(docs)+1
+    adj_matrix = np.zeros([dimension, dimension])
+    pos = 1
+    for score in scores:
+        adj_matrix[0][pos] = score
+        adj_matrix[pos][0] = score
+        pos += 1
+    return adj_matrix
+
+# Normalize columns of A
+def normalize_adjacency_matrix(A):
+    col_sums = A.sum(axis=0)
+    return A / col_sums[np.newaxis, :]
+
+#weighted pagerank algorithm
+def pagerank_weighted(A, alpha=0.85, tol=1e-6, max_iter=100):
+    n = A.shape[0]
+    A_normalized = normalize_adjacency_matrix(A)
+    v = np.ones(n) / n  # Initial PageRank vector
+
+    for _ in range(max_iter):
+        v_next = alpha * A_normalized.dot(v) + (1 - alpha) / n
+        if np.linalg.norm(v_next - v, 1) < tol:
+            break
+        v = v_next
+
+    return v
+
+#reranker
+
+def pagerank_rerank(docs, scores):
+    adj_matrix = adj_matrix_builder(docs, scores)
+    pagerank_scores = pagerank_weighted(A = adj_matrix)
+    top_rank_scores = sorted(range(len(pagerank_scores)), key=lambda i: pagerank_scores[i], reverse=True)[1:11]
+    reranked_docs = [docs[i] for i in top_rank_scores]
+    return reranked_docs
