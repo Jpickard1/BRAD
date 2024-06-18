@@ -67,7 +67,7 @@ def pythonPromptTemplate():
     template = """Current conversation:\n{{history}}
 
 **PYTHON SCRIPT**
-You must run this python script: 
+You must run this python script:
 {scriptName}
 
 **PYTHON SCRIPT DOCUMENTATION**:
@@ -96,6 +96,8 @@ Execute: subprocess.call([sys.executable, '<full path to script/> example_script
 ```
 Query:{{input}}
 
+**OUTPUT**
+If output or output files are created, all output files should be named: {output_path}/<output file>
 
 **INSTRUCTIONS**
 1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
@@ -144,6 +146,9 @@ Execute: t = eng.gcd(100.0,80.0,nargout=3)
 
 Query:{{input}}
 
+**OUTPUT**
+If output or output files are created, all output files should be named: {output_path}/<output file>
+
 **INSTRUCTIONS**
 1. Given the user query and the documentation, identify each of the arguments found in the users query that should be passed to the matlab function.
 2. Using the matlab enging eng, provide the one line of code to execute the desired matlab commands. Assume all functions are added to the path and eng already exist.
@@ -176,6 +181,75 @@ If there is no relevant information, say "None"
 
 **OUTPUT**
 <put summary output here>
+"""
+    return template
+
+def geneDatabaseCallerTemplate():
+    template = """Current conversation:\n{{history}}
+    
+GENEONTOLOGY: The Gene Ontology (GO) is an initiative to unify the representation of gene and gene product attributes across all species via the aims: 1) maintain and develop its controlled vocabulary of gene and gene product attributes; 2) annotate genes and gene products, and assimilate and disseminate annotation data; and 3) provide tools for easy access to all aspects of the data provided by the project, and to enable functional interpretation of experimental data using the GO.
+    
+ENRICHR: is a tool used to lookup sets of genes and their functional association. ENRICHR has access to many gene-set libraries including Allen_Brain_Atlas_up, ENCODE_Histone_Modifications_2015, Enrichr_Libraries_Most_Popular_Genes, FANTOM6_lncRNA_KD_DEGs, GO_Biological_Process_2023, GTEx, Human_Gene_Atlas, KEGG, REACTOME, Transcription_Factor_PPIs, WikiPathways and many others databases.
+    
+Available Tables:
+{tables}
+
+Query:{{input}}
+
+**INSTRUCTIONS**
+1. From the query, decide if GENEONTOLOGY or ENRICHR should be used
+2. Identify genes in the users input that should be searched. propose genes with similar names, correct the users spelling, or make small modifications to the list, but do not propose genes that are not found in the humans input.
+3. Indicate if genes need to be loaded from a file: True/False
+
+database: <ENRICHR or GENEONTOLOGY>
+genes: <List of genes separated by commas in query or None if code is required>
+load: <True/False>
+"""
+    return template
+
+def fileChooserTemplate():
+    template = """**INSTRUCTIONS**
+You are a digital assistant responsible for determining which file we should load based on a users prompt. You many choose either the files listed under AVAILABLE FILES or found in the USER QUERY. Based upon the user query, specify which if any fields should be loaded from the table. Rather than specifying a table name, the user might specify ot load data from a particular step. In this case, files are saved with the prefix `S<number>-<File Name>` to denote which step to load them from.
+
+**EXAMPLES**
+
+Here the files are selected by name:
+```
+Available Files:
+S1-PYTHON.tsv
+S2-ENRICHR.csv
+
+User Query:
+Use the pathways output from enricher for the this phase of anlaysis.
+
+Output:
+File: S2-ENRICHR.csv
+Fields: pathways
+```
+
+Here the files are selected by Step:
+```
+Available Files:
+S1-PYTHON.tsv
+S2-ENRICHR.csv
+
+User Query:
+Use the Genes identified in Step 1 as input to the codes.
+
+Output:
+File: S1-PYTHON.tsv
+Fields: Genes
+```
+
+**AVAILABLE FILES**
+{files}
+
+**USER QUERY**
+{{user_query}}
+
+**OUTPUT**
+File: <which file you selected>
+Fields: <which fields in the file are important>
 """
     return template
 
