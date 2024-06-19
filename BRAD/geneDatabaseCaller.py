@@ -8,22 +8,26 @@ from BRAD.gene_ontology import geneOntology
 from BRAD.enrichr import queryEnrichr
 from BRAD import utils
 from BRAD.promptTemplates import geneDatabaseCallerTemplate
+from BRAD import log
 
 def geneDBRetriever(chatstatus):
     query    = chatstatus['prompt']
     llm      = chatstatus['llm']              # get the llm
     # memory   = chatstatus['memory']           # get the memory of the model
     memory = ConversationBufferMemory(ai_prefix="BRAD")
+    chatstatus['process'] = {'module' : 'DATABASE',
+                             'steps' : []
+                            }
     
     # Define the mapping of keywords to functions
     database_functions = {
-        'ENRICHR'   : queryEnrichr,
+        'ENRICHR'      : queryEnrichr,
         'GENEONTOLOGY' : geneOntology,
     }
 
     # Identify the database and the search terms
     template = geneDatabaseCallerTemplate()
-    
+
     tablesInfo = getTablesFormatting(chatstatus['tables'])
     filled_template = template.format(tables=tablesInfo)
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
@@ -33,29 +37,36 @@ def geneDBRetriever(chatstatus):
                                      verbose = True,
                                      memory  = memory,
                                     )
-    response = conversation.predict(input=query)
+    chainResponse = conversation.predict(input=query)
 
-    # Print gene list if debugging
-    print(response) if chatstatus['config']['debug'] else None
-    response = parse_llm_response(response)
+    log.debugLog(chainResponse, chatstatus=chatstatus)    # Print gene list if debugging
+    response = parse_llm_response(chainResponse)
 
-    # Print gene list if debugging
-    print(response) if chatstatus['config']['debug'] else None
+    chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
+                                                         prompt       = PROMPT,
+                                                         input        = query,
+                                                         output       = chainResponse,
+                                                         parsedOutput = response,
+                                                         purpose      = 'Select database'
+                                                        )
+                                             )
+
+    log.debugLog(response, chatstatus=chatstatus)    # Print gene list if debugging
 
     dbCaller = database_functions[response['database']]
-
+    chatstatus['process']['database-function'] =  dbCaller
+    
     geneList = []
     if response['load'] == 'True':
-        geneList = utils.loadFromFile(chatstatus)
+        chatstatus, geneList = utils.loadFromFile(chatstatus)
     else:
         geneList = response['genes']
 
     # Print gene list if debugging
-    print(geneList) if chatstatus['config']['debug'] else None
+    log.debugLog(geneList, chatstatus=chatstatus)
 
-    chatstatus['process'] = {'name':'geneDatabaseCaller'}
     try:
-        dbCaller(chatstatus, geneList)
+        chatstatus = dbCaller(chatstatus, geneList)
     except Exception as e:
         output = f'Error occurred while searching database: {e}'
         print(output)
@@ -104,6 +115,9 @@ def getTablesFormatting(tables):
 
 
 def geneDatabaseRetriever(chatstatus):
+    '''
+    :raises Warning: If multiple potential databases are provided or no database is specified.
+    '''
     query    = chatstatus['prompt']
     llm      = chatstatus['llm']              # get the llm
     memory   = chatstatus['memory']           # get the memory of the model

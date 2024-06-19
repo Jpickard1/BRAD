@@ -22,7 +22,7 @@ import re
 import gget
 
 from BRAD import utils
-
+from BRAD import log
 
 # gene enrichment
 def queryEnrichr(chatstatus, gene_list):
@@ -43,7 +43,8 @@ def queryEnrichr(chatstatus, gene_list):
     max_p_val           = chatstatus['config']['max_enrichr_pval']
     num_df_rows_display = chatstatus['config']['num_df_rows_display']
     default_enrichr_db  = chatstatus['config']['default_enrichr_db']
-    process = {}
+    
+    process = {'MODULE' : 'ENRICHR'}
     db, save, plot, dbfound = None, False, False, False
 
     # Remove any punctuation except for - and _, which are used in gget database names
@@ -62,16 +63,12 @@ def queryEnrichr(chatstatus, gene_list):
     dbs = list(df['Gene-set Library'].values)
     dbs = [dbi.upper() for dbi in dbs]
     for gene in prompt.split(' '):
-        #if gene.upper() in g_from_file:
-        #    gene_list.append(gene)
         if gene.upper() in dbs:
             if db is not None:
                 warnings.warn('Two potential databases were provided!')
             else:
                 db = gene
                 dbfound = True
-        #if gene.upper() == 'SAVE':
-        #    save = True
         if gene.upper() == 'PLOT':
             plot = True
     save = True
@@ -80,13 +77,14 @@ def queryEnrichr(chatstatus, gene_list):
         db = default_enrichr_db
         
     process = {
+        'module'     : 'ENRICHR',
         'genes'      : str(gene_list),
         'plot'       : plot,
         'save'       : save,
         'database'   : db,
         'default db' : dbfound,
     }
-        
+
     # query GO
     ax = None
     if plot:
@@ -99,16 +97,14 @@ def queryEnrichr(chatstatus, gene_list):
     display(edf[:num_df_rows_display].style)
     if save:
         chatstatus = utils.save(chatstatus, edf, 'ENRICHR-' + db + '.csv')
-        #filepath = 'RAG-gget-' + db + '-' + str(datetime.now()) + '.csv'
-        #filepath = filepath.replace(" ", "")
-        #edf.to_csv(filepath)
-        saveOutput = 'The table has been saved.' # to: ' + str(filepath)
-        output += (' \n ' + saveOutput)
-        # print(saveOutput)
-        # process['filepath'] = filepath
 
     if plot:
         plt.show()
-    chatstatus['process'] = process
+    
+    if chatstatus['process'] is None:
+        chatstatus['process'] = process
+    else:
+        chatstatus['process']['steps'].append(process)
+    
     chatstatus['output']  = output
     return chatstatus

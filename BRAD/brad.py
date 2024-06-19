@@ -58,6 +58,7 @@ from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
 from BRAD.planner import planner
 from BRAD.coder import codeCaller
+from BRAD import log
 
 def getModules():
     """
@@ -235,72 +236,6 @@ def load_literature_db(
     vectordb = remove_repeats(vectordb)
     return vectordb, embeddings_model
 
-def is_json_serializable(value):
-    """
-    Checks if a given value is JSON serializable.
-
-    :param value: The value to be checked for JSON serializability.
-    :type value: Any
-
-    :return: True if the value is JSON serializable, False otherwise.
-    :rtype: bool
-
-    """
-    # Auth: Joshua Pickard
-    #       jpic@umich.edu
-    # Date: June 4, 2024
-    
-    try:
-        json.dumps(value)
-        return True
-    except (TypeError, OverflowError):
-        return False
-
-def logger(chatlog, chatstatus, chatname):
-    """
-    Logs the chat status and process details into a specified chat log file.
-
-    :param chatlog: The dictionary containing the chat log entries.
-    :type chatlog: dict
-    :param chatstatus: The current status of the chat, including prompt, output, and process details.
-    :type chatstatus: dict
-    :param chatname: The name of the file where the chat log will be saved.
-    :type chatname: str
-
-    :raises FileNotFoundError: If the specified chat log file cannot be created or accessed.
-    :raises TypeError: If the chat log or status contains non-serializable data that cannot be converted to a string.
-
-    :return: A tuple containing the updated chat log and chat status.
-    :rtype: tuple
-    """
-
-    # Auth: Joshua Pickard
-    #       jpic@umich.edu
-    # Date: June 4, 2024
-    
-    process_serializable = {
-            key: value if is_json_serializable(value) else str(value)
-            for key, value in chatstatus['process'].items()
-        }
-
-    chatlog[len(chatlog)] = {
-        'prompt' : chatstatus['prompt'],  # the input to the user
-        'output' : chatstatus['output'],  # the output to the user
-        'process': process_serializable,  # chatstatus['process'], # information about the process that ran
-        'status' : {                      # information about the chat at that time
-            'databases'         : str(chatstatus['databases']),
-            'current table'     : {
-                    'key'       : chatstatus['current table']['key'],
-                    'tab'       : chatstatus['current table']['tab'].to_json() if chatstatus['current table']['tab'] is not None else None,
-                },
-            'current documents' : chatstatus['current documents'],
-        }
-    }
-    with open(chatname, 'w') as fp:
-        json.dump(chatlog, fp, indent=4)
-    chatstatus['process'] = None
-    return chatlog, chatstatus
-
 def chatbotHelp():
     """
     Displays a help message with information about the RAG chatbot's capabilities and special commands.
@@ -383,8 +318,6 @@ def chat(
     os.makedirs(new_log_dir)
     chatname = os.path.join(new_log_dir, 'log.json')
 
-    #chatname = os.path.join(log_dir, str(dt.now()) + '.json')
-    #chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
 
     # Initialize the dictionaries of tables and databases accessible to BRAD
@@ -473,11 +406,11 @@ def chat(
         if len(chatstatus['planned']) != 0 and route != 'PLANNER':
             new_output_files = utils.outputFiles(chatstatus)
             new_output_files = list(set(new_output_files).difference(set(output_files)))
-            utils.makeNamesConsistent(chatstatus, new_output_files)
+            chatstatus = utils.makeNamesConsistent(chatstatus, new_output_files)
             chatstatus['planned'].pop(0)
         
         # Log and reset these values
-        chatlog, chatstatus = logger(chatlog, chatstatus, chatname)
+        chatlog, chatstatus = log.logger(chatlog, chatstatus, chatname)
     
     print("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + chatname)
 
