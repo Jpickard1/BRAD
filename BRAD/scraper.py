@@ -26,6 +26,8 @@ from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 
+from BRAD import utils
+
 def webScraping(chatstatus):
     """
     Performs web scraping based on the provided chat status, executing specific scraping functions for different sources like arXiv, bioRxiv, and PubMed.
@@ -81,7 +83,7 @@ def webScraping(chatstatus):
         print(output)
         print('Search Terms: ' + str(searchTerms)) if chatstatus['config']['debug'] else None
         for st in searchTerms:
-            scrape_function(st)
+            scrape_function(st, chatstatus)
         searchTerms = ' '.join(searchTerms)
         scrape_function(searchTerms)
     except Exception as e:
@@ -132,7 +134,7 @@ def webScraping_depricated(chatstatus):
     chatstatus['output']  = output
     return chatstatus
 
-def arxiv(query):
+def arxiv(query, chatstatus):
     """
     Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.
 
@@ -247,7 +249,7 @@ def search_pubmed_article(query, number_of_articles=10):
     return record['IdList']
     #return record
 
-def pubmed(query):
+def pubmed(query, chatstatus):
     """
     Scrapes PubMed for articles matching the query, retrieves their PMIDs, and downloads available PDFs.
 
@@ -269,7 +271,7 @@ def pubmed(query):
 
         headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
         try: 
-            path = os.path.abspath(os.getcwd()) + '/specialized_docs'
+            path = utils.pdfDownloadPath(chatstatus) # os.path.abspath(os.getcwd()) + '/specialized_docs'
             os.makedirs(path, exist_ok = True) 
             print("Directory '%s' created successfully" % path) 
         except OSError as error: 
@@ -302,7 +304,7 @@ def pubmed(query):
         print("no articles found")
     print("pdf collection complete!")
 
-def biorxiv(query):
+def biorxiv(query, chatstatus):
     """
     Scrapes the bioRxiv preprint server for articles matching a specific query.
 
@@ -484,7 +486,7 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
         print('Abstracts fetched.')
 
     try: 
-        path = os.path.abspath(os.getcwd()) + '/specialized_docs'
+        path = utils.pdfDownloadPath(chatstatus) # os.path.abspath(os.getcwd()) + '/specialized_docs'
         os.makedirs(path, exist_ok = True) 
         print("Directory '%s' created successfully" % path) 
     except OSError as error: 
@@ -545,7 +547,7 @@ def create_db(query, query2):
         model_name='BAAI/bge-base-en-v1.5')
 
 #%% Phase 1 - Load documents
-    path_docs = './specialized_docs/'
+    path_docs = utils.pdfDownloadPath(chatstatus) # './specialized_docs/'
 
     print('\nDocuments loading from:',path_docs)
     text_loader_kwargs={'autodetect_encoding': True}
@@ -789,7 +791,7 @@ def arxiv_scrape(pdf_urls):
     """
     s = HTMLSession()
     try: 
-        path = os.path.abspath(os.getcwd()) + '/specialized_docs'
+        path = utils.pdfDownloadPath(chatstatus) # os.path.abspath(os.getcwd()) + '/specialized_docs'
         os.makedirs(path, exist_ok = True) 
         print("Directory '%s' created successfully" % path) 
     except OSError as error: 

@@ -51,13 +51,13 @@ from BRAD.tables import *
 from BRAD.rag import *
 from BRAD.gene_ontology import *
 from BRAD.seabornCaller import *
-#from BRAD.matlabCaller import *
-#from BRAD.pythonCaller import *
-#from BRAD.snakemakeCaller import *
+from BRAD.matlabCaller import *
+from BRAD.pythonCaller import *
+from BRAD.snakemakeCaller import *
 from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
-#from BRAD.planner import planner
-#from BRAD.coder import codeCaller
+from BRAD.planner import planner
+from BRAD.coder import codeCaller
 
 def getModules():
     """
@@ -378,14 +378,19 @@ def chat(
     log_dir = os.path.join(base_dir, config['log_path'])
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    chatname = os.path.join(log_dir, str(dt.now()) + '.json')
-    chatname = '-'.join(chatname.split())
+    new_dir_name = dt.now().strftime("%Y-%m-%d_%H-%M-%S")
+    new_log_dir = os.path.join(log_dir, new_dir_name)
+    os.makedirs(new_log_dir)
+    chatname = os.path.join(new_log_dir, 'log.json')
+
+    #chatname = os.path.join(log_dir, str(dt.now()) + '.json')
+    #chatname = '-'.join(chatname.split())
     print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
 
     # Initialize the dictionaries of tables and databases accessible to BRAD
     databases = {} # a dictionary to look up databases
     tables = {}    # a dictionary to look up tables
-    
+
     # Initialize the RAG database
     if llm is None:
         llm = load_nvidia()
@@ -409,6 +414,7 @@ def chat(
     chatstatus['llm'] = llm
     chatstatus['memory'] = memory
     chatstatus['databases'] = databases
+    chatstatus['output-directory'] = new_log_dir
     chatlog           = {
         'llm'           : str(chatstatus['llm'])
     }
@@ -425,7 +431,7 @@ def chat(
             chatstatus['prompt'] = input('Input >> ')                 # get query from user
         else:
             chatstatus['prompt'] = chatstatus['planned'][0]['prompt']
-            chatstatus['planned'].pop(0)
+            output_files         = utils.outputFiles(chatstatus)
         
         # Handle explicit commands and routing
         if chatstatus['prompt'] in ['exit', 'quit', 'q', 'bye']:         # check to exit
@@ -433,7 +439,7 @@ def chat(
         elif chatstatus['prompt'].lower() == 'help':              # print man to the screen
             chatbotHelp()
             continue
-        
+        # Routing
         elif chatstatus['prompt'].startswith('/set'):             # set a configuration variable
             chatstatus = reconfig(chatstatus)
             continue
@@ -446,6 +452,7 @@ def chat(
             buildRoutes(chatstatus['prompt'])
             chatstatus['prompt'] = " ".join(chatstatus['prompt'].split(' ')[2:]).strip()
 
+        # Outputs
         print('==================================================')
         print('RAG >> ' + str(len(chatlog)) + ': ', end='')
 
@@ -462,6 +469,13 @@ def chat(
         # Query database
         chatstatus = module(chatstatus)
 
+        # Remove the item that was executed. We need must do it after running it for the current file naming system.
+        if len(chatstatus['planned']) != 0 and route != 'PLANNER':
+            new_output_files = utils.outputFiles(chatstatus)
+            new_output_files = list(set(new_output_files).difference(set(output_files)))
+            utils.makeNamesConsistent(chatstatus, new_output_files)
+            chatstatus['planned'].pop(0)
+        
         # Log and reset these values
         chatlog, chatstatus = logger(chatlog, chatstatus, chatname)
     

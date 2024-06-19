@@ -3,6 +3,7 @@ import os
 
 from langchain import PromptTemplate, LLMChain
 from langchain.chains import ConversationChain
+from langchain.memory import ConversationBufferMemory
 
 from BRAD.matlabCaller import find_matlab_files, get_matlab_description, read_matlab_docstrings, matlabPromptTemplate, activateMatlabEngine, extract_matlab_code, execute_matlab_code
 from BRAD.pythonCaller import find_py_files, get_py_description, read_python_docstrings, pythonPromptTemplate, extract_python_code, execute_python_code
@@ -12,7 +13,7 @@ def codeCaller(chatstatus):
     print('CODER') if chatstatus['config']['debug'] else None
     prompt = chatstatus['prompt']                                        # Get the user prompt
     llm = chatstatus['llm']                                              # Get the llm
-    memory = chatstatus['memory']
+    memory = ConversationBufferMemory(ai_prefix="BRAD")                  # chatstatus['memory']
     chatstatus['process'] = {}                                           # Begin saving plotting arguments
     chatstatus['process']['name'] = 'CODER'
 
@@ -69,7 +70,7 @@ def codeCaller(chatstatus):
     docstrings      = docstringReader(os.path.join(scriptPath, scriptName))
     scriptCallingTemplate = {'python': pythonPromptTemplate, 'MATLAB': matlabPromptTemplate}.get(scriptType)
     template        = scriptCallingTemplate()
-    filled_template = template.format(scriptName=scriptName, scriptDocumentation=docstrings)
+    filled_template = template.format(scriptName=scriptName, scriptDocumentation=docstrings, output_path=chatstatus['output-directory'])
     PROMPT          = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     print(PROMPT) if chatstatus['config']['debug'] else None
     conversation    = ConversationChain(prompt  = PROMPT,

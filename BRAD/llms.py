@@ -37,7 +37,7 @@ def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/
                    verbose          = verbose)
     return llm
 
-def load_nvidia(nvidia_model='mistral_7b', nvidia_api_key=None, temperature=None):
+def load_nvidia(nvidia_model='meta/llama3-70b-instruct', nvidia_api_key=None, temperature=None):
     """
     Loads the NVIDIA language model with the specified model name and API key.
 

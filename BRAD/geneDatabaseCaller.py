@@ -6,6 +6,8 @@ from langchain.chains import ConversationChain
 
 from BRAD.gene_ontology import geneOntology
 from BRAD.enrichr import queryEnrichr
+from BRAD import utils
+from BRAD.promptTemplates import geneDatabaseCallerTemplate
 
 def geneDBRetriever(chatstatus):
     query    = chatstatus['prompt']
@@ -19,33 +21,8 @@ def geneDBRetriever(chatstatus):
     }
 
     # Identify the database and the search terms
-    template = """Current conversation:\n{{history}}
+    template = geneDatabaseCallerTemplate()
     
-    GENEONTOLOGY: The Gene Ontology (GO) is an initiative to unify the representation of gene and gene product attributes across all species via the aims: 1) maintain and develop its controlled vocabulary of gene and gene product attributes; 2) annotate genes and gene products, and assimilate and disseminate annotation data; and 3) provide tools for easy access to all aspects of the data provided by the project, and to enable functional interpretation of experimental data using the GO.
-    
-    ENRICHR: is a tool used to lookup sets of genes and their functional association. ENRICHR has access to many gene-set libraries including Allen_Brain_Atlas_up, ENCODE_Histone_Modifications_2015, Enrichr_Libraries_Most_Popular_Genes, FANTOM6_lncRNA_KD_DEGs, GO_Biological_Process_2023, GTEx, Human_Gene_Atlas, KEGG, REACTOME, Transcription_Factor_PPIs, WikiPathways and many others databases.
-    
-    Available Tables:
-    {tables}
-    
-    Query:{{input}}
-    
-    **INSTRUCTIONS**
-    1. From the query, decide if GENEONTOLOGY or ENRICHR should be used
-    2. Identify genes in the users input that should be searched. propose genes with similar names, correct the users spelling, or make small modifications to the list, but do not propose genes that are not found in the humans input.
-    3. If the user wants to extract genes from a table (python dataframe), provide the necessary code to get the genes into a python list, otherwise, say None.
-    4. If there is code required, identify the name of the table, otherwise say None
-    5. If there is code required, identify the row or column name of the table, otherwise say None
-    6. If there is code required, specify if it is a row or column
-    Format your output as follows with no additional information:
-
-    database: <ENRICHR or GENEONTOLOGY>
-    genes: <List of genes separated by commas in query or None if code is required>
-    code: <True or None>
-    table: <Table Name>
-    mode name: <Row or Column Name>
-    mode: <Row or Column>
-    """
     tablesInfo = getTablesFormatting(chatstatus['tables'])
     filled_template = template.format(tables=tablesInfo)
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
@@ -67,11 +44,8 @@ def geneDBRetriever(chatstatus):
     dbCaller = database_functions[response['database']]
 
     geneList = []
-    if response['code'] == 'True':
-        if response['mode'] == 'Column':
-            geneList = list(chatstatus['tables'][response['mode name']].values)
-        else:
-            geneLIst = list(chatstatus['tables'].loc[(response['mode name'])].values)
+    if response['load'] == 'True':
+        geneList = utils.loadFromFile(chatstatus)
     else:
         geneList = response['genes']
 
@@ -112,19 +86,8 @@ def parse_llm_response(response):
     genes_line = lines[1].replace("genes:", "").strip()
     parsed_data["genes"] = genes_line.split(',')
 
-    code_line = lines[2].replace("code:", "").strip()
-    parsed_data["code"] = code_line.split(',')[0]
-
-    print(parsed_data["code"])
-    if parsed_data["code"].lower() != 'none':
-        table_line = lines[3].replace("table:", "").strip()
-        parsed_data["table"] = table_line.split(',')[0]
-    
-        mode_name_line = lines[4].replace("mode name:", "").strip()
-        parsed_data["mode_name"] = mode_name_line.split(',')[0]
-    
-        mode_line = lines[5].replace("mode:", "").strip()
-        parsed_data["mode"] = mode_name_line.split(',')[0]
+    code_line = lines[2].replace("load:", "").strip()
+    parsed_data["load"] = code_line.split(',')[0]
 
     return parsed_data
     
