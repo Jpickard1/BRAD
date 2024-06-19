@@ -1,3 +1,5 @@
+from pydantic import BaseModel
+
 # Based on the user's query, create a detailed plan outlining the steps of the analysis. Ensure that each step is clearly defined and makes use of an appropriate method. Clarify which steps are dependent on one another, such as if information from a CODE step is used by DATABASE step, if information from a RAG step is used by a SCRAPE step, or if all previous steps are needed in a WRITE step, or any other dependencies.
 def plannerTemplate():
     template = """**INSTRUCTIONS:**
@@ -28,14 +30,21 @@ Prompt: [Description of action for chatbot to do Step 3, i.e. do D, E, F. Use in
     return template
 
 def plannerEditingTemplate():
-    template = """Based on the most recently proposed Plan and the user's new requirements and requested changes,
-create a revised plan.
+    template = """Based on the most recently proposed Current Plan and the user's new requirements and requested changes, create a revised plan.
 
-Current conversation: {history}\n
+Current Plan: {plan}\n
 
-User's requested changes: {input}
+User's requested changes: {{input}}
 
-Plan:
+**Available Methods:**
+1. **Retrieval Augmented Generation**(RAG): Look up literature and documents from a text database.
+2. **Web Search for New Literature**(SCRAPE): Search platforms like arXiv, bioRxiv, and PubMed for the latest research.
+3. **Bioinformatics Databases**(DATABASE): Utilize databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.
+4. **Run Codes**(CODE): Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.
+5. **Write a Report**(WRITE): Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.
+
+**OUTPUT**
+Revised Plan:
 **Step 1 (method, eg. RAG)**:
 Prompt: [Description of action for chatbot to do Step 1, i.e. do X, Y, Z]
 
@@ -63,6 +72,9 @@ REASON: <reasoning why the script fits the user prompt>
 """
     return template
 
+# **OUTPUT**
+# If output or output files are created, all output files should be named: {output_path}/<output file>
+
 def pythonPromptTemplate():
     template = """Current conversation:\n{{history}}
 
@@ -79,25 +91,25 @@ This is the doc string of this python script:
 Use the `subprocess` module to call any Python script from another Python script. Here are some examples to call a few common Python scripts:
 
 To call a Python script `example_script.py` which has no arguments:
-    
+
 ```
-Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py'])
+Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory']])
 ```
 
 To call a Python script `example_script.py` with one argument:
 
 ```
-Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', 'arg1'])
+Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1'])
 ```
 
 To call a Python script `example_script.py` with two arguments:
 ```
-Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', 'arg1', 'arg2'])
+Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1', 'arg2'])
 ```
-Query:{{input}}
 
-**OUTPUT**
-If output or output files are created, all output files should be named: {output_path}/<output file>
+Note that chatstatus['output-directory'] is ALWAYS passed as the first argument.
+
+Query:{{input}}
 
 **INSTRUCTIONS**
 1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
@@ -200,9 +212,10 @@ Query:{{input}}
 1. From the query, decide if GENEONTOLOGY or ENRICHR should be used
 2. Identify genes in the users input that should be searched. propose genes with similar names, correct the users spelling, or make small modifications to the list, but do not propose genes that are not found in the humans input.
 3. Indicate if genes need to be loaded from a file: True/False
+4. Use the following output format with no additional information or explination.
 
 database: <ENRICHR or GENEONTOLOGY>
-genes: <List of genes separated by commas in query or None if code is required>
+genes: <None or Gene 1, Gene 2, Gene 3, ...>
 load: <True/False>
 """
     return template
@@ -250,6 +263,19 @@ Fields: Genes
 **OUTPUT**
 File: <which file you selected>
 Fields: <which fields in the file are important>
+"""
+    return template
+
+def fieldChooserTemplate():
+    template = """You are a digital assistant responsible for identifying the columns of a spreedsheet based on the users query. Below will be a list of possible columns, and please select the column the user is interested. Use the exact output format and provide no extra informations.
+
+**AVAILABLE COLUMNS**
+{columns}
+
+**USER QUERY**
+{{user_query}}
+
+Field=<selected field>
 """
     return template
 

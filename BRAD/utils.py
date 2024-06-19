@@ -4,7 +4,7 @@ import pandas as pd
 
 from langchain import PromptTemplate, LLMChain
 
-from BRAD.promptTemplates import fileChooserTemplate
+from BRAD.promptTemplates import fileChooserTemplate, fieldChooserTemplate
 
 def save(chatstatus, df, name):
     # If this is part of a pipeline, then add the stage number to the printed output
@@ -31,8 +31,13 @@ def makeNamesConsistent(chatstatus, files):
     else:
         return
     for file in files:
+        if file[0] != 'S':
+            old_path = os.path.join(chatstatus['output-directory'], file)
+            new_path = os.path.join(chatstatus['output-directory'], 'S' + str(stageNum) + '-' + file)
+            os.rename(old_path, new_path)
+    for file in outputFiles(chatstatus):
         old_path = os.path.join(chatstatus['output-directory'], file)
-        new_path = os.path.join(chatstatus['output-directory'], 'S' + str(stageNum) + '-' + file)
+        new_path = os.path.join(chatstatus['output-directory'], file.replace('/', '').replace('\\', ''))
         os.rename(old_path, new_path)
     return
 
@@ -75,6 +80,17 @@ def loadFromFile(chatstatus):
     # Read the file into a DataFrame
     df = pd.read_csv(os.path.join(chatstatus['output-directory'], file), delimiter=delimiter)
 
+    if fields not in df.columns:
+        template = fieldChooserTemplate()
+        template = template.format(columns=', '.join(list(df.columns)))
+        PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
+        chain    = PROMPT | llm
+    
+        # Call chain
+        response = chain.invoke(prompt).content.strip()
+        print('field identifier response=')
+        fields = response.split('=')[1].strip()
+        print(fields)
     return list(df[fields].values)
 
 def outputFromPriorStep(chatstatus, step, values=None):

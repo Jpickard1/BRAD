@@ -12,7 +12,7 @@ def planner(chatstatus):
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
-
+    chatstatus['process'] = {'name':'PLANNER'}
     template = plannerTemplate()
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
     conversation = ConversationChain(prompt  = PROMPT,
@@ -32,19 +32,19 @@ def planner(chatstatus):
             return chatstatus
         else:
             template = plannerEditingTemplate()
-            PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
-            conversation = ConversationChain(prompt  = PROMPT,
-                                             llm     = llm,
-                                             verbose = chatstatus['config']['debug'],
-                                             memory  = memory,
-                                            )
-            response = conversation.predict(input=prompt2)
-            response += '\n\n'
+            template = template.format(plan=response)
+            print(template)
+            PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
+            chain    = PROMPT | llm
+            
+            # Call chain
+            response = chain.invoke(prompt2).content.strip() + '\n\n'
             print(response) if chatstatus['config']['debug'] else None
             
     processes = response2processes(response)
+    print(processes) if chatstatus['config']['debug'] else None
     chatstatus['planned'] = processes
-    chatstatus['process'] = {'type': 'PLANNER', 'stages' : processes}
+    chatstatus['process']['stages'] = processes
     return chatstatus
 
 def response2processes(response):

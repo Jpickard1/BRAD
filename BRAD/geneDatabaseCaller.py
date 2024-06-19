@@ -12,7 +12,8 @@ from BRAD.promptTemplates import geneDatabaseCallerTemplate
 def geneDBRetriever(chatstatus):
     query    = chatstatus['prompt']
     llm      = chatstatus['llm']              # get the llm
-    memory   = chatstatus['memory']           # get the memory of the model
+    # memory   = chatstatus['memory']           # get the memory of the model
+    memory = ConversationBufferMemory(ai_prefix="BRAD")
     
     # Define the mapping of keywords to functions
     database_functions = {

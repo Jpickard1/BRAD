@@ -51,6 +51,7 @@ def codeCaller(chatstatus):
     chain = PROMPT | llm # LCEL chain creation
     print('FIRST LLM CALL') if chatstatus['config']['debug'] else None
     res = chain.invoke(prompt)
+    print(res.content) if chatstatus['config']['debug'] else None
     scriptName   = res.content.strip().split('\n')[0].split(':')[1].strip()
     scriptType   = scriptPurpose[scriptName]['type']
     scriptPath   = {'python': pyPath, 'MATLAB': matlabPath}.get(scriptType, print('Warning! the type doesnt exist'))

@@ -74,20 +74,20 @@ def queryDocs(chatstatus):
 
     # query to database
     if vectordb is not None:
-        
+
         #Ask Joshua about easy way to get path of database?
-        path = "/nfs/turbo/umms-indikar/shared/projects/RAG/papers/EXP2/"
-        best_score, text = restrictedDB(prompt, vectordb, path)
+        #path = "/nfs/turbo/umms-indikar/shared/projects/RAG/papers/EXP2/"
+        #best_score, text = restrictedDB(prompt, vectordb, path)
         #threshold to invoke new vector database
-        if best_score > 0.75:
-            chatstatus['databases']['RAG'] = text
+        #if best_score > 0.75:
+        #    chatstatus['databases']['RAG'] = text
 
         # solo & mutliquery retrieval determined by config.json
         docs, scores = retrieval(chatstatus)
 
         # We could put reranking here\
-        docs = pagerank_rerank(docs, scores)
-        
+        #docs = pagerank_rerank(docs, scores)
+
         # We could put contextual compression here
         docs = contextualCompression(docs, chatstatus)
 
