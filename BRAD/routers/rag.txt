@@ -139,3 +139,6 @@ Retrieve and summarize the background information and current knowledge about th
 Retrieve literature and documents related to the "MYOD gene interactions with the hardwired genome". Use databases such as PubMed and bioRxiv for this search.
 Retrieve literature and documents related to the "MYOD gene interactions with the hardwired genome". Use databases such as PubMed and bioRxiv for this search.
 Retrieve literature on PCNA's function in the hardwired genome and its first order interactions. Look up documents in databases like Gene Ontology, Enrichr, and PubMed. Save the detailed findings in a file named `PCNA_Literature_Review.txt`.
+Perform a Retrieval Augmented Generation (RAG) analysis to gather information about PCNA and its role in various biological processes. Return the retrieved data.
+Run a bioinformatics pipeline using the PCNA protein identifier to obtain the first-order interactions in the Hardwired Genome (i.e., hwgFirstOrder). Utilize the information about PCNA's role from the RAG analysis as input for the pipeline.
+Run the hwgFirstOrderInteractions script with the specified input (SOX4, for example), and save the output as a file with a unique name in the output directory.

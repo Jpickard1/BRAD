@@ -67,3 +67,36 @@ Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a locati
 Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
 Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
 Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run a bioinformatics pipeline using the PCNA protein identifier to obtain the first-order interactions in the Hardwired Genome (i.e., hwgFirstOrder). Utilize the information about PCNA's role from the RAG analysis as input for the pipeline.
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the `hwgFirstOrderInteractions` code on `ENSG00000129152`. Save the output file in a location accessible to the next step with a name such as "ENSG00000129152_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on MYC. Save the output file in a location accessible to the next step with a name such as "MYC_hwgFirstOrderInteractions_output.tsv".
+Run the "hwgFirstOrderInteractions.py" script located at "/path/to/script/hwgFirstOrderInteractions.py" with SOX4 as the input parameter. Save the output of this script as a new file named "sox4_interactions.txt" in the "/path/to/output/" directory.
+Run the "hwgFirstOrderInteractions.py" script with SOX4 as the input parameter and save the output file without specifying any path information. The output file will be named as "output_file.txt" by default, which will be created in the same directory where the script is located.
+Load the content of the output file from the previous step into Enrichr as the list of input genes. Perform a gene set enrichment analysis and generate the results, saving them as a new file with a unique name in the output directory.
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.tsv".
+Run the hwgFirstOrderInteractions code on PCNA using a input file with .csv format instead of .tsv. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.csv".
+Run the hwgFirstOrderInteractions script on PCNA. Save the output file in a location accessible to the next step with a name such as "PCNA_hwgFirstOrderInteractions_output.csv".
+Run the "hwgFirstOrderInteractions.py" script with SOX4 as the input parameter and save the output in a variable.
+Run the 'hwgFirstOrderInteractions' code on the input file containing SOX4 information. Save the output file as 'output_File_1.txt'.
+Execute the "hwgFirstOrderInteractions.py" script with SOX4 as the input parameter. Save the output as a CSV file named "SOX4Interactions.csv".
+Run the `hwgFirstOrderInteractions` code on the gene `SOX4` and output the results to `sox4_interactions.txt`.
+Run the `hwgFirstOrderInteractions` code on `PCNA` and save the output file as `pcna_interactions.txt` in the `results` folder.
+Analyze the gene PCNA using the `hwgFirstOrderInteractions` pipeline to identify its interactions, and output the results to a file named PCNA.csv.
+Run the `hwgFirstOrderInteractions` code on `PCNA` and save the output file as `pcna_interactions.txt`.
+Run the hwgFirstOrderInteractions code on PCNA and save the output file. Execute the bioinformatics pipeline to generate the output file.
+Run the hwgFirstOrderInteractions code on PCNA and output the results to a .csv file.
+Run the hwgFirstOrderInteractions code on PCNA and output the results to a .csv file.
+Run the hwgFirstOrderInteractions code on SOX4 and output the results to a .csv file.
+Run the hwgFirstOrderInteractions code on LIAR1 and output the results to a .csv file.
+Run the hwgFirstOrderInteractions code on PANK and output the results to a .csv file.
+Run the `hwgFirstOrderInteractions` code on PCNA and save the output as a `.csv` file.
+Run the hwgFirstOrderInteractions code on PCNA and produce an output file in .csv format.
