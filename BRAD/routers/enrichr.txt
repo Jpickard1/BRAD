@@ -136,3 +136,32 @@ Load the Gene column from the output file created in Step 1 and query it against
 Load the Gene column from the output file created in Step 1 and query it against ENRICHR to perform gene set enrichment analysis. Use the output file from Step 1 as input.
 Load the Gene column from the `.csv` file generated in Step 1 and query it against ENRICHR to perform gene set enrichment analysis.
 Load the Gene column from the output file generated in Step 1 and query it against ENRICHR to retrieve enriched gene sets. Use the output from Step 1 as input.
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+look up the following genes in ENRICHR: MYOD, PCNA, CDT1, CDK34, GEM, CMYC
+Use the output from Step 2 (CODE) to perform gene enrichment analysis using bioinformatics databases (such as Gene Ontology and Enrichr) to identify the pathways PCNA is involved in. Then, write a small report (using the Write a Report method) summarizing the findings from Steps 1-3, including the role of PCNA in the cell cycle and cell cycle imaging, its first-order interactions, and the enriched pathways it is involved in.
+Use the output from the HWG analysis pipeline in Step 2 to perform gene enrichment analysis using databases such as Gene Ontology and Enrichr. Identify the pathways that PCNA is involved in and write a small report summarizing the findings from the literature search, HWG analysis pipeline, and gene enrichment analysis.
+Use the output from the HWG analysis pipeline in Step 2 to perform gene set enrichment analysis using the Gene Ontology and Enrichr databases. Identify the biological pathways and processes that PCNA is involved in, and then use the results to write a small report summarizing the findings from each step, including the role of PCNA in the cell cycle, its first-order interactions, and the biological pathways it is associated with.
+Use the output from Step 2 to perform gene set enrichment analysis using databases such as Gene Ontology and Enrichr. Identify the biological pathways that PCNA is involved in.
+Use the output from Step 2 to perform gene enrichment analysis using databases such as Gene Ontology and Enrichr. Identify the pathways that PCNA is involved in and return a list of enriched pathways.
+Utilize Bioinformatics Databases (DATABASE) to perform gene set enrichment analysis on the output of the HWG analysis pipeline from Step 2. Use Enrichr or Gene Ontology to identify the pathways and biological processes that PCNA is involved in, using the list of interacting partners as input.
+Use the output of the HWG analysis pipeline from Step 2 to perform gene enrichment analysis using the Bioinformatics Databases (DATABASE) method, specifically Gene Ontology and Enrichr. Identify the pathways PCNA is involved in and provide a list of enriched pathways.
+Utilize Gene Ontology and Enrichr databases to perform gene set enrichment analysis using the output from Step 2 (PCNA Interactions). Identify the pathways and biological processes that PCNA is involved in. Save the results as "PCNA Pathway Analysis".
+Utilize the DATABASE method to perform gene enrichment analysis using the output from Step 2. Feed the list of interacting genes into Enrichr or Gene Ontology to identify the biological pathways and processes that PCNA is involved in. Retrieve the enriched pathways and their corresponding p-values for further analysis.
+Use the output from Step 2 and utilize the Bioinformatics Databases (DATABASE) method, specifically Gene Ontology and Enrichr, to perform gene set enrichment analyses and identify the pathways PCNA is involved in. Provide a list of enriched pathways and their corresponding significance values.
+Use the output from Step 2 to perform gene set enrichment analysis using Gene Ontology and Enrichr databases to identify the pathways PCNA is involved in, and provide a list of enriched pathways.
+Utilize the Bioinformatics Databases method to perform gene set enrichment analysis on the list of interacting partners generated in Step 2. Use databases such as Gene Ontology and Enrichr to identify the pathways and biological processes that PCNA is involved in.
+Use the output from Step 2 to perform gene enrichment analysis using Gene Ontology and Enrichr databases. Identify the pathways that PCNA is involved in and provide a list of enriched pathways.
+Use the output from the HWG analysis pipeline in Step 2 to perform gene set enrichment analysis using databases such as Gene Ontology and Enrichr, and identify the pathways PCNA is involved in.
+Use the output from Step 2 and the Bioinformatics Databases (DATABASE) method to perform gene set enrichment analysis. Specifically, use Gene Ontology and Enrichr to identify the pathways that PCNA is involved in. Use the list of interacting proteins from Step 2 as input for the enrichment analysis.
+Write a small report (WRITE) summarizing the findings from Steps 1 and 2. Describe the role of PCNA in the cell cycle and cell cycle imaging based on the literature search (Step 1), and list the first-order interactions of PCNA found by the hwg analysis pipeline (Step 2). Synthesize the results to provide a comprehensive overview of PCNA's interactions and functions.

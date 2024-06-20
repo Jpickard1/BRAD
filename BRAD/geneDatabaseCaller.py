@@ -1,5 +1,4 @@
 
-
 from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
@@ -15,9 +14,6 @@ def geneDBRetriever(chatstatus):
     llm      = chatstatus['llm']              # get the llm
     # memory   = chatstatus['memory']           # get the memory of the model
     memory = ConversationBufferMemory(ai_prefix="BRAD")
-    chatstatus['process'] = {'module' : 'DATABASE',
-                             'steps' : []
-                            }
     
     # Define the mapping of keywords to functions
     database_functions = {
@@ -53,7 +49,14 @@ def geneDBRetriever(chatstatus):
 
     log.debugLog(response, chatstatus=chatstatus)    # Print gene list if debugging
 
-    dbCaller = database_functions[response['database']]
+    similarity_to_enrichr      = utils.word_similarity(response['database'], "ENRICHR")
+    similarity_to_geneontology = utils.word_similarity(response['database'], "GENEONTOLOGY")
+    if similarity_to_enrichr > similarity_to_geneontology:
+        database = "ENRICHR"
+    else:
+        database = "GENEONTOLOGY"
+
+    dbCaller = database_functions[database]
     chatstatus['process']['database-function'] =  dbCaller
     
     geneList = []
