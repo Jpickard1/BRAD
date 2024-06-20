@@ -66,7 +66,6 @@ def queryDocs(chatstatus):
     :return: The updated chat status dictionary with the query results.
     :rtype: dict
     """
-    process = {}
     llm      = chatstatus['llm']              # get the llm
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
@@ -83,7 +82,7 @@ def queryDocs(chatstatus):
         #    chatstatus['databases']['RAG'] = text
 
         # solo & mutliquery retrieval determined by config.json
-        docs, scores = retrieval(chatstatus)
+        chatstatus, docs, scores = retrieval(chatstatus)
 
         # We could put reranking here\
         #docs = pagerank_rerank(docs, scores)
@@ -94,16 +93,22 @@ def queryDocs(chatstatus):
         # Build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
 
-        # pass the database output to the llm       
+        # pass the database output to the llm
         res = chain({"input_documents": docs, "question": prompt})
         print(res['output_text'])
+        sources = []
         for doc in docs:
             source = doc.metadata.get('source')
             short_source = os.path.basename(source)
-            print(f"Source: {short_source}")
+            sources.append(short_source)
+        sources = list(set(sources))
+        print("Sources:")
+        print('\n'.join(sources))
+        chatstatus['process']['sources'] = sources
         # change inputs to be json readable
         res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
-        chatstatus['output'], chatstatus['process'] = res['output_text'], res
+        chatstatus['output'], ragResponse = res['output_text'], res
+        chatstatus['process']['steps'].append(ragResponse)
     else:
         template = historyChatTemplate()
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
@@ -117,7 +122,6 @@ def queryDocs(chatstatus):
         print(response)
         
         chatstatus['output'] = response
-        chatstatus['process'] = {'type': 'LLM Conversation'}
     return chatstatus
 
 def retrieval(chatstatus):
@@ -129,6 +133,12 @@ def retrieval(chatstatus):
     if not chatstatus['config']['RAG']['multiquery']:
         documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
         docs, scores = getDocumentSimilarity(documentSearch)
+        chatstatus['process']['steps'].append({
+            'func' : 'rag.retrieval',
+            'multiquery' : False,
+            'num-docs' : len(docs),
+            'docs' : str(docs),
+        })
     else:
         logging.basicConfig()
         logging.getLogger("langchain.retrievers.multi_query").setLevel(logging.INFO)
@@ -136,8 +146,14 @@ def retrieval(chatstatus):
                                                  llm=llm
                                                 )
         docs = retriever.get_relevant_documents(query=prompt)  # Note: No scores are generated when using multiquery
+        chatstatus['process']['steps'].append({
+            'func' : 'rag.retrieval',
+            'multiquery' : True,
+            'num-docs' : len(docs),
+            'docs' : str(docs),
+        })
         scores = []
-    return docs, scores
+    return chatstatus, docs, scores
 
 def contextualCompression(docs, chatstatus):
     """

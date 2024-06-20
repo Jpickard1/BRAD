@@ -22,7 +22,7 @@ def logger(chatlog, chatstatus, chatname):
     #       jpic@umich.edu
     # Date: June 4, 2024
 
-    print(chatstatus['process'])
+    debugLog('\n\nPLANNER:\n\n' + str(chatstatus['process']), chatstatus)
     
     process_serializable = {
             key: value if is_json_serializable(value) else str(value)
@@ -40,7 +40,8 @@ def logger(chatlog, chatstatus, chatname):
                     'tab'       : chatstatus['current table']['tab'].to_json() if chatstatus['current table']['tab'] is not None else None,
                 },
             'current documents' : chatstatus['current documents'],
-        }
+        },
+        'planned' : chatstatus['planned'].copy()
     }
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)

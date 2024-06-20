@@ -85,6 +85,10 @@ routeCode = Route(
     name = 'CODE',
     utterances = read_prompts(getRouterPath('code.txt'))
 )
+routeCode = Route(
+    name = 'WRITE',
+    utterances = read_prompts(getRouterPath('write.txt'))
+)
 def getRouter():
     """
     Returns a router layer configured with predefined routes for various tasks.
@@ -136,6 +140,7 @@ def buildRoutes(prompt):
         'PYTHON'  : getRouterPath('python.txt'),
         'PLANNER' : getRouterPath('planner.txt'),
         'CODE'    : getRouterPath('code.txt'),
+        'WRITE'   : getRouterPath('write.txt')
     }
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)

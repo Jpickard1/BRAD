@@ -1,12 +1,14 @@
 import re
 import os
 import pandas as pd
+import subprocess
+import difflib
 
 from langchain import PromptTemplate, LLMChain
 from BRAD import log
 from BRAD.promptTemplates import fileChooserTemplate, fieldChooserTemplate
 
-def save(chatstatus, df, name):
+def save(chatstatus, data, name):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
@@ -16,8 +18,16 @@ def save(chatstatus, df, name):
         stageNum = chatstatus['planned'][0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], name)
-    df.to_csv(output_path, index=False)
-    log.debugLog('The table has been saved to: ' + output_path, chatstatus=chatstatus)
+
+    if isinstance(data, pd.DataFrame):
+        data.to_csv(output_path, index=False)
+    elif output_path.endswith('.tex'):
+        with open(output_path, 'w') as file:
+            file.write(data)
+    else:
+        raise ValueError("Unsupported data type or file extension. Use a DataFrame for CSV or a string for .tex files.")
+    
+    log.debugLog('The information has been saved to: ' + output_path, chatstatus=chatstatus)
     chatstatus['process']['steps'].append(
         {
             'func'     : 'utils.save',
@@ -47,7 +57,7 @@ def makeNamesConsistent(chatstatus, files):
     #       jpic@umich.edu
     # Date: June 19, 2024
     if len(chatstatus['planned']) != 0:
-        stageNum = chatstatus['planned'][0]['order']
+        stageNum = chatstatus['planned'][0]['order'] + 1
     else:
         return
     renamedFiles = []
@@ -89,7 +99,7 @@ def loadFromFile(chatstatus):
     # Get files to choose from
     availableFiles = outputFiles(chatstatus)
     availableFiles = '\n'.join(availableFiles)
-    debugLog(availableFiles, chatstatus=chatstatus)
+    log.debugLog(availableFiles, chatstatus=chatstatus)
     
     # Build lang chain
     template = fileChooserTemplate()
@@ -99,6 +109,7 @@ def loadFromFile(chatstatus):
     chain    = PROMPT | llm
 
     # Call chain
+    print(prompt)
     response = chain.invoke(prompt).content.strip()
     
     # Regular expressions to extract file and fields
@@ -113,10 +124,10 @@ def loadFromFile(chatstatus):
     file = file_match.group(1) if file_match else None
     fields = fields_match.group(1) if fields_match else None
 
-    debugLog('File=' + str(file) + '\n' + 'Fields=' + str(fields), chatstatus=chatstatus)
+    log.debugLog('File=' + str(file) + '\n' + 'Fields=' + str(fields), chatstatus=chatstatus)
     chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
                                                          prompt       = PROMPT,
-                                                         input        = query,
+                                                         input        = prompt,
                                                          output       = response,
                                                          parsedOutput = {
                                                              'File'   : file,
@@ -166,10 +177,11 @@ def fieldSelectorFromDataFrame(chatstatus, df):
                                                         )
                                         )
 
-    debugLog('field identifier response=\n'+fields, chatstatus=chatstatus)
+    log.debugLog('field identifier response=\n'+fields, chatstatus=chatstatus)
     return chatstatus, fields
 
-
+def word_similarity(word1, word2):
+    return difflib.SequenceMatcher(None, word1, word2).ratio()
 
 def outputFromPriorStep(chatstatus, step, values=None):
     # Auth: Joshua Pickard
@@ -192,3 +204,23 @@ def outputFromPriorStep(chatstatus, step, values=None):
         if values is not None:
             df = df[values]
     return df
+
+def compile_latex_to_pdf(chatstatus, tex_file):
+    """This function converts .tex files to .pdf files."""
+    tex_file_path = os.path.join(chatstatus['output-directory'], tex_file)
+    
+    # Ensure the file exists
+    if not os.path.isfile(tex_file_path):
+        raise FileNotFoundError(f"The file {tex_file_path} does not exist.")
+    
+    # Run the pdflatex command with the specified output directory
+    try:
+        subprocess.run(
+            ['pdflatex', '-output-directory', chatstatus['output-directory'], tex_file_path], 
+            check=True
+        )
+        print(f"PDF generated successfully in {chatstatus['output-directory']}.")
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred: {e}")
+
+    return chatstatus

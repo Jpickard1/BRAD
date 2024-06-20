@@ -74,6 +74,13 @@ def execute_python_code(python_code, chatstatus):
     print('EVAL') if chatstatus['config']['debug'] else None
     print(python_code) if chatstatus['config']['debug'] else None
     print('END EVAL CHECK') if chatstatus['config']['debug'] else None
+
+    # Unsure that chatstatus['output-directory'] is passed as an argument to the code:
+    if "chatstatus['output-directory']" not in python_code:
+        print('PYTHON CODE OUTPUT DIRECTORY CHANGED')
+        python_code = python_code.replace(get_arguments_from_code(python_code)[2].strip(), "chatstatus['output-directory']")
+        print(python_code)
+        
     if python_code:
         try:
             # Attempt to evaluate the MATLAB code
@@ -88,6 +95,12 @@ def execute_python_code(python_code, chatstatus):
     else:
         print("Debug: No PYTHON code to execute.")
 
+# Extract the arguments from the string
+def get_arguments_from_code(code):
+    """This rule requires to arguments containing commas are passed to a python script (Seems reasonable?)"""
+    args_string = code.strip()
+    args = args_string.split(',')
+    return args
 
 def find_py_files(path):
 

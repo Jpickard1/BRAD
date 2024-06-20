@@ -14,8 +14,6 @@ def codeCaller(chatstatus):
     prompt = chatstatus['prompt']                                        # Get the user prompt
     llm = chatstatus['llm']                                              # Get the llm
     memory = ConversationBufferMemory(ai_prefix="BRAD")                  # chatstatus['memory']
-    chatstatus['process'] = {}                                           # Begin saving plotting arguments
-    chatstatus['process']['name'] = 'CODER'
 
     # Get available matlab and python scripts
     if chatstatus['config']['py-path'] == 'py-tutorial/': # Admittedly, I'm not sure what's going on here - JP

@@ -58,6 +58,7 @@ from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
 from BRAD.planner import planner
 from BRAD.coder import codeCaller
+from BRAD.writer import summarizeSteps
 from BRAD import log
 
 def getModules():
@@ -89,6 +90,7 @@ def getModules():
         'SNAKE'  : callSnakemake,    # snakemake,
         'PLANNER': planner,
         'CODE'   : codeCaller,
+        'WRITE'  : summarizeSteps,
     }
     return module_functions
 
@@ -398,8 +400,11 @@ def chat(
 
         # get the specific module to use
         module = module_functions[routeName]
-        
-        # Query database
+
+        # Query module
+        chatstatus['process'] = {'module' : routeName,
+                                 'steps'  : []
+                            }
         chatstatus = module(chatstatus)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.

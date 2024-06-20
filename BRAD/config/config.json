@@ -1,7 +1,7 @@
 {
     "RAG": {
         "num_articles_retrieved": 10,
-	"multiquery": true,
+	"multiquery": false,
 	"contextual_compression": true
     },
     "max_articles_download": 10,

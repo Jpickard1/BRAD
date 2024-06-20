@@ -229,36 +229,36 @@ You are a digital assistant responsible for determining which file we should loa
 Here the files are selected by name:
 ```
 Available Files:
-S1-PYTHON.tsv
-S2-ENRICHR.csv
+S1-<AAA>.tsv
+S2-<BBB>.csv
 
 User Query:
-Use the pathways output from enricher for the this phase of anlaysis.
+Use the <XXX> output from <BBB> for the this phase of anlaysis.
 
 Output:
-File: S2-ENRICHR.csv
-Fields: pathways
+File: S2-<BBB>.csv
+Fields: <XXX>
 ```
 
 Here the files are selected by Step:
 ```
 Available Files:
-S1-PYTHON.tsv
-S2-ENRICHR.csv
+S1-<AAA>.tsv
+S2-<BBB>.csv
 
 User Query:
-Use the Genes identified in Step 1 as input to the codes.
+Use the <YYY> identified in Step 1 as input to the codes.
 
 Output:
-File: S1-PYTHON.tsv
-Fields: Genes
+File: S1-<AAA>.tsv
+Fields: <YYY>
 ```
-
-**AVAILABLE FILES**
-{files}
 
 **USER QUERY**
 {{user_query}}
+
+You must select one of the following available files based on that users query:
+{files}
 
 **OUTPUT**
 File: <which file you selected>
@@ -276,6 +276,30 @@ def fieldChooserTemplate():
 {{user_query}}
 
 Field=<selected field>
+"""
+    return template
+
+def setReportTitleTemplate():
+    template = """You are an assistant responsible for writing a report in response to a users query. Based on the users query, please provide a clear, concise title for the report to answer this question. Keep the title relatively short (i.e. less than 7 words).
+
+**User Query**
+{user_query}
+
+Please use this exact title output formatting:
+title = <put title here>
+"""
+    return template
+
+def summarizeAnalysisPipelineTemplate():
+    template = """You are an assistant responsible for writing a report of a bioinformatics analysis pipeline, and in this section, you need to write a paragraph summarizing the different steps in the analysis pipeline. The pipeline is run by a bioinformatics chatbot, which has the ability to use RAG (Retrieval Augmented Generation), SCRAPE (web scrape for new literature), CODE (run and execute different software scripts), and DATABASE (look up information on Enrichr and Gene Ontology databases). Each stage of the pipeline is encoded as a prompt to the user. From these prompts and the description below, write a paragraph summarizing the stages of the pipeline.
+
+The report should be concise, somewhere between 3-5 sentences. Also, it should be written in the past tense to signifcy that the steps in the pipeline have already been completed. Please do exclude technical details such as the programming languages, specific database names, input or output file names, directory structures, and anything specific to the implementation of the pipeline.
+
+**Pipeline Steps**
+{pipeline}
+
+Please use this exact title output formatting:
+paragraph = <put paragraph here>
 """
     return template
 
