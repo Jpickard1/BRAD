@@ -1,3 +1,11 @@
+PYTHON
+------------------------
+.. automodule:: BRAD.pythonCaller
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Running Codes
 --------------------------
 
