@@ -10,7 +10,7 @@ import sys
 import subprocess
 
 from BRAD.promptTemplates import pythonPromptTemplate
-
+from BRAD import log
 
 def callPython(chatstatus):
     print('Python Caller Start')
