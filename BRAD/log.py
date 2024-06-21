@@ -73,12 +73,15 @@ def loadFileLog(file=None, delimiter=None):
     }
     return loadLog
 
-def debugLog(output, chatstatus=None):
+def debugLog(output, chatstatus=None, display=None):
     """This function standardizes how debugging information is provided to the user"""
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    logging.info(output) if chatstatus['config']['debug'] else None
+    if display:
+        logging.info(output)
+    else:
+        logging.info(output) if chatstatus['config']['debug'] else None
 
 def userOutput(output, chatstatus=None):
     """This function standardizes how information is printed to the user and allows for logging"""

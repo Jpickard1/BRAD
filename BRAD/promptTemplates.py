@@ -303,6 +303,30 @@ paragraph = <put paragraph here>
 """
     return template
 
+def summarizeDatabaseCallerTemplate():
+    template = """You are an assistant writing a report of a bioinformatics analysis pipeline, and in this section, you need to write a sentence or two about how a gene database was searched. You summary is based on a conversation between a human and a bioinformatics chatbot. Here is their conversation:
+
+Human: {{input}}
+Chatbot: {output}
+
+Additional information:
+A table with {numrows} was downloaded. The table will be below your summary in the report.
+
+Please use this exact title output formatting:
+summary = <put paragraph here>
+"""
+    return template
+
+def summarizeRAGTemplate():
+    template = """You are an assistant writing a report on the outputs of a bioinformatics pipeline. For this section of the report, I need you to explain the following text clearly and convert it to an acceptable latex format. Here is the text to reformat:
+
+Current Text: {output}
+
+Format your output as:
+Latex Version=<put paragraphs here>
+"""
+    return template
+
 def historyChatTemplate():
     template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
     return template

@@ -17,6 +17,7 @@ from IPython.display import display # displaying dataframes
 import string
 import warnings
 import re
+import matplotlib.pyplot as plt
 
 # Bioinformatics
 import gget
@@ -45,7 +46,7 @@ def queryEnrichr(chatstatus, gene_list):
     default_enrichr_db  = chatstatus['config']['default_enrichr_db']
     
     process = {'MODULE' : 'ENRICHR'}
-    db, save, plot, dbfound = None, False, False, False
+    db, save, plot, dbfound = None, True, True, False
 
     # Remove any punctuation except for - and _, which are used in gget database names
     punctuation_to_remove = string.punctuation.replace('-', '').replace('_', '')
@@ -99,6 +100,7 @@ def queryEnrichr(chatstatus, gene_list):
         chatstatus = utils.save(chatstatus, edf, 'ENRICHR-' + db + '.csv')
 
     if plot:
+        chatstatus = utils.savefig(chatstatus, ax, 'ENRICHR-' + db + '.png')
         plt.show()
     
     if chatstatus['process'] is None:

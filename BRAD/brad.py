@@ -408,7 +408,10 @@ def chat(
         chatstatus = module(chatstatus)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
+        log.debugLog('\n\n\nroute\n\n\n', chatstatus=chatstatus)
+        log.debugLog(route, chatstatus=chatstatus)
         if len(chatstatus['planned']) != 0 and route != 'PLANNER':
+            log.debugLog(chatstatus['planned'], chatstatus=chatstatus)
             new_output_files = utils.outputFiles(chatstatus)
             new_output_files = list(set(new_output_files).difference(set(output_files)))
             chatstatus = utils.makeNamesConsistent(chatstatus, new_output_files)

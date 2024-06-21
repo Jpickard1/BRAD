@@ -1,8 +1,10 @@
 import re
 import os
+import numpy as np
 import pandas as pd
 import subprocess
 import difflib
+import matplotlib.pyplot as plt
 
 from langchain import PromptTemplate, LLMChain
 from BRAD import log
@@ -36,6 +38,35 @@ def save(chatstatus, data, name):
     )
     return chatstatus
 
+def savefig(chatstatus, ax, name):
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 19, 2024
+    print('SAVEFIG')
+    if len(chatstatus['planned']) != 0:
+        stageNum = chatstatus['planned'][0]['order']
+        name = 'S' + str(stageNum) + '-' + name
+    output_path = os.path.join(chatstatus['output-directory'], chatstatus['config']['image-path-extension'], name)
+    ensure_directory_exists(output_path)
+    plt.savefig(output_path)
+    log.debugLog('The image was saved to: ' + output_path, chatstatus=chatstatus)
+    chatstatus['process']['steps'].append(
+        {
+            'func'     : 'utils.savefig',
+            'new file' : output_path
+        }
+    )
+    return chatstatus
+
+def ensure_directory_exists(file_path):
+    directory_path = os.path.dirname(file_path)
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+        print(f"Directory '{directory_path}' created.")
+    else:
+        print(f"Directory '{directory_path}' already exists.")
+
+
 def pdfDownloadPath(chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -57,6 +88,8 @@ def makeNamesConsistent(chatstatus, files):
     #       jpic@umich.edu
     # Date: June 19, 2024
     if len(chatstatus['planned']) != 0:
+        log.debugLog('Finding Stage Number of Pipeline', chatstatus=chatstatus)
+        log.debugLog(chatstatus['planned'], chatstatus=chatstatus)
         stageNum = chatstatus['planned'][0]['order'] + 1
     else:
         return
@@ -64,6 +97,8 @@ def makeNamesConsistent(chatstatus, files):
     for file in files:
         if file[0] != 'S':
             old_path = os.path.join(chatstatus['output-directory'], file)
+            if os.path.isdir(old_path):
+                continue
             new_path = os.path.join(chatstatus['output-directory'], 'S' + str(stageNum) + '-' + file)
             renamedFiles.append(
                 {
@@ -97,14 +132,14 @@ def loadFromFile(chatstatus):
     prompt = chatstatus['prompt']
     llm    = chatstatus['llm']
     # Get files to choose from
-    availableFiles = outputFiles(chatstatus)
-    availableFiles = '\n'.join(availableFiles)
+    availableFilesList = outputFiles(chatstatus)
+    availableFiles = '\n'.join(availableFilesList)
     log.debugLog(availableFiles, chatstatus=chatstatus)
     
     # Build lang chain
     template = fileChooserTemplate()
     template = template.format(files=availableFiles)
-    print(template)
+    log.debugLog(template, chatstatus=chatstatus)
     PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
     chain    = PROMPT | llm
 
@@ -124,6 +159,12 @@ def loadFromFile(chatstatus):
     file = file_match.group(1) if file_match else None
     fields = fields_match.group(1) if fields_match else None
 
+    # Find the file that is most similar to the extracted file
+    scores = []
+    for availableFile in availableFilesList:
+        scores.append(word_similarity(file, availableFile))
+    file = availableFilesList[np.argmax(scores)]
+    
     log.debugLog('File=' + str(file) + '\n' + 'Fields=' + str(fields), chatstatus=chatstatus)
     chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
                                                          prompt       = PROMPT,
@@ -224,3 +265,16 @@ def compile_latex_to_pdf(chatstatus, tex_file):
         print(f"An error occurred: {e}")
 
     return chatstatus
+
+def load_file_to_dataframe(filename):
+    # Determine the file extension
+    _, file_extension = os.path.splitext(filename)
+    
+    if file_extension.lower() == '.csv':
+        df = pd.read_csv(filename)
+    elif file_extension.lower() == '.tsv':
+        df = pd.read_csv(filename, delimiter='\t')
+    else:
+        return None
+    
+    return df
