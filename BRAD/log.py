@@ -1,4 +1,5 @@
 import json
+import logging
 
 def logger(chatlog, chatstatus, chatname):
     """
@@ -73,11 +74,23 @@ def loadFileLog(file=None, delimiter=None):
     return loadLog
 
 def debugLog(output, chatstatus=None):
+    """This function standardizes how debugging information is provided to the user"""
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
+    logging.info(output) if chatstatus['config']['debug'] else None
 
-    print(output) if chatstatus['config']['debug'] else None
+def userOutput(output, chatstatus=None):
+    """This function standardizes how information is printed to the user and allows for logging"""
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 20, 2024
+    print(output)
+    if chatstatus['process']['output'] is None:
+        chatstatus['process']['output'] = output
+    else:
+        chatstatus['process']['output'] += output
+    return chatstatus
 
 def is_json_serializable(value):
     """
