@@ -1,3 +1,17 @@
+"""
+Module responsible for integrating MATLAB scripts execution into the BRAD system.
+
+This module provides functions to execute MATLAB scripts based on user prompts and configuration settings. It interacts with the MATLAB engine, identifies available MATLAB functions, selects the appropriate function based on user input using a large language model (LLM), and executes the selected MATLAB code.
+
+Notes:
+- The module integrates with BRAD's chat functionality to execute MATLAB scripts based on user queries.
+- It leverages the MATLAB engine through `matlab.engine` for script execution and path management.
+
+**MATLAB Documentation Requirements**
+1. they must have full docstrings at the top of the file
+2. they must have a one line description at the top of the docstring used for selecting which code to run
+"""
+
 from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain

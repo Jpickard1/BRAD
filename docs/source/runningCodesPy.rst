@@ -1,3 +1,11 @@
+======================
+BRAD Code Execution Modules
+======================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
 CODER
 ------------------------
 .. automodule:: BRAD.coder
