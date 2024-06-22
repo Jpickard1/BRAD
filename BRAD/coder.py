@@ -16,9 +16,6 @@ Requirements:
 
    - Comprehensive descriptions detailing arguments, inputs, purposes, and usage examples (used by the llm for execution).
 
-Functions:
-- codeCaller: Executes a script based on the user's prompt and chat status configuration.
-- executeCode: Executes provided code based on the specified script type.
 """
 
 import os

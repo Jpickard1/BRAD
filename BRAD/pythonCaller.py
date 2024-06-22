@@ -2,6 +2,12 @@
 Module responsible for integrating python scripts execution into the BRAD system.
 
 This module provides functions to execute python scripts based on user prompts and configuration settings. It selects the appropriate function based on user input using a large language model (LLM) and executes the selected MATLAB code.
+
+**PYTHON Documentation Requirements**
+
+    1. they must have full docstrings at the top of the file
+
+    2. they must have a one line description at the top of the docstring used for selecting which code to run
 """
 
 from langchain import PromptTemplate, LLMChain
