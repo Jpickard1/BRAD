@@ -1,7 +1,5 @@
-"""
-    .. note:: Deprecated
-    
-    .. warning:: Deprecated
+"""    
+    .. warning:: We may be removing this file soon.
 """
 import torch
 from transformers import T5Tokenizer, T5ForConditionalGeneration
