@@ -1,5 +1,5 @@
 ======================
-BRAD Code Execution Modules
+Code Execution
 ======================
 
 .. toctree::
