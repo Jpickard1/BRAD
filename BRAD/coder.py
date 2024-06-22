@@ -1,4 +1,21 @@
-"""This file is responsible for running scripts from BRAD."""
+"""
+Module responsible for executing scripts within the BRAD framework.
+
+This module facilitates the discovery, selection, and execution of Python and MATLAB scripts based on user prompts
+and configuration settings.
+
+Requirements:
+1. Python and MATLAB scripts are located at specified paths configured in `config/config.json`.
+2. Scripts are executed with the first argument denoting the output directory for saving any generated files.
+3. Script files within the Python and MATLAB paths contain sufficient documentation, including:
+   - A concise one-line summary at the beginning of the docstring (used by the llm for script selection).
+   - Comprehensive descriptions detailing arguments, inputs, purposes, and usage examples (used by the llm for execution).
+
+Functions:
+- codeCaller: Executes a script based on the user's prompt and chat status configuration.
+- executeCode: Executes provided code based on the specified script type.
+"""
+
 import os
 
 from langchain import PromptTemplate, LLMChain

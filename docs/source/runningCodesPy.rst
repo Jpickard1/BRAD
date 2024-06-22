@@ -1,25 +1,25 @@
+CODER
+------------------------
+.. automodule:: BRAD.coder
+   :members:
+   :undoc-members:
+
 PYTHON
 ------------------------
 .. automodule:: BRAD.pythonCaller
-   :imported-members:
    :members:
    :undoc-members:
-   :show-inheritance:
 
-Running Codes
---------------------------
-
-.. automodule:: BRAD.functionCaller
-   :members:
-   
 MATLAB
 ------------------------
 
 .. automodule:: BRAD.matlabCaller
    :members:
-   
-Snakemake
----------------------------
+   :undoc-members:
 
-.. automodule:: BRAD.scraper
+Function Caller
+--------------------------
+
+.. automodule:: BRAD.functionCaller
    :members:
+      
