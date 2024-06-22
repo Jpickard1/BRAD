@@ -7,10 +7,13 @@ and configuration settings.
 Requirements:
 
 1. Python and MATLAB scripts are located at specified paths configured in `config/config.json`.
+
 2. Scripts are executed with the first argument denoting the output directory for saving any generated files.
+
 3. Script files within the Python and MATLAB paths contain sufficient documentation, including:
 
    - A concise one-line summary at the beginning of the docstring (used by the llm for script selection).
+
    - Comprehensive descriptions detailing arguments, inputs, purposes, and usage examples (used by the llm for execution).
 
 Functions:
@@ -35,8 +38,11 @@ def codeCaller(chatstatus):
     This function performs the following steps:
 
         1. Finds available Python and MATLAB scripts in the specified directories.
+        
         2. Extracts docstrings from the scripts to understand their purpose.
-        3. Uses llm to select appropriate codes to execute and format command to run the code with the correct inputs
+        
+        3. Uses llm to select appropriate codes to execute and format command to run the code with the correct inputs.
+        
         4. Executes the selected script and updates the chat status.
 
     Parameters
