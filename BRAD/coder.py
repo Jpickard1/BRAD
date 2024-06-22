@@ -34,10 +34,10 @@ def codeCaller(chatstatus):
 
     This function performs the following steps:
 
-    1. Finds available Python and MATLAB scripts in the specified directories.
-    2. Extracts docstrings from the scripts to understand their purpose.
-    3. Uses llm to select appropriate codes to execute and format command to run the code with the correct inputs
-    4. Executes the selected script and updates the chat status.
+        1. Finds available Python and MATLAB scripts in the specified directories.
+        2. Extracts docstrings from the scripts to understand their purpose.
+        3. Uses llm to select appropriate codes to execute and format command to run the code with the correct inputs
+        4. Executes the selected script and updates the chat status.
 
     Parameters
     ----------
