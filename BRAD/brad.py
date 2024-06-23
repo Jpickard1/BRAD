@@ -437,6 +437,23 @@ def chat(
 
 #removes repeat chunks in vectordb
 def remove_repeats(vectordb):
+    """
+    Removes repeated chunks in the provided vector database.
+
+    This function identifies duplicate documents in the vector database and removes
+    the repeated entries, keeping only the last occurrence of each duplicated document.
+
+    :param vectordb: The vector database from which repeated documents should be removed.
+    :type vectordb: An instance of a vector database class with 'get' and 'delete' methods.
+
+    :raises KeyError: If the vector database does not contain 'ids' or 'documents' keys.
+
+    :return: The updated vector database with duplicate documents removed.
+    :rtype: An instance of the vector database class.
+    """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+    # Date: June 18, 2024
     df = pd.DataFrame({'id' :vectordb.get()['ids'] , 'documents' : vectordb.get()['documents']})
     repeated_ids = df[df.duplicated(subset='documents', keep='last')]['id'].tolist()
     if len(repeated_ids) > 0:
