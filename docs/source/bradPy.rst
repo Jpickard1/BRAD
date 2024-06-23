@@ -17,6 +17,7 @@ Routing
 
 .. automodule:: BRAD.router
    :members:
+   :undoc-members:
 
 Utils
 ----------------
