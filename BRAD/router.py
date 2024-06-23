@@ -1,3 +1,7 @@
+"""
+Module for managing routes using the semantic_router library. This module includes functions
+for reading and writing prompts, configuring routes, and building router layers with predefined routes.
+"""
 import os
 from semantic_router import Route
 from semantic_router.layer import RouteLayer
