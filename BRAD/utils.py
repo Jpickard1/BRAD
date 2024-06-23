@@ -31,14 +31,15 @@ def save(chatstatus, data, name):
     Raises:
         ValueError: If the data type is not a DataFrame for CSV or a string for .tex files.
 
-    Example:
-        chatstatus = {
-            'planned': [{'order': 1}],
-            'output-directory': '/path/to/output',
-            'process': {'steps': []}
-        }
-        data = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})
-        save(chatstatus, data, 'results.csv')
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'planned': [{'order': 1}],
+    >>>     'output-directory': '/path/to/output',
+    >>>     'process': {'steps': []}
+    >>> }
+    >>> data = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})
+    >>> save(chatstatus, data, 'results.csv')
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -84,15 +85,16 @@ def savefig(chatstatus, ax, name):
     Returns:
         dict: The updated `chatstatus` dictionary with information about the saved file.
 
-    Example:
-        chatstatus = {
-            'planned': [{'order': 1}],
-            'output-directory': '/path/to/output',
-            'config': {'image-path-extension': 'images'},
-            'process': {'steps': []}
-        }
-        fig, ax = plt.subplots()
-        savefig(chatstatus, ax, 'figure.png')
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'planned': [{'order': 1}],
+    >>>     'output-directory': '/path/to/output',
+    >>>     'config': {'image-path-extension': 'images'},
+    >>>     'process': {'steps': []}
+    >>> }
+    >>> fig, ax = plt.subplots()
+    >>> savefig(chatstatus, ax, 'figure.png')
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -124,9 +126,10 @@ def ensure_directory_exists(file_path):
     Args:
         file_path (str): The full file path for which the directory needs to be checked/created.
 
-    Example:
-        ensure_directory_exists('/path/to/output/figure.png')
-        # If the directory '/path/to/output' does not exist, it will be created.
+    Example
+    -------
+    >>> ensure_directory_exists('/path/to/output/figure.png')
+    >>> # If the directory '/path/to/output' does not exist, it will be created.
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -154,10 +157,11 @@ def pdfDownloadPath(chatstatus):
     Returns:
         str: The complete file path for downloading PDF files.
 
-    Example:
-        chatstatus = {'output-directory': '/path/to/output'}
-        pdf_path = pdfDownloadPath(chatstatus)
-        # pdf_path will be '/path/to/output/pdf'
+    Example
+    -------
+    >>> chatstatus = {'output-directory': '/path/to/output'}
+    >>> pdf_path = pdfDownloadPath(chatstatus)
+    >>> # pdf_path will be '/path/to/output/pdf'
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -179,10 +183,13 @@ def outputFiles(chatstatus):
     Returns:
         list: A list of filenames present in the output directory.
 
-    Example:
-        chatstatus = {'output-directory': '/path/to/output'}
-        files = outputFiles(chatstatus)
-        # files will be a list of filenames in '/path/to/output'
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'output-directory': '/path/to/output'
+    >>> }
+    >>> files = outputFiles(chatstatus)
+    >>> # files will be a list of filenames in '/path/to/output'
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -208,15 +215,16 @@ def makeNamesConsistent(chatstatus, files):
     Returns:
         dict: Updated chatstatus with renamed files logged in 'process' steps.
 
-    Example:
-        chatstatus = {
-            'planned': [{'order': 1}],
-            'output-directory': '/path/to/output',
-            'process': {'steps': []}
-        }
-        files = ['file1.txt', 'file2.txt']
-        updated_chatstatus = makeNamesConsistent(chatstatus, files)
-        # Files will be renamed to include the stage number and logged in chatstatus['process']['steps']
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'planned': [{'order': 1}],
+    >>>     'output-directory': '/path/to/output',
+    >>>     'process': {'steps': []}
+    >>> }
+    >>> files = ['file1.txt', 'file2.txt']
+    >>> updated_chatstatus = makeNamesConsistent(chatstatus, files)
+    >>> # Files will be renamed to include the stage number and logged in chatstatus['process']['steps']
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -275,14 +283,15 @@ def loadFromFile(chatstatus):
     Returns:
         tuple: Updated chatstatus dictionary and a list of values from the specified fields in the file.
 
-    Example:
-        chatstatus = {
-            'prompt': 'Choose a file containing gene expression data.',
-            'llm': your_language_model_instance,
-            'output-directory': '/path/to/output',
-            'process': {'steps': []}
-        }
-        updated_chatstatus, field_values = loadFromFile(chatstatus)
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'prompt': 'Choose a file containing gene expression data.',
+    >>>     'llm': your_language_model_instance,
+    >>>     'output-directory': '/path/to/output',
+    >>>     'process': {'steps': []}
+    >>> }
+    >>> updated_chatstatus, field_values = loadFromFile(chatstatus)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
