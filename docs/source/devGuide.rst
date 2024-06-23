@@ -13,5 +13,4 @@ This section provides information on the architecture and design of BRAD.
    bioinformaticsPy
    webSearchPy
    runningCodesPy
-   routingPy
    

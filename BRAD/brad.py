@@ -1,3 +1,18 @@
+"""
+This module provides a framework for a chatbot that interacts with various language models, databases, and software.
+These include literature-augmented generation, spreadsheet manipulation, web scraping, and more. The chatbot 
+uses a combination of natural language processing models and specific task-oriented modules to handle 
+user queries and provide relevant responses.
+
+To integrate various capabilities with `brad.py`, three features are used:
+
+1. Semantic Routing: fast routing is used determine which module should process each user query.
+
+2. Unified chat status: the `chatstatus` variable is used to manage language models, memory, debugging, and other configuration settings for different modules.
+
+3. Standardized file sharing: the `utils.py` module standardizes how all data and new files are managed.
+
+"""
 # Standard
 import pandas as pd
 import numpy as np

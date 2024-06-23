@@ -12,6 +12,12 @@ BRAD
    :members:
    :undoc-members:
 
+Routing
+------------------
+
+.. automodule:: BRAD.router
+   :members:
+
 Utils
 ----------------
 .. automodule:: BRAD.utils
