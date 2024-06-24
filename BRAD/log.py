@@ -22,7 +22,8 @@ def logger(chatlog, chatstatus, chatname):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
-
+    
+    
     debugLog('\n\nPLANNER:\n\n' + str(chatstatus['process']), chatstatus)
     
     process_serializable = {
@@ -78,7 +79,7 @@ def debugLog(output, chatstatus=None, display=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    if display:
+    if displaypr:
         logging.info(output)
     else:
         logging.info(output) if chatstatus['config']['debug'] else None
@@ -88,6 +89,8 @@ def userOutput(output, chatstatus=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 20, 2024
+    
+    print(output)
     
     if chatstatus['process']['output'] is None:
         chatstatus['process']['output'] = output

@@ -96,15 +96,15 @@ def queryDocs(chatstatus):
 
         # pass the database output to the llm
         res = chain({"input_documents": docs, "question": prompt})
-        chatstatus = log.userOutput('output_text', chatstatus=chatstatus) # <- This is for the user
+        chatstatus = log.userOutput(res['output_text'], chatstatus=chatstatus)
         sources = []
         for doc in docs:
             source = doc.metadata.get('source')
             short_source = os.path.basename(source)
             sources.append(short_source)
         sources = list(set(sources))
-        chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) # <- This is for the user
-        chatstatus = log.userOutput(sources, chatstatus=chatstatus) # <- This is for the user
+        chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) 
+        chatstatus = log.userOutput(sources, chatstatus=chatstatus) 
         chatstatus['process']['sources'] = sources
         # change inputs to be json readable
         res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
@@ -120,7 +120,7 @@ def queryDocs(chatstatus):
                                         )
         prompt = getDefaultContext() + prompt
         response = conversation.predict(input=prompt)
-        chatstatus = log.userOutput(response, chatstatus=chatstatus) # <- This is for the user
+        chatstatus = log.userOutput(response, chatstatus=chatstatus) 
         
         chatstatus['output'] = response
     return chatstatus
@@ -184,9 +184,9 @@ def contextualCompression(docs, chatstatus):
         res = chatstatus['llm'].invoke(input=prompt)
         summary = res.content.strip()
         if chatstatus['config']['debug']:
-            log.debugLog('============', chatstatus=chatstatus) # <- This is for debugging
-            log.debugLog(pageContent, chatstatus=chatstatus) # <- This is for debugging
-            log.debugLog('Summary: ' + summary, chatstatus=chatstatus) # <- This is for debugging
+            log.debugLog('============', chatstatus=chatstatus) 
+            log.debugLog(pageContent, chatstatus=chatstatus) 
+            log.debugLog('Summary: ' + summary, chatstatus=chatstatus) 
         doc.page_content = summary
         docs[i] = doc
     return docs
@@ -343,12 +343,11 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
     
     local = os.getcwd()  ## Get local dir
     os.chdir(local)      ## shift the work dir to local dir
-    log.debugLog('\nWork Directory: {}'.format(local), chatstatus=chatstatus) if v else None # <- This is for debugging
+    print('\nWork Directory: {}'.format(local)) if v else None
 
     #%% Phase 1 - Load DB
     embeddings_model = HuggingFaceEmbeddings(model_name=HuggingFaceEmbeddingsModel)
-    log.debugLog('\nDocuments loading from:', docsPath, chatstatus=chatstatus) iv v else None # <- This is for debugging
-
+    print("\nDocuments loading from: 'str(docsPath)") if v else None
     text_loader_kwargs={'autodetect_encoding': True}
     loader = DirectoryLoader(docsPath,
                              glob="**/*.pdf",
@@ -357,16 +356,16 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
                              show_progress=True,
                              use_multithreading=True)
     docs_data = loader.load()
-    log.debugLog('\nDocuments loaded...', chatstatus=chatstatus) if v else None# <- This is for debugging
+    print('\nDocuments loaded...') if v else None
 
     for i in range(len(chunk_size)):
         for j in range(len(chunk_overlap)):
             text_splitter = RecursiveCharacterTextSplitter(chunk_size = chunk_size[i],
                                                             chunk_overlap = chunk_overlap[j],
                                                             separators=[" ", ",", "\n", ". "])
-            data_splits = text_splitter.split_documents(docs_data)
-            log.debugLog("Documents split into chunks...", chatstatus=chatstatus) if v else None # <- This is for debugging
-            log.debugLog("Initializing Chroma Database...", chatstatus=chatstatus) if v else None # <- This is for debugging
+            data_splits = text_splitter.split_documents(docs_data)\
+            print("Documents split into chunks...") if v else None
+            print("Initializing Chroma Database...") if v else None
 
             dbName = "DB_cosine_cSize_%d_cOver_%d" %(chunk_size[i], chunk_overlap[j])
 
@@ -378,7 +377,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
                                              client              = _client_settings,
                                              collection_name     = dbName,
                                              collection_metadata = {"hnsw:space": "cosine"})
-            log.debugLog("Completed Chroma Database: ", chatstatus=chatstatus) if v else None # <- This is for debugging
+            log.debugLog("Completed Chroma Database: ", chatstatus=chatstatus) if v else None 
             del vectordb, text_splitter, data_splits
 
 def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus):
@@ -423,7 +422,7 @@ def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus
 
 
 def scoring_experiment(chain, docs, scores, prompt):
-    log.debugLog(f"output of similarity search: {scores}", chatstatus=chatstatus) # <- This is for debugging
+    log.debugLog(f"output of similarity search: {scores}", chatstatus=chatstatus) 
     candidates = []    # also llm respons (maybe remove this)
     reference = []     # hidden dodument
     document_list = [] # LLM RESPONSES
@@ -432,9 +431,9 @@ def scoring_experiment(chain, docs, scores, prompt):
         # removes one of the documents
         new_list = docs[:i] + docs[i + 1:]
         reference.append(docs[i].dict()['page_content'])
-        chatstatus = log.userOutput(f"Masked Document: {docs[i].dict()['page_content']}\n", chatstatus=chatstatus) # <- This is for the user
+        chatstatus = log.userOutput(f"Masked Document: {docs[i].dict()['page_content']}\n", chatstatus=chatstatus) 
         res = chain({"input_documents": new_list, "question": prompt})
-        chatstatus = log.userOutput(f"RAG response: {res['output_text']}", chatstatus=chatstatus) # <- This is for the user
+        chatstatus = log.userOutput(f"RAG response: {res['output_text']}", chatstatus=chatstatus) 
         # Add the new list to the combinations list
         candidates.append(res['output_text'])
         document_list.append(Document(page_content = res['output_text']))
@@ -448,10 +447,10 @@ def scoring_experiment(chain, docs, scores, prompt):
     new_docs, new_scores = getDocumentSimilarity(db.similarity_search_with_relevance_scores(prompt))
     
     # print results
-    chatstatus = log.userOutput(new_scores, chatstatus=chatstatus) # <- This is for the user
+    chatstatus = log.userOutput(new_scores, chatstatus=chatstatus) 
     #scorer = BERTScorer(lang="en", rescale_with_baseline=True)
     #P, R, F1 = scorer.score(candidates, reference)
-    #log.debugLog(F1, chatstatus=chatstatus) # <- This is for debugging
+    #log.debugLog(F1, chatstatus=chatstatus) 
     
     
 
@@ -489,7 +488,7 @@ def best_match(prompt, title_list):
         if score > save_score:
             save_score = score
             save_title = title
-    log.debugLog(f"The best match is {save_title} with a score of {save_score}", chatstatus=chatstatus) # <- This is for debugging
+    log.debugLog(f"The best match is {save_title} with a score of {save_score}", chatstatus=chatstatus) 
     return save_title, save_score
 
 #Split into two methods?

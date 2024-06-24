@@ -13,7 +13,7 @@ from BRAD.promptTemplates import pythonPromptTemplate
 from BRAD import log
 
 def callPython(chatstatus):
-    log.debugLog("Python Caller Start", chatstatus=chatstatus) # <- This is for debugging
+    log.debugLog("Python Caller Start", chatstatus=chatstatus) 
     prompt = chatstatus['prompt']                                        # Get the user prompt
     llm = chatstatus['llm']                                              # Get the llm
     memory = chatstatus['memory']
@@ -26,38 +26,38 @@ def callPython(chatstatus):
     else:
         base_dir = os.path.expanduser('~')
         pyPath = os.path.join(base_dir, chatstatus['config']['py-path'])
-    log.debugLog('Python scripts added to PATH', chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog('Python scripts added to PATH', chatstatus=chatstatus) 
 
     # Identify python scripts files we are adding to the path of BRAD
     pyScripts = find_py_files(pyPath)
-    log.debugLog(pyScripts, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog(pyScripts, chatstatus=chatstatus) 
     # Identify which file we should use
     pyScript = find_closest_function(prompt, pyScripts)
-    log.debugLog(pyScript, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog(pyScript, chatstatus=chatstatus) 
     # Identify pyton script arguments
     pyScriptPath = os.path.join(pyPath, pyScript + '.py')
-    log.debugLog(pyScriptPath, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog(pyScriptPath, chatstatus=chatstatus) 
     # Get matlab docstrings
     pyScriptDocStrings = read_python_docstrings(pyScriptPath)
-    log.debugLog(pyScriptDocStrings, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog(pyScriptDocStrings, chatstatus=chatstatus) 
     template = pythonPromptTemplate()
-    log.debugLog(template, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog(template, chatstatus=chatstatus) 
     # matlabDocStrings = callMatlab(chatstatus)
     filled_template = template.format(scriptName=pyScriptPath, scriptDocumentation=pyScriptDocStrings)
-    chatstatus = log.userOutput(filled_template, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for the user
+    chatstatus = log.userOutput(filled_template, chatstatus=chatstatus)
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
-    log.debugLog(PROMPT, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog(PROMPT, chatstatus=chatstatus) 
     conversation = ConversationChain(prompt  = PROMPT,
                                      llm     =    llm,
                                      verbose =   chatstatus['config']['debug'],
                                      memory  = memory,
                                     )
     response = conversation.predict(input=chatstatus['prompt'] )
-    log.debugLog('START RESPONSE', chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
-    log.debugLog(response, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
-    log.debugLog("END RESPONSE", chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog('START RESPONSE', chatstatus=chatstatus) 
+    log.debugLog(response, chatstatus=chatstatus) 
+    log.debugLog("END RESPONSE", chatstatus=chatstatus) 
     matlabCode = extract_python_code(response, chatstatus)
-    log.debugLog(matlabCode, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog(matlabCode, chatstatus=chatstatus) 
     execute_python_code(matlabCode, chatstatus)
     return chatstatus
 
@@ -71,29 +71,29 @@ def execute_python_code(python_code, chatstatus):
     Returns:
     None
     """
-    log.debugLog('EVAL', chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
-    log.debugLog(python_code, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
-    log.debugLog('END EVAL CHECK', chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog('EVAL', chatstatus=chatstatus) 
+    log.debugLog(python_code, chatstatus=chatstatus) 
+    log.debugLog('END EVAL CHECK', chatstatus=chatstatus) 
 
     # Unsure that chatstatus['output-directory'] is passed as an argument to the code:
     if "chatstatus['output-directory']" not in python_code:
-        log.debugLog('PYTHON CODE OUTPUT DIRECTORY CHANGED', chatstatus=chatstatus) # <- This is for debugging
+        log.debugLog('PYTHON CODE OUTPUT DIRECTORY CHANGED', chatstatus=chatstatus) 
         python_code = python_code.replace(get_arguments_from_code(python_code)[2].strip(), "chatstatus['output-directory']")
-        log.debugLog(python_code, chatstatus=chatstatus) # <- This is for debugging
+        log.debugLog(python_code, chatstatus=chatstatus) 
         
     if python_code:
         try:
             # Attempt to evaluate the MATLAB code
             eval(python_code)
-            log.debugLog("Debug: PYTHON code executed successfully.", chatstatus=chatstatus) # <- This is for debugging
+            log.debugLog("Debug: PYTHON code executed successfully.", chatstatus=chatstatus) 
         except SyntaxError as se:
-            log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", chatstatus=chatstatus) # <- This is for debugging
+            log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", chatstatus=chatstatus) 
         except NameError as ne:
-            log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", chatstatus=chatstatus) # <- This is for debugging
+            log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", chatstatus=chatstatus) 
         except Exception as e:
-            log.debugLog(f"Debug: An error occurred during PYTHON code execution: {e}", chatstatus=chatstatus) # <- This is for debugging
+            log.debugLog(f"Debug: An error occurred during PYTHON code execution: {e}", chatstatus=chatstatus) 
     else:
-        log.debugLog("Debug: No PYTHON code to execute.", chatstatus=chatstatus) # <- This is for debugging
+        log.debugLog("Debug: No PYTHON code to execute.", chatstatus=chatstatus) 
 
 # Extract the arguments from the string
 def get_arguments_from_code(code):
@@ -167,15 +167,15 @@ def extract_python_code(llm_output, chatstatus):
     Returns:
     str: The MATLAB code to execute.
     """
-    log.debugLog("LLM OUTPUT PARSER", chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
-    log.debugLog(llm_output, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog("LLM OUTPUT PARSER", chatstatus=chatstatus) 
+    log.debugLog(llm_output, chatstatus=chatstatus) 
     funcCall = llm_output.split('Execute:')
-    log.debugLog(funcCall, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+    log.debugLog(funcCall, chatstatus=chatstatus) 
     funcCall = funcCall[len(funcCall)-1].strip()
     if funcCall[:32] != 'subprocess.call([sys.executable,':
-        log.debugLog(funcCall, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+        log.debugLog(funcCall, chatstatus=chatstatus) 
         funcCall = 'subprocess.call([sys.executable,' + funcCall[32:]
-        log.debugLog(funcCall, chatstatus=chatstatus) if chatstatus['config']['debug'] else None # <- This is for debugging
+        log.debugLog(funcCall, chatstatus=chatstatus) 
     return funcCall
     # Define the regex pattern to match the desired line
     #pattern = r'Execute: `(.+)`'

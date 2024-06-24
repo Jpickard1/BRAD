@@ -21,9 +21,9 @@ def planner(chatstatus):
                                     )
     response = conversation.predict(input=prompt)
     response += '\n\n'
-    print(response) if chatstatus['config']['debug'] else None
+    chatstatus = log.userOutput(response, chatstatus=chatstatus)
     while True:
-        print('Do you want to proceed with this plan? [Y/N/edit]')
+        chatstatus = log.userOutput('Do you want to proceed with this plan? [Y/N/edit]', chatstatus=chatstatus)
         prompt2 = input('Input >> ')
         if prompt2 == 'Y':
             break
@@ -32,16 +32,15 @@ def planner(chatstatus):
         else:
             template = plannerEditingTemplate()
             template = template.format(plan=response)
-            print(template)
+            chatstatus = log.chatstatus(template, chatstatus=chatstatus)
             PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
             chain    = PROMPT | llm
             
             # Call chain
             response = chain.invoke(prompt2).content.strip() + '\n\n'
-            print(response) if chatstatus['config']['debug'] else None
-            
+            chatstatus = log.userOutput(response, chatstatus=chatstatus)
     processes = response2processes(response)
-    print(processes) if chatstatus['config']['debug'] else None
+    chatstatus = log.userOutput(processes, chatstatus=chatstatus)
     chatstatus['planned'] = processes
     chatstatus['process']['stages'] = processes
     return chatstatus
@@ -57,6 +56,15 @@ def response2processes(response):
             continue
         prompt = re.findall(r'Prompt: (.*?)\n', stage)
         for module in found_modules:
+            # we have both
+            
+            #log.debugLog(stageNum, chatstatus=chatstatus)
+            #log.debugLog(module, chatstatus=chatstatus)
+            #log.debugLog(prompt, chatstatus=chatstatus)
+            #log.debugLog(stage, chatstatus=chatstatus)
+            
+            # and (I'm not really sure if I should use print statements or our function here)
+            
             # print(stageNum)
             # print(module)
             # print(prompt)
