@@ -88,7 +88,7 @@ def userOutput(output, chatstatus=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 20, 2024
-    print(output)
+    
     if chatstatus['process']['output'] is None:
         chatstatus['process']['output'] = output
     else:
