@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "BRAD-Chat"
-version = "0.1.26"
+version = "0.1.33"
 description = "This package connects large language models with bioinformatics workflows."
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [ "Programming Language :: Python :: 3", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent",]
-dependencies = [ "beautifulsoup4==4.12.3", "chromadb==0.5.0", "ipython", "langchain_chroma==0.1.1", "langchain_community==0.2.4", "langchain_core==0.2.5", "langchain_nvidia_ai_endpoints==0.1.1", "langchain_text_splitters", "Requests", "semantic-router[local]", "torch", "transformers", "gget",]
+dependencies = [ "beautifulsoup4==4.12.3", "chromadb==0.5.0", "ipython", "langchain_chroma==0.1.1", "langchain_community==0.2.4", "langchain_core==0.2.5", "langchain_nvidia_ai_endpoints==0.1.1", "langchain_text_splitters", "Requests", "torch", "transformers", "gget==0.28.6", "semantic-router==0.0.46",]
 [[project.authors]]
 name = "Joshua Pickard"
 email = "jpic@umich.edu"
@@ -19,7 +19,7 @@ Homepage = "https://github.com/Jpickard1/RAG-DEV"
 "Bug Tracker" = "https://github.com/Jpickard1/RAG-DEV"
 
 [tool.setuptools]
-py-modules = [ "BRAD",]
+py-modules = ["BRAD",]
 
 [tool.setuptools.packages.find]
 where = [ "BRAD",]

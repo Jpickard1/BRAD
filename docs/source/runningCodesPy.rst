@@ -1,17 +1,33 @@
-Running Codes
---------------------------
+======================
+Code Execution
+======================
 
-.. automodule:: BRAD.functionCaller
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+CODER
+------------------------
+.. automodule:: BRAD.coder
    :members:
-   
+   :undoc-members:
+
+PYTHON
+------------------------
+.. automodule:: BRAD.pythonCaller
+   :members:
+   :undoc-members:
+
 MATLAB
 ------------------------
 
 .. automodule:: BRAD.matlabCaller
    :members:
-   
-Snakemake
----------------------------
+   :undoc-members:
 
-.. automodule:: BRAD.scraper
+Function Caller
+--------------------------
+
+.. automodule:: BRAD.functionCaller
    :members:
+      

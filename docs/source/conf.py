@@ -25,7 +25,10 @@ MOCK_MODULES = ['scipy',
                 'matplotlib.pyplot',
                 'scipy.linalg',
                 'langchain',
+                'langchain.retrievers',
+                'langchain.retrievers.multi_query',
                 'semantic-router',
+                'tabulate',
                 'nltk',
                 'langchain',
                 'langchain_community',
@@ -160,3 +163,8 @@ html_theme = 'sphinx_rtd_theme'
 
 html_static_path = ['_static']
 PYDEVD_DISABLE_FILE_VALIDATION=1
+
+# -- Options for latexpdf output -------------------------------------------------
+
+latex_engine = 'pdflatex'
+

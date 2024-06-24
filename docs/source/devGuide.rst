@@ -4,7 +4,7 @@ Developer Guide
 This section provides information on the architecture and design of BRAD.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    bradPy
@@ -13,5 +13,4 @@ This section provides information on the architecture and design of BRAD.
    bioinformaticsPy
    webSearchPy
    runningCodesPy
-   routingPy
    
