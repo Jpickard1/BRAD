@@ -27,9 +27,12 @@ from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings.sentence_transformer import (
     SentenceTransformerEmbeddings,
 )
+from sklearn.metrics.pairwise import cosine_similarity
 from langchain_text_splitters import CharacterTextSplitter
 from langchain.retrievers.multi_query import MultiQueryRetriever
 
+from sentence_transformers import SentenceTransformer, util
+from sklearn.metrics.pairwise import cosine_similarity
 
 #BERTscore
 import logging
@@ -76,17 +79,18 @@ def queryDocs(chatstatus):
     if vectordb is not None:
         
         #Ask Joshua about easy way to get path of database?
-        path = "/nfs/turbo/umms-indikar/shared/projects/RAG/papers/EXP2/"
-        best_score, text = restrictedDB(prompt, vectordb, path)
+        path = '/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/'
+        best_score, text = restrictedDB(chatstatus, vectordb, path)
         #threshold to invoke new vector database
-        if best_score > 0.75:
+        if best_score > 0.73:
             chatstatus['databases']['RAG'] = text
+        print(len(text.get()['documents']))
 
         # solo & mutliquery retrieval determined by config.json
         docs, scores = retrieval(chatstatus)
-
+        print(f"after retrieval: {docs}")
         # We could put reranking here\
-        docs = pagerank_rerank(docs, scores)
+        docs = pagerank_rerank(docs, chatstatus)
         
         # We could put contextual compression here
         docs = contextualCompression(docs, chatstatus)
@@ -120,11 +124,15 @@ def queryDocs(chatstatus):
         chatstatus['process'] = {'type': 'LLM Conversation'}
     return chatstatus
 
+
 def retrieval(chatstatus):
     llm      = chatstatus['llm']              # get the llm
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
+
+    vectordb = remove_repeats(vectordb)
+    print(len(vectordb.get()['documents']))
 
     if not chatstatus['config']['RAG']['multiquery']:
         documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
@@ -256,36 +264,6 @@ def get_wordnet_pos(word):
                 "R": wordnet.ADV}
     return tag_dict.get(tag, wordnet.NOUN)
 
-def extract_non_english_words(text):
-    """
-    Extracts non-English words from a given text.
-
-    :param text: The input text from which to extract non-English words.
-    :type text: str
-
-    :raises LookupError: If the necessary NLTK data (like word lists or lemmatizer models) is not found.
-
-    :return: A list of words from the input text that are not recognized as English words.
-    :rtype: list
-
-    """
-    # Set of English words
-    custom_word_list = ["pluripotency", "differentiation", "stem", "cell", "biology", "genomics", "reprogramming"]
-    english_words = set(words.words()+custom_word_list)
-    # Normalize text to ASCII
-    normalized_text = unidecode(text)
-    
-    # Extract words from the text using regex
-    word_list = re.findall(r'\b\w+\b', normalized_text.lower())
-    
-    lemmatizer = WordNetLemmatizer()
-    lemmatized_words = [lemmatizer.lemmatize(word, get_wordnet_pos(word)) for word in word_list]
-    filtered_words = [word for word in lemmatized_words if not word.isnumeric()]
-    
-    # Filter out English words
-    non_english_words = [word for word in filtered_words if word not in english_words]
-    
-    return non_english_words
 
 def getDefaultContext():
     """
@@ -446,17 +424,18 @@ def scoring_experiment(chain, docs, scores, prompt):
 
 #To get a single document
 
-#ASK JOSHUA ABOUT PATHING
-def restrictedDB(prompt, vectordb, path):
+def restrictedDB(chatstatus, vectordb, path):
+    prompt = chatstatus['prompt']
     #path = "/nfs/turbo/umms-indikar/shared/projects/RAG/papers/EXP2/"
     embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')
     db_name = "new_DB_cosine_cSize_%d_cOver_%d" % (700, 200)
-    title_list, real_id_list = get_all_sources(prompt, path)
+    title_list, real_id_list = get_all_sources(vectordb, prompt, path)
     best_title, best_score = best_match(prompt, title_list)
-    title_list, real_id_list = get_all_sources(best_title, path)
+    title_list, real_id_list = get_all_sources(vectordb, best_title, path)
     text = vectordb.get(ids=real_id_list)['documents']
     #maybe make this a new path argument idk
-    newdb = Chroma(persist_directory='/nfs/turbo/umms-indikar/shared/projects/RAG/databases/new_EXP3/', embedding_function=embeddings_model, collection_name=db_name)
+    new_path = chatstatus['output-directory']+'/restricted'
+    newdb = Chroma(persist_directory=new_path, embedding_function=embeddings_model, collection_name=db_name)
     newdb.add_texts(text)
     return best_score, newdb
 
@@ -481,7 +460,7 @@ def best_match(prompt, title_list):
     return save_title, save_score
 
 #Split into two methods?
-def get_all_sources(prompt, path):
+def get_all_sources(vectordb, prompt, path):
     prompt = prompt.lower()
     metadata_full = vectordb.get()['metadatas']
     source_list = [item['source'] for item in metadata_full]   
@@ -492,15 +471,16 @@ def get_all_sources(prompt, path):
 
 
 #Given the prompt, find the title and corresponding score that is the best match
-def adj_matrix_builder(docs, scores):
-    dimension = len(docs)+1
-    adj_matrix = np.zeros([dimension, dimension])
-    pos = 1
-    for score in scores:
-        adj_matrix[0][pos] = score
-        adj_matrix[pos][0] = score
-        pos += 1
-    return adj_matrix
+def adj_matrix_builder(docs, chatstatus):
+    dimension = len(docs)
+    adj_matrix = np.zeros([dimension, dimension]) 
+    sentence_model = SentenceTransformer('multi-qa-MiniLM-L6-cos-v1')
+    doc_list = []
+    for doc in docs:
+        doc_list.append(doc.dict()['page_content'])
+    passage_embedding = sentence_model.encode(doc_list)
+    cosine_similarities = cosine_similarity(passage_embedding[:chatstatus['config']['RAG']['num_articles_retrieved']])
+    return cosine_similarities
 
 # Normalize columns of A
 def normalize_adjacency_matrix(A):
@@ -523,9 +503,20 @@ def pagerank_weighted(A, alpha=0.85, tol=1e-6, max_iter=100):
 
 #reranker
 
-def pagerank_rerank(docs, scores):
-    adj_matrix = adj_matrix_builder(docs, scores)
+def pagerank_rerank(docs, chatstatus):
+    adj_matrix = adj_matrix_builder(docs, chatstatus)
+    print(adj_matrix)
     pagerank_scores = pagerank_weighted(A = adj_matrix)
-    top_rank_scores = sorted(range(len(pagerank_scores)), key=lambda i: pagerank_scores[i], reverse=True)[1:11]
+    top_rank_scores = sorted(range(len(pagerank_scores)), key=lambda i: pagerank_scores[i], reverse=True)
+    print(top_rank_scores)
     reranked_docs = [docs[i] for i in top_rank_scores]
+    print(reranked_docs)
     return reranked_docs
+
+#removes repeat chunks in vectordb
+def remove_repeats(vectordb):
+    df = pd.DataFrame({'id' :vectordb.get()['ids'] , 'documents' : vectordb.get()['documents']})
+    repeated_ids = df[df.duplicated(subset='documents', keep='last')]['id'].tolist()
+    if len(repeated_ids) > 0:
+        vectordb.delete(repeated_ids)
+    return vectordb
