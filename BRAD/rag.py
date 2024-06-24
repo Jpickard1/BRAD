@@ -87,10 +87,10 @@ def queryDocs(chatstatus):
         chatstatus, docs, scores = retrieval(chatstatus)
 
         # We could put reranking here\
-        #docs = pagerank_rerank(docs, scores)
+        docs = pagerank_rerank(docs, chatstatus)
 
         # We could put contextual compression here
-        docs = contextualCompression(docs, chatstatus)
+        #docs = contextualCompression(docs, chatstatus)
 
         # Build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
@@ -493,7 +493,11 @@ def adj_matrix_builder(docs, chatstatus):
     for doc in docs:
         doc_list.append(doc.dict()['page_content'])
     passage_embedding = sentence_model.encode(doc_list)
-    cosine_similarities = cosine_similarity(passage_embedding[:chatstatus['config']['RAG']['num_articles_retrieved']])
+    print(chatstatus)
+    print(type(chatstatus['config']['RAG']['num_articles_retrieved']))
+    print(passage_embedding)
+    print(passage_embedding[0:chatstatus['config']['RAG']['num_articles_retrieved']])
+    cosine_similarities = cosine_similarity(passage_embedding[0:chatstatus['config']['RAG']['num_articles_retrieved']])
     return cosine_similarities
 
 # Normalize columns of A
@@ -525,7 +529,7 @@ def pagerank_rerank(docs, chatstatus):
     print(top_rank_scores)
     reranked_docs = [docs[i] for i in top_rank_scores]
     print(reranked_docs)
-    return reranked_docs
+    return reranked_docs[:5]
 
 #removes repeat chunks in vectordb
 def remove_repeats(vectordb):
