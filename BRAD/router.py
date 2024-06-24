@@ -7,6 +7,13 @@ from semantic_router import Route
 from semantic_router.layer import RouteLayer
 from semantic_router.encoders import HuggingFaceEncoder
 
+def reroute(chatstatus):
+    llm = chatstatus['llm']
+    prompt = chatstatus['prompt']
+    planned = chatstatus['planned']
+    
+    return chatstatus
+
 def read_prompts(file_path):
     """
     Reads a text file where each line represents a sentence and returns a list of sentences.
@@ -48,51 +55,23 @@ def add_sentence(file_path, sentence):
         file.write(sentence.strip() + '\n')
 
 def getRouterPath(file):
+    """
+    Constructs and returns the absolute path to a file located in the 'routers' directory.
+
+    This function determines the current script's directory and constructs the absolute path 
+    to a specified file within the 'routers' subdirectory.
+
+    :param file: The name of the file whose path is to be constructed.
+    :type file: str
+
+    :return: The absolute path to the specified file in the 'routers' directory.
+    :rtype: str
+    """
     current_script_path = os.path.abspath(__file__)
     current_script_dir = os.path.dirname(current_script_path)
     file_path = os.path.join(current_script_dir, 'routers', file) #'enrichr.txt')
     return file_path
     
-routeGget = Route(
-    name = 'GGET',
-    utterances = read_prompts(getRouterPath('enrichr.txt'))
-)
-routeScrape = Route(
-    name = 'SCRAPE',
-    utterances = read_prompts(getRouterPath('scrape.txt'))
-)
-routeRAG = Route(
-    name = 'RAG',
-    utterances = read_prompts(getRouterPath('rag.txt'))
-)
-routeTable = Route(
-    name = 'TABLE',
-    utterances = read_prompts(getRouterPath('table.txt'))
-)
-routeData = Route(
-    name = 'DATA',
-    utterances = read_prompts(getRouterPath('data.txt'))
-)
-routeMATLAB = Route(
-    name = 'MATLAB',
-    utterances = read_prompts(getRouterPath('matlab.txt'))
-)
-routePython = Route(
-    name = 'PYTHON',
-    utterances = read_prompts(getRouterPath('python.txt'))
-)
-routePlanner = Route(
-    name = 'PLANNER',
-    utterances = read_prompts(getRouterPath('planner.txt'))
-)
-routeCode = Route(
-    name = 'CODE',
-    utterances = read_prompts(getRouterPath('code.txt'))
-)
-routeCode = Route(
-    name = 'WRITE',
-    utterances = read_prompts(getRouterPath('write.txt'))
-)
 def getRouter():
     """
     Returns a router layer configured with predefined routes for various tasks.
@@ -105,8 +84,57 @@ def getRouter():
     :rtype: RouteLayer
 
     """
+    routeGget = Route(
+        name = 'GGET',
+        utterances = read_prompts(getRouterPath('enrichr.txt'))
+    )
+    routeScrape = Route(
+        name = 'SCRAPE',
+        utterances = read_prompts(getRouterPath('scrape.txt'))
+    )
+    routeRAG = Route(
+        name = 'RAG',
+        utterances = read_prompts(getRouterPath('rag.txt'))
+    )
+    routeTable = Route(
+        name = 'TABLE',
+        utterances = read_prompts(getRouterPath('table.txt'))
+    )
+    routeData = Route(
+        name = 'DATA',
+        utterances = read_prompts(getRouterPath('data.txt'))
+    )
+    routeMATLAB = Route(
+        name = 'MATLAB',
+        utterances = read_prompts(getRouterPath('matlab.txt'))
+    )
+    routePython = Route(
+        name = 'PYTHON',
+        utterances = read_prompts(getRouterPath('python.txt'))
+    )
+    routePlanner = Route(
+        name = 'PLANNER',
+        utterances = read_prompts(getRouterPath('planner.txt'))
+    )
+    routeCode = Route(
+        name = 'CODE',
+        utterances = read_prompts(getRouterPath('code.txt'))
+    )
+    routeWrite = Route(
+        name = 'WRITE',
+        utterances = read_prompts(getRouterPath('write.txt'))
+    )
     encoder = HuggingFaceEncoder()
-    routes = [routeGget, routeScrape, routeTable, routeRAG]
+    routes = [routeGget,
+              routeScrape,
+              routeTable,
+              routeRAG,
+              routeData,
+              routeMATLAB,
+              routePython,
+              routePlanner,
+              routeCode,
+              routeWrite]
     router = RouteLayer(encoder=encoder, routes=routes)    
     return router
 
@@ -148,10 +176,11 @@ def buildRoutes(prompt):
     }
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)
-    
 
 def getTableRouter():
     """
+    .. warning:: We may be removing this soon. I don't think it is used.
+
     Returns a router layer configured specifically for handling table-related tasks.
 
     :param None: This function does not take any parameters.

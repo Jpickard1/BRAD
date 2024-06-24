@@ -58,7 +58,7 @@ from langchain.memory import ConversationBufferMemory
 from BRAD.planner import *
 from BRAD.enrichr import *
 from BRAD.scraper import *
-from BRAD.router import *
+from BRAD import router
 from BRAD.tables import *
 from BRAD.rag import *
 from BRAD.gene_ontology import *
@@ -198,7 +198,6 @@ def loadChatStatus():
 
     :return: A dictionary representing the chat status with initial values and loaded configuration.
     :rtype: dict
-
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -239,7 +238,7 @@ def load_literature_db(
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
-    
+
     # load database
     embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')        # Embedding model
     db_name = "DB_cosine_cSize_%d_cOver_%d" % (700, 200)
@@ -260,7 +259,6 @@ def chatbotHelp():
 
     :return: None
     :rtype: None
-
     """
     help_message = """
     Welcome to our RAG chatbot Help!
@@ -354,7 +352,7 @@ def chat(
     memory = ConversationBufferMemory(ai_prefix="BRAD")
 
     # Initialize the routers from router.py
-    router = getRouter()
+    router = router.getRouter()
 
     # Initialize the chatlog
     chatstatus        = loadChatStatus()
@@ -396,7 +394,7 @@ def chat(
                 route = 'RAG'
         else:
             route = chatstatus['prompt'].split(' ')[1]            # use the forced router
-            buildRoutes(chatstatus['prompt'])
+            router.buildRoutes(chatstatus['prompt'])
             chatstatus['prompt'] = " ".join(chatstatus['prompt'].split(' ')[2:]).strip()
 
         # Outputs
