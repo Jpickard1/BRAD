@@ -52,6 +52,7 @@ import re
 import BRAD.gene_ontology as gonto
 from BRAD.gene_ontology import geneOntology
 
+from BRAD import log
 
 def queryDocs(chatstatus):
     """
@@ -95,15 +96,15 @@ def queryDocs(chatstatus):
 
         # pass the database output to the llm
         res = chain({"input_documents": docs, "question": prompt})
-        print(res['output_text'])
+        log.debugLog('output_text', chatstatus=chatstatus) # <- This is for debugging
         sources = []
         for doc in docs:
             source = doc.metadata.get('source')
             short_source = os.path.basename(source)
             sources.append(short_source)
         sources = list(set(sources))
-        print("Sources:")
-        print('\n'.join(sources))
+        chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) # <- This is for the user
+        chatstatus = log.userOutput(sources, chatstatus=chatstatus) # <- This is for the user
         chatstatus['process']['sources'] = sources
         # change inputs to be json readable
         res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
@@ -119,7 +120,7 @@ def queryDocs(chatstatus):
                                         )
         prompt = getDefaultContext() + prompt
         response = conversation.predict(input=prompt)
-        print(response)
+        chatstatus = log.userOutput(response, chatstatus=chatstatus) # <- This is for the user
         
         chatstatus['output'] = response
     return chatstatus
@@ -183,9 +184,9 @@ def contextualCompression(docs, chatstatus):
         res = chatstatus['llm'].invoke(input=prompt)
         summary = res.content.strip()
         if chatstatus['config']['debug']:
-            print('============')
-            print(pageContent)
-            print('Summary: ' + summary)
+            chatstatus = log.userOutput('============', chatstatus=chatstatus) # <- This is for the user
+            chatstatus = log.userOutput(pageContent, chatstatus=chatstatus) # <- This is for the user
+            chatstatus = log.userOutput('Summary: ' + summary, chatstatus=chatstatus) # <- This is for the user
         doc.page_content = summary
         docs[i] = doc
     return docs
@@ -342,8 +343,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
     
     local = os.getcwd()  ## Get local dir
     os.chdir(local)      ## shift the work dir to local dir
-    
-    print('\nWork Directory: {}'.format(local)) if v else None
+    log.debugLog('\nWork Directory: {}'.format(local), chatstatus=chatstatus) if v else None# <- This is for debugging
 
     #%% Phase 1 - Load DB
     embeddings_model = HuggingFaceEmbeddings(model_name=HuggingFaceEmbeddingsModel)
