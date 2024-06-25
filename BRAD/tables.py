@@ -79,7 +79,7 @@ def manipulateTable(chatstatus):
 
     # select operation
     if operation == 'unsure':
-        print('the operation is not clear')
+        log.debugLog("the operation is not clear", chatstatus=chatstatus)
         
     if operation == 'load':
         chatstatus = loadFile(chatstatus)
@@ -93,7 +93,7 @@ def manipulateTable(chatstatus):
                     if str(word).upper() == str(table).upper():      # look for a table with a similar name
                         selectTable = word
             if selectTable is None:                            # return if no table
-                print('No table selected')
+                log.debugLog("No table selected", chatstatus=chatstatus)
                 return
             df = chatstatus['tables'][selectTable]             # select the specific table    
         if operation == 'save':
@@ -205,10 +205,10 @@ def loadFile(chatstatus):
     file = extract_csv_word(prompt, file_types)
     if not file:
         output = 'no file found'
-        print(output)
+        log.debugLog(output, chatstatus=chatstatus)
         return output, {'Load': 'Failed'}
     output = 'loading: ' + file + ' as Table ' + str(len(chatstatus['tables']) + 1)
-    print(output)
+    log.debugLog(output, chatstatus=chatstatus)
     process = {'filename' : file}
     
     # load the file
@@ -230,7 +230,7 @@ def loadFile(chatstatus):
     chatstatus['current table']['tab'] = df
     chatstatus['current table']['key'] = str(len(chatstatus['tables']) + 1)
     chatstatus['tables'][chatstatus['current table']['key']] = chatstatus['current table']['tab']
-    # print(chatstatus['current table'])
+    log.debugLog(chatstatus['current table'], chatstatus=chatstatus)
     return chatstatus
         
 def saveTable(df, chatstatus):
@@ -256,7 +256,7 @@ def saveTable(df, chatstatus):
         output = 'no file found, so default naming used'
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         file = f'save-table-{timestamp}.csv'
-    print('saving the table to ' + file)
+    log.debugLog('saving the table to ' + file, chatstatus=chatstatus)
     df.to_csv(file, index=False)
     return chatstatus
     
@@ -310,36 +310,36 @@ def summarizeTable(df, chatstatus):
     logging.info('summarizeTable')
     prompt  = chatstatus['prompt']
     command = extract_summary_command(prompt)
-    print(command)
+    log.debugLog(command, chatstatus=chatstatus)
     output  = ""
     if command == 'info':
         buffer = io.StringIO()
         df.info(buf=buffer)
         info_str = buffer.getvalue()
         output = f"DataFrame Info:\n\n{info_str}"
-        print(output)  # Print to terminal
+        chatstatus = log.userOutput(output, chatstatus=chatstatus)
     elif command == 'describe':
         describe_str = df.describe().to_string()
         output = f"DataFrame Description:\n\n{describe_str}"
-        print(output)  # Print to terminal
+        chatstatus = log.userOutput(output, chatstatus=chatstatus)
     elif command == 'head':
         head_str = df.head().to_string()
         output = f"Top Rows of DataFrame:\n\n{head_str}"
-        print(output)  # Print to terminal
+        chatstatus = log.userOutput(output, chatstatus=chatstatus)
     elif command == 'tail':
         tail_str = df.tail().to_string()
         output = f"Bottom Rows of DataFrame:\n\n{tail_str}"
-        print(output)  # Print to terminal
+        chatstatus = log.userOutput(output, chatstatus=chatstatus)
     elif command == 'shape':
         output = f"The DataFrame has {df.shape[0]} rows and {df.shape[1]} columns."
-        print(output)  # Print to terminal
+        chatstatus = log.userOutput(output, chatstatus=chatstatus)
     elif command == 'columns':
         columns_str = ", ".join(df.columns)
         output = f"The columns of the DataFrame are:\n\n{columns_str}"
-        print(output)  # Print to terminal
+        chatstatus = log.userOutput(output, chatstatus=chatstatus)
     else:
         output = 'No valid command found in the prompt.'
-        print(output)  # Print to terminal
+        chatstatus = log.userOutput(output, chatstatus=chatstatus)
     return chatstatus
 
 def handleMissingData(df, chatstatus):
@@ -382,7 +382,7 @@ def handleMissingData(df, chatstatus):
         missing_data_summary = df.isnull().sum()
         chatstatus['output'] = f"Missing Data Summary:\n\n{missing_data_summary.to_string()}"
     chatstatus['tables'][chatstatus['current table']['key']] = chatstatus['current table']['tab']
-    print(chatstatus['output'])
+    log.debugLog(chatstatus['output'], chatstatus=chatstatus)
     return chatstatus
 
 def visualizeTable(df, chatstatus):
@@ -433,7 +433,7 @@ def visualizeTable(df, chatstatus):
         plt.ylabel(chatstatus['process']['ylabel'])
     if ax is not None:
         plt.show()
-    print(output)
+    chatstatus = log.userOutput(output, chatstatus=chatstatus)
     return chatstatus
 
 def plottingMethods():
@@ -650,7 +650,7 @@ def scatter_plot(df, chatstatus):
     """
     prompt = chatstatus['prompt']
     columns = [col for col in df.columns if (col.lower() in prompt.lower() and col.lower() != chatstatus['process']['hue'].lower())]
-    if chatstatus['debug']: print(columns)
+    log.debugLog(columns, chatstatus=chatstatus)
     if len(columns) == 2:
         ax = sns.scatterplot(data = df,
                              x    = columns[0],
@@ -1076,19 +1076,19 @@ def checkPlottingConfigurations(chatstatus, df):
         try:
             chatstatus['config']['display']['dpi'] = int(promptWords[loc+1])
         except ValueError:
-            print('The dpi value is unclear')
+            log.debugLog("The dpi value is unclear", chatstatus=chatstatus)
     if 'figsize' in promptWords:
         loc = promptWords.index('figsize')
         try:
             chatstatus['config']['display']['figsize'] = (int(promptWords[loc+1]), int(promptWords[loc+2]))
         except ValueError:
-            print('The figsize value is unclear')
+            log.debugLog("The figsize value is unclear", chatstatus=chatstatus)
     if 'cm' in prompt or 'colormap' in prompt:
         loc = promptWords.index('cm') if 'cm' in promptWords else promptWords.index('colormap')
         if is_valid_colormap(promptWords[loc + 1]):
             chatstatus['config']['display']['colormap'] = promptWords[loc + 1]
         else:
-            print('The colormap is unclear')
+            log.debugLog("The colormap is unclear", chatstatus=chatstatus)
     if 'ec' in promptWords or 'edgecolor' in prompt or 'edge-color' in prompt:
         if 'ec' in promptWords:
             loc = promptWords.index('ec')
@@ -1099,19 +1099,19 @@ def checkPlottingConfigurations(chatstatus, df):
         if is_valid_color(promptWords[loc + 1]):
             chatstatus['process']['edgecolor'] = promptWords[loc + 1]
         else:
-            print('The colormap is unclear')
+            log.debugLog("The colormap is unclear", chatstatus=chatstatus)
     if 'markersize' in promptWords:
         loc = promptWords.index('markersize')
         try:
             chatstatus['process']['markersize'] = int(promptWords[loc + 1])
         except ValueError:
-            print('The markersize value is unclear')
+            log.debugLog("The markersize value is unclear", chatstatus=chatstatus)
     if 'linewidth' in promptWords:
         loc = promptWords.index('linewidth')
         try:
             chatstatus['process']['linewidth'] = int(promptWords[loc + 1])
         except ValueError:
-            print('The linewidth value is unclear')
+            log.debugLog("The linewidth value is unclear", chatstatus=chatstatus)
     #if 'grid' in promptWords:
     #    chatstatus['process']['grid'] = not chatstatus['config']['display']['grid']
     if 'xlim' in promptWords:
@@ -1119,19 +1119,19 @@ def checkPlottingConfigurations(chatstatus, df):
         try:
             chatstatus['process']['xlim'] = (int(promptWords[loc + 1]), int(promptWords[loc + 2]))
         except ValueError:
-            print('The xlim value is unclear')
+            log.debugLog("The xlim value is unclear", chatstatus=chatstatus)
     if 'ylim' in promptWords:
         loc = promptWords.index('ylim')
         try:
             chatstatus['process']['ylim'] = (int(promptWords[loc + 1]), int(promptWords[loc + 2]))
         except ValueError:
-            print('The ylim value is unclear')
+            log.debugLog("The ylim value is unclear", chatstatus=chatstatus)
     if 'markerfacecolor' in promptWords:
         loc = promptWords.index('markerfacecolor')
         if is_valid_color(promptWords[loc + 1]):
             chatstatus['process']['markerfacecolor'] = promptWords[loc + 1]
         else:
-            print('The markerfacecolor is unclear')
+            log.debugLog("The markerfacecolor is unclear", chatstatus=chatstatus)
     
     if 'legend' in promptWords:
         loc = promptWords.index('legend')
@@ -1142,7 +1142,7 @@ def checkPlottingConfigurations(chatstatus, df):
         try:
             chatstatus['process']['fontsize'] = int(promptWords[loc + 1])
         except ValueError:
-            print('The fontsize value is unclear')
+            log.debugLog("The fontsize value is unclear", chatstatus=chatstatus)
             
     if 'bins' in promptWords:
         loc = promptWords.index('bins')
@@ -1152,7 +1152,7 @@ def checkPlottingConfigurations(chatstatus, df):
             try:
                 chatstatus['process']['bins'] = int(promptWords[loc - 1])
             except ValueError:
-                print('The bins value is unclear')
+                log.debugLog("The bins value is unclear", chatstatus=chatstatus)
     
     if "spine" in prompt.lower():
         chatstatus['process']['despine'] = not chatstatus['process']['despine']
@@ -1232,7 +1232,7 @@ def visualizeTable(df, chatstatus):
             output = "No specific column found in the prompt for box plot."
     else:
         output = "No valid visualization command found in the prompt."
-    print(output)
+    log.debugLog(output, chatstatus=chatstatus)
     return chatstatus
     
     if "line" in prompt:
@@ -1298,6 +1298,6 @@ def visualizeTable(df, chatstatus):
 
     if ax is not None:
         plt.show()
-    print(output)
+    log.debugLog(output, chatstatus=chatstatus)
     return chatstatus
 '''

@@ -9,7 +9,7 @@ import re
 from BRAD.promptTemplates import matlabPromptTemplate
 
 def callMatlab(chatstatus):
-    print('Matlab Caller Start')
+    log.debugLog("Matlab Caller Start", chatstatus=chatstatus)
     prompt = chatstatus['prompt']                                        # Get the user prompt
     llm = chatstatus['llm']                                              # Get the llm
     memory = chatstatus['memory']
@@ -18,43 +18,43 @@ def callMatlab(chatstatus):
 
     # Turn on matlab engine just before running the code
     chatstatus, mpath = activateMatlabEngine()
-    print('Matlab PATH Extended') if chatstatus['config']['debug'] else None
+    log.debugLog("Matlab PATH Extended, chatstatus=chatstatus)
     
     # Identify matlab files we are adding to the path of BRAD
     matlabFunctions = find_matlab_files(matlabPath)
-    print(matlabFunctions) if chatstatus['config']['debug'] else None
+    log.debugLog(matlabFunctions, chatstatus=chatstatus)
     # Identify which file we should use
     matlabFunction = find_closest_function(prompt, matlabFunctions)
-    print(matlabFunction) if chatstatus['config']['debug'] else None
+    log.debugLog(matlabFunction, chatstatus=chatstatus)
     # Identify matlab arguments
     matlabFunctionPath = os.path.join(matlabPath, matlabFunction + '.m')
-    print(matlabFunctionPath) if chatstatus['config']['debug'] else None
+    log.debugLog(matlabFunctionPath, chatstatus=chatstatus)
     # Get matlab docstrings
     matlabDocStrings = read_matlab_docstrings(matlabFunctionPath)
-    print(matlabDocStrings) if chatstatus['config']['debug'] else None
+    log.debugLog(matlabDocStrings, chatstatus=chatstatus)
     template = matlabPromptTemplate()
-    print(template) if chatstatus['config']['debug'] else None
+    log.debugLog(template, chatstatus=chatstatus)
     # matlabDocStrings = callMatlab(chatstatus)
     filled_template = template.format(scriptName=matlabFunction, scriptDocumentation=matlabDocStrings) #, history=None, input=None)
-    print(filled_template) if chatstatus['config']['debug'] else None
+    log.debugLog(filled_template, chatstatus=chatstatus)
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
-    print(PROMPT) if chatstatus['config']['debug'] else None
+    log.debugLog(PROMPT, chatstatus=chatstatus)
     conversation = ConversationChain(prompt  = PROMPT,
                                      llm     =    llm,
                                      verbose =   chatstatus['config']['debug'],
                                      memory  = memory,
                                     )
     response = conversation.predict(input=chatstatus['prompt'] )
-    print(response) if chatstatus['config']['debug'] else None
+    log.debugLog(debug, chatstatus=chatstatus)
     matlabCode = extract_matlab_code(response, chatstatus)
-    print(matlabCode) if chatstatus['config']['debug'] else None
+    log.debugLog(matlabCode, chatstatus=chatstatus)
     execute_matlab_code(matlabCode, chatstatus)
     return chatstatus
 
 def activateMatlabEngine(chatstatus):
     if chatstatus['matlabEng'] is None:
         chatstatus['matlabEng'] = matlab.engine.start_matlab()
-    print('Matlab Engine On') if chatstatus['config']['debug'] else None
+    log.debugLog("Matlab Engine On", chatstatus=chatstatus)
     # Add matlab files to the path
     if chatstatus['config']['matlab-path'] == 'matlab-tutorial/':
         matlabPath = chatstatus['config']['matlab-path']
@@ -74,23 +74,23 @@ def execute_matlab_code(matlab_code, chatstatus):
     Returns:
     None
     """
-    print('EVAL') if chatstatus['config']['debug'] else None
-    print(matlab_code) if chatstatus['config']['debug'] else None
-    print('END EVAL CHECK') if chatstatus['config']['debug'] else None
+    log.debugLog("EVAL", chatstatus=chatstatus)
+    log.debugLog(matlab_code, chatstatus=chatstatus)
+    log.debugLog("END EVAL CHECK", chatstatus=chatstatus)
     eng = chatstatus['matlabEng']
     if matlab_code:
         try:
             # Attempt to evaluate the MATLAB code
             eval(matlab_code)
-            print("Debug: MATLAB code executed successfully.")
+            log.debugLog("Debug: MATLAB code executed successfully.", chatstatus=chatstatus)
         except SyntaxError as se:
-            print(f"Debug: Syntax error in the MATLAB code: {se}")
+            log.debugLog(f"Debug: Syntax error in the MATLAB code: {se}", chatstatus=chatstatus)
         except NameError as ne:
-            print(f"Debug: Name error, possibly undefined function or variable: {ne}")
+            log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", chatstatus=chatstatus)
         except Exception as e:
-            print(f"Debug: An error occurred during MATLAB code execution: {e}")
+            log.debugLog(f"Debug: An error occurred during MATLAB code execution: {e}", chatstatus=chatstatus)
     else:
-        print("Debug: No MATLAB code to execute.")
+        log.debugLog("Debug: No MATLAB code to execute.", chatstatus=chatstatus)
 
 
 def find_matlab_files(path):
@@ -120,7 +120,7 @@ def read_matlab_docstrings(file_path):
     first = True
     with open(file_path, 'r') as file:
         for line in file:
-            # print(line)
+            # log.debugLog(file, chatstatus=chatstatus)
             stripped_line = line.strip()
             if stripped_line.startswith('%') or first:
                 # Remove the '%' character and any leading/trailing whitespace
@@ -147,15 +147,15 @@ def extract_matlab_code(llm_output, chatstatus):
     Returns:
     str: The MATLAB code to execute.
     """
-    print('LLM OUTPUT PARSER') if chatstatus['config']['debug'] else None
-    print(llm_output) if chatstatus['config']['debug'] else None
+    log.debugLog('LLM OUTPUT PARSER', chatstatus=chatstatus)
+    log.debugLog(llm_output, chatstatus=chatstatus)
     funcCall = llm_output.split('Execute:')
-    print(funcCall) if chatstatus['config']['debug'] else None
+    log.debugLog(funcCall, chatstatus=chatstatus)
     funcCall = funcCall[len(funcCall)-1].strip()
     if funcCall[:3] != 'eng':
-        print(funcCall) if chatstatus['config']['debug'] else None
+        log.debugLog(funcCall, chatstatus=chatstatus)
         funcCall = 'eng' + funcCall[3:]
-        print(funcCall) if chatstatus['config']['debug'] else None
+        log.debugLog(funcCall, chatstatus=chatstatus)
     return funcCall
     # Define the regex pattern to match the desired line
     #pattern = r'Execute: `(.+)`'

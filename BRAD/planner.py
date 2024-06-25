@@ -56,19 +56,12 @@ def response2processes(response):
             continue
         prompt = re.findall(r'Prompt: (.*?)\n', stage)
         for module in found_modules:
-            # we have both
             
             #log.debugLog(stageNum, chatstatus=chatstatus)
             #log.debugLog(module, chatstatus=chatstatus)
             #log.debugLog(prompt, chatstatus=chatstatus)
             #log.debugLog(stage, chatstatus=chatstatus)
             
-            # and (I'm not really sure if I should use print statements or our function here)
-            
-            # print(stageNum)
-            # print(module)
-            # print(prompt)
-            # print(stage)
             processes.append({
                 'order':stageNum,
                 'module':module,

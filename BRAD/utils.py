@@ -42,7 +42,7 @@ def savefig(chatstatus, ax, name):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    print('SAVEFIG')
+    log.debugLog("SAVEFIG", chatstatus=chatstatus)
     if len(chatstatus['planned']) != 0:
         stageNum = chatstatus['planned'][0]['order']
         name = 'S' + str(stageNum) + '-' + name
@@ -62,9 +62,9 @@ def ensure_directory_exists(file_path):
     directory_path = os.path.dirname(file_path)
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
-        print(f"Directory '{directory_path}' created.")
+        log.debugLog(f"Directory '{directory_path}' created.", chatstatus=chatstatus)
     else:
-        print(f"Directory '{directory_path}' already exists.")
+        log.debugLog(f"Directory '{directory_path}' already exists.", chatstatus=chatstatus)
 
 
 def pdfDownloadPath(chatstatus):
@@ -144,7 +144,7 @@ def loadFromFile(chatstatus):
     chain    = PROMPT | llm
 
     # Call chain
-    print(prompt)
+    chatstatus = log.userOutput(prompt, chatstatus=chatstatus)
     response = chain.invoke(prompt).content.strip()
     
     # Regular expressions to extract file and fields
@@ -228,8 +228,8 @@ def outputFromPriorStep(chatstatus, step, values=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    print(chatstatus)
-    print(step)
+    log.debugLog(chatstatus, chatstatus=chatstatus)
+    log.debugLog(step, chatstatus=chatstatus)
     step_output_files = []
     file = None
     for filename in os.listdir(chatstatus['output-directory']):
@@ -237,11 +237,11 @@ def outputFromPriorStep(chatstatus, step, values=None):
             step_output_files.append(filename)
         if filename.startswith('S' + step):
             file = filename
-    print(file)
+    chatstatus = log.userOutput(file, chatstatus=chatstatus)
     if file.endswith('.csv'):
         file_path = os.path.join(chatstatus['output-directory'], file)
         df = pd.read_csv(file_path)
-        print(df)
+        chatstatus = log.userOutput(df, chatstatus=chatstatus)
         if values is not None:
             df = df[values]
     return df
@@ -260,9 +260,9 @@ def compile_latex_to_pdf(chatstatus, tex_file):
             ['pdflatex', '-output-directory', chatstatus['output-directory'], tex_file_path], 
             check=True
         )
-        print(f"PDF generated successfully in {chatstatus['output-directory']}.")
+        log.debugLog(f"PDF generated successfully in {chatstatus['output-directory']}.", chatstatus=chatstatus)
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred: {e}")
+        log.debugLog(f"An error occurred: {e}", chatstatus=chatstatus)
 
     return chatstatus
 
