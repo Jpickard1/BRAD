@@ -32,7 +32,7 @@ def planner(chatstatus):
         else:
             template = plannerEditingTemplate()
             template = template.format(plan=response)
-            chatstatus = log.debugLog(template, chatstatus=chatstatus)
+            log.debugLog(template, chatstatus=chatstatus)
             PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
             chain    = PROMPT | llm
             

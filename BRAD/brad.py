@@ -361,7 +361,7 @@ def chat(
     module_functions = getModules()
     
     while True:
-        log.debugLog('==================================================', chatstatus=chatstatus)
+        print('==================================================')
         if len(chatstatus['planned']) == 0:
             chatstatus['prompt'] = input('Input >> ')                 # get query from user
         else:
