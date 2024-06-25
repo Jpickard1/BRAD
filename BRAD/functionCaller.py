@@ -21,7 +21,7 @@ def getFunctionArgs(chatstatus):
     plot_args = chatstatus['process']['params']
 
     if chatstatus['config']['debug']:
-        print("Possible Values:")
+        chatstatus = log.userOutput("Possible Values:", chatstatus=chatstatus)
         display(plot_args)
 
     # Directory where the model and tokenizer are saved

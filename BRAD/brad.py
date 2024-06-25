@@ -170,9 +170,9 @@ def reconfig(chat_status):
     if key in chat_status['config']:
         chat_status['config'][key] = value
         save_config(chat_status['config'])
-        print("Configuration " + str(key) + " updated to " + str(value))
+        log.debugLog("Configuration " + str(key) + " updated to " + str(value), chatstatus=chatstatus)
     else:
-        print("Configuration " + str(key) + " not found")
+        log.debugLog("Configuration " + str(key) + " not found", chatstatus=chatstatus)
     return chat_status
 
 def loadChatStatus():
@@ -274,7 +274,7 @@ def chatbotHelp():
     #       jpic@umich.edu
     # Date: June 4, 2024
     
-    print(help_message)
+    chatstatus = log.userOutput(help_message, chatstatus=chatstatus)
     return
 
 def chat(
@@ -320,7 +320,7 @@ def chat(
     os.makedirs(new_log_dir)
     chatname = os.path.join(new_log_dir, 'log.json')
 
-    print('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?')
+    chatstatus = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?', chatstatus=chatstatus)
 
     # Initialize the dictionaries of tables and databases accessible to BRAD
     databases = {} # a dictionary to look up databases
@@ -331,7 +331,7 @@ def chat(
         llm = load_nvidia()
         # llm = load_llama(model_path) # load the llama
     if ragvectordb is None:
-        print('\nWould you like to use a database with BRAD [Y/N]?')
+        chatstatus = log.userOutput('\nWould you like to use a database with BRAD [Y/N]?', chatstatus=chatstatus)
         loadDB = input().strip().upper()
         if loadDB == 'Y':
             ragvectordb, embeddings_model = load_literature_db(persist_directory) # load the literature database
@@ -361,7 +361,7 @@ def chat(
     module_functions = getModules()
     
     while True:
-        print('==================================================')
+        chatstatus = log.userOutput('==================================================', chatstatus=chatstatus)
         if len(chatstatus['planned']) == 0:
             chatstatus['prompt'] = input('Input >> ')                 # get query from user
         else:
@@ -388,8 +388,10 @@ def chat(
             chatstatus['prompt'] = " ".join(chatstatus['prompt'].split(' ')[2:]).strip()
 
         # Outputs
-        print('==================================================')
-        print('RAG >> ' + str(len(chatlog)) + ': ', end='')
+        chatstatus = log.userOutput('==================================================', chatstatus=chatstatus)
+        chatstatus = log.userOutput('RAG >> ' + str(len(chatlog)) + ': ', chatstatus=chatstatus)
+        
+        # I wasn't able to add the {end = ''} info to the userOutput function
 
         # select appropriate routeing function
         if route.upper() in module_functions.keys():
@@ -419,10 +421,8 @@ def chat(
         
         # Log and reset these values
         chatlog, chatstatus = log.logger(chatlog, chatstatus, chatname)
-    
-    print("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + chatname)
-
-
+        
+    chatstatus = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + chatname, chatstatus=chatstatus)
 #removes repeat chunks in vectordb
 def remove_repeats(vectordb):
     df = pd.DataFrame({'id' :vectordb.get()['ids'] , 'documents' : vectordb.get()['documents']})
