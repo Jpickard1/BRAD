@@ -1,8 +1,31 @@
 {
-    "num_articles_retrieved": 4,
+    "RAG": {
+        "num_articles_retrieved": 3,
+	"multiquery": false,
+	"contextual_compression": true
+    },
     "max_articles_download": 10,
     "acceptable_data_files": [
-        ".csv"
+        ".csv",
+	".tsv"
     ],
-    "enable_logging": true
+    "max_enrichr_pval": 0.5,
+    "enable_logging": true,
+    "num_df_rows_display": 3,
+    "default_enrichr_db": "GO_Biological_Process_2021",
+    "display": {
+        "dpi": 300,
+        "figsize": [
+            5,
+            3
+        ],
+        "colormap": "viridis",
+        "fontsize": null
+    },
+    "debug": "true",
+    "log_path": "BRAD",
+    "experiment": false,
+    "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
+    "py-path": "/home/jpic/RAG-DEV/tutorials/planner/python/",
+    "image-path-extension": "images"
 }

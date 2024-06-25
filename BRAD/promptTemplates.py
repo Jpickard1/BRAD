@@ -57,7 +57,7 @@ def rerouteTemplate():
 
 History: {chathistory}
 
-Routing Decisions: {user_query}
+Routing Decisions: {{user_query}}
 
 **OUTPUT**
 Next Step=<Step number>

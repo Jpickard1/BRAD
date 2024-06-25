@@ -216,7 +216,8 @@ def loadChatStatus():
         'plottingParams'    : {},
         'matlabEng'         : None,
         'experiment'        : False,
-        'planned'           : []
+        'queue'             : [],
+        'queue pointer'     : 0,
     }
     return chatstatus
 
@@ -320,6 +321,7 @@ def chat(
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     config = load_config()
     base_dir = os.path.expanduser('~')
@@ -371,14 +373,14 @@ def chat(
     
     while True:
         print('==================================================')
-        if len(chatstatus['planned']) == 0:
-            chatstatus['prompt'] = input('Input >> ')                 # get query from user
-        else:
-            chatstatus['prompt'] = chatstatus['planned'][0]['prompt']
+        if len(chatstatus['queue']) != 0 and chatstatus['queue pointer'] < len(chatstatus['queue']):
+            chatstatus['prompt'] = chatstatus['queue'][chatstatus['queue pointer']]['prompt']
             output_files         = utils.outputFiles(chatstatus)
+        else:
+            chatstatus['prompt'] = input('Input >> ')                 # get query from user
         
         # Handle explicit commands and routing
-        if chatstatus['prompt'] in ['exit', 'quit', 'q', 'bye']:         # check to exit
+        if chatstatus['prompt'].lower() in ['exit', 'quit', 'q', 'bye']:         # check to exit
             break
         elif chatstatus['prompt'].lower() == 'help':              # print man to the screen
             chatbotHelp()
@@ -419,12 +421,12 @@ def chat(
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
         log.debugLog('\n\n\nroute\n\n\n', chatstatus=chatstatus)
         log.debugLog(route, chatstatus=chatstatus)
-        if len(chatstatus['planned']) != 0 and route != 'PLANNER':
-            log.debugLog(chatstatus['planned'], chatstatus=chatstatus)
+        if len(chatstatus['queue']) != 0 and route != 'PLANNER':
+            log.debugLog(chatstatus['queue'], chatstatus=chatstatus)
             new_output_files = utils.outputFiles(chatstatus)
             new_output_files = list(set(new_output_files).difference(set(output_files)))
             chatstatus = utils.makeNamesConsistent(chatstatus, new_output_files)
-            chatstatus['planned'].pop(0)
+            chatstatus['queue pointer'] += 1
         
         # Log and reset these values
         chatlog, chatstatus = log.logger(chatlog, chatstatus, chatname)

@@ -7,14 +7,19 @@ import json
 from semantic_router import Route
 from semantic_router.layer import RouteLayer
 from semantic_router.encoders import HuggingFaceEncoder
+
+from langchain.prompts import PromptTemplate
+from langchain_core.prompts.prompt import PromptTemplate
+
 from BRAD.promptTemplates import rerouteTemplate
 from BRAD import log
 
 def reroute(chatstatus):
+    print('Call to REROUTER')
     log.debugLog('Call to REROUTER', chatstatus=chatstatus)
     llm = chatstatus['llm']
     prompt = chatstatus['prompt']
-    planned = chatstatus['planned']
+    queue  = chatstatus['queue']
 
     # Build chat history
     chatlog = json.load(open(os.path.join(chatstatus['output-directory'], 'log.json')))
@@ -27,7 +32,7 @@ def reroute(chatstatus):
     
     # Put history into the conversation
     template = rerouteTemplate()
-    template = template.format(history=history)
+    template = template.format(chathistory=history)
     PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
     chain = PROMPT | chatstatus['llm']
     res = chain.invoke(prompt)
@@ -35,7 +40,7 @@ def reroute(chatstatus):
     # Extract output
     log.debugLog(res, chatstatus=chatstatus)
     log.debugLog(res.content, chatstatus=chatstatus)
-    chatstatus['process']['step'].append(log.llmCallLog(
+    chatstatus['process']['steps'].append(log.llmCallLog(
         llm     = llm,
         prompt  = template,
         input   = prompt,
