@@ -79,7 +79,7 @@ def debugLog(output, chatstatus=None, display=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    if displaypr:
+    if display:
         logging.info(output)
     else:
         logging.info(output) if chatstatus['config']['debug'] else None

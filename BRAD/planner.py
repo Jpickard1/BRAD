@@ -32,7 +32,7 @@ def planner(chatstatus):
         else:
             template = plannerEditingTemplate()
             template = template.format(plan=response)
-            chatstatus = log.chatstatus(template, chatstatus=chatstatus)
+            chatstatus = log.debugLog(template, chatstatus=chatstatus)
             PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
             chain    = PROMPT | llm
             
@@ -40,7 +40,7 @@ def planner(chatstatus):
             response = chain.invoke(prompt2).content.strip() + '\n\n'
             chatstatus = log.userOutput(response, chatstatus=chatstatus)
     processes = response2processes(response)
-    chatstatus = log.userOutput(processes, chatstatus=chatstatus)
+    log.debugLog(processes, chatstatus=chatstatus)
     chatstatus['planned'] = processes
     chatstatus['process']['stages'] = processes
     return chatstatus

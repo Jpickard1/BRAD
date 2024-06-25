@@ -170,9 +170,9 @@ def reconfig(chat_status):
     if key in chat_status['config']:
         chat_status['config'][key] = value
         save_config(chat_status['config'])
-        log.debugLog("Configuration " + str(key) + " updated to " + str(value), chatstatus=chatstatus)
+        chatstatus = log.userOutput("Configuration " + str(key) + " updated to " + str(value), chatstatus=chatstatus)
     else:
-        log.debugLog("Configuration " + str(key) + " not found", chatstatus=chatstatus)
+        chatstatus = log.userOutput("Configuration " + str(key) + " not found", chatstatus=chatstatus)
     return chat_status
 
 def loadChatStatus():
@@ -361,7 +361,7 @@ def chat(
     module_functions = getModules()
     
     while True:
-        chatstatus = log.userOutput('==================================================', chatstatus=chatstatus)
+        log.debugLog('==================================================', chatstatus=chatstatus)
         if len(chatstatus['planned']) == 0:
             chatstatus['prompt'] = input('Input >> ')                 # get query from user
         else:
