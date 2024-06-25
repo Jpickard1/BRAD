@@ -47,7 +47,7 @@ def save(chatstatus, data, name):
 
     # If this is part of a pipeline, then add the stage number to the printed output
     if len(chatstatus['queue']) != 0:
-        stageNum = chatstatus['queue'][0]['order']
+        stageNum = chatstatus['queue pointer'] + 1#[0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], name)
 
@@ -101,7 +101,7 @@ def savefig(chatstatus, ax, name):
     # Date: June 19, 2024
     print('SAVEFIG')
     if len(chatstatus['queue']) != 0:
-        stageNum = chatstatus['queue pointer'] # [0]['order']
+        stageNum = chatstatus['queue pointer'] + 1 # [0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], chatstatus['config']['image-path-extension'], name)
     ensure_directory_exists(output_path)

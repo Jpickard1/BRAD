@@ -182,3 +182,5 @@ Execute the HWG analysis pipeline to find first-order interactions of PCNA using
 Using CODE, execute the HWG analysis pipeline to find first-order interactions of PCNA using the information gathered from the literature search in Step 1. Load the necessary dependencies and input files required for the pipeline.
 Execute the HWG analysis pipeline to find first-order interactions of PCNA, using the information gathered in Step 1 to inform the analysis. Load the PCNA protein as the input and run the pipeline to generate an output file containing the interactions.
 "Using the information from Step 1, execute the HWG analysis pipeline to find first-order interactions of PCNA. Load the resulting output file for further analysis."
+"Execute the HWG analysis pipeline to find first-order interactions of PCNA, using the information gathered from Step 1. Load the output file from this analysis for use in Step 3."
+Execute the HWG analysis pipeline to find first-order interactions of PCNA, using the relevant articles retrieved in Step 1 as input. Load the output file from this analysis for further processing.

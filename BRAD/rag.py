@@ -132,7 +132,7 @@ def retrieval(chatstatus):
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
 
-    vectordb = remove_repeats(vectordb)
+    # vectordb = remove_repeats(vectordb)
     print(len(vectordb.get()['documents']))
 
     if not chatstatus['config']['RAG']['multiquery']:
