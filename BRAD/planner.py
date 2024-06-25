@@ -4,6 +4,7 @@ from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
 import re
 from BRAD.promptTemplates import plannerTemplate, plannerEditingTemplate
+from BRAD import log
 
 """This module is responsible for creating sequences of steps to be run by other modules of BRAD"""
 
@@ -44,10 +45,11 @@ def planner(chatstatus):
     print(processes) if chatstatus['config']['debug'] else None
     chatstatus['planned'] = processes
     chatstatus['process']['stages'] = processes
+    log.debugLog('exit planner', chatstatus=chatstatus)
     return chatstatus
 
 def response2processes(response):
-    modules = ['RAG', 'SCRAPE', 'DATABASE', 'CODE', 'WRITE']
+    modules = ['RAG', 'SCRAPE', 'DATABASE', 'CODE', 'WRITE', 'ROUTER']
     stageStrings = response.split('**Step ')
     processes = []
     for i, stage in enumerate(stageStrings):

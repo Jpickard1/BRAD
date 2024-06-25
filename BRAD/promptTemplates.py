@@ -6,11 +6,12 @@ def plannerTemplate():
 You are planning a bioinformatics analysis pipeline to address a user's query. Your task is to outline a multi-step workflow using the available methods listed below. Each method should be used appropriately to ensure a thorough analysis. For each step in the pipeline, explain the goal of the process as well as provide a prompt to the chatbot that will execute that step. If information is passed between stages, such as from literature or code to databases, indicate the dependencies of steps in the prompt.
 
 **Available Methods:**
-1. **Retrieval Augmented Generation**(RAG): Look up literature and documents from a text database.
-2. **Web Search for New Literature**(SCRAPE): Search platforms like arXiv, bioRxiv, and PubMed for the latest research.
-3. **Bioinformatics Databases**(DATABASE): Utilize databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.
-4. **Run Codes**(CODE): Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.
-5. **Write a Report**(WRITE): Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.
+1. **RAG**: Look up literature and documents from a text database.
+2. **SCRAPE**: Search platforms like arXiv, bioRxiv, and PubMed for the latest research.
+3. **DATABASE**: Utilize bioinformatics databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.
+4. **CODE**: Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.
+5. **WRITE**: Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.
+6. **ROUTER**: Determine which step we should proceed to next.
 
 Current conversation: {history}\n
 
@@ -22,9 +23,6 @@ Prompt: [Description of action for chatbot to do Step 1, i.e. do X, Y, Z]
 
 **Step 2 (method, eg. CODE)**:
 Prompt: [Description of action for chatbot to do Step 2, i.e. do A, B, C. Use information from Step X]
-
-**Step 3 (method, eg. DATABASE)**:
-Prompt: [Description of action for chatbot to do Step 3, i.e. do D, E, F. Use information from Step Y]
 ...
 """
     return template
@@ -51,6 +49,18 @@ Prompt: [Description of action for chatbot to do Step 1, i.e. do X, Y, Z]
 **Step 2 (method, eg. CODE)**:
 Prompt: [Description of action for chatbot to do Step 2, i.e. do X, Y, Z]
 ...
+"""
+    return template
+
+def rerouteTemplate():
+    template = """You are executing a bioinformatics pipeline and must decide which step to execute next. We have already seen the following output, and at this point, you must determine which step to run next based on the chat history.
+
+History: {chathistory}
+
+Routing Decisions: {user_query}
+
+**OUTPUT**
+Next Step=<Step number>
 """
     return template
 
