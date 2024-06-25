@@ -226,3 +226,4 @@ Use the Enrichr database to perform gene set enrichment analysis on the output f
 "Load the output file from Step 2 and use Enrichr to perform gene set enrichment analysis to identify the pathways PCNA is involved in. Provide a list of enriched pathways."
 "Use the Enrichr database to perform gene enrichment analysis on the output file from Step 2, and identify the pathways PCNA is involved in. Provide a list of the top pathways and their corresponding enrichment scores."
 Use the Enrichr database to perform gene set enrichment analysis on the output file from Step 2, identifying the biological pathways that PCNA is involved in. Save the results for reporting.
+"Load the output file from the HWG analysis pipeline (Step 2) and perform gene enrichment analysis using Enrichr to identify the pathways PCNA is involved in. Use the gene interaction data from Step 2 as input for the enrichment analysis."
