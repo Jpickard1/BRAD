@@ -190,3 +190,4 @@ Run the HWG analysis pipeline to identify first-order interactions of PCNA, usin
 Execute the HWG analysis pipeline to find first-order interactions of PCNA using the information gathered from Step 1. Load the literature results and generate an output file containing the interaction data.
 Execute the HWG analysis pipeline to find first-order interactions of PCNA using the literature information retrieved in Step 1. Load the search results from Step 1 and run the HWG pipeline to generate an output file containing the interactions.
 "Execute the HWG analysis pipeline to find first-order interactions of PCNA using the information gathered from the literature search in Step 1. Load the output file for further analysis in subsequent steps."
+Execute the HWG analysis pipeline to find first-order interactions of PCNA using the information gathered from Step 1. Load the literature results and generate an output file containing the interaction data.
