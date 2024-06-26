@@ -2,6 +2,7 @@ import subprocess
 import shlex
 from typing import Dict, Any
 import json
+from BRAD import log
 
 def callSnakemake(chatstatus, chatlog):
     """

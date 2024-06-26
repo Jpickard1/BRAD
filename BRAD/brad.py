@@ -333,8 +333,6 @@ def chat(
     os.makedirs(new_log_dir)
     chatname = os.path.join(new_log_dir, 'log.json')
 
-    chatstatus = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?', chatstatus=chatstatus)
-
     # Initialize the dictionaries of tables and databases accessible to BRAD
     databases = {} # a dictionary to look up databases
     tables = {}    # a dictionary to look up tables
@@ -370,7 +368,9 @@ def chat(
 
     # Initialize all modules
     module_functions = getModules()
-    
+
+    # Start loop
+    chatstatus = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + chatname + '. How can I help?', chatstatus=chatstatus)
     while True:
         print('==================================================')
         if len(chatstatus['queue']) != 0 and chatstatus['queue pointer'] < len(chatstatus['queue']):

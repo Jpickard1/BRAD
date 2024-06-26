@@ -85,11 +85,13 @@ def queryDocs(chatstatus):
         # solo & mutliquery retrieval determined by config.json
         chatstatus, docs, scores = retrieval(chatstatus)
 
-        # We could put reranking here\
-        # docs = pagerank_rerank(docs, chatstatus)
+        # We could put reranking here
+        if chatstatus['config']['RAG']['rerank']:
+            docs = pagerank_rerank(docs, chatstatus)
 
         # We could put contextual compression here
-        docs = contextualCompression(docs, chatstatus)
+        if chatstatus['config']['RAG']['contextual_compression']:
+            docs = contextualCompression(docs, chatstatus)
 
         # Build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
@@ -104,7 +106,7 @@ def queryDocs(chatstatus):
             sources.append(short_source)
         sources = list(set(sources))
         chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) 
-        chatstatus = log.userOutput(sources, chatstatus=chatstatus) 
+        chatstatus = log.userOutput('\n'.join(sources), chatstatus=chatstatus) 
         chatstatus['process']['sources'] = sources
         # change inputs to be json readable
         res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
@@ -337,7 +339,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
             text_splitter = RecursiveCharacterTextSplitter(chunk_size = chunk_size[i],
                                                             chunk_overlap = chunk_overlap[j],
                                                             separators=[" ", ",", "\n", ". "])
-            data_splits = text_splitter.split_documents(docs_data)\
+            data_splits = text_splitter.split_documents(docs_data)
             print("Documents split into chunks...") if v else None
             print("Initializing Chroma Database...") if v else None
 

@@ -36,7 +36,7 @@ def geneDBRetriever(chatstatus):
     chainResponse = conversation.predict(input=query)
 
     log.debugLog(chainResponse, chatstatus=chatstatus)    # Print gene list if debugging
-    response = parse_llm_response(chainResponse)
+    response = parse_llm_response(chainResponse, chatstatus)
 
     chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
                                                          prompt       = PROMPT,
@@ -75,7 +75,7 @@ def geneDBRetriever(chatstatus):
         log.debugLog(output, chatstatus=chatstatus)
     return chatstatus
 
-def parse_llm_response(response):
+def parse_llm_response(response, chatstatus):
     """
     Parses the LLM response to extract the database name and search terms.
     

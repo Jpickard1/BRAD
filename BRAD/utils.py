@@ -104,7 +104,7 @@ def savefig(chatstatus, ax, name):
         stageNum = chatstatus['queue pointer'] + 1 # [0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], chatstatus['config']['image-path-extension'], name)
-    ensure_directory_exists(output_path)
+    ensure_directory_exists(output_path, chatstatus)
     plt.savefig(output_path)
     log.debugLog('The image was saved to: ' + output_path, chatstatus=chatstatus)
     chatstatus['process']['steps'].append(
@@ -115,7 +115,7 @@ def savefig(chatstatus, ax, name):
     )
     return chatstatus
 
-def ensure_directory_exists(file_path):
+def ensure_directory_exists(file_path, chatstatus):
     """
     Ensure that the directory for a given file path exists, creating it if necessary.
 
@@ -128,7 +128,7 @@ def ensure_directory_exists(file_path):
 
     Example
     -------
-    >>> ensure_directory_exists('/path/to/output/figure.png')
+    >>> ensure_directory_exists('/path/to/output/figure.png', chatstatus)
     >>> # If the directory '/path/to/output' does not exist, it will be created.
     """
     # Auth: Joshua Pickard

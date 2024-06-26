@@ -13,6 +13,7 @@ import json
 import matplotlib
 
 from BRAD.functionCaller import *
+from BRAD import log
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -891,7 +892,7 @@ def checkPlottingConfigurations(chatstatus, df):
         try:
             chatstatus['config']['display']['figsize'] = (int(promptWords[loc+1]), int(promptWords[loc+2]))
         except ValueError:
-            log.debugLog("The figsize value is unclear, chatstatus=chatstatus)
+            log.debugLog("The figsize value is unclear", chatstatus=chatstatus)
     if 'cm' in prompt or 'colormap' in prompt:
         loc = promptWords.index('cm') if 'cm' in promptWords else promptWords.index('colormap')
         if is_valid_colormap(promptWords[loc + 1]):
