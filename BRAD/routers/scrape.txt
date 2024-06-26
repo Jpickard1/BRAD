@@ -172,3 +172,12 @@ Retrieve the latest research articles related to "MYOD" by scraping relevant sou
 Retrieve the latest research articles related to "MYOD" by scraping relevant sources like arXiv, bioRxiv, and PubMed. Utilize the information obtained from the Enrichr database to refine the search query.
 Retrieve the latest research articles related to "MYOD" by using prebuilt bioinformatics pipelines or custom code that scrapes relevant sources like arXiv, bioRxiv, and PubMed. Utilize the information obtained from the Enrichr database to refine the search query.
 Search for new literature related to the gene interactions and identified pathways. Use this information to expand the knowledge base and contribute to the final report.
+Evaluate the confidence score from Step 1. If the confidence score is above a certain threshold (e.g., 0.8), proceed to Step 5 (WRITE). Otherwise, proceed to Step 3 (SCRAPE).
+Evaluate the confidence level from Step 1. If the confidence level is high (> 0.8), proceed to Step 5 (WRITE). Otherwise, proceed to Step 3 (SCRAPE).
+Evaluate the confidence level from Step 1. If the confidence level is high (> 0.8), proceed to Step 5 (WRITE). Otherwise, proceed to Step 3 (SCRAPE).
+Use SCRAPE to search platforms like arXiv, bioRxiv, and PubMed for the latest research articles related to MYOD and cellular reprogramming. Retrieve relevant articles and pass them to Step 4.
+Search platforms like arXiv, bioRxiv, and PubMed for the latest research articles related to MYOD and cellular reprogramming. Retrieve the abstracts and full texts of the articles.
+Evaluate the confidence level from Step 1. If the confidence level is high (> 0.8), proceed to Step 5 (WRITE). Otherwise, proceed to Step 3 (SCRAPE).
+Use SCRAPE to search platforms like arXiv, bioRxiv, and PubMed for the latest research articles related to MYOD and cellular reprogramming. Retrieve a list of relevant article titles and abstracts.
+Search arXiv, bioRxiv, and PubMed for latest research articles related to MYOD and cellular reprogramming.
+Based on the confidence level from Step 1, decide whether to proceed to Step 5 (WRITE) or Step 3 (SCRAPE). If the confidence level is high, proceed to Step 5. If not, proceed to Step 3.

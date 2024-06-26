@@ -4,6 +4,7 @@ from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
 import re
 from BRAD.promptTemplates import plannerTemplate, plannerEditingTemplate
+from BRAD import log
 
 """This module is responsible for creating sequences of steps to be run by other modules of BRAD"""
 
@@ -21,7 +22,7 @@ def planner(chatstatus):
                                     )
     response = conversation.predict(input=prompt)
     response += '\n\n'
-    print(response) if chatstatus['config']['debug'] else None
+    chatstatus = log.userOutput(response, chatstatus=chatstatus)
     while True:
         print('Do you want to proceed with this plan? [Y/N/edit]')
         prompt2 = input('Input >> ')
@@ -38,16 +39,19 @@ def planner(chatstatus):
             
             # Call chain
             response = chain.invoke(prompt2).content.strip() + '\n\n'
-            print(response) if chatstatus['config']['debug'] else None
+            chatstatus = log.userOutput(response, chatstatus=chatstatus)
+            # print(response) if chatstatus['config']['debug'] else None
             
     processes = response2processes(response)
     print(processes) if chatstatus['config']['debug'] else None
-    chatstatus['planned'] = processes
-    chatstatus['process']['stages'] = processes
+    chatstatus['queue'] = processes
+    chatstatus['queue pointer'] = 0
+    # chatstatus['process']['stages'] = processes
+    log.debugLog('exit planner', chatstatus=chatstatus)
     return chatstatus
 
 def response2processes(response):
-    modules = ['RAG', 'SCRAPE', 'DATABASE', 'CODE', 'WRITE']
+    modules = ['RAG', 'SCRAPE', 'DATABASE', 'CODE', 'WRITE', 'ROUTER']
     stageStrings = response.split('**Step ')
     processes = []
     for i, stage in enumerate(stageStrings):

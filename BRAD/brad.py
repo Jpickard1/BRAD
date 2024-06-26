@@ -58,7 +58,7 @@ from langchain.memory import ConversationBufferMemory
 from BRAD.planner import *
 from BRAD.enrichr import *
 from BRAD.scraper import *
-from BRAD import router
+from BRAD.router import *
 from BRAD.tables import *
 from BRAD.rag import *
 from BRAD.gene_ontology import *
@@ -103,6 +103,7 @@ def getModules():
         'PLANNER': planner,
         'CODE'   : codeCaller,
         'WRITE'  : summarizeSteps,
+        'ROUTER' : reroute,
     }
     return module_functions
 
@@ -215,7 +216,8 @@ def loadChatStatus():
         'plottingParams'    : {},
         'matlabEng'         : None,
         'experiment'        : False,
-        'planned'           : []
+        'queue'             : [],
+        'queue pointer'     : 0,
     }
     return chatstatus
 
@@ -319,6 +321,7 @@ def chat(
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     config = load_config()
     base_dir = os.path.expanduser('~')
@@ -352,7 +355,7 @@ def chat(
     memory = ConversationBufferMemory(ai_prefix="BRAD")
 
     # Initialize the routers from router.py
-    router = router.getRouter()
+    router = getRouter()
 
     # Initialize the chatlog
     chatstatus        = loadChatStatus()
@@ -360,9 +363,7 @@ def chat(
     chatstatus['memory'] = memory
     chatstatus['databases'] = databases
     chatstatus['output-directory'] = new_log_dir
-    chatlog           = {
-        'llm'           : str(chatstatus['llm'])
-    }
+    chatlog           = {}
     if chatstatus['config']['experiment']:
         experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
         chatstatus['experiment-output'] = '-'.join(experimentName.split())
@@ -372,14 +373,14 @@ def chat(
     
     while True:
         print('==================================================')
-        if len(chatstatus['planned']) == 0:
-            chatstatus['prompt'] = input('Input >> ')                 # get query from user
-        else:
-            chatstatus['prompt'] = chatstatus['planned'][0]['prompt']
+        if len(chatstatus['queue']) != 0 and chatstatus['queue pointer'] < len(chatstatus['queue']):
+            chatstatus['prompt'] = chatstatus['queue'][chatstatus['queue pointer']]['prompt']
             output_files         = utils.outputFiles(chatstatus)
+        else:
+            chatstatus['prompt'] = input('Input >> ')                 # get query from user
         
         # Handle explicit commands and routing
-        if chatstatus['prompt'] in ['exit', 'quit', 'q', 'bye']:         # check to exit
+        if chatstatus['prompt'].lower() in ['exit', 'quit', 'q', 'bye']:         # check to exit
             break
         elif chatstatus['prompt'].lower() == 'help':              # print man to the screen
             chatbotHelp()
@@ -394,7 +395,7 @@ def chat(
                 route = 'RAG'
         else:
             route = chatstatus['prompt'].split(' ')[1]            # use the forced router
-            router.buildRoutes(chatstatus['prompt'])
+            buildRoutes(chatstatus['prompt'])
             chatstatus['prompt'] = " ".join(chatstatus['prompt'].split(' ')[2:]).strip()
 
         # Outputs
@@ -415,17 +416,18 @@ def chat(
         chatstatus['process'] = {'module' : routeName,
                                  'steps'  : []
                             }
+        chatstatus['output'] = ""
         chatstatus = module(chatstatus)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
         log.debugLog('\n\n\nroute\n\n\n', chatstatus=chatstatus)
         log.debugLog(route, chatstatus=chatstatus)
-        if len(chatstatus['planned']) != 0 and route != 'PLANNER':
-            log.debugLog(chatstatus['planned'], chatstatus=chatstatus)
+        if len(chatstatus['queue']) != 0 and route != 'PLANNER':
+            log.debugLog(chatstatus['queue'], chatstatus=chatstatus)
             new_output_files = utils.outputFiles(chatstatus)
             new_output_files = list(set(new_output_files).difference(set(output_files)))
             chatstatus = utils.makeNamesConsistent(chatstatus, new_output_files)
-            chatstatus['planned'].pop(0)
+            chatstatus['queue pointer'] += 1
         
         # Log and reset these values
         chatlog, chatstatus = log.logger(chatlog, chatstatus, chatname)

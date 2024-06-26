@@ -11,7 +11,6 @@ from langchain.chains import RetrievalQA
 from langchain.llms import LlamaCpp
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from langchain.prompts import PromptTemplate
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains.question_answering import load_qa_chain
@@ -54,7 +53,7 @@ import re
 
 import BRAD.gene_ontology as gonto
 from BRAD.gene_ontology import geneOntology
-
+from BRAD import log
 
 def queryDocs(chatstatus):
     """
@@ -87,17 +86,17 @@ def queryDocs(chatstatus):
         chatstatus, docs, scores = retrieval(chatstatus)
 
         # We could put reranking here\
-        docs = pagerank_rerank(docs, chatstatus)
+        # docs = pagerank_rerank(docs, chatstatus)
 
         # We could put contextual compression here
-        #docs = contextualCompression(docs, chatstatus)
+        docs = contextualCompression(docs, chatstatus)
 
         # Build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
 
         # pass the database output to the llm
         res = chain({"input_documents": docs, "question": prompt})
-        print(res['output_text'])
+        chatstatus = log.userOutput(res['output_text'], chatstatus=chatstatus)
         sources = []
         for doc in docs:
             source = doc.metadata.get('source')
@@ -133,7 +132,7 @@ def retrieval(chatstatus):
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
 
-    vectordb = remove_repeats(vectordb)
+    # vectordb = remove_repeats(vectordb)
     print(len(vectordb.get()['documents']))
 
     if not chatstatus['config']['RAG']['multiquery']:

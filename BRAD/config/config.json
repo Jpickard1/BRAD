@@ -1,6 +1,6 @@
 {
     "RAG": {
-        "num_articles_retrieved": 10,
+        "num_articles_retrieved": 3,
 	"multiquery": false,
 	"contextual_compression": true
     },
@@ -22,7 +22,7 @@
         "colormap": "viridis",
         "fontsize": null
     },
-    "debug": true,
+    "debug": "true",
     "log_path": "BRAD",
     "experiment": false,
     "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",

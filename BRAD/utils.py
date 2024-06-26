@@ -20,7 +20,7 @@ def save(chatstatus, data, name):
 
     Args:
         chatstatus (dict): A dictionary containing the current chat status, 
-                           including planned pipeline stages and output directory.
+                           including queued pipeline stages and output directory.
         data (pd.DataFrame or str): The data to be saved. It can be either a 
                                     pandas DataFrame (for CSV output) or a string (for .tex output).
         name (str): The name of the output file.
@@ -34,7 +34,7 @@ def save(chatstatus, data, name):
     Example
     -------
     >>> chatstatus = {
-    >>>     'planned': [{'order': 1}],
+    >>>     'queue': [{'order': 1}],
     >>>     'output-directory': '/path/to/output',
     >>>     'process': {'steps': []}
     >>> }
@@ -46,8 +46,8 @@ def save(chatstatus, data, name):
     # Date: June 19, 2024
 
     # If this is part of a pipeline, then add the stage number to the printed output
-    if len(chatstatus['planned']) != 0:
-        stageNum = chatstatus['planned'][0]['order']
+    if len(chatstatus['queue']) != 0:
+        stageNum = chatstatus['queue pointer'] + 1#[0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], name)
 
@@ -78,7 +78,7 @@ def savefig(chatstatus, ax, name):
 
     Args:
         chatstatus (dict): A dictionary containing the current chat status, including 
-                           planned pipeline stages and output directory.
+                           queued pipeline stages and output directory.
         ax (matplotlib.axes.Axes): The matplotlib axis object containing the figure to be saved.
         name (str): The name of the output file.
 
@@ -88,7 +88,7 @@ def savefig(chatstatus, ax, name):
     Example
     -------
     >>> chatstatus = {
-    >>>     'planned': [{'order': 1}],
+    >>>     'queue': [{'order': 1}],
     >>>     'output-directory': '/path/to/output',
     >>>     'config': {'image-path-extension': 'images'},
     >>>     'process': {'steps': []}
@@ -100,8 +100,8 @@ def savefig(chatstatus, ax, name):
     #       jpic@umich.edu
     # Date: June 19, 2024
     print('SAVEFIG')
-    if len(chatstatus['planned']) != 0:
-        stageNum = chatstatus['planned'][0]['order']
+    if len(chatstatus['queue']) != 0:
+        stageNum = chatstatus['queue pointer'] + 1 # [0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], chatstatus['config']['image-path-extension'], name)
     ensure_directory_exists(output_path)
@@ -209,7 +209,7 @@ def makeNamesConsistent(chatstatus, files):
 
     Args:
         chatstatus (dict): A dictionary containing the chat status and configuration details.
-                           It must include the keys 'planned' and 'output-directory'.
+                           It must include the keys 'queue' and 'output-directory'.
         files (list): A list of filenames to be processed.
 
     Returns:
@@ -218,7 +218,7 @@ def makeNamesConsistent(chatstatus, files):
     Example
     -------
     >>> chatstatus = {
-    >>>     'planned': [{'order': 1}],
+    >>>     'queue': [{'order': 1}],
     >>>     'output-directory': '/path/to/output',
     >>>     'process': {'steps': []}
     >>> }
@@ -229,10 +229,10 @@ def makeNamesConsistent(chatstatus, files):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    if len(chatstatus['planned']) != 0:
+    if len(chatstatus['queue']) != 0:
         log.debugLog('Finding Stage Number of Pipeline', chatstatus=chatstatus)
-        log.debugLog(chatstatus['planned'], chatstatus=chatstatus)
-        stageNum = chatstatus['planned'][0]['order'] + 1
+        log.debugLog(chatstatus['queue'], chatstatus=chatstatus)
+        stageNum = chatstatus['queue pointer'] # [0]['order'] + 1
     else:
         return
     renamedFiles = []
