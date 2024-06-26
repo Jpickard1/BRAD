@@ -284,3 +284,4 @@ Use RAG to search literature and documents from a text database to answer the qu
 Use the RAG method to search literature and documents from a text database, focusing on the role of PCNA in the cell cycle and cell cycle imaging. Specifically, retrieve information on "What role does PCNA play in the cell cycle and cell cycle imaging?"
 "Use the RAG method to search the literature for the role of PCNA in the cell cycle and cell cycle imaging. Provide a brief summary of the key findings."
 Use RAG to search literature and documents from a text database to answer the question "What role does PCNA play in the cell cycle and cell cycle imaging?" and return relevant abstracts and information.
+Use RAG to search the literature for "What role does PCNA play in the cell cycle and cell cycle imaging?" and retrieve relevant documents and abstracts.
