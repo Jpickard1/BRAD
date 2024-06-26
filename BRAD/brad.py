@@ -58,18 +58,18 @@ from langchain.memory import ConversationBufferMemory
 from BRAD.planner import *
 from BRAD.enrichr import *
 from BRAD.scraper import *
-from BRAD import router
+from BRAD.router import * #router
 from BRAD.tables import *
 from BRAD.rag import *
 from BRAD.gene_ontology import *
 from BRAD.seabornCaller import *
-from BRAD.matlabCaller import *
+# from BRAD.matlabCaller import *
 from BRAD.pythonCaller import *
 from BRAD.snakemakeCaller import *
 from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
 from BRAD.planner import planner
-from BRAD.coder import codeCaller
+# from BRAD.coder import codeCaller
 from BRAD.writer import summarizeSteps
 from BRAD import log
 
@@ -97,11 +97,11 @@ def getModules():
         'SCRAPE' : webScraping,      # webscrapping
         'SNS'    : callSnsV3,        # seaborn
         'RAG'    : queryDocs,        # standard rag
-        'MATLAB' : callMatlab,       # matlab
+#        'MATLAB' : callMatlab,       # matlab
         'PYTHON' : callPython,
         'SNAKE'  : callSnakemake,    # snakemake,
         'PLANNER': planner,
-        'CODE'   : codeCaller,
+#        'CODE'   : codeCaller,
         'WRITE'  : summarizeSteps,
     }
     return module_functions
@@ -352,7 +352,7 @@ def chat(
     memory = ConversationBufferMemory(ai_prefix="BRAD")
 
     # Initialize the routers from router.py
-    router = router.getRouter()
+    router = getRouter()
 
     # Initialize the chatlog
     chatstatus        = loadChatStatus()
@@ -394,7 +394,7 @@ def chat(
                 route = 'RAG'
         else:
             route = chatstatus['prompt'].split(' ')[1]            # use the forced router
-            router.buildRoutes(chatstatus['prompt'])
+            buildRoutes(chatstatus['prompt'])
             chatstatus['prompt'] = " ".join(chatstatus['prompt'].split(' ')[2:]).strip()
 
         # Outputs
