@@ -46,7 +46,7 @@ def callSnsV3(chatstatus):
     while True:
         try:
             # Parse the parameters of the plot to be generated
-            print('Step -1') if chatstatus['config']['debug'] else None
+            log.debugLog("Step -1", chatstatus=chatstatus)
             if 'process' not in chatstatus.keys() or chatstatus['process'] is None:
                 chatstatus['process'] = {}  # Begin saving plotting arguments
                 chatstatus['process']['name'] = 'SNS'
@@ -57,21 +57,21 @@ def callSnsV3(chatstatus):
                 chatstatus = checkPlottingConfigurations(chatstatus, df)                 # Apply a rules based parser to extract plotting args
                 chatstatus['process']['params'] = getFunctionArgs(chatstatus)            # Apply t5-small fine tuned to extract plotting args
                 chatstatus['process']['params']['data'] = df                             # Explicitly save the data we are plotting
-            print('Step 0') if chatstatus['config']['debug'] else None
+            log.debugLog("Step 0", chatstatus=chatstatus)
             validate_arguments(sns_func, chatstatus['process']['params'])            # Perform crude argument validation to see if the arguments were extracted well
 
-            print('Step 1') if chatstatus['config']['debug'] else None
+            log.debugLog("Step 1", chatstatus=chatstatus)
                 
             # Update missing values
             setSeabornConfigurations(chatstatus)  # Check if there are missing values in the parameters that had default values
-            print('Step 2') if chatstatus['config']['debug'] else None
+            log.debugLog("Step 2", chatstatus=chatstatus)
             for k in chatstatus['process']['params'].keys():  # Check if there are missing values in the args that were recently used
                 if chatstatus['process']['params'][k] is None and k in chatstatus['plottingParams'].keys():
                     chatstatus['process']['params'][k] = chatstatus['plottingParams'][k]
-            print('Step 3') if chatstatus['config']['debug'] else None
+            log.debugLog("Step 3", chatstatus=chatstatus)
             if 'figsize' not in chatstatus['process']['params'].keys() or chatstatus['process']['params']['figsize'] is None:
                 chatstatus['process']['params']['figsize'] = chatstatus['config']['display']['figsize']
-            print('Step 4') if chatstatus['config']['debug'] else None
+            log.debugLog("Step 4", chatstatus=chatstatus)
             if chatstatus['process']['params']['dpi'] is None:
                 chatstatus['process']['params']['dpi'] = chatstatus['config']['display']['dpi']
             if chatstatus['process']['params']['colormap'] is None:
@@ -79,14 +79,14 @@ def callSnsV3(chatstatus):
 
             if chatstatus['config']['debug']:  # Show the plotting arguments extracted from the prompt
                 display(chatstatus['process'])
-            print('Step 5') if chatstatus['config']['debug'] else None
+            log.debugLog("Step 5", chatstatus=chatstatus)
             # Attempt to create the plot
             fig, chatstatus['process']['params']['ax'] = plt.subplots(figsize=chatstatus['process']['params']['figsize'], dpi=chatstatus['process']['params']['dpi'])
             chatstatus['process']['params']['ax'] = plot_func(chatstatus['process']['params'])
-            print('Step 6') if chatstatus['config']['debug'] else None
+            log.debugLog("Step 6", chatstatus=chatstatus)
             plt.xlim(chatstatus['process']['params']['xlim'])
             plt.ylim(chatstatus['process']['params']['ylim'])
-            print('Step 7') if chatstatus['config']['debug'] else None
+            log.debugLog("Step 7", chatstatus=chatstatus)
             if chatstatus['process']['params']['despine']:
                 sns.despine()
             if chatstatus['process']['params']['title'] is not None:
@@ -103,10 +103,10 @@ def callSnsV3(chatstatus):
                 chatstatus['plottingParams'][k] = chatstatus['process']['params'][k]
 
         except Exception as e:
-            print(f"An error occurred: {e}")
+            log.debugLog(f"An error occurred: {e}", chatstatus=chatstatus)
         user_input = input("Would you like to enter new parameters? (y/n): ").strip()
         if user_input.lower() in ['y', 'yes', 'sure', 'continue']:
-            print('How would you like to modify this plot?')
+            chatstatus = log.userOutput("How would you like to modify this plot?", chatstatus=chatstatus)
             prompt = input().strip()
             if '=' in prompt:
                 newPrompt = False
@@ -205,7 +205,7 @@ def callSnsV2(chatstatus, chatlog):
         for k in chatstatus['process']['params'].keys():
             chatstatus['plottingParams'][k] = chatstatus['process']['params'][k]
     except Exception as e:
-        print(f"An error occurred: {e}")
+        log.debugLog(f"An error occurred: {e}", chatstatus=chatstatus)
 
     return chatstatus
 
@@ -269,10 +269,10 @@ def callSns(chatstatus, chatlog):
     chatstatus['process']['params']['data'] = df
 
     try:
-        print('Trying to plot')
+        log.debugLog("Trying to plot", chatstatus=chatstatus)
         ax = plot_func(chatstatus['process']['params'])
     except Exception as e:
-        print(f"An error occurred: {e}")
+        log.debugLog(f"An error occurred: {e}", chatstatus=chatstatus)
         ax = None  # or any other fallback you want to use in case of an error
 
     plt.xlim(chatstatus['process']['params']['xlim'])
@@ -885,19 +885,19 @@ def checkPlottingConfigurations(chatstatus, df):
         try:
             chatstatus['config']['display']['dpi'] = int(promptWords[loc+1])
         except ValueError:
-            print('The dpi value is unclear')
+            log.debugLog("The dpi value is unclear", chatstatus=chatstatus)
     if 'figsize' in promptWords:
         loc = promptWords.index('figsize')
         try:
             chatstatus['config']['display']['figsize'] = (int(promptWords[loc+1]), int(promptWords[loc+2]))
         except ValueError:
-            print('The figsize value is unclear')
+            log.debugLog("The figsize value is unclear, chatstatus=chatstatus)
     if 'cm' in prompt or 'colormap' in prompt:
         loc = promptWords.index('cm') if 'cm' in promptWords else promptWords.index('colormap')
         if is_valid_colormap(promptWords[loc + 1]):
             chatstatus['config']['display']['colormap'] = promptWords[loc + 1]
         else:
-            print('The colormap is unclear')
+            log.debugLog("The colormap is unclear", chatstatus=chatstatus)
     if 'ec' in promptWords or 'edgecolor' in prompt or 'edge-color' in prompt:
         if 'ec' in promptWords:
             loc = promptWords.index('ec')
@@ -908,19 +908,19 @@ def checkPlottingConfigurations(chatstatus, df):
         if is_valid_color(promptWords[loc + 1]):
             chatstatus['process']['edgecolor'] = promptWords[loc + 1]
         else:
-            print('The colormap is unclear')
+            log.debugLog("The colormap is unclear", chatstatus=chatstatus)
     if 'markersize' in promptWords:
         loc = promptWords.index('markersize')
         try:
             chatstatus['process']['markersize'] = int(promptWords[loc + 1])
         except ValueError:
-            print('The markersize value is unclear')
+            log.debugLog("The markersize value is unclear", chatstatus=chatstatus)
     if 'linewidth' in promptWords:
         loc = promptWords.index('linewidth')
         try:
             chatstatus['process']['linewidth'] = int(promptWords[loc + 1])
         except ValueError:
-            print('The linewidth value is unclear')
+            log.debugLog("The linewidth value is unclear", chatstatus=chatstatus)
     #if 'grid' in promptWords:
     #    chatstatus['process']['grid'] = not chatstatus['config']['display']['grid']
     if 'xlim' in promptWords:
@@ -928,19 +928,19 @@ def checkPlottingConfigurations(chatstatus, df):
         try:
             chatstatus['process']['xlim'] = (int(promptWords[loc + 1]), int(promptWords[loc + 2]))
         except ValueError:
-            print('The xlim value is unclear')
+            log.debugLog("The xlim value is unclear", chatstatus=chatstatus)
     if 'ylim' in promptWords:
         loc = promptWords.index('ylim')
         try:
             chatstatus['process']['ylim'] = (int(promptWords[loc + 1]), int(promptWords[loc + 2]))
         except ValueError:
-            print('The ylim value is unclear')
+            log.debugLog("The ylim value is unclear", chatstatus=chatstatus)
     if 'markerfacecolor' in promptWords:
         loc = promptWords.index('markerfacecolor')
         if is_valid_color(promptWords[loc + 1]):
             chatstatus['process']['markerfacecolor'] = promptWords[loc + 1]
         else:
-            print('The markerfacecolor is unclear')
+            log.debugLog("The markerfacecolor is unclear", chatstatus=chatstatus)
     
     if 'legend' in promptWords:
         loc = promptWords.index('legend')
@@ -951,7 +951,7 @@ def checkPlottingConfigurations(chatstatus, df):
         try:
             chatstatus['process']['fontsize'] = int(promptWords[loc + 1])
         except ValueError:
-            print('The fontsize value is unclear')
+            log.debugLog("The fontsize value is unclear", chatstatus=chatstatus)
             
     if 'bins' in promptWords:
         loc = promptWords.index('bins')
@@ -961,7 +961,7 @@ def checkPlottingConfigurations(chatstatus, df):
             try:
                 chatstatus['process']['bins'] = int(promptWords[loc - 1])
             except ValueError:
-                print('The bins value is unclear')
+                log.debugLog("The bins value is unclear", chatstatus=chatstatus)
     
     if "spine" in prompt.lower():
         chatstatus['process']['despine'] = not chatstatus['process']['despine']
@@ -997,8 +997,8 @@ def scatterplotCaller(args):
 
     """
     '''Call seaborn scatterplot function based on the Transformer input.'''
-    #print(args)
-    #print(args['data'].dtypes)
+    #log.debugLog(args, chatstatus=chatstatus)
+    #log.debugLog(args['data'].dtypes, chatstatus=chatstatus)
 
     ax = sns.scatterplot(
         data           = args['data'],
@@ -1210,8 +1210,8 @@ def barplotCaller(args):
 
     """
     '''Call seaborn barplot function based on the Transformer input.'''
-    print('Debug BarPlot')
-    print(args)
+    log.debugLog("Debug BarPlot", chatstatus=chatstatus)
+    log.debugLog(args, chatstatus=chatstatus)
     display(args['data'])
     ax = sns.barplot(
         data           = args['data'],

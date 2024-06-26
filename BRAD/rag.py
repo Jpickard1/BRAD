@@ -103,8 +103,8 @@ def queryDocs(chatstatus):
             short_source = os.path.basename(source)
             sources.append(short_source)
         sources = list(set(sources))
-        print("Sources:")
-        print('\n'.join(sources))
+        chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) 
+        chatstatus = log.userOutput(sources, chatstatus=chatstatus) 
         chatstatus['process']['sources'] = sources
         # change inputs to be json readable
         res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
@@ -120,7 +120,7 @@ def queryDocs(chatstatus):
                                         )
         prompt = getDefaultContext() + prompt
         response = conversation.predict(input=prompt)
-        print(response)
+        chatstatus = log.userOutput(response, chatstatus=chatstatus) 
         
         chatstatus['output'] = response
     return chatstatus
@@ -188,9 +188,9 @@ def contextualCompression(docs, chatstatus):
         res = chatstatus['llm'].invoke(input=prompt)
         summary = res.content.strip()
         if chatstatus['config']['debug']:
-            print('============')
-            print(pageContent)
-            print('Summary: ' + summary)
+            log.debugLog('============', chatstatus=chatstatus) 
+            log.debugLog(pageContent, chatstatus=chatstatus) 
+            log.debugLog('Summary: ' + summary, chatstatus=chatstatus) 
         doc.page_content = summary
         docs[i] = doc
     return docs
@@ -317,14 +317,11 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
     
     local = os.getcwd()  ## Get local dir
     os.chdir(local)      ## shift the work dir to local dir
-    
     print('\nWork Directory: {}'.format(local)) if v else None
 
     #%% Phase 1 - Load DB
     embeddings_model = HuggingFaceEmbeddings(model_name=HuggingFaceEmbeddingsModel)
-    
-    print('\nDocuments loading from:', docsPath) if v else None
-
+    print("\nDocuments loading from: 'str(docsPath)") if v else None
     text_loader_kwargs={'autodetect_encoding': True}
     loader = DirectoryLoader(docsPath,
                              glob="**/*.pdf",
@@ -333,7 +330,6 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
                              show_progress=True,
                              use_multithreading=True)
     docs_data = loader.load()
-
     print('\nDocuments loaded...') if v else None
 
     for i in range(len(chunk_size)):
@@ -341,10 +337,9 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
             text_splitter = RecursiveCharacterTextSplitter(chunk_size = chunk_size[i],
                                                             chunk_overlap = chunk_overlap[j],
                                                             separators=[" ", ",", "\n", ". "])
-            data_splits = text_splitter.split_documents(docs_data)
-            
-            print('Documents split into chunks...') if v else None
-            print('Initializing Chroma Database...') if v else None
+            data_splits = text_splitter.split_documents(docs_data)\
+            print("Documents split into chunks...") if v else None
+            print("Initializing Chroma Database...") if v else None
 
             dbName = "DB_cosine_cSize_%d_cOver_%d" %(chunk_size[i], chunk_overlap[j])
 
@@ -356,8 +351,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
                                              client              = _client_settings,
                                              collection_name     = dbName,
                                              collection_metadata = {"hnsw:space": "cosine"})
-
-            print('Completed Chroma Database: ', dbName) if v else None
+            log.debugLog("Completed Chroma Database: ", chatstatus=chatstatus) if v else None 
             del vectordb, text_splitter, data_splits
 
 def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus):
@@ -402,7 +396,7 @@ def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus
 
 
 def scoring_experiment(chain, docs, scores, prompt):
-    print(f"output of similarity search: {scores}")
+    log.debugLog(f"output of similarity search: {scores}", chatstatus=chatstatus) 
     candidates = []    # also llm respons (maybe remove this)
     reference = []     # hidden dodument
     document_list = [] # LLM RESPONSES
@@ -411,9 +405,9 @@ def scoring_experiment(chain, docs, scores, prompt):
         # removes one of the documents
         new_list = docs[:i] + docs[i + 1:]
         reference.append(docs[i].dict()['page_content'])
-        print(f"Masked Document: {docs[i].dict()['page_content']}\n")
+        chatstatus = log.userOutput(f"Masked Document: {docs[i].dict()['page_content']}\n", chatstatus=chatstatus) 
         res = chain({"input_documents": new_list, "question": prompt})
-        print(f"RAG response: {res['output_text']}")
+        chatstatus = log.userOutput(f"RAG response: {res['output_text']}", chatstatus=chatstatus) 
         # Add the new list to the combinations list
         candidates.append(res['output_text'])
         document_list.append(Document(page_content = res['output_text']))
@@ -427,10 +421,10 @@ def scoring_experiment(chain, docs, scores, prompt):
     new_docs, new_scores = getDocumentSimilarity(db.similarity_search_with_relevance_scores(prompt))
     
     # print results
-    print(new_scores)
+    chatstatus = log.userOutput(new_scores, chatstatus=chatstatus) 
     #scorer = BERTScorer(lang="en", rescale_with_baseline=True)
     #P, R, F1 = scorer.score(candidates, reference)
-    #print(F1)
+    #log.debugLog(F1, chatstatus=chatstatus) 
     
     
 
@@ -469,7 +463,7 @@ def best_match(prompt, title_list):
         if score > save_score:
             save_score = score
             save_title = title
-    print(f"The best match is {save_title} with a score of {save_score}")
+    log.debugLog(f"The best match is {save_title} with a score of {save_score}", chatstatus=chatstatus) 
     return save_title, save_score
 
 #Split into two methods?

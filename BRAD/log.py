@@ -22,7 +22,8 @@ def logger(chatlog, chatstatus, chatname):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
-
+    
+    
     debugLog('\n\nPLANNER:\n\n' + str(chatstatus['process']), chatstatus)
     
     process_serializable = {
@@ -92,6 +93,7 @@ def userOutput(output, chatstatus=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 20, 2024
+    
     print(output)
     if 'output' not in chatstatus.keys() or chatstatus['output'] is None:
         chatstatus['output'] = output
