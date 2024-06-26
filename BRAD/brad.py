@@ -416,6 +416,7 @@ def chat(
         chatstatus['process'] = {'module' : routeName,
                                  'steps'  : []
                             }
+        chatstatus['output'] = ""
         chatstatus = module(chatstatus)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.

@@ -185,3 +185,4 @@ Execute the HWG analysis pipeline to find first-order interactions of PCNA, usin
 "Execute the HWG analysis pipeline to find first-order interactions of PCNA, using the information gathered from Step 1. Load the output file from this analysis for use in Step 3."
 Execute the HWG analysis pipeline to find first-order interactions of PCNA, using the relevant articles retrieved in Step 1 as input. Load the output file from this analysis for further processing.
 "Execute the HWG analysis pipeline to find first-order interactions of PCNA. Load the relevant information from Step 1, including the key findings on PCNA's role in the cell cycle and cell cycle imaging, to inform the analysis."
+"Execute the HWG analysis pipeline to find first-order interactions of PCNA. Load the PCNA protein as the input and generate an output file containing the interactions. Use the summary from Step 1 to inform the input parameters for the HWG pipeline."

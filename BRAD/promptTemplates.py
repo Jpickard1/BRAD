@@ -60,7 +60,8 @@ History: {chathistory}
 Routing Decisions: {{user_query}}
 
 **OUTPUT**
-Next Step=<Step number>
+Next Step=<step number>
+REASONING=<why did you choose that step next>
 """
     return template
 

@@ -26,6 +26,7 @@ def reroute(chatstatus):
     history = ""
     for i in chatlog.keys():
         history += "========================================"
+        history += '\n'
         history += "Input: "  + chatlog[i]['prompt']  + '\n\n'
         history += "Output: " + chatlog[i]['output'] + '\n\n'
     log.debugLog(history, chatstatus=chatstatus)
@@ -36,21 +37,23 @@ def reroute(chatstatus):
     PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
     chain = PROMPT | chatstatus['llm']
     res = chain.invoke(prompt)
-
+    
     # Extract output
     log.debugLog(res, chatstatus=chatstatus)
     log.debugLog(res.content, chatstatus=chatstatus)
+    nextStep = int(res.content.split('=')[1].split('\n')[0].strip())
+    log.debugLog('Next Step=' + str(nextStep), chatstatus=chatstatus)
     chatstatus['process']['steps'].append(log.llmCallLog(
         llm     = llm,
         prompt  = template,
         input   = prompt,
         output  = res.content,
-        parsedOutput = None,
+        parsedOutput = {'next step': nextStep},
         purpose = "Route to next step in pipeline"
     ))
     
     # Modify the queued prompts
-    
+    chatstatus['queue pointer'] = nextStep
     return chatstatus
 
 def read_prompts(file_path):
