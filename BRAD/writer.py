@@ -90,7 +90,7 @@ def getProcessSummary(chatstatus, chatlog):
         if promptNumber == 'llm':
             continue
         if chatlog[promptNumber]['process']['module'] == 'PLANNER':
-            fullPlanner = str(chatlog[promptNumber]['planned'])
+            fullPlanner = str(chatlog[promptNumber]['status']['queue'])
     log.debugLog(fullPlanner, chatstatus=chatstatus) 
     template = summarizeAnalysisPipelineTemplate()
     PROMPT = PromptTemplate(input_variables=["pipeline"], template=template)

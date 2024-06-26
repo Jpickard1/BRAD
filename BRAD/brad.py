@@ -1,3 +1,15 @@
+"""
+This module provides a framework for a chatbot that interacts with various language models, databases, and software. These include literature-augmented generation, spreadsheet manipulation, web scraping, and more. The chatbot uses a combination of natural language processing models and specific task-oriented modules to handle user queries and provide relevant responses.
+
+To integrate various capabilities with `brad.py`, three features are used:
+
+    1. Semantic Routing: fast routing is used determine which module should process each user query.
+
+    2. Unified chat status: the `chatstatus` variable is used to manage language models, memory, debugging, and other configuration settings for different modules.
+
+    3. Standardized file sharing: the `utils.py` module standardizes how all data and new files are managed.
+
+"""
 # Standard
 import pandas as pd
 import numpy as np
@@ -91,6 +103,7 @@ def getModules():
         'PLANNER': planner,
         'CODE'   : codeCaller,
         'WRITE'  : summarizeSteps,
+        'ROUTER' : reroute,
     }
     return module_functions
 
@@ -186,7 +199,6 @@ def loadChatStatus():
 
     :return: A dictionary representing the chat status with initial values and loaded configuration.
     :rtype: dict
-
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -204,7 +216,8 @@ def loadChatStatus():
         'plottingParams'    : {},
         'matlabEng'         : None,
         'experiment'        : False,
-        'planned'           : []
+        'queue'             : [],
+        'queue pointer'     : 0,
     }
     return chatstatus
 
@@ -227,7 +240,7 @@ def load_literature_db(
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
-    
+
     # load database
     embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')        # Embedding model
     db_name = "DB_cosine_cSize_%d_cOver_%d" % (700, 200)
@@ -248,7 +261,6 @@ def chatbotHelp():
 
     :return: None
     :rtype: None
-
     """
     help_message = """
     Welcome to our RAG chatbot Help!
@@ -309,6 +321,7 @@ def chat(
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     config = load_config()
     base_dir = os.path.expanduser('~')
@@ -350,9 +363,7 @@ def chat(
     chatstatus['memory'] = memory
     chatstatus['databases'] = databases
     chatstatus['output-directory'] = new_log_dir
-    chatlog           = {
-        'llm'           : str(chatstatus['llm'])
-    }
+    chatlog           = {}
     if chatstatus['config']['experiment']:
         experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
         chatstatus['experiment-output'] = '-'.join(experimentName.split())
@@ -362,14 +373,14 @@ def chat(
     
     while True:
         print('==================================================')
-        if len(chatstatus['planned']) == 0:
-            chatstatus['prompt'] = input('Input >> ')                 # get query from user
-        else:
-            chatstatus['prompt'] = chatstatus['planned'][0]['prompt']
+        if len(chatstatus['queue']) != 0 and chatstatus['queue pointer'] < len(chatstatus['queue']):
+            chatstatus['prompt'] = chatstatus['queue'][chatstatus['queue pointer']]['prompt']
             output_files         = utils.outputFiles(chatstatus)
+        else:
+            chatstatus['prompt'] = input('Input >> ')                 # get query from user
         
         # Handle explicit commands and routing
-        if chatstatus['prompt'] in ['exit', 'quit', 'q', 'bye']:         # check to exit
+        if chatstatus['prompt'].lower() in ['exit', 'quit', 'q', 'bye']:         # check to exit
             break
         elif chatstatus['prompt'].lower() == 'help':              # print man to the screen
             chatbotHelp()
@@ -407,17 +418,18 @@ def chat(
         chatstatus['process'] = {'module' : routeName,
                                  'steps'  : []
                             }
+        chatstatus['output'] = ""
         chatstatus = module(chatstatus)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
         log.debugLog('\n\n\nroute\n\n\n', chatstatus=chatstatus)
         log.debugLog(route, chatstatus=chatstatus)
-        if len(chatstatus['planned']) != 0 and route != 'PLANNER':
-            log.debugLog(chatstatus['planned'], chatstatus=chatstatus)
+        if len(chatstatus['queue']) != 0 and route != 'PLANNER':
+            log.debugLog(chatstatus['queue'], chatstatus=chatstatus)
             new_output_files = utils.outputFiles(chatstatus)
             new_output_files = list(set(new_output_files).difference(set(output_files)))
             chatstatus = utils.makeNamesConsistent(chatstatus, new_output_files)
-            chatstatus['planned'].pop(0)
+            chatstatus['queue pointer'] += 1
         
         # Log and reset these values
         chatlog, chatstatus = log.logger(chatlog, chatstatus, chatname)
@@ -425,6 +437,23 @@ def chat(
     chatstatus = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + chatname, chatstatus=chatstatus)
 #removes repeat chunks in vectordb
 def remove_repeats(vectordb):
+    """
+    Removes repeated chunks in the provided vector database.
+
+    This function identifies duplicate documents in the vector database and removes
+    the repeated entries, keeping only the last occurrence of each duplicated document.
+
+    :param vectordb: The vector database from which repeated documents should be removed.
+    :type vectordb: An instance of a vector database class with 'get' and 'delete' methods.
+
+    :raises KeyError: If the vector database does not contain 'ids' or 'documents' keys.
+
+    :return: The updated vector database with duplicate documents removed.
+    :rtype: An instance of the vector database class.
+    """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+    # Date: June 18, 2024
     df = pd.DataFrame({'id' :vectordb.get()['ids'] , 'documents' : vectordb.get()['documents']})
     repeated_ids = df[df.duplicated(subset='documents', keep='last')]['id'].tolist()
     if len(repeated_ids) > 0:

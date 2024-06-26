@@ -11,13 +11,43 @@ from BRAD import log
 from BRAD.promptTemplates import fileChooserTemplate, fieldChooserTemplate
 
 def save(chatstatus, data, name):
+    """
+    Save data to a specified output directory, with optional stage number prefix.
+
+    This function saves the provided data to a specified output directory within 
+    the `chatstatus` configuration. If the `chatstatus` is part of a pipeline, 
+    it prefixes the filename with the current stage number.
+
+    Args:
+        chatstatus (dict): A dictionary containing the current chat status, 
+                           including queued pipeline stages and output directory.
+        data (pd.DataFrame or str): The data to be saved. It can be either a 
+                                    pandas DataFrame (for CSV output) or a string (for .tex output).
+        name (str): The name of the output file.
+
+    Returns:
+        dict: The updated `chatstatus` dictionary with information about the saved file.
+
+    Raises:
+        ValueError: If the data type is not a DataFrame for CSV or a string for .tex files.
+
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'queue': [{'order': 1}],
+    >>>     'output-directory': '/path/to/output',
+    >>>     'process': {'steps': []}
+    >>> }
+    >>> data = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})
+    >>> save(chatstatus, data, 'results.csv')
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
 
     # If this is part of a pipeline, then add the stage number to the printed output
-    if len(chatstatus['planned']) != 0:
-        stageNum = chatstatus['planned'][0]['order']
+    if len(chatstatus['queue']) != 0:
+        stageNum = chatstatus['queue pointer'] + 1#[0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], name)
 
@@ -39,12 +69,39 @@ def save(chatstatus, data, name):
     return chatstatus
 
 def savefig(chatstatus, ax, name):
+    """
+    Save a matplotlib figure to a specified output directory, with optional stage number prefix.
+
+    This function saves the provided matplotlib axis (`ax`) as a figure to a specified 
+    output directory within the `chatstatus` configuration. If the `chatstatus` is part 
+    of a pipeline, it prefixes the filename with the current stage number.
+
+    Args:
+        chatstatus (dict): A dictionary containing the current chat status, including 
+                           queued pipeline stages and output directory.
+        ax (matplotlib.axes.Axes): The matplotlib axis object containing the figure to be saved.
+        name (str): The name of the output file.
+
+    Returns:
+        dict: The updated `chatstatus` dictionary with information about the saved file.
+
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'queue': [{'order': 1}],
+    >>>     'output-directory': '/path/to/output',
+    >>>     'config': {'image-path-extension': 'images'},
+    >>>     'process': {'steps': []}
+    >>> }
+    >>> fig, ax = plt.subplots()
+    >>> savefig(chatstatus, ax, 'figure.png')
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
     log.debugLog("SAVEFIG", chatstatus=chatstatus)
-    if len(chatstatus['planned']) != 0:
-        stageNum = chatstatus['planned'][0]['order']
+    if len(chatstatus['queue']) != 0:
+        stageNum = chatstatus['queue pointer'] + 1 # [0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], chatstatus['config']['image-path-extension'], name)
     ensure_directory_exists(output_path)
@@ -59,6 +116,24 @@ def savefig(chatstatus, ax, name):
     return chatstatus
 
 def ensure_directory_exists(file_path):
+    """
+    Ensure that the directory for a given file path exists, creating it if necessary.
+
+    This function checks if the directory path for the provided `file_path` exists.
+    If the directory does not exist, it creates the directory. It prints a message
+    indicating whether the directory was created or if it already existed.
+
+    Args:
+        file_path (str): The full file path for which the directory needs to be checked/created.
+
+    Example
+    -------
+    >>> ensure_directory_exists('/path/to/output/figure.png')
+    >>> # If the directory '/path/to/output' does not exist, it will be created.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 23, 2024
     directory_path = os.path.dirname(file_path)
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
@@ -68,6 +143,26 @@ def ensure_directory_exists(file_path):
 
 
 def pdfDownloadPath(chatstatus):
+    """
+    Generate the file path for downloading PDF files.
+
+    This function constructs the file path for downloading PDF files based on the 
+    `output-directory` specified in the `chatstatus` dictionary. It appends 'pdf'
+    to the output directory path to indicate the location where PDF files should be saved.
+
+    Args:
+        chatstatus (dict): A dictionary containing the chat status and configuration details.
+                           It must include the key 'output-directory'.
+
+    Returns:
+        str: The complete file path for downloading PDF files.
+
+    Example
+    -------
+    >>> chatstatus = {'output-directory': '/path/to/output'}
+    >>> pdf_path = pdfDownloadPath(chatstatus)
+    >>> # pdf_path will be '/path/to/output/pdf'
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
@@ -75,6 +170,27 @@ def pdfDownloadPath(chatstatus):
     return path
 
 def outputFiles(chatstatus):
+    """
+    Retrieve a list of all files in the output directory.
+
+    This function lists all files present in the `output-directory` specified in the 
+    `chatstatus` dictionary and returns them as a list.
+
+    Args:
+        chatstatus (dict): A dictionary containing the chat status and configuration details.
+                           It must include the key 'output-directory'.
+
+    Returns:
+        list: A list of filenames present in the output directory.
+
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'output-directory': '/path/to/output'
+    >>> }
+    >>> files = outputFiles(chatstatus)
+    >>> # files will be a list of filenames in '/path/to/output'
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
@@ -84,13 +200,39 @@ def outputFiles(chatstatus):
     return output_files
 
 def makeNamesConsistent(chatstatus, files):
+    """
+    Ensure filenames in the output directory are consistent with the pipeline stage numbering.
+
+    This function renames files in the output directory to include the current stage number
+    from the pipeline. If a file's name does not start with 'S', it will be prefixed with the 
+    stage number. Additionally, it removes any '/' or '\\' characters from filenames.
+
+    Args:
+        chatstatus (dict): A dictionary containing the chat status and configuration details.
+                           It must include the keys 'queue' and 'output-directory'.
+        files (list): A list of filenames to be processed.
+
+    Returns:
+        dict: Updated chatstatus with renamed files logged in 'process' steps.
+
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'queue': [{'order': 1}],
+    >>>     'output-directory': '/path/to/output',
+    >>>     'process': {'steps': []}
+    >>> }
+    >>> files = ['file1.txt', 'file2.txt']
+    >>> updated_chatstatus = makeNamesConsistent(chatstatus, files)
+    >>> # Files will be renamed to include the stage number and logged in chatstatus['process']['steps']
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    if len(chatstatus['planned']) != 0:
+    if len(chatstatus['queue']) != 0:
         log.debugLog('Finding Stage Number of Pipeline', chatstatus=chatstatus)
-        log.debugLog(chatstatus['planned'], chatstatus=chatstatus)
-        stageNum = chatstatus['planned'][0]['order'] + 1
+        log.debugLog(chatstatus['queue'], chatstatus=chatstatus)
+        stageNum = chatstatus['queue pointer'] # [0]['order'] + 1
     else:
         return
     renamedFiles = []
@@ -110,13 +252,14 @@ def makeNamesConsistent(chatstatus, files):
     for file in outputFiles(chatstatus):
         old_path = os.path.join(chatstatus['output-directory'], file)
         new_path = os.path.join(chatstatus['output-directory'], file.replace('/', '').replace('\\', ''))
-        renamedFiles.append(
-            {
-                'old-name' : old_path,
-                'new-name' : new_path
-            }
-        )
-        os.rename(old_path, new_path)
+        if old_path != new_path:
+            renamedFiles.append(
+                {
+                    'old-name' : old_path,
+                    'new-name' : new_path
+                }
+            )
+            os.rename(old_path, new_path)
     chatstatus['process']['steps'].append(
         {
             'func'  : 'utils.makeNamesConsistent',
@@ -126,6 +269,30 @@ def makeNamesConsistent(chatstatus, files):
     return chatstatus
 
 def loadFromFile(chatstatus):
+    """
+    Loads data from a file selected by an LLM prompt based on user input.
+
+    This function interacts with a language model to select a file from available files
+    in the output directory. It extracts the specified fields from the selected file 
+    and returns the data along with updated chat status.
+
+    Args:
+        chatstatus (dict): A dictionary containing the chat status and configuration details.
+                           It must include the keys 'prompt', 'llm', and 'output-directory'.
+
+    Returns:
+        tuple: Updated chatstatus dictionary and a list of values from the specified fields in the file.
+
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'prompt': 'Choose a file containing gene expression data.',
+    >>>     'llm': your_language_model_instance,
+    >>>     'output-directory': '/path/to/output',
+    >>>     'process': {'steps': []}
+    >>> }
+    >>> updated_chatstatus, field_values = loadFromFile(chatstatus)
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
@@ -194,6 +361,31 @@ def loadFromFile(chatstatus):
     return chatstatus, list(df[fields].values)
 
 def fieldSelectorFromDataFrame(chatstatus, df):
+    """
+    Selects a field from a DataFrame using a language model prompt.
+
+    This function uses a language model to select a specific field from the columns of a given DataFrame.
+    It builds a prompt with the available columns, invokes the language model, and parses the response to
+    determine the selected field.
+
+    Args:
+        chatstatus (dict): A dictionary containing the chat status and configuration details.
+                           It must include the keys 'llm', 'prompt', and 'process'.
+        df (pandas.DataFrame): The DataFrame from which a field will be selected.
+
+    Returns:
+        tuple: Updated chatstatus dictionary and the selected field as a string.
+
+    Example
+    -------
+    >>> chatstatus = {
+    >>>     'prompt': 'Choose a column for analysis.',
+    >>>     'llm': your_language_model_instance,
+    >>>     'process': {'steps': []}
+    >>> }
+    >>> df = pd.DataFrame({'Gene': ['BRCA1', 'TP53'], 'Expression': [5.6, 8.2]})
+    >>> updated_chatstatus, selected_field = fieldSelectorFromDataFrame(chatstatus, df)
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
@@ -222,9 +414,53 @@ def fieldSelectorFromDataFrame(chatstatus, df):
     return chatstatus, fields
 
 def word_similarity(word1, word2):
+    """
+    Calculate the similarity ratio between two words using SequenceMatcher.
+
+    This function computes the similarity ratio between two input words. The ratio is calculated
+    based on the longest contiguous matching subsequence between the two words using the
+    `difflib.SequenceMatcher` from the Python standard library.
+
+    Args:
+        word1 (str): The first word to compare.
+        word2 (str): The second word to compare.
+
+    Returns:
+        float: A float value between 0 and 1 representing the similarity ratio. A value of 1.0 means the words
+               are identical, while 0.0 means they are completely different.
+
+    Example
+    -------
+    >>> similarity = word_similarity("apple", "apples")
+    >>> print(similarity)  # Output might be a high value close to 1.0
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 23, 2024
     return difflib.SequenceMatcher(None, word1, word2).ratio()
 
 def outputFromPriorStep(chatstatus, step, values=None):
+    """
+    Retrieve the output from a prior step in the pipeline.
+
+    .. warning:: We may be removing this function soon.
+
+    This function searches for and loads the output file corresponding to a specified step in the pipeline.
+    If the file is a CSV, it loads the data into a DataFrame. Optionally, specific columns can be selected from the DataFrame.
+
+    Args:
+        chatstatus (dict): The dictionary containing the current status and configuration of the chat, including the output directory.
+        step (str): The step number as a string to identify the specific output file.
+        values (list, optional): A list of column names to select from the DataFrame. If None, all columns are returned.
+
+    Returns:
+        pandas.DataFrame: The DataFrame containing the data from the output file of the specified step. If specific columns are provided, only those columns are included.
+
+    Example
+    -------
+    >>> df = outputFromPriorStep(chatstatus, "2", values=["gene", "expression"])
+    >>> print(df)
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
@@ -247,7 +483,29 @@ def outputFromPriorStep(chatstatus, step, values=None):
     return df
 
 def compile_latex_to_pdf(chatstatus, tex_file):
-    """This function converts .tex files to .pdf files."""
+    """
+    Compile a LaTeX (.tex) file into a PDF using pdflatex.
+
+    This function compiles a LaTeX file into a PDF by running pdflatex command with the specified output directory.
+
+    Args:
+        chatstatus (dict): The dictionary containing the current status and configuration of the chat, including the output directory.
+        tex_file (str): The filename of the LaTeX file (including the .tex extension) to compile.
+
+    Returns:
+        dict: Updated chatstatus dictionary after attempting to compile the LaTeX file.
+
+    Raises:
+        FileNotFoundError: If the specified LaTeX file does not exist.
+
+    Example
+    -------
+    >>> chatstatus = {'output-directory': '/path/to/output'}
+    >>> chatstatus = compile_latex_to_pdf(chatstatus, 'report.tex')
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 23, 2024
     tex_file_path = os.path.join(chatstatus['output-directory'], tex_file)
     
     # Ensure the file exists
@@ -267,6 +525,31 @@ def compile_latex_to_pdf(chatstatus, tex_file):
     return chatstatus
 
 def load_file_to_dataframe(filename):
+    """
+    Load a file into a Pandas DataFrame based on its extension.
+
+    This function reads a CSV or TSV file into a Pandas DataFrame based on the file extension.
+
+    Parameters
+    ----------
+        filename (str): The path to the file to load.
+
+    Returns
+    -------
+        pd.DataFrame or None: The loaded DataFrame if successful, or None if the file extension is not supported.
+
+    Example
+    -------
+    >>> df = load_file_to_dataframe('data.csv')
+    >>> if df is not None:
+    >>>     print(df.head())
+    >>> else:
+    >>>     print("Unsupported file format.")
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 23, 2024
+
     # Determine the file extension
     _, file_extension = os.path.splitext(filename)
     

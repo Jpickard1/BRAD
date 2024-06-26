@@ -42,8 +42,9 @@ def logger(chatlog, chatstatus, chatname):
                     'tab'       : chatstatus['current table']['tab'].to_json() if chatstatus['current table']['tab'] is not None else None,
                 },
             'current documents' : chatstatus['current documents'],
+            'queue pointer'     : chatstatus['queue pointer'],
+            'queue'             : chatstatus['queue'].copy()
         },
-        'planned' : chatstatus['planned'].copy()
     }
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
@@ -79,10 +80,13 @@ def debugLog(output, chatstatus=None, display=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     if display:
         logging.info(output)
-    else:
-        logging.info(output) if chatstatus['config']['debug'] else None
+    elif chatstatus['config']['debug'] or chatstatus['config']['debug'].lower() == 'true':
+        logging.info(output)
+        print('DEBUG')
+        print(output)
 
 def userOutput(output, chatstatus=None):
     """This function standardizes how information is printed to the user and allows for logging"""
@@ -91,11 +95,10 @@ def userOutput(output, chatstatus=None):
     # Date: June 20, 2024
     
     print(output)
-    
-    if chatstatus['process']['output'] is None:
-        chatstatus['process']['output'] = output
+    if 'output' not in chatstatus.keys() or chatstatus['output'] is None:
+        chatstatus['output'] = output
     else:
-        chatstatus['process']['output'] += output
+        chatstatus['output'] += output
     return chatstatus
 
 def is_json_serializable(value):

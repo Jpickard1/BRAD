@@ -12,8 +12,8 @@ This is where the welcome/project description will go!
    :maxdepth: 10
    :caption: Contents:
 
-   userGuide
    about
+   userGuide
    devGuide
 
 

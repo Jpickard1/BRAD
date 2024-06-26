@@ -1,7 +1,60 @@
+"""
+Module for managing routes using the semantic_router library. This module includes functions
+for reading and writing prompts, configuring routes, and building router layers with predefined routes.
+"""
 import os
+import json
 from semantic_router import Route
 from semantic_router.layer import RouteLayer
 from semantic_router.encoders import HuggingFaceEncoder
+
+from langchain.prompts import PromptTemplate
+from langchain_core.prompts.prompt import PromptTemplate
+
+from BRAD.promptTemplates import rerouteTemplate
+from BRAD import log
+
+def reroute(chatstatus):
+    print('Call to REROUTER')
+    log.debugLog('Call to REROUTER', chatstatus=chatstatus)
+    llm = chatstatus['llm']
+    prompt = chatstatus['prompt']
+    queue  = chatstatus['queue']
+
+    # Build chat history
+    chatlog = json.load(open(os.path.join(chatstatus['output-directory'], 'log.json')))
+    history = ""
+    for i in chatlog.keys():
+        history += "========================================"
+        history += '\n'
+        history += "Input: "  + chatlog[i]['prompt']  + '\n\n'
+        history += "Output: " + chatlog[i]['output'] + '\n\n'
+    log.debugLog(history, chatstatus=chatstatus)
+    
+    # Put history into the conversation
+    template = rerouteTemplate()
+    template = template.format(chathistory=history)
+    PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
+    chain = PROMPT | chatstatus['llm']
+    res = chain.invoke(prompt)
+    
+    # Extract output
+    log.debugLog(res, chatstatus=chatstatus)
+    log.debugLog(res.content, chatstatus=chatstatus)
+    nextStep = int(res.content.split('=')[1].split('\n')[0].strip())
+    log.debugLog('Next Step=' + str(nextStep), chatstatus=chatstatus)
+    chatstatus['process']['steps'].append(log.llmCallLog(
+        llm     = llm,
+        prompt  = template,
+        input   = prompt,
+        output  = res.content,
+        parsedOutput = {'next step': nextStep},
+        purpose = "Route to next step in pipeline"
+    ))
+    
+    # Modify the queued prompts
+    chatstatus['queue pointer'] = nextStep
+    return chatstatus
 
 def read_prompts(file_path):
     """
@@ -44,51 +97,23 @@ def add_sentence(file_path, sentence):
         file.write(sentence.strip() + '\n')
 
 def getRouterPath(file):
+    """
+    Constructs and returns the absolute path to a file located in the 'routers' directory.
+
+    This function determines the current script's directory and constructs the absolute path 
+    to a specified file within the 'routers' subdirectory.
+
+    :param file: The name of the file whose path is to be constructed.
+    :type file: str
+
+    :return: The absolute path to the specified file in the 'routers' directory.
+    :rtype: str
+    """
     current_script_path = os.path.abspath(__file__)
     current_script_dir = os.path.dirname(current_script_path)
     file_path = os.path.join(current_script_dir, 'routers', file) #'enrichr.txt')
     return file_path
     
-routeGget = Route(
-    name = 'GGET',
-    utterances = read_prompts(getRouterPath('enrichr.txt'))
-)
-routeScrape = Route(
-    name = 'SCRAPE',
-    utterances = read_prompts(getRouterPath('scrape.txt'))
-)
-routeRAG = Route(
-    name = 'RAG',
-    utterances = read_prompts(getRouterPath('rag.txt'))
-)
-routeTable = Route(
-    name = 'TABLE',
-    utterances = read_prompts(getRouterPath('table.txt'))
-)
-routeData = Route(
-    name = 'DATA',
-    utterances = read_prompts(getRouterPath('data.txt'))
-)
-routeMATLAB = Route(
-    name = 'MATLAB',
-    utterances = read_prompts(getRouterPath('matlab.txt'))
-)
-routePython = Route(
-    name = 'PYTHON',
-    utterances = read_prompts(getRouterPath('python.txt'))
-)
-routePlanner = Route(
-    name = 'PLANNER',
-    utterances = read_prompts(getRouterPath('planner.txt'))
-)
-routeCode = Route(
-    name = 'CODE',
-    utterances = read_prompts(getRouterPath('code.txt'))
-)
-routeCode = Route(
-    name = 'WRITE',
-    utterances = read_prompts(getRouterPath('write.txt'))
-)
 def getRouter():
     """
     Returns a router layer configured with predefined routes for various tasks.
@@ -101,8 +126,63 @@ def getRouter():
     :rtype: RouteLayer
 
     """
+    routeGget = Route(
+        name = 'GGET',
+        utterances = read_prompts(getRouterPath('enrichr.txt'))
+    )
+    routeScrape = Route(
+        name = 'SCRAPE',
+        utterances = read_prompts(getRouterPath('scrape.txt'))
+    )
+    routeRAG = Route(
+        name = 'RAG',
+        utterances = read_prompts(getRouterPath('rag.txt'))
+    )
+    routeTable = Route(
+        name = 'TABLE',
+        utterances = read_prompts(getRouterPath('table.txt'))
+    )
+    routeData = Route(
+        name = 'DATA',
+        utterances = read_prompts(getRouterPath('data.txt'))
+    )
+    routeMATLAB = Route(
+        name = 'MATLAB',
+        utterances = read_prompts(getRouterPath('matlab.txt'))
+    )
+    routePython = Route(
+        name = 'PYTHON',
+        utterances = read_prompts(getRouterPath('python.txt'))
+    )
+    routePlanner = Route(
+        name = 'PLANNER',
+        utterances = read_prompts(getRouterPath('planner.txt'))
+    )
+    routeCode = Route(
+        name = 'CODE',
+        utterances = read_prompts(getRouterPath('code.txt'))
+    )
+    routeWrite = Route(
+        name = 'WRITE',
+        utterances = read_prompts(getRouterPath('write.txt'))
+    )
+    routeRoute = Route(
+        name = 'ROUTER',
+        utterances = read_prompts(getRouterPath('router.txt'))
+    )
     encoder = HuggingFaceEncoder()
-    routes = [routeGget, routeScrape, routeTable, routeRAG]
+    routes = [routeGget,
+              routeScrape,
+              routeTable,
+              routeRAG,
+              routeData,
+              routeMATLAB,
+              routePython,
+              routePlanner,
+              routeCode,
+              routeWrite,
+              routeRoute
+             ]
     router = RouteLayer(encoder=encoder, routes=routes)    
     return router
 
@@ -140,14 +220,16 @@ def buildRoutes(prompt):
         'PYTHON'  : getRouterPath('python.txt'),
         'PLANNER' : getRouterPath('planner.txt'),
         'CODE'    : getRouterPath('code.txt'),
-        'WRITE'   : getRouterPath('write.txt')
+        'WRITE'   : getRouterPath('write.txt'),
+        'ROUTER'  : getRouterPath('router.txt')
     }
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)
-    
 
 def getTableRouter():
     """
+    .. warning:: We may be removing this soon. I don't think it is used.
+
     Returns a router layer configured specifically for handling table-related tasks.
 
     :param None: This function does not take any parameters.
