@@ -64,7 +64,7 @@ def callMatlab(chatstatus):
 
     # Turn on matlab engine just before running the code
     chatstatus, mpath = activateMatlabEngine()
-    log.debugLog("Matlab PATH Extended, chatstatus=chatstatus)
+    log.debugLog("Matlab PATH Extended", chatstatus=chatstatus)
     
     # Identify matlab files we are adding to the path of BRAD
     matlabFunctions = find_matlab_files(matlabPath)

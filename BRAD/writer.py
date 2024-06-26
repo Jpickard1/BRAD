@@ -157,12 +157,12 @@ def databaseReporter(chatlogStep, chatstatus):
     res = chain.invoke(prompt)
     processSummary   = res.content.split('=')[1].strip().replace('_', '\_')
     databaseTex += processSummary
-    databaseTex += addFigures(chatlogStep)
-    databaseTex += addTables(chatlogStep)
+    databaseTex += addFigures(chatlogStep, chatstatus)
+    databaseTex += addTables(chatlogStep, chatstatus)
     
     return databaseTex
 
-def addFigures(chatlogStep):
+def addFigures(chatlogStep, chatstatus):
     """Add figures to the latex output file"""
     figureTex = ""
     for step in chatlogStep['process']['steps']:
@@ -177,7 +177,7 @@ def addFigures(chatlogStep):
 # \\caption{\\textbf{""" +step['new file'] + """}}
 # \\label{fig:enter-label}
 
-def addTables(chatlogStep):
+def addTables(chatlogStep, chatstatus):
     """Add tables to the latex output file"""
     tableTex = ""
     df = None

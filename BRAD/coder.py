@@ -27,6 +27,7 @@ from langchain.memory import ConversationBufferMemory
 from BRAD.matlabCaller import find_matlab_files, get_matlab_description, read_matlab_docstrings, matlabPromptTemplate, activateMatlabEngine, extract_matlab_code, execute_matlab_code
 from BRAD.pythonCaller import find_py_files, get_py_description, read_python_docstrings, pythonPromptTemplate, extract_python_code, execute_python_code
 from BRAD.promptTemplates import scriptSelectorTemplate
+from BRAD import log
 
 def codeCaller(chatstatus):
     """

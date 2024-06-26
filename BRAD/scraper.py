@@ -27,6 +27,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 
 from BRAD import utils
+from BRAD import log
 
 def webScraping(chatstatus):
     """
@@ -585,7 +586,7 @@ def create_db(query, query2):
                                     client = _client_settings,
                                     collection_name = db_name,
                                     collection_metadata={"hnsw:space": "cosine"})
-            log.debugLog('Completed Chroma Database: ' + str(db_name)), chatstatus=chatstatus)
+            log.debugLog('Completed Chroma Database: ' + str(db_name), chatstatus=chatstatus)
             del vectordb, text_splitter, data_splits
 
 

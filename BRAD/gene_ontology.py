@@ -7,6 +7,7 @@ import requests
 from requests.exceptions import ConnectionError
 import os
 import copy
+from BRAD import log
 
 def geneOntology(chatstatus, goQuery):
     """
@@ -211,7 +212,7 @@ def pubmedPaper(identifier):
                         pdf_url = r.html.find('a.id-link', first=True).attrs['href']
                         chatstatus = log.userOutput(pdf_url, chatstatus=chatstatus)
                         if "doi" in pdf_url:
-                            chatstatus = log.userOutput(Not public, chatstatus=chatstatus)
+                            chatstatus = log.userOutput("Not public", chatstatus=chatstatus)
                             continue
                         r = s.get(pdf_url, headers = headers, timeout = 5)
                         pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']

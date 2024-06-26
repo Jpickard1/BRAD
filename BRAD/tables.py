@@ -34,7 +34,7 @@ from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
-
+from BRAD import log
 
 def manipulateTable(chatstatus):
     """
