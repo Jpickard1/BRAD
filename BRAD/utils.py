@@ -561,3 +561,14 @@ def load_file_to_dataframe(filename):
         return None
     
     return df
+
+def find_integer_in_string(text):
+    # Find all sequences of digits in the text
+    match = re.search(r'\d+', text)
+    
+    if match:
+        # Convert the found string to an integer
+        return int(match.group(0))
+    else:
+        # Return None if no integer is found
+        return None

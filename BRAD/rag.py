@@ -53,6 +53,7 @@ import re
 
 import BRAD.gene_ontology as gonto
 from BRAD.gene_ontology import geneOntology
+from BRAD import utils
 from BRAD import log
 
 def queryDocs(chatstatus):
@@ -303,6 +304,8 @@ Prompt: """
 
 def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunck_overlap=[200], v=False):
     """
+    .. note: This funciton is not called by the chatbot. Instead, it is required that the user build the database prior to using the chat.
+    
     Create a Chroma database from PDF documents.
 
     Args:

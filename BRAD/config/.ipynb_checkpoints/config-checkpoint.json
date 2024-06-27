@@ -3,12 +3,13 @@
         "num_articles_retrieved": 3,
     	"multiquery": false,
 	    "contextual_compression": false,
-        "rerank" : false
+        "rerank" : false,
+        "add_from_scrape" : true,
     },
     "max_articles_download": 10,
     "acceptable_data_files": [
         ".csv",
-	".tsv"
+    	".tsv"
     ],
     "max_enrichr_pval": 0.5,
     "enable_logging": true,

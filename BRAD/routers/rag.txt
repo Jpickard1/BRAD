@@ -285,3 +285,26 @@ Use the RAG method to search literature and documents from a text database, focu
 "Use the RAG method to search the literature for the role of PCNA in the cell cycle and cell cycle imaging. Provide a brief summary of the key findings."
 Use RAG to search literature and documents from a text database to answer the question "What role does PCNA play in the cell cycle and cell cycle imaging?" and return relevant abstracts and information.
 Use RAG to search the literature for "What role does PCNA play in the cell cycle and cell cycle imaging?" and retrieve relevant documents and abstracts.
+Search the RAG database for information related to the cell cycle and Pip-fucci imaging system. Evaluate the confidence of the answer and store the result. If the confidence is low, proceed to Step 2.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the search query from Step 1 as input. Store the updated database.
+Search the RAG database for information related to the cell cycle and Pip-fucci imaging system. If the confidence in the answer is below a certain threshold (e.g. 0.7), proceed to Step 2. Otherwise, go to Step 5.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the keywords "cell cycle" and "Pip-fucci imaging system" to filter the search results. Once the scraping is complete, proceed to Step 3.
+Search the RAG database for information related to the cell cycle and Pip-fucci imaging system. Evaluate the confidence of the answer and store the result. If the confidence is low, proceed to Step 2.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the search terms from Step 1 as input. Store the updated information in the RAG database.
+Search literature databases to explain the PCNA in the cell cycle and pip Fucci system.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Fucci system?" and provide a brief summary of the results.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and the pip Fucci system. Provide a summary of the findings.
+Search literature databases to explain the PCNA in the cell cycle and pip Fucci system.
+Search literature databases for information on PCNA in the cell cycle and the pip Fucci system. Provide a summary of the key findings.
+Use RAG to search the text database for information on PCNA in the cell cycle and pip Fucci system. Retrieve relevant documents and summarize the key findings.
+Search the literature database to gather information on PCNA's role in the cell cycle and pip Fucci system. Provide a summary of the results.
+Use RAG to search the text database for information on PCNA in the cell cycle and pip Fucci system. Retrieve relevant literature and documents.
+Search the literature database to find information on PCNA's role in the cell cycle and pip Fucci system. Return relevant results and summaries to proceed to the next step.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip-Fucci system?" and return the results.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Look up literature and documents from a text database to explain what PCNA is in the cell cycle and the pip Fucci system.
+Search the literature database to gather information on PCNA's role in the cell cycle and pip Fucci system. Provide a summary of the results.
+Look up literature and documents from a text database to explain what PCNA is in the cell cycle and the pip Fucci system.
+Look up literature and documents from a text database to find information about PCNA in the cell cycle and the pip Fucci system.
+Look up literature and documents from a text database to explain what PCNA is in the cell cycle and the pip Fucci system.
+Use RAG to search the text database for information on PCNA in the cell cycle and pip Fucci system, providing a brief summary of the findings.

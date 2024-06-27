@@ -181,3 +181,15 @@ Evaluate the confidence level from Step 1. If the confidence level is high (> 0.
 Use SCRAPE to search platforms like arXiv, bioRxiv, and PubMed for the latest research articles related to MYOD and cellular reprogramming. Retrieve a list of relevant article titles and abstracts.
 Search arXiv, bioRxiv, and PubMed for latest research articles related to MYOD and cellular reprogramming.
 Based on the confidence level from Step 1, decide whether to proceed to Step 5 (WRITE) or Step 3 (SCRAPE). If the confidence level is high, proceed to Step 5. If not, proceed to Step 3.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the search query from Step 1 as input. Store the updated database.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the keywords "cell cycle" and "Pip-fucci imaging system" to filter the search results. Once the scraping is complete, proceed to Step 3.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the search terms from Step 1 as input. Store the updated information in the RAG database.
+Use SCRAPE to search bioRxiv for recent research articles related to the cell cycle. Use the keywords and concepts retrieved from Step 1 to refine the search.
+Search bioRxiv for the latest research articles related to the cell cycle. Return a list of relevant articles to proceed to the next step.
+Search bioRxiv for recent research articles related to the cell cycle using SCRAPE, and return a list of relevant articles.
+Search bioRxiv for the latest research articles related to cell cycle. Use the keywords "cell cycle" and "PCNA" to narrow down the search results.
+Search bioRxiv for the latest research articles related to the cell cycle. Retrieve a list of relevant articles and their abstracts.
+Search bioRxiv for the latest research articles related to cell cycle. Use the keywords obtained from Step 1 to refine the search.
+Search bioRxiv for the latest research articles related to cell cycle, using keywords extracted from the information gathered in Step 1.
+Search PubMed for the latest research articles related to cell cycle, using the information gathered in Step 1 as context.
+Use SCRAPE to search PubMed for recent research articles related to the cell cycle, considering the information gathered in Step 1.
