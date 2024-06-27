@@ -193,3 +193,8 @@ Search bioRxiv for the latest research articles related to cell cycle. Use the k
 Search bioRxiv for the latest research articles related to cell cycle, using keywords extracted from the information gathered in Step 1.
 Search PubMed for the latest research articles related to cell cycle, using the information gathered in Step 1 as context.
 Use SCRAPE to search PubMed for recent research articles related to the cell cycle, considering the information gathered in Step 1.
+Search PubMed for the latest research articles related to the cell cycle. Retrieve a list of relevant articles and their abstracts.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle and retrieve a list of relevant publications.
+Use SCRAPE to search PubMed for the latest research articles related to cell cycle.
+Use SCRAPE to search PubMed for the latest research articles related to cell cycle.

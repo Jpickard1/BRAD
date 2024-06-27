@@ -308,3 +308,10 @@ Look up literature and documents from a text database to explain what PCNA is in
 Look up literature and documents from a text database to find information about PCNA in the cell cycle and the pip Fucci system.
 Look up literature and documents from a text database to explain what PCNA is in the cell cycle and the pip Fucci system.
 Use RAG to search the text database for information on PCNA in the cell cycle and pip Fucci system, providing a brief summary of the findings.
+Search the literature database to gather information on PCNA (Proliferating Cell Nuclear Antigen) in the cell cycle and its relation to the Fucci system. Provide a brief summary of the findings.
+Use RAG to search the literature and documents from a text database to answer the question: "What is the PCNA in the cell cycle and pip Fucci system?"
+Use RAG to search the literature and documents from a text database to answer the question: "What is the PCNA in the cell cycle and pip Fucci system?" and provide a detailed explanation.
+Search the literature database to find information on PCNA's role in the cell cycle and pip fucci system. Return the relevant results and evaluation of their quality.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip-Fucci system?" and provide a brief summary.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip Fucci system?"
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip Fucci system?"

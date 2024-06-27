@@ -98,3 +98,9 @@ Evaluate the quality of the information obtained in Step 1. If the answer is goo
 Evaluate the quality of the information gathered in Step 1. If the information is sufficient, proceed to Step 5. Otherwise, proceed to Step 3.
 Evaluate the quality of the information gathered in Step 1. If the answer is good, proceed to Step 5. Otherwise, proceed to Step 3.
 Evaluate the quality of the summary generated in Step 1. If it's satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the information gathered in Step 1. If the information is sufficient, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the response from Step 1. If the response is satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the result from Step 1. If the result is satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Always return to Step 1, regardless of the outcome.
+Always return to Step 1, regardless of the outcome.
