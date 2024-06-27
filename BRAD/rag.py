@@ -103,7 +103,7 @@ def queryDocs(chatstatus):
         sources = []
         for doc in docs:
             source = doc.metadata.get('source')
-            short_source = os.path.basename(source)
+            short_source = os.path.basename(str(source))
             sources.append(short_source)
         sources = list(set(sources))
         chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) 

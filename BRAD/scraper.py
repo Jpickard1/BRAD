@@ -104,8 +104,8 @@ def webScraping(chatstatus):
     if chatstatus['config']['RAG']['add_from_scrape']:
         chatstatus = updateDatabase(chatstatus)
     
-    chatstatus['process'] = process
-    chatstatus['output']  = output    
+    chatstatus['process']['steps'].append(process)
+    chatstatus['output']  = output
     return chatstatus
 
 def webScraping_depricated(chatstatus):
@@ -919,7 +919,8 @@ def updateDatabase(chatstatus):
         meta.append(doc.metadata)
 
     # Add to the database
+    log.debugLog('Adding texts to database', chatstatus)
     chatstatus['databases']['RAG'].add_texts(texts = docs,
                                              meta  = meta)
-
+    log.debugLog('Done adding texts to database', chatstatus)
     return chatstatus
