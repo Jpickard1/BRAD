@@ -26,6 +26,15 @@ from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import Chroma
+import chromadb
+import subprocess
+
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.document_loaders import DirectoryLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 from BRAD import utils
 from BRAD import log
 
@@ -83,7 +92,12 @@ def webScraping(chatstatus):
         output = f'searching on {source}...'
         log.debugLog(output, chatstatus=chatstatus)
         log.debugLog('Search Terms: ' + str(searchTerms), chatstatus=chatstatus)
-        for st in searchTerms:
+        for numTerm, st in enumerate(searchTerms):
+            if numTerm == chatstatus['config']['SCRAPE']['max_search_terms']:
+                break
+            # this is interesting that we don't return chatstatus. I think since
+            # dicts are pass by reference, it should be fine, but it is different
+            # from the rest of out codes
             scrape_function(st, chatstatus)
         searchTerms = ' '.join(searchTerms)
         scrape_function(searchTerms)
@@ -92,8 +106,11 @@ def webScraping(chatstatus):
         log.debugLog(output, chatstatus=chatstatus)
         process = {'searched': 'ERROR'}
 
-    chatstatus['process'] = process
-    chatstatus['output']  = output
+    if chatstatus['config']['SCRAPE']['add_from_scrape']:
+        chatstatus = updateDatabase(chatstatus)
+    
+    chatstatus['process']['steps'].append(process)
+    chatstatus['output'] = "Articles were successfully downloaded."
     return chatstatus
 
 def webScraping_depricated(chatstatus):
@@ -328,7 +345,8 @@ def biorxiv(query, chatstatus):
                         max_records = 75, 
                         max_time    = 300,
                         cols        = ['title', 'authors', 'url'],
-                        abstracts   = False
+                        abstracts   = False,
+                        chatstatus  = chatstatus
                        )
 
 def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015), 
@@ -341,7 +359,9 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
                         max_records = 75, 
                         max_time    = 300,
                         cols        = ['title', 'authors', 'url'],
-                        abstracts   = False):
+                        abstracts   = False,
+                        chatstatus  = None
+                       ):
 
     """
     Searches for articles on arXiv, bioRxiv, or PubMed based on the given queries and creates a database from the scraped articles and PDFs.
@@ -853,3 +873,59 @@ def parse_llm_response(response):
     parsed_data["search_terms"] = search_terms
 
     return parsed_data
+
+def updateDatabase(chatstatus):
+    """
+    .. warning: This function contains hardcoded values related to text chunking
+    
+    Update the database with new documents based on the given chat status.
+
+    This function determines which documents need to be added to the database, downloads them,
+    splits them into chunks, and adds the formatted chunks to the specified database.
+
+    Args:
+        chatstatus (dict): The current chat status containing database information and other parameters.
+
+    Returns:
+        dict: The updated chat status after adding new documents to the database.
+    """
+    # Determine which documents need to be added to the database
+    new_docs_path = utils.pdfDownloadPath(chatstatus)
+    
+    if not os.path.isdir(new_docs_path):
+        return chatstatus
+
+    # Warning! these values are hard coded
+    chunk_size=[700]
+    chunk_overlap=[200]
+    
+    # Load all the documents
+    text_loader_kwargs = {'autodetect_encoding': True}
+    new_loader = DirectoryLoader(new_docs_path,
+                                 glob="**/*.pdf",
+                                 loader_cls=PyPDFLoader,
+                                 show_progress=True,
+                                 use_multithreading=True)
+    new_docs_data = new_loader.load()
+    print('\nNew documents loaded...')
+    
+    # Split the new document into chunks
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size[0],
+                                                    chunk_overlap=chunk_overlap[0],
+                                                    separators=[" ", ",", "\n", ". "])
+    new_data_splits = text_splitter.split_documents(new_docs_data)
+    print("New document split into chunks...")
+
+    # Format the document splits to be placed into the database
+    new_data_splits
+    docs, meta = [], []
+    for doc in new_data_splits:
+        docs.append(doc.page_content)
+        meta.append(doc.metadata)
+
+    # Add to the database
+    log.debugLog('Adding texts to database', chatstatus)
+    chatstatus['databases']['RAG'].add_texts(texts = docs,
+                                             meta  = meta)
+    log.debugLog('Done adding texts to database', chatstatus)
+    return chatstatus

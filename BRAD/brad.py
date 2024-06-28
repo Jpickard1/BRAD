@@ -321,7 +321,10 @@ def chat(
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
+
+    # Initialize the chatlog
     chatstatus        = loadChatStatus()
+
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     config = load_config()
@@ -356,7 +359,8 @@ def chat(
     # Initialize the routers from router.py
     router = getRouter()
 
-    # Initialize the chatlog
+
+    # Add other information to chatstatus
     chatstatus['llm'] = llm
     chatstatus['memory'] = memory
     chatstatus['databases'] = databases
@@ -429,7 +433,8 @@ def chat(
             new_output_files = utils.outputFiles(chatstatus)
             new_output_files = list(set(new_output_files).difference(set(output_files)))
             chatstatus = utils.makeNamesConsistent(chatstatus, new_output_files)
-            chatstatus['queue pointer'] += 1
+            if chatstatus['process']['module'] != 'ROUTER':
+                chatstatus['queue pointer'] += 1
         
         # Log and reset these values
         chatlog, chatstatus = log.logger(chatlog, chatstatus, chatname)

@@ -44,14 +44,21 @@ def planner(chatstatus):
     processes = response2processes(response)
     log.debugLog(processes, chatstatus=chatstatus)
     chatstatus['queue'] = processes
-    chatstatus['queue pointer'] = 0
+    chatstatus['queue pointer'] = 1 # the 0 object is a place holder
     log.debugLog('exit planner', chatstatus=chatstatus)
     return chatstatus
 
 def response2processes(response):
     modules = ['RAG', 'SCRAPE', 'DATABASE', 'CODE', 'WRITE', 'ROUTER']
     stageStrings = response.split('**Step ')
-    processes = []
+    processes = [
+        {
+            'order'  : 0,
+            'module' : 'PLANNER',
+            'prompt' : None,
+            'description' : 'This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.',
+        }
+    ]
     for i, stage in enumerate(stageStrings):
         stageNum = i
         found_modules = [module for module in modules if module in stage]

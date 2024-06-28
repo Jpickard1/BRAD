@@ -44,3 +44,83 @@ Use WRITE to synthesize and summarize the information gathered from the RAG anal
 "Write a small report summarizing the findings from each of the previous steps. Include the role of PCNA in the cell cycle and cell cycle imaging from the literature search, the first-order interactions of PCNA from the HWG analysis, and the gene enrichment results from Enrichr. Synthesize the results into a cohesive narrative."
 "Write a small report summarizing the findings from each of the previous steps. Include the role of PCNA in the cell cycle and cell cycle imaging from the literature search, the first-order interactions of PCNA from the HWG analysis, and the gene enrichment results from Enrichr. Synthesize the results into a cohesive narrative."
 "Write a small report summarizing the findings from each of the previous steps. Include the role of PCNA in the cell cycle and cell cycle imaging from the literature search, the first-order interactions of PCNA from the HWG analysis, and the gene enrichment results from Enrichr. Synthesize the results into a cohesive narrative."
+Evaluate the quality of the results from Step 1. If good, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the answer is satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the results from Step 1. If the results are deemed satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality and relevance of the information gathered in Step 1. If the information is satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the information retrieved in Step 1. If the information is sufficient, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality and relevance of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Evaluate the quality of the information gathered in Step 1. If the answer is good, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the information obtained in Step 1. If the answer is good, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the information gathered in Step 1. If the information is sufficient, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the information gathered in Step 1. If the answer is good, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the summary generated in Step 1. If it's satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the information gathered in Step 1. If the information is sufficient, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the response from Step 1. If the response is satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the result from Step 1. If the result is satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Always return to Step 1, regardless of the outcome.
+Always return to Step 1, regardless of the outcome.
+Evaluate the quality of the information obtained in Step 1. If the information is sufficient, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the information gathered in Step 1. If the information is sufficient, proceed to Step 5. Otherwise, proceed to Step 3.
+Always proceed to Step 1, disregarding any previous results. This will create a loop that continuously refines the search query based on the new information gathered.
+Evaluate the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Always return to Step 1, regardless of the results from previous steps.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5. Otherwise, proceed to Step 3.
+Always return to Step 1, ignoring any previous results.
+Evaluate the quality of the results from Step 1. If the results are satisfactory, proceed to Step 5; otherwise, proceed to Step 3.
+Always return to Step 1, using the information from Step 3 to refine the search query.
+Evaluate the quality of the most recent response. If the answer is good, proceed to Step 5. Otherwise, proceed to Step 3.
+Evaluate the quality of the most recent response. If the answer is good, proceed to Step 5. Otherwise, proceed to Step 3.
+Go to Step 1.
+Evaluate the quality of the output from Step 1. If it is high quality, proceed to Step 5. Otherwise, proceed to Step 3.
+Regardless of the output from previous steps, proceed to Step 1 to continue iterating through the pipeline.
+Use WRITE to synthesize and summarize the entire analysis process, including the output from Step 1, the PubMed search results from Step 3 (if executed), and the iterative process between Step 1 and Step 4.
+Evaluate the quality of the output from Step 1. If the output is high quality, proceed to Step 5. Otherwise, proceed to Step 3.
+Regardless of the output from previous steps, return to Step 1 to refine the search or explore related topics.
