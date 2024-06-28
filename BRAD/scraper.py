@@ -84,8 +84,6 @@ def webScraping(chatstatus):
         print('Search Terms: ' + str(searchTerms)) if chatstatus['config']['debug'] else None
         for st in searchTerms:
             scrape_function(st, chatstatus)
-        searchTerms = ' '.join(searchTerms)
-        scrape_function(searchTerms)
     except Exception as e:
         output = f'Error occurred while searching on {source}: {e}'
         print(output)
@@ -95,44 +93,6 @@ def webScraping(chatstatus):
     chatstatus['output']  = output
     return chatstatus
 
-def webScraping_depricated(chatstatus):
-    query = chatstatus['prompt']
-    
-    # Define the mapping of keywords to functions
-    scraping_functions = {
-        'ARXIV'   : arxiv,
-        'BIORXIV' : biorxiv,
-        'PUBMED'  : pubmed
-    }
-    
-    # Normalize the query
-    query_tokens = query.upper().split()
-    query = query.lower()
-    query = query.replace('arxiv', '')
-    query = query.replace('biorxiv', '')
-    query = query.replace('pubmed', '')
-    query = ' '.join(query.split())
-    remove_punctuation = str.maketrans('', '', string.punctuation)
-    query = query.translate(remove_punctuation)
-    
-    # Determine the target source
-    source = next((key for key in scraping_functions if key in query_tokens), 'PUBMED')
-    process = {'searched': source}
-    scrape_function = scraping_functions[source]
-    
-    # Execute the scraping function and handle errors
-    try:
-        output = f'searching on {source}'
-        print(output)
-        scrape_function(query)
-    except Exception as e:
-        output = f'Error occurred while searching on {source}: {e}'
-        print(output)
-        process = {'searched': 'ERROR'}
-
-    chatstatus['process'] = process
-    chatstatus['output']  = output
-    return chatstatus
 
 def arxiv(query, chatstatus):
     """
@@ -160,71 +120,10 @@ def arxiv(query, chatstatus):
     process['download'] = (download == 'Y')
     if download == 'Y':
         #id_list = df['id'].to_list()
-        output += arxiv_scrape(pdfs)
+        output += arxiv_scrape(pdfs, chatstatus)
     return output, process
 
-def arxiv_search1(query):
-    """
-    DEPRECATED: Searches for articles on the arXiv repository based on the given query.
 
-    :param query: The search query for arXiv.
-    :type query: str
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A DataFrame containing the search results.
-    :rtype: pd.DataFrame
-    """
-    pd.set_option('display.max_colwidth', None)
-    #date_from='2024-04-01',date_until='2024-05-01',
-    #
-    scraper = arxivscraper.Scraper(category='q-bio', date_from='2023-05-01',date_until='2024-05-01', filters={'abstract':[query]})
-    output = scraper.scrape()
-    cols = ('id', 'title', 'categories', 'abstract', 'doi', 'created', 'updated', 'authors')
-    df = pd.DataFrame(output,columns=cols)
-    return df
-
-def arxiv_scrape1(id_list):
-    """
-    DEPRECATED: Downloads articles from arXiv as PDFs based on the given list of IDs.
-
-    :param id_list: A list of article IDs to download from arXiv.
-    :type id_list: list
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A string indicating the outcome of the download process.
-    :rtype: str
-    """
-    output = ''
-    session = HTMLSession()
-    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
-    try:
-        path = os.path.join(os.getcwd(), 'specialized_docs')
-        os.makedirs(path, exist_ok = True) 
-        output = f"Directory '{path}' created successfully"
-    except OSError:
-        output = f"Directory '{path}' could not be created"
-    print(output)
-
-    #Scrape arxiv and
-    for arxiv_id  in id_list:
-        try:
-            pdf_url = f'https://arxiv.org/pdf/{arxiv_id}'
-            local_path = os.path.join(path, f'{arxiv_id}.pdf')
-            print(f'{pdf_url} --> {local_path}')
-            output += f'\n{pdf_url} --> {local_path}'
-
-            response = session.get(pdf_url, stream=True)
-            response.raise_for_status()
-
-            with open(os.path.join(path, ids + '.pdf'), 'wb') as f:
-                for chunk in response.iter_content(chunk_size = 1024):
-                    f.write(chunk)
-        except (ConnectionError, requests.exceptions.RequestException) as e:
-            print(f"{arxiv_id} could not be gathered: {e}")
-            output += f"\n{arxiv_id} could not be gathered."
-    return output
 
 def search_pubmed_article(query, number_of_articles=10):
     """
@@ -280,20 +179,22 @@ def pubmed(query, chatstatus):
             try:
                 base_url = 'https://pubmed.ncbi.nlm.nih.gov/'
                 r = s.get(base_url + pmc + '/', headers = headers, timeout = 5)
-                pdf_url = r.html.find('a.id-link', first=True).attrs['href']
-                if "doi" in pdf_url:
-                    continue
-                r = s.get(pdf_url, headers = headers, timeout = 5)
-                try:
-                    pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']
-                    r = s.get(pdf_real, stream=True)
-                    with open(os.path.join(path, pmc + '.pdf'), 'wb') as f:
-                        for chunk in r.iter_content(chunk_size = 1024):
-                            if chunk:
-                                f.write(chunk)
-                except AttributeError as e:
-                    pass
-                    print(f"{pmc} could not be gathered.")
+                if r.html.find('a.id-link', first=True) is not None:
+                    pdf_url = r.html.find('a.id-link', first=True).attrs['href']
+                    print(pdf_url)
+                    if 'https://ncbi.nlm.nih.gov' not in pdf_url:
+                        continue
+                    r = s.get(pdf_url, headers = headers, timeout = 5)
+                    try:
+                        pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']
+                        r = s.get(pdf_real, stream=True)
+                        with open(os.path.join(path, pmc + '.pdf'), 'wb') as f:
+                            for chunk in r.iter_content(chunk_size = 1024):
+                                if chunk:
+                                    f.write(chunk)
+                    except AttributeError as e:
+                        pass
+                        print(f"{pmc} could not be gathered.")
                 
                     
             except ConnectionError as e:
@@ -317,30 +218,33 @@ def biorxiv(query, chatstatus):
     :rtype: None
 
     """
-    biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015), 
+    biorxiv_real_search(chatstatus1 = chatstatus,
+                        start_date  = datetime.date.today().replace(year=2015), 
                         end_date    = datetime.date.today(),
                         subjects    = [], 
                         journal     = 'biorxiv',
                         kwd         = [query], 
                         kwd_type    = 'all', 
                         athr        = [], 
-                        max_records = 75, 
+                        max_records = 10, 
                         max_time    = 300,
                         cols        = ['title', 'authors', 'url'],
                         abstracts   = False
-                       )
+                        )
 
-def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015), 
+def biorxiv_real_search(chatstatus1,
+                        start_date  = datetime.date.today().replace(year=2015), 
                         end_date    = datetime.date.today(), 
                         subjects    = [], 
                         journal     = 'biorxiv',
                         kwd         = [], 
                         kwd_type    = 'all', 
                         athr        = [], 
-                        max_records = 75, 
+                        max_records = 10, 
                         max_time    = 300,
                         cols        = ['title', 'authors', 'url'],
-                        abstracts   = False):
+                        abstracts   = False
+                        ):
 
     """
     Searches for articles on arXiv, bioRxiv, or PubMed based on the given queries and creates a database from the scraped articles and PDFs.
@@ -404,7 +308,9 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
         
     ## keyword selection
     if len(kwd) > 0:
-        kwd_str = 'abstract_title%3A' + ('%252C%2B').join([kwd[0]] + [('%2B').join(keyword.split()) for keyword in kwd[1:]])
+        kwd_string = ' '.join(kwd)
+        intermediate_string = kwd_string.replace(' ', '%2B')
+        kwd_str = 'abstract_title%3A' + intermediate_string
         kwd_str = kwd_str + '%20abstract_title_flags%3Amatch-' + kwd_type
         url += '%20' + kwd_str
 	## author selection
@@ -420,7 +326,7 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
     url += '%20' + date_str
 
 	## fixed formatting
-    num_page_results = 75
+    num_page_results = max_records
     url += '%20numresults%3A' + str(num_page_results) + '%20format_result%3Acondensed' + '%20sort%3Arelevance-rank'
 
     print(url)
@@ -446,7 +352,8 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
             if num_results_text == 'No':
                 print('No results found matching search criteria.')
                 return()
-                
+
+            num_results_text = num_results_text.replace(',', '')
             num_results = int(num_results_text)
             num_fetch_results = min(max_records, num_results)
         else:
@@ -486,7 +393,7 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
         print('Abstracts fetched.')
 
     try: 
-        path = utils.pdfDownloadPath(chatstatus) # os.path.abspath(os.getcwd()) + '/specialized_docs'
+        path = utils.pdfDownloadPath(chatstatus1) # os.path.abspath(os.getcwd()) + '/specialized_docs'
         os.makedirs(path, exist_ok = True) 
         print("Directory '%s' created successfully" % path) 
     except OSError as error: 
@@ -592,128 +499,7 @@ def create_db(query, query2):
             del vectordb, text_splitter, data_splits
 
 
-# This code appears to be unused - JP
-def fetch_details(pmid):
-    """
-    Fetches detailed information for a given PubMed article using its PMID.
 
-    :param pmid: The PubMed ID of the article to fetch details for.
-    :type pmid: str
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A dictionary containing detailed information about the PubMed article.
-    :rtype: dict
-
-    """
-    handle = Entrez.efetch(db='pubmed', id=pmid, retmode = 'xml')
-    records = Entrez.read(handle)
-    handle.close()
-    return records
-
-def webScraping2(query):
-    """
-    Performs web scraping based on the provided query, searching arXiv, bioRxiv, or PubMed.
-
-    :param query: The keyword to search for in the specified sources.
-    :type query: str
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A tuple containing the output message and the source searched.
-    :rtype: tuple
-
-    """
-    process = {}
-    if 'ARXIV' in query.upper().split(' '):
-        output = 'searching on arxiv'
-        print(output)
-        arxivscrape(query)
-        process['searched'] = 'ARXIV'
-    elif 'BIORXIV' in query.upper().split(' '):
-        output = 'searching on bioRxiv'
-        print(output)
-        biorxiv_scrape(query)
-        process['searched'] = 'BIORXIV'
-    elif 'PUBMED' in query.upper().split(' '):
-        output = 'searching on PubMed'
-        print(output)
-        pubmedscrape(query)
-        process['searched'] = 'PUBMED'
-    else:
-        output = 'by default, searching on PUBMED'
-        print(output)
-        pubmedscrape(query)
-        process['searched'] = 'PUBMED'
-    return output, process['searched']
-
-
-'''
-def arxiv(query):
-    """
-    Scrape research papers from the arXiv repository based on a query and download the PDFs.
-
-    Parameters:
-    query (str): The search term to filter papers by their abstracts.
-
-    Functionality:
-    1. Initializes the scraper with specific parameters for the q-bio category and a specified date range.
-    2. Uses the query to filter papers by their abstracts.
-    3. Scrapes the metadata of the filtered papers and stores it in a DataFrame.
-    4. Extracts the IDs of the papers from the DataFrame.
-    5. Creates a directory named 'specialized_docs' in the current working directory to store the downloaded PDFs.
-    6. Iterates over the list of paper IDs, constructs the PDF URLs, and downloads the PDFs.
-    7. Saves each PDF in the 'specialized_docs' directory.
-    8. Handles connection errors during the download process.
-
-    Requirements:
-    - arxivscraper: A module to scrape arXiv metadata.
-    - requests_html: Used for handling HTTP sessions and downloading PDFs.
-    - pandas: For handling data in DataFrame format.
-    - os: For creating directories and handling file paths.
-
-    Example:
-    arxivscrape('machine learning')
-    This will scrape papers related to 'machine learning' in their abstracts within the specified category and date range, and download their PDFs.
-
-    Notes:
-    - Ensure you have the necessary packages installed: arxivscraper, requests_html, pandas.
-    - Modify the category and date range in the Scraper initialization as needed.
-    """
-    scraper = arxivscraper.Scraper(category='q-bio', date_from='2024-04-01',date_until='2024-05-01',t=10, filters={'abstract':[query]})
-    output = scraper.scrape()
-    cols = ('id', 'title', 'categories', 'abstract', 'doi', 'created', 'updated', 'authors')
-    df = pd.DataFrame(output,columns=cols)
-    id_list = df['id'].to_list()
-    s = HTMLSession()
-
-    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
-
-    #Create directory to store pdfs
-    try:
-        path = os.path.abspath(os.getcwd()) + '/specialized_docs'
-        os.makedirs(path, exist_ok = True) 
-        print("Directory '%s' created successfully" % path)
-    except OSError as error:
-        print("Directory '%s' can not be created" % path)
-
-    #Scrape arxiv and
-    for ids in id_list:
-        try:
-            base_url = 'https://arxiv.org/pdf/'
-            pdf_url = base_url+ids
-            print(pdf_url)
-            r = s.get(pdf_url, stream=True)
-            print(r)
-            with open(os.path.join(path, ids + '.pdf'), 'wb') as f:
-                for chunk in r.iter_content(chunk_size = 1024):
-                    if chunk:
-                        f.write(chunk)
-                    
-        except ConnectionError as e:
-            pass
-            print(f"{ids} could not be gathered.")
-'''
 
 def arxiv_search(query, count):
     """
@@ -776,7 +562,7 @@ def arxiv_search(query, count):
     pdf_urls = [attempt for attempt in arxiv_urls if 'pdf' in attempt.lower()]
     return df, pdf_urls
     
-def arxiv_scrape(pdf_urls):
+def arxiv_scrape(pdf_urls, chatstatus):
     """
     Downloads PDFs from a list of URLs pointing to arXiv articles.
 
