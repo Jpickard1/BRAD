@@ -192,3 +192,7 @@ Execute the HWG analysis pipeline to find first-order interactions of PCNA using
 "Execute the HWG analysis pipeline to find first-order interactions of PCNA using the information gathered from the literature search in Step 1. Load the output file for further analysis in subsequent steps."
 Execute the HWG analysis pipeline to find first-order interactions of PCNA using the information gathered from Step 1. Load the literature results and generate an output file containing the interaction data.
 Execute the HWG analysis pipeline to find first-order interactions of PCNA using the information gathered from Step 1. Load the PCNA-related data from Step 1 into the HWG pipeline and run the analysis to generate an output file.
+run the gene former code
+please run the geneformer code with this input file: /nfs/turbo/umms-indikar/shared/projects/geneformer/example_input_files/cell_classification/disease_classification/human_dcm_hcm_nf.dataset/
+please run the gene former code with this input: /nfs/turbo/umms-indikar/shared/projects/geneformer/example_input_files/cell_classification/disease_classification/human_dcm_hcm_nf.dataset/
+please run the gene former embedding code with this input file: /nfs/turbo/umms-indikar/shared/projects/geneformer/example_input_files/cell_classification/disease_classification/human_dcm_hcm_nf.dataset/
