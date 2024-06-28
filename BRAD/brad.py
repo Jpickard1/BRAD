@@ -153,7 +153,7 @@ def save_config(config):
     with open(file_path, 'w') as f:
         json.dump(config, f, indent=4)
         
-def reconfig(chat_status):
+def reconfig(chatstatus):
     """
     Updates a specific configuration setting based on the given chat status and saves the updated configuration.
 
@@ -171,7 +171,7 @@ def reconfig(chat_status):
     #       jpic@umich.edu
     # Date: June 4, 2024
     
-    prompt = chat_status['prompt']
+    prompt = chatstatus['prompt']
     _, key, value = prompt.split(maxsplit=2)
     try:
         value = int(value)
@@ -180,13 +180,13 @@ def reconfig(chat_status):
             value = float(value)
         except ValueError:
             value = str(value)
-    if key in chat_status['config']:
-        chat_status['config'][key] = value
-        save_config(chat_status['config'])
+    if key in chatstatus['config']:
+        chatstatus['config'][key] = value
+        save_config(chatstatus['config'])
         chatstatus = log.userOutput("Configuration " + str(key) + " updated to " + str(value), chatstatus=chatstatus)
     else:
         chatstatus = log.userOutput("Configuration " + str(key) + " not found", chatstatus=chatstatus)
-    return chat_status
+    return chatstatus
 
 def loadChatStatus():
     """
@@ -321,6 +321,7 @@ def chat(
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
+    chatstatus        = loadChatStatus()
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     config = load_config()
@@ -356,7 +357,6 @@ def chat(
     router = getRouter()
 
     # Initialize the chatlog
-    chatstatus        = loadChatStatus()
     chatstatus['llm'] = llm
     chatstatus['memory'] = memory
     chatstatus['databases'] = databases
