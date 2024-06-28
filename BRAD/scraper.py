@@ -92,7 +92,12 @@ def webScraping(chatstatus):
         output = f'searching on {source}...'
         log.debugLog(output, chatstatus=chatstatus)
         log.debugLog('Search Terms: ' + str(searchTerms), chatstatus=chatstatus)
-        for st in searchTerms:
+        for numTerm, st in enumerate(searchTerms):
+            if numTerm == chatstatus['config']['SCRAPE']['max_search_terms']:
+                break
+            # this is interesting that we don't return chatstatus. I think since
+            # dicts are pass by reference, it should be fine, but it is different
+            # from the rest of out codes
             scrape_function(st, chatstatus)
         searchTerms = ' '.join(searchTerms)
         scrape_function(searchTerms)
@@ -101,11 +106,11 @@ def webScraping(chatstatus):
         log.debugLog(output, chatstatus=chatstatus)
         process = {'searched': 'ERROR'}
 
-    if chatstatus['config']['RAG']['add_from_scrape']:
+    if chatstatus['config']['SCRAPE']['add_from_scrape']:
         chatstatus = updateDatabase(chatstatus)
     
     chatstatus['process']['steps'].append(process)
-    chatstatus['output']  = output
+    chatstatus['output'] = "Articles were successfully downloaded."
     return chatstatus
 
 def webScraping_depricated(chatstatus):

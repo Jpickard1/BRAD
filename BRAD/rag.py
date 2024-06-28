@@ -237,7 +237,7 @@ def getInputDocumentJSONs(input_documents):
         inputDocsJSON[i] = {
             'page_content' : doc.page_content,
             'metadata'     : {
-                'source'   : doc.metadata['source']
+                'source'   : str(doc.metadata)
             }
         }
     return inputDocsJSON

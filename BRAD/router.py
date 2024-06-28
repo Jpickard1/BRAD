@@ -48,8 +48,9 @@ def reroute(chatstatus):
     log.debugLog('Next Step=' + str(nextStep), chatstatus=chatstatus)
     log.debugLog((nextStep is None), chatstatus=chatstatus)
     if nextStep is None:
-        nextStep = 3
-        log.debugLog('    **RESET NEXT STEP HARDCODED**', chatstatus=chatstatus)
+        nextStep = chatstatus['queue pointer'] + 1
+        #nextStep = 3
+        #log.debugLog('    **RESET NEXT STEP HARDCODED**', chatstatus=chatstatus)
     chatstatus['process']['steps'].append(log.llmCallLog(
         llm     = llm,
         prompt  = template,

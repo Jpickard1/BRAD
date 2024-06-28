@@ -85,8 +85,8 @@ def debugLog(output, chatstatus=None, display=None):
         logging.info(output)
     elif chatstatus['config']['debug'] or chatstatus['config']['debug'].lower() == 'true':
         logging.info(output)
-        print('DEBUG')
-        print(output)
+        # print('DEBUG')
+        # print(output)
 
 def userOutput(output, chatstatus=None):
     """This function standardizes how information is printed to the user and allows for logging"""

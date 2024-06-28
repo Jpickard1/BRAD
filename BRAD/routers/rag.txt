@@ -315,3 +315,13 @@ Search the literature database to find information on PCNA's role in the cell cy
 Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip-Fucci system?" and provide a brief summary.
 Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip Fucci system?"
 Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip Fucci system?"
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and the pip Fucci system. Provide a summary of the findings.
+Use RAG to search the text database for information on PCNA in the cell cycle and pip Fucci system, providing a brief summary of the role of PCNA in the cell cycle and its relation to the pip Fucci system.
+Use RAG to search the literature and documents from a text database to answer the question: "What is the PCNA in the cell cycle and pip Fucci system?"
+Search the literature database to provide a brief overview of the PCNA protein in the cell cycle and its relation to the FUCCI system. Save the results for later use.
+Search the literature database to provide a brief overview of the PCNA protein in the cell cycle and its relation to the FUCCI system. Save the results for later use.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip-Fucci system?" and provide relevant information.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and PIP-FUCCI system?" and provide a summary of the findings.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and the pip Fucci system. Provide a summary of the findings.
+Use RAG to lookup literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip Fucci system?"
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and the pip Fucci system. Provide a detailed description of PCNA's function and its association with the cell cycle.

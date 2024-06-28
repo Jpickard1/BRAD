@@ -198,3 +198,11 @@ Use SCRAPE to search PubMed for the latest research articles related to the cell
 Use SCRAPE to search PubMed for the latest research articles related to the cell cycle and retrieve a list of relevant publications.
 Use SCRAPE to search PubMed for the latest research articles related to cell cycle.
 Use SCRAPE to search PubMed for the latest research articles related to cell cycle.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle. Provide a list of relevant articles.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle, focusing on the role of PCNA and the pip Fucci system. Return a list of relevant article titles and abstracts.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle, using the information gathered in Step 1.
+Search PubMed for the latest research articles related to the cell cycle, focusing on PCNA and FUCCI. Save the list of relevant articles for later use.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle and provide a list of relevant publications.
+Search PubMed for the latest research articles related to the cell cycle. Use the keywords from the summary in Step 1 to refine the search. Provide a list of relevant articles.
+Use SCRAPE to search PubMed for the latest research articles related to cell cycle. Use the keywords extracted from Step 1 to refine the search.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle. Provide a list of relevant articles that may aid in understanding PCNA's role in the cell cycle.

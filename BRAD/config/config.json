@@ -3,8 +3,11 @@
         "num_articles_retrieved": 3,
         "multiquery": false,
         "contextual_compression": false,
-        "rerank": false,
-        "add_from_scrape": true
+        "rerank": false
+    },
+    "SCRAPE": {
+        "add_from_scrape": true,
+        "max_search_terms": 2
     },
     "max_articles_download": 1,
     "acceptable_data_files": [
