@@ -1,14 +1,14 @@
 {
     "RAG": {
         "num_articles_retrieved": 3,
-    	"multiquery": false,
-	    "contextual_compression": false,
-        "rerank" : false
+        "multiquery": false,
+        "contextual_compression": false,
+        "rerank": false
     },
     "max_articles_download": 10,
     "acceptable_data_files": [
         ".csv",
-	".tsv"
+        ".tsv"
     ],
     "max_enrichr_pval": 0.5,
     "enable_logging": true,
@@ -27,6 +27,6 @@
     "log_path": "BRAD",
     "experiment": false,
     "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
-    "py-path": "/home/jpic/RAG-DEV/tutorials/planner/python/",
+    "py-path": "/home/jpic/RAG-DEV/tutorials/geneformer/python",
     "image-path-extension": "images"
 }
