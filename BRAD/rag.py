@@ -142,14 +142,18 @@ def retrieval(chatstatus):
         vectordb = cut(chatstatus, vectordb)
 
     if not chatstatus['config']['RAG']['multiquery']:
-        documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
-        docs, scores = getDocumentSimilarity(documentSearch)
+        #without MMR
+        #documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
+        #docs, scores = getDocumentSimilarity(documentSearch)
+        #MMR
+        docs = vectordb.max_marginal_relevance_search(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
         chatstatus['process']['steps'].append({
             'func' : 'rag.retrieval',
             'multiquery' : False,
             'num-docs' : len(docs),
             'docs' : str(docs),
         })
+        scores = []
     else:
         logging.basicConfig()
         logging.getLogger("langchain.retrievers.multi_query").setLevel(logging.INFO)
