@@ -178,7 +178,7 @@ def getRouter():
         name = 'ROUTER',
         utterances = read_prompts(getRouterPath('router.txt'))
     )
-    encoder = HuggingFaceEncoder()
+    encoder = HuggingFaceEncoder(device='cpu')
     routes = [routeGget,
               routeScrape,
               routeTable,
