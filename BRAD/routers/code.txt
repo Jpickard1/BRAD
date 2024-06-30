@@ -196,3 +196,36 @@ run the gene former code
 please run the geneformer code with this input file: /nfs/turbo/umms-indikar/shared/projects/geneformer/example_input_files/cell_classification/disease_classification/human_dcm_hcm_nf.dataset/
 please run the gene former code with this input: /nfs/turbo/umms-indikar/shared/projects/geneformer/example_input_files/cell_classification/disease_classification/human_dcm_hcm_nf.dataset/
 please run the gene former embedding code with this input file: /nfs/turbo/umms-indikar/shared/projects/geneformer/example_input_files/cell_classification/disease_classification/human_dcm_hcm_nf.dataset/
+select the 2015 dataset
+select the 2015 dataset
+select the 2015 dataset
+select the 2017 dataset
+select the 2018 dataset
+select the 2015 dataset
+select the 2018 dataset
+run the geneformer code
+load the 2015 dataset
+load the 2015 dataset
+load the 2018 dataset
+please load the 2015 dataset
+great thanks. Now load the 2018 dataset
+that is great! Now I'd like you to load the gene coordinates of the 2015 data using the previously created file
+that is great! Now I'd like you to load the gene coordinates of the 2015 data using the previously created file
+that is great! Now I'd like you to load the gene coordinates of the 2015 data using the previously created file
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+load the 2015 dataset
+load the 2015 dataset
+load the 2015 dataset
+load the 2018 dataset
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+load the 2015 dataset
+load the 2018 dataset
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+load the 2015 dataset
+load the 2018 dataset
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+load the 2015 dataset
+load the 2018 dataset
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+great! Now I need you to do a similar thing and get the 2015 gene coordinates from the 2015 dataset and write them to S1-2015.pkl

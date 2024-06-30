@@ -31,6 +31,6 @@
     "log_path": "BRAD",
     "experiment": false,
     "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
-    "py-path": "/home/jpic/RAG-DEV/tutorials/geneformer/python/",
+    "py-path": "/home/jpic/BRAD-Tools/",
     "image-path-extension": "images"
 }
