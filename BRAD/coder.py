@@ -26,8 +26,9 @@ from langchain.memory import ConversationBufferMemory
 
 from BRAD.matlabCaller import find_matlab_files, get_matlab_description, read_matlab_docstrings, matlabPromptTemplate, activateMatlabEngine, extract_matlab_code, execute_matlab_code
 from BRAD.pythonCaller import find_py_files, get_py_description, read_python_docstrings, pythonPromptTemplate, extract_python_code, execute_python_code
-from BRAD.promptTemplates import scriptSelectorTemplate
+from BRAD.promptTemplates import scriptSelectorTemplate, pythonPromptTemplateWithFiles
 from BRAD import log
+from BRAD import utils
 
 def codeCaller(chatstatus):
     """
@@ -139,9 +140,13 @@ def codeCaller(chatstatus):
     
     docstringReader = {'python': read_python_docstrings, 'MATLAB': read_matlab_docstrings}.get(scriptType)
     docstrings      = docstringReader(os.path.join(scriptPath, scriptName))
-    scriptCallingTemplate = {'python': pythonPromptTemplate, 'MATLAB': matlabPromptTemplate}.get(scriptType)
+    scriptCallingTemplate = {'python': pythonPromptTemplateWithFiles, 'MATLAB': matlabPromptTemplate}.get(scriptType)
     template        = scriptCallingTemplate()
-    filled_template = template.format(scriptName=scriptName, scriptDocumentation=docstrings, output_path=chatstatus['output-directory'])
+    if scriptType == 'python':
+        createdFiles = "\n".join(utils.outputFiles(chatstatus)) # A string of previously created files
+        filled_template = template.format(scriptName=scriptName, scriptDocumentation=docstrings, output_path=chatstatus['output-directory'], files=createdFiles)
+    else:
+        filled_template = template.format(scriptName=scriptName, scriptDocumentation=docstrings, output_path=chatstatus['output-directory'])
     PROMPT          = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     log.debugLog(PROMPT, chatstatus=chatstatus)
     conversation    = ConversationChain(prompt  = PROMPT,
@@ -153,6 +158,9 @@ def codeCaller(chatstatus):
     responseParser = {'python': extract_python_code, 'MATLAB': extract_matlab_code}.get(scriptType)
     code2execute = responseParser(response, chatstatus)
 
+    # Check if it requires previous inputs
+    code2execute = utils.add_output_file_path_to_string(code2execute, chatstatus)
+    
     # Execute code
     executeCode(chatstatus, code2execute, scriptType)
 
