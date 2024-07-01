@@ -2,6 +2,7 @@ import subprocess
 import shlex
 from typing import Dict, Any
 import json
+from BRAD import log
 
 def callSnakemake(chatstatus, chatlog):
     """
@@ -77,7 +78,7 @@ def run_snakemake(params: Dict[str, Any]):
     
     try:
         result = subprocess.run(command_str, shell=True, check=True, capture_output=True, text=True)
-        print(result.stdout)
+        log.debugLog(result.stdout, chatstatus=chatstatus)
     except subprocess.CalledProcessError as e:
-        print(f"Error running Snakemake: {e.stderr}")
+        log.debugLog(f"Error running Snakemake: {e.stderr}", chatstatus=chatstatus)
         raise

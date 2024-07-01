@@ -11,7 +11,6 @@ from langchain.chains import RetrievalQA
 from langchain.llms import LlamaCpp
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from langchain.prompts import PromptTemplate
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains.question_answering import load_qa_chain
@@ -53,7 +52,8 @@ import re
 
 import BRAD.gene_ontology as gonto
 from BRAD.gene_ontology import geneOntology
-
+from BRAD import utils
+from BRAD import log
 
 def queryDocs(chatstatus):
     """
@@ -88,27 +88,27 @@ def queryDocs(chatstatus):
         # solo & mutliquery retrieval determined by config.json
         chatstatus, docs, scores = retrieval(chatstatus)
 
-
-        # We could put reranking here\
-        docs = pagerank_rerank(docs, chatstatus)
+        if chatstatus['config']['RAG']['rerank']:
+            docs = pagerank_rerank(docs, chatstatus)
 
         # We could put contextual compression here
-        docs = contextualCompression(docs, chatstatus)
+        if chatstatus['config']['RAG']['contextual_compression']:
+            docs = contextualCompression(docs, chatstatus)
 
         # Build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
 
         # pass the database output to the llm
         res = chain({"input_documents": docs, "question": prompt})
-        print(res['output_text'])
+        chatstatus = log.userOutput(res['output_text'], chatstatus=chatstatus)
         sources = []
         for doc in docs:
             source = doc.metadata.get('source')
-            short_source = os.path.basename(source)
+            short_source = os.path.basename(str(source))
             sources.append(short_source)
         sources = list(set(sources))
-        print("Sources:")
-        print('\n'.join(sources))
+        chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) 
+        chatstatus = log.userOutput('\n'.join(sources), chatstatus=chatstatus) 
         chatstatus['process']['sources'] = sources
         # change inputs to be json readable
         res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
@@ -124,7 +124,7 @@ def queryDocs(chatstatus):
                                         )
         prompt = getDefaultContext() + prompt
         response = conversation.predict(input=prompt)
-        print(response)
+        chatstatus = log.userOutput(response, chatstatus=chatstatus) 
         
         chatstatus['output'] = response
     return chatstatus
@@ -135,8 +135,6 @@ def retrieval(chatstatus):
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
-
-    vectordb = remove_repeats(vectordb)
 
     if chatstatus['config']['RAG']['cut']:
         vectordb = cut(chatstatus, vectordb)
@@ -198,9 +196,9 @@ def contextualCompression(docs, chatstatus):
         res = chatstatus['llm'].invoke(input=prompt)
         summary = res.content.strip()
         if chatstatus['config']['debug']:
-            print('============')
-            print(pageContent)
-            print('Summary: ' + summary)
+            log.debugLog('============', chatstatus=chatstatus) 
+            log.debugLog(pageContent, chatstatus=chatstatus) 
+            log.debugLog('Summary: ' + summary, chatstatus=chatstatus) 
         doc.page_content = summary
         docs[i] = doc
     return docs
@@ -244,7 +242,7 @@ def getInputDocumentJSONs(input_documents):
         inputDocsJSON[i] = {
             'page_content' : doc.page_content,
             'metadata'     : {
-                'source'   : doc.metadata['source']
+                'source'   : str(doc.metadata)
             }
         }
     return inputDocsJSON
@@ -311,6 +309,8 @@ Prompt: """
 
 def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunck_overlap=[200], v=False):
     """
+    .. note: This funciton is not called by the chatbot. Instead, it is required that the user build the database prior to using the chat.
+    
     Create a Chroma database from PDF documents.
 
     Args:
@@ -327,14 +327,11 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
     
     local = os.getcwd()  ## Get local dir
     os.chdir(local)      ## shift the work dir to local dir
-    
     print('\nWork Directory: {}'.format(local)) if v else None
 
     #%% Phase 1 - Load DB
     embeddings_model = HuggingFaceEmbeddings(model_name=HuggingFaceEmbeddingsModel)
-    
-    print('\nDocuments loading from:', docsPath) if v else None
-
+    print("\nDocuments loading from: 'str(docsPath)") if v else None
     text_loader_kwargs={'autodetect_encoding': True}
     loader = DirectoryLoader(docsPath,
                              glob="**/*.pdf",
@@ -343,7 +340,6 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
                              show_progress=True,
                              use_multithreading=True)
     docs_data = loader.load()
-
     print('\nDocuments loaded...') if v else None
 
     for i in range(len(chunk_size)):
@@ -352,9 +348,8 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
                                                             chunk_overlap = chunk_overlap[j],
                                                             separators=[" ", ",", "\n", ". "])
             data_splits = text_splitter.split_documents(docs_data)
-            
-            print('Documents split into chunks...') if v else None
-            print('Initializing Chroma Database...') if v else None
+            print("Documents split into chunks...") if v else None
+            print("Initializing Chroma Database...") if v else None
 
             dbName = "DB_cosine_cSize_%d_cOver_%d" %(chunk_size[i], chunk_overlap[j])
 
@@ -366,8 +361,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
                                              client              = _client_settings,
                                              collection_name     = dbName,
                                              collection_metadata = {"hnsw:space": "cosine"})
-
-            print('Completed Chroma Database: ', dbName) if v else None
+            log.debugLog("Completed Chroma Database: ", chatstatus=chatstatus) if v else None 
             del vectordb, text_splitter, data_splits
 
 def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus):
@@ -412,7 +406,7 @@ def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus
 
 
 def scoring_experiment(chain, docs, scores, prompt):
-    print(f"output of similarity search: {scores}")
+    log.debugLog(f"output of similarity search: {scores}", chatstatus=chatstatus) 
     candidates = []    # also llm respons (maybe remove this)
     reference = []     # hidden dodument
     document_list = [] # LLM RESPONSES
@@ -421,9 +415,9 @@ def scoring_experiment(chain, docs, scores, prompt):
         # removes one of the documents
         new_list = docs[:i] + docs[i + 1:]
         reference.append(docs[i].dict()['page_content'])
-        print(f"Masked Document: {docs[i].dict()['page_content']}\n")
+        chatstatus = log.userOutput(f"Masked Document: {docs[i].dict()['page_content']}\n", chatstatus=chatstatus) 
         res = chain({"input_documents": new_list, "question": prompt})
-        print(f"RAG response: {res['output_text']}")
+        chatstatus = log.userOutput(f"RAG response: {res['output_text']}", chatstatus=chatstatus) 
         # Add the new list to the combinations list
         candidates.append(res['output_text'])
         document_list.append(Document(page_content = res['output_text']))
@@ -437,10 +431,10 @@ def scoring_experiment(chain, docs, scores, prompt):
     new_docs, new_scores = getDocumentSimilarity(db.similarity_search_with_relevance_scores(prompt))
     
     # print results
-    print(new_scores)
+    chatstatus = log.userOutput(new_scores, chatstatus=chatstatus) 
     #scorer = BERTScorer(lang="en", rescale_with_baseline=True)
     #P, R, F1 = scorer.score(candidates, reference)
-    #print(F1)
+    #log.debugLog(F1, chatstatus=chatstatus) 
     
     
 
@@ -521,11 +515,9 @@ def best_match(prompt, title_list):
     for score, title in zip(util.cos_sim(query_embedding, passage_embedding)[0], unique_title_list):
         if score > save_score:
             save_score = score
-            best_title = title
-    
-    print(f"The best match is {best_title} with a score of {save_score}")
-    
-    return best_title, save_score
+            save_title = title
+    log.debugLog(f"The best match is {save_title} with a score of {save_score}", chatstatus=chatstatus) 
+    return save_title, save_score
 
 #Split into two methods?
 def get_all_sources(vectordb, prompt, path):
@@ -607,6 +599,7 @@ def adj_matrix_builder(docs, chatstatus):
     return real_cosine_sim
 
 
+ 
 def normalize_adjacency_matrix(A):
     """
     Normalize an adjacency matrix by dividing each element by the sum of its column.

@@ -7,6 +7,7 @@ import requests
 from requests.exceptions import ConnectionError
 import os
 import copy
+from BRAD import log
 
 def geneOntology(chatstatus, goQuery):
     """
@@ -35,9 +36,9 @@ def geneOntology(chatstatus, goQuery):
     #    if words in gene_list:
     #        real_list.append(words)
     if len(real_list) > 0:
-        print(real_list)
+        chatstatus = log.userOutput(real_list, chatstatus=chatstatus)
         #chatstatus['output'] += '\n would you search Gene Ontology for these terms [Y/N]?'
-        #print('\n would you search Gene Ontology for these terms [Y/N]?')
+        #chatstatus = log.userOutput('\n would you search Gene Ontology for these terms [Y/N]?', chatstatus=chatstatus)
         #go = input().strip().upper()
         #chatstatus['process']['search'] = (go == 'Y')
         #if go == 'Y':
@@ -62,26 +63,26 @@ def goSearch(query):
         output, geneStatus = textGO(terms)
         process['output'] = output
         if geneStatus == True:
-            #print('\n would you like to download charts associated with these genes [Y/N]?')
+            chatstatus = log.userOutput('\n would you like to download charts associated with these genes [Y/N]?', chatstatus=chatstatus)
             #download = input().strip().upper()
             #process['chart_download'] = (download == 'Y')
             #if download == 'Y':   
             for term in output:
                 go_id = str(term[0])
                 chartGO(go_id)
-                # print('\n would you like to download the paper associated with these genes [Y/N]?')
+                chatstatus = log.userOutput('\n would you like to download the paper associated with these genes [Y/N]?', chatstatus=chatstatus)
                 # download2 = input().strip().upper()
                 # process['paper_download'] = (download2 == 'Y')
                 # if download2 == 'Y':
                 pubmedPaper(go_id)
                     
         else:
-            # print('\n would you like to download the gene product annotation [Y/N]?')
+            chatstatus = log.userOutput('\n would you like to download the gene product annotation [Y/N]?', chatstatus=chatstatus)
             # download = input().strip().upper()
             # process['annotation_download'] = (download == 'Y')
             # if download == 'Y':
             for term in query:
-                print(term)
+                chatstatus = log.userOutput(term, chatstatus=chatstatus)
                 annotations(term)
     return process
 
@@ -112,7 +113,7 @@ def textGO(query):
     data = json.loads(responseBody)
     if data['numberOfHits'] == 0:
         gene=False
-        print("No Gene Ontology Available - Searching Gene Products")
+        chatstatus = log.userOutput("No Gene Ontology Available - Searching Gene Products", chatstatus=chatstatus)
         requestURL = requestURL = "https://www.ebi.ac.uk/QuickGO/services/geneproduct/search?query="+query
         r = requests.get(requestURL, headers={ "Accept" : "application/json"})
 
@@ -126,7 +127,7 @@ def textGO(query):
             id = result['id']
             extracted_data.append(id)
         for id in extracted_data:
-            print(f"ID: {id}")
+            chatstatus = log.userOutput(f"ID: {id}", chatstatus=chatstatus)
     else:
         for result in data['results']:
             id = result['id']
@@ -134,8 +135,8 @@ def textGO(query):
             extracted_data.append((id, text))
             # Print the extracted data
         for id, text in extracted_data:
-            print(f"ID: {id}")
-            print(f"Text: {text}")
+            chatstatus = log.userOutput(f"ID: {id}", chatstatus=chatstatus)
+            chatstatus = log.userOutput(f"Text: {text}", chatstatus=chatstatus)
     return extracted_data, gene
 
     
@@ -154,10 +155,10 @@ def chartGO(identifier):
     """
     try: 
         path = os.path.abspath(os.getcwd()) + '/go_charts'
-        os.makedirs(path, exist_ok = True) 
-        print("Directory '%s' created successfully" % path) 
-    except OSError as error: 
-        print("Directory '%s' can not be created" % path)
+        os.makedirs(path, exist_ok = True)
+        chatstatus = log.userOutput("Directory '%s' created successfully" % path, chatstatus=chatstatus)
+    except OSError as error:
+        chatstatus = log.userOutput("Directory '%s' can not be created" % path, chatstatus=chatstatus)
     requestURL = "https://www.ebi.ac.uk/QuickGO/services/ontology/go/terms/{ids}/chart?ids=GO%3A"+identifier[3:]
     img_data = requests.get(requestURL).content
     # save chart
@@ -186,36 +187,36 @@ def pubmedPaper(identifier):
     data = json.loads(responseBody)
     # Extract the dbId from the first result
     dbId = []
-    print(data)
+    chatstatus = log.userOutput(data, chatstatus=chatstatus)
     if data['numberOfHits'] > 0:
         xrefs = data['results'][0].get('definition', {}).get('xrefs', [])
         if xrefs:
             for db in xrefs:
                 dbId.append(db['dbId'])
         s = HTMLSession()
-        print(dbId)
+        chatstatus = log.userOutput(dbId, chatstatus=chatstatus)
         headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
         if len(dbId) > 0:
             try: 
                 path = os.path.abspath(os.getcwd()) + '/specialized_docs'
                 os.makedirs(path, exist_ok = True) 
-                print("Directory '%s' created successfully" % path) 
+                chatstatus = log.userOutput("Directory '%s' created successfully" % path, chatstatus=chatstatus)
             except OSError as error: 
-                print("Directory '%s' can not be created" % path)
+                chatstatus = log.userOutput("Directory '%s' can not be created" % path, chatstatus=chatstatus)
             for idname in dbId:
-                print(idname)
+                chatstatus = log.userOutput(idname, chatstatus=chatstatus)
                 try:
                     base_url = 'https://pubmed.ncbi.nlm.nih.gov/'
                     r = s.get(base_url + idname + '/', headers = headers, timeout = 5)
                     try:
                         pdf_url = r.html.find('a.id-link', first=True).attrs['href']
-                        print(pdf_url)
+                        chatstatus = log.userOutput(pdf_url, chatstatus=chatstatus)
                         if "doi" in pdf_url:
-                            print('Not public')
+                            chatstatus = log.userOutput("Not public", chatstatus=chatstatus)
                             continue
                         r = s.get(pdf_url, headers = headers, timeout = 5)
                         pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']
-                        print(pdf_real)
+                        chatstatus = log.userOutput(pdf_real, chatstatus=chatstatus)
                         r = s.get(pdf_real, stream=True)
                         with open(os.path.join(path, idname + '.pdf'), 'wb') as f:
                             for chunk in r.iter_content(chunk_size = 1024):
@@ -223,13 +224,13 @@ def pubmedPaper(identifier):
                                     f.write(chunk)
                     except AttributeError:
                         pass
-                        print(f"{idname} could not be gathered.")
+                        chatstatus = log.userOutput(f"{idname} could not be gathered.", chatstatus=chatstatus)
 
                 except ConnectionError as e:
                     pass
-                    print(f"{idname} could not be gathered.")
+                    chatstatus = log.userOutput(f"{idname} could not be gathered.", chatstatus=chatstatus)
         else:
-            print(f"No paper associated with {identifier} found on PubMed")
+            chatstatus = log.userOutput(f"No paper associated with {identifier} found on PubMed", chatstatus=chatstatus)
 #Input is a gene-product  
 def annotations(ids):
     """
@@ -246,9 +247,9 @@ def annotations(ids):
     try: 
         path = os.path.abspath(os.getcwd()) + '/go_annotations'
         os.makedirs(path, exist_ok = True) 
-        print("Directory '%s' created successfully" % path) 
+        chatstatus = log.userOutput("Directory '%s' created successfully" % path, chatstatus=chatstatus)
     except OSError as error: 
-        print("Directory '%s' can not be created" % path)
+        chatstatus = log.userOutput("Directory '%s' can not be created" % path, chatstatus=chatstatus)
         
     requestURL = "https://www.ebi.ac.uk/QuickGO/services/annotation/downloadSearch?geneProductId="+ids
 

@@ -1,4 +1,4 @@
-
+ 
 from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
@@ -36,7 +36,7 @@ def geneDBRetriever(chatstatus):
     chainResponse = conversation.predict(input=query)
 
     log.debugLog(chainResponse, chatstatus=chatstatus)    # Print gene list if debugging
-    response = parse_llm_response(chainResponse)
+    response = parse_llm_response(chainResponse, chatstatus)
 
     chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
                                                          prompt       = PROMPT,
@@ -72,10 +72,10 @@ def geneDBRetriever(chatstatus):
         chatstatus = dbCaller(chatstatus, geneList)
     except Exception as e:
         output = f'Error occurred while searching database: {e}'
-        print(output)
+        log.debugLog(output, chatstatus=chatstatus)
     return chatstatus
 
-def parse_llm_response(response):
+def parse_llm_response(response, chatstatus):
     """
     Parses the LLM response to extract the database name and search terms.
     
@@ -91,7 +91,7 @@ def parse_llm_response(response):
     # Split the response into lines
     response = response.replace("'", "")
     response = response.replace('"', "")
-    print(response)
+    log.debugLog(response, chatstatus=chatstatus)
     lines = response.strip().split('\n')
 
     # Extract the database name
@@ -164,15 +164,15 @@ def geneDatabaseRetriever(chatstatus):
     # Execute the scraping function and handle errors
     try:
         output = f'searching on {source}...'
-        print(output)
-        print('Search Terms: ' + str(searchTerms)) if chatstatus['config']['debug'] else None
+        log.debugLog(output, chatstatus=chatstatus)
+        log.debugLog('Search Terms: ' + str(searchTerms), chatstatus=chatstatus)
         for st in searchTerms:
             scrape_function(st)
         searchTerms = ' '.join(searchTerms)
         scrape_function(searchTerms)
     except Exception as e:
         output = f'Error occurred while searching on {source}: {e}'
-        print(output)
+        log.debugLog(output, chatstatus=chatstatus)
         process = {'searched': 'ERROR'}
 
     chatstatus['process'] = process

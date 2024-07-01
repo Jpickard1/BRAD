@@ -58,7 +58,7 @@ def setTitle(chatstatus, chatlog):
 
     # Get the pro
     for promptNumber in chatlog.keys():
-        print(promptNumber)
+        log.debugLog(promptNumber, chatstatus=chatstatus) 
         if promptNumber == 'llm':
             continue
         if chatlog[promptNumber]['process']['module'] == 'PLANNER':
@@ -90,8 +90,8 @@ def getProcessSummary(chatstatus, chatlog):
         if promptNumber == 'llm':
             continue
         if chatlog[promptNumber]['process']['module'] == 'PLANNER':
-            fullPlanner = str(chatlog[promptNumber]['planned'])
-    print(fullPlanner)
+            fullPlanner = str(chatlog[promptNumber]['status']['queue'])
+    log.debugLog(fullPlanner, chatstatus=chatstatus) 
     template = summarizeAnalysisPipelineTemplate()
     PROMPT = PromptTemplate(input_variables=["pipeline"], template=template)
     chain = PROMPT | chatstatus['llm']
@@ -142,7 +142,7 @@ def databaseReporter(chatlogStep, chatstatus):
         # Check if the step saved a figure
         if 'func' in step.keys() and step['func'] == 'utils.save':
             filename = step['new file']
-            print(filename)
+            chatstatus = log.userOutput(filename, chatstatus=chatstatus) # 
             df = utils.load_file_to_dataframe(filename)
     if df is not None:
         numrows = df.shape[0]
@@ -157,12 +157,12 @@ def databaseReporter(chatlogStep, chatstatus):
     res = chain.invoke(prompt)
     processSummary   = res.content.split('=')[1].strip().replace('_', '\_')
     databaseTex += processSummary
-    databaseTex += addFigures(chatlogStep)
-    databaseTex += addTables(chatlogStep)
+    databaseTex += addFigures(chatlogStep, chatstatus)
+    databaseTex += addTables(chatlogStep, chatstatus)
     
     return databaseTex
 
-def addFigures(chatlogStep):
+def addFigures(chatlogStep, chatstatus):
     """Add figures to the latex output file"""
     figureTex = ""
     for step in chatlogStep['process']['steps']:
@@ -177,7 +177,7 @@ def addFigures(chatlogStep):
 # \\caption{\\textbf{""" +step['new file'] + """}}
 # \\label{fig:enter-label}
 
-def addTables(chatlogStep):
+def addTables(chatlogStep, chatstatus):
     """Add tables to the latex output file"""
     tableTex = ""
     df = None
@@ -186,13 +186,13 @@ def addTables(chatlogStep):
         # Check if the step saved a figure
         if 'func' in step.keys() and step['func'] == 'utils.save':
             filename = step['new file']
-            print(filename)
+            chatstatus = log.userOutput(filename, chatstatus=chatstatus) 
             df = utils.load_file_to_dataframe(filename)
             break
     if df is None:
         return ""
-    print(type(df))
-    print(df.head(3))
+    log.debugLog(type(df), chatstatus=chatstatus) 
+    log.debugLog(df.head(3), chatstatus=chatstatus) 
     # df = pd.read_csv(filename)
     # Build latex
     tableTex += ('\n\n' + dataframe_to_latex(df) + '\n\n')

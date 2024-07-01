@@ -4,6 +4,7 @@ from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
 import re
 from BRAD.promptTemplates import plannerTemplate, plannerEditingTemplate
+from BRAD import log
 
 """This module is responsible for creating sequences of steps to be run by other modules of BRAD"""
 
@@ -21,9 +22,9 @@ def planner(chatstatus):
                                     )
     response = conversation.predict(input=prompt)
     response += '\n\n'
-    print(response) if chatstatus['config']['debug'] else None
+    chatstatus = log.userOutput(response, chatstatus=chatstatus)
     while True:
-        print('Do you want to proceed with this plan? [Y/N/edit]')
+        chatstatus = log.userOutput('Do you want to proceed with this plan? [Y/N/edit]', chatstatus=chatstatus)
         prompt2 = input('Input >> ')
         if prompt2 == 'Y':
             break
@@ -32,24 +33,32 @@ def planner(chatstatus):
         else:
             template = plannerEditingTemplate()
             template = template.format(plan=response)
-            print(template)
+            log.debugLog(template, chatstatus=chatstatus)
             PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
             chain    = PROMPT | llm
             
             # Call chain
             response = chain.invoke(prompt2).content.strip() + '\n\n'
-            print(response) if chatstatus['config']['debug'] else None
+            chatstatus = log.userOutput(response, chatstatus=chatstatus)
             
     processes = response2processes(response)
-    print(processes) if chatstatus['config']['debug'] else None
-    chatstatus['planned'] = processes
-    chatstatus['process']['stages'] = processes
+    log.debugLog(processes, chatstatus=chatstatus)
+    chatstatus['queue'] = processes
+    chatstatus['queue pointer'] = 1 # the 0 object is a place holder
+    log.debugLog('exit planner', chatstatus=chatstatus)
     return chatstatus
 
 def response2processes(response):
-    modules = ['RAG', 'SCRAPE', 'DATABASE', 'CODE', 'WRITE']
+    modules = ['RAG', 'SCRAPE', 'DATABASE', 'CODE', 'WRITE', 'ROUTER']
     stageStrings = response.split('**Step ')
-    processes = []
+    processes = [
+        {
+            'order'  : 0,
+            'module' : 'PLANNER',
+            'prompt' : None,
+            'description' : 'This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.',
+        }
+    ]
     for i, stage in enumerate(stageStrings):
         stageNum = i
         found_modules = [module for module in modules if module in stage]
@@ -57,10 +66,12 @@ def response2processes(response):
             continue
         prompt = re.findall(r'Prompt: (.*?)\n', stage)
         for module in found_modules:
-            # print(stageNum)
-            # print(module)
-            # print(prompt)
-            # print(stage)
+            
+            #log.debugLog(stageNum, chatstatus=chatstatus)
+            #log.debugLog(module, chatstatus=chatstatus)
+            #log.debugLog(prompt, chatstatus=chatstatus)
+            #log.debugLog(stage, chatstatus=chatstatus)
+            
             processes.append({
                 'order':stageNum,
                 'module':module,
