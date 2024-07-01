@@ -67,3 +67,45 @@ def load_nvidia(nvidia_model='meta/llama3-70b-instruct', nvidia_api_key=None, te
                      temperature = temperature,
           )
     return llm
+
+    
+
+
+
+def load_openai(model='gpt-3.5-turbo-0125', api_key=None):
+    """
+    Loads the NVIDIA language model with the specified model name and API key.
+
+    :param nvidia_model: Name of the NVIDIA model to load.
+    :type nvidia_model: str, optional
+    :param nvidia_api_key: API key for accessing NVIDIA's services. If not provided, it will be prompted.
+    :type nvidia_api_key: str, optional
+
+    :raises AssertionError: If the provided NVIDIA API key is not valid.
+
+    :return: The loaded NVIDIA language model.
+    :rtype: langchain_nvidia_ai_endpoints.ChatNVIDIA
+
+    :example:
+    >>> nvidia_model = load_nvidia()
+    """
+    from openai import OpenAI
+    from langchain_openai import ChatOpenAI
+    from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
+    #all the Open AI API keys do not all start with a similar character
+    if not os.environ.get("OPEN_API_KEY", "").startswith("sk-"):
+        api_key = getpass.getpass("Enter your Open AI API key: ")
+        assert api_key.startswith("sk-"), f"{api_key}... is not a valid key"
+        os.environ["OPENAI_API_KEY"] = api_key
+    else:
+        api_key = os.environ["OPENAI_API_KEY"]
+        
+    llm = ChatOpenAI(
+        model="gpt-3.5-turbo",
+        temperature=0,
+        max_tokens=None,
+        timeout=None,
+        max_retries=2,
+    )
+
+    return llm

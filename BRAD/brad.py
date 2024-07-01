@@ -342,6 +342,7 @@ def chat(
     if llm is None:
         llm = load_nvidia()
         # llm = load_llama(model_path) # load the llama
+        #llm = load_openai()
     if ragvectordb is None:
         print('\nWould you like to use a database with BRAD [Y/N]?')
         loadDB = input().strip().upper()
