@@ -156,18 +156,21 @@ Use the `subprocess` module to call any Python script from another Python script
 To call a Python script `example_script.py` which has no arguments:
 
 ```
-Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory']])
+Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory']], capture_output=True, text=True)
+)
 ```
 
 To call a Python script `example_script.py` with one argument:
 
 ```
-Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1'])
+Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1'], capture_output=True, text=True)
+)
 ```
 
 To call a Python script `example_script.py` with two arguments:
 ```
-Execute: subprocess.call([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1', 'arg2'])
+Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1', 'arg2'], capture_output=True, text=True)
+)
 ```
 
 Note that chatstatus['output-directory'] is ALWAYS passed as the first argument.
@@ -188,7 +191,7 @@ Query:{{input}}
 
 **IMPORTANT**
 The code to execute from your response must be formatted as:
-    Execute: subprocess.call([sys.executable, '<path to python script>', '<argument 1>', '<argument 2>', ..., '<argument n>'])
+    Execute: subprocess.call([sys.executable, '<path to python script>', '<argument 1>', '<argument 2>', ..., '<argument n>'], capture_output=True, text=True))
 This output should be exactly one line and no longer. Stop the response after this line.
 """
     return template
