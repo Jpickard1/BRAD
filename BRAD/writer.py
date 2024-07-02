@@ -2,12 +2,161 @@ import pandas as pd
 import os
 import json
 from tabulate import tabulate
+from datetime import datetime
 
 from langchain import PromptTemplate, LLMChain
 
 from BRAD import log
 from BRAD import utils
 from BRAD.promptTemplates import setReportTitleTemplate, summarizeAnalysisPipelineTemplate, summarizeDatabaseCallerTemplate, summarizeRAGTemplate
+from BRAD.pythonCaller import find_py_files, get_py_description, read_python_docstrings, pythonPromptTemplate, extract_python_code, execute_python_code
+
+def chatReport(chatstatus):
+    """This function should write a report of the chat"""
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 2, 2024
+    log.debugLog("Chat Report Called", chatstatus=chatstatus)
+    query    = chatstatus['prompt']
+    llm      = chatstatus['llm']
+
+    # Select the latex template. The specific latex template is hardcoded for now, but a latex-template-path
+    # indicator has been added to the config.json file and we can do a selection process similar to how scripts
+    # are selected to run
+    latexTemplate = getLatexTemplate('/home/jpic/latex-test/templates/dmdBiomarkerEnrichment.tex')
+    
+    # Read the full chat history
+    chatlog = json.load(open(os.path.join(chatstatus['output-directory'], 'log.json')))
+    chathistory = getChatInputOutputs(chatstatus, chatlog)
+    log.debugLog(chathistory, chatstatus=chatstatus)
+
+    # Get fields that are always set
+    title = getReportTitle(chathistory, chatstatus=chatstatus)
+    log.debugLog("title= " + str(title), chatstatus = chatstatus)
+    date  = getReportDate()
+    log.debugLog("date = " + str(date) , chatstatus = chatstatus)
+
+    # Fill in the latex template
+    latexTemplate = latexTemplate.replace("BRAD-TITLE", title)
+    latexTemplate = latexTemplate.replace("BRAD-DATE",  date)
+
+    # Loop over possible keys we put in the latex templates:
+    partsOfReport = ['SUMMARY', 'BODY']
+    for part in partsOfReport:
+        key = 'BRAD-' + part
+        if key in latexTemplate:
+            if key == 'BRAD-SUMMARY':
+                section = getReportSummary(chathistory, chatstatus=chatstatus)
+            if key == 'BRAD-BODY':
+                section = getReportBody(chatstatus, chatlog)
+            latexTemplate = latexTemplate.replace(key, section)
+
+    # After filling in the report template write it to a pdf file
+    chatstatus, report_file = reportToPdf(chatstatus, latexTemplate)
+    chatstatus = utils.compile_latex_to_pdf(chatstatus, report_file)
+    
+    return chatstatus
+
+def getReportDate():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 2, 2024
+    today = datetime.now()
+    formatted_date = today.strftime("%A, %B %d, %Y")
+    return formatted_date
+
+def getReportTitle(chathistory, chatstatus):
+    """This function uses an llm to determine the title of a report that summarizes the work done by in the chatlog"""
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 2, 2024
+    llm      = chatstatus['llm']
+    template = """Given the following chatlog, generate a descriptive title for a report summarizing the work done. Please keep the title concise. This report is in reposnse to the following user request:
+{userinput}
+
+**Chatlog Overview:**
+{{chatlog}}
+
+Format your output exactly as follows.
+**Output:**
+Title=<put the title title here>
+"""
+    template = template.format(userinput=chatstatus['prompt'])
+    print(template)
+    prompt = PromptTemplate(template=template, input_variables=["chatlog"])
+    chain = prompt | llm
+    log.debugLog('Calling getReportTitle', chatstatus=chatstatus)
+    response = chain.invoke(chathistory)
+    log.debugLog(response, chatstatus=chatstatus)
+    report_title = response.content.split('=')[1]
+    log.debugLog(report_title, chatstatus=chatstatus)
+    return report_title
+
+def getReportSummary(chathistory, chatstatus):
+    """This function uses an llm summarize a chat session with BRAD based on the log"""
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 2, 2024
+    llm      = chatstatus['llm']
+    template = """You are in charge of writing a report to summarize a chatbot session that performed a series of steps in a bioinformatics workflow. Given the following chatlog, write a section of to summarize this. Please use appropriate latex formatting, but do not worry about section titles or headings.
+    
+This report is in reposnse to the following user request:
+{userinput}
+
+**Chatlog Overview:**
+{{chatlog}}
+
+Format your output exactly as follows.
+**Output:**
+Summary=<put the title title here>
+"""
+    template = template.format(userinput=chatstatus['prompt'])
+    print(template)
+    prompt = PromptTemplate(template=template, input_variables=["chatlog"])
+    chain = prompt | llm
+    log.debugLog('Calling getReportSummary', chatstatus=chatstatus)
+    response = chain.invoke(chathistory)
+    log.debugLog(response, chatstatus=chatstatus)
+    report_summary = response.content.split('=')[1]
+    log.debugLog(report_summary, chatstatus=chatstatus)
+    return report_summary
+
+
+def getChatInputOutputs(chatstatus, chatlog):
+    """Creates a single string to summarize the chat history"""
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 2, 2024
+    chathistory = "**Chat History**\n\n"
+    for i in chatlog.keys():
+        chathistory += "Human: " + chatlog[i]['prompt'] + '\n\n'
+        chathistory += "BRAD: " + chatlog[i]['output'] + '\n\n\n'
+    return chathistory
+
+
+
+def getLatexTemplate(path2latexTemplate):
+    """
+    Reads the LaTeX template file and returns it as a string.
+    
+    Args:
+    path2latexTemplate (str): The path to the LaTeX template file.
+    
+    Returns:
+    str: The contents of the LaTeX template file as a string.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 2, 2024
+    try:
+        with open(path2latexTemplate, 'r') as file:
+            latex_template = file.read()
+        return latex_template
+    except FileNotFoundError:
+        return f"Error: The file at {path2latexTemplate} was not found."
+    except IOError:
+        return f"Error: An error occurred while reading the file at {path2latexTemplate}."
+
 
 def summarizeSteps(chatstatus):
     """This function should write a report about what happened in a pipeline"""
@@ -48,10 +197,53 @@ def summarizeSteps(chatstatus):
 
 def reportToPdf(chatstatus, report):
     """This function writes the report to a pdf file"""
+    report = ensureLatexFormatting(report)
     report_file = 'REPORT.tex'
     chatstatus = utils.save(chatstatus, report, report_file)
     report_file = chatstatus['process']['steps'][-1]['new file']
     return chatstatus, report_file
+
+def ensureLatexFormatting(report):
+    """
+    This function ensures appropriate LaTeX formatting.
+    
+    For instance:
+        - any "_" not in a math environment should be immediately proceeded by "\" to make them all "\_". 
+          If they are already immediately proceeded by "\", then no change is required.
+        - all math should be in an appropriate math environment including $ for intext characters or 
+          \begin{equation} <math here> \end{equation} for full lines of math.
+        - any file names that have .csv, .tsv, .pkl, .h5ad, .txt, .py, .cpp should be in the \texttt{<file name>} environment.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 2, 2024
+
+    # Function to escape underscores not already escaped
+    def escape_underscores(text):
+        return re.sub(r'(?<!\\)_', r'\\_', text)
+
+    # Process the report to handle different parts
+    parts = re.split(r'(\$.*?\$)', report, flags=re.DOTALL)
+    
+    processed_parts = []
+    for part in parts:
+        if part.startswith('$') and part.endswith('$'):
+            # Inline math, do not change underscores
+            processed_parts.append(part)
+        else:
+            # Regular text, escape underscores and wrap math expressions in $
+            part = escape_underscores(part)
+            part = re.sub(r'(\b[a-zA-Z]\w*\s*=\s*[^.]+\b)', r'$\1$', part)  # Heuristic to detect simple equations
+            processed_parts.append(part)
+    
+    report = ''.join(processed_parts)
+
+    # Ensure file names with specific extensions are in \texttt{}
+    report = re.sub(r'(\S+\.(csv|tsv|pkl|h5ad|txt|py|cpp))', r'\\texttt{\1}', report)
+    
+    return report
+
+    
 
 def setTitle(chatstatus, chatlog):
     """This function sets the title of the report based on the initial user query"""
@@ -102,6 +294,7 @@ def getProcessSummary(chatstatus, chatlog):
     return processSummary
 
 def getReportBody(chatstatus, chatlog):
+    """Summarizes individual steps"""
     reportBody = ""
     for promptNumber in chatlog.keys():
         if promptNumber == 'llm':
@@ -111,7 +304,7 @@ def getReportBody(chatstatus, chatlog):
         if module == 'RAG':
             reportBody += ragReporter(chatlog[promptNumber], chatstatus)
         elif module == 'CODE':
-            reportBody += codeReporter(chatlog[promptNumber])
+            reportBody += codeReporter(chatlog[promptNumber], chatstatus=chatstatus)
         elif module == 'DATABASE':
             reportBody += databaseReporter(chatlog[promptNumber], chatstatus)
         # Add to the report body based on the elements
@@ -119,8 +312,45 @@ def getReportBody(chatstatus, chatlog):
         # reportBody += databaseReporter(chatlog[promptNumber])
     return reportBody
 
-def codeReporter(chatlogStep):
-    return "\n\nCode Called\n\n"
+def codeReporter(chatlogStep, currentreport='', chatstatus=None):
+    """Summarizes running of some code"""
+    scriptRun = chatlogStep['process']['steps'][0]['parsedOutput']['scriptName']
+    docstring = read_python_docstrings(scriptRun)
+    code      = chatlogStep['process']['steps'][1]['parsedOutput']['code']
+    output    = chatlogStep['output']
+
+    template = """You are responsible for compiling a report of a bioinformatics pipeline. In the current section you are writing, you must summarize the output of running a piece of code in the pipeline. You will be provided with the current report, the doc strings of the function that was run, the command used to run the script, and the output of the script. Then, please provide the next step of paragraphs(s), in appropriate latex format, to summarize this stage of the pipeline.
+
+**Current Report**
+{currentreport}
+
+**Documentation of the function that was run**
+{docstring}
+
+**Executed Code**
+{code}
+
+**Code Output**
+{codeoutput}
+
+**Aditional Instructions**
+{{userprompt}}
+
+Please format your output exactly as follows.
+**Output**
+Summary=<put summary here>
+"""
+    template = template.format(currentreport=currentreport,
+                               docstring=docstring,
+                               code=code,
+                               codeoutput=output,
+    )
+    print(template)
+    PROMPT = PromptTemplate(input_variables=["userprompt"], template=template)
+    chain = PROMPT | chatstatus['llm']
+    response = chain.invoke(chatlogStep['prompt'])
+    print(response)
+    return response.content.split('=')[1]
 
 def ragReporter(chatlogStep, chatstatus):
     output = chatlogStep['output']

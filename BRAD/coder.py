@@ -135,6 +135,19 @@ def codeCaller(chatstatus):
     scriptSuffix = {'python': '.py', 'MATLAB': '.m'}.get(scriptType)
     scriptName  += scriptSuffix
 
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+                                                         prompt          = PROMPT,
+                                                         input           = prompt,
+                                                         output          = res,
+                                                         parsedOutput    = {
+                                                             'scriptName': scriptName,
+                                                             'scriptType': scriptType,
+                                                             'scriptPath': scriptPath
+                                                         },
+                                                         purpose         = 'Select which code to run'
+                                                        )
+                                         )
+    
     # Format code to execute: read the doc strings, format function call (second llm call), parse the llm output
     log.debugLog("ALL SCRIPTS FOUND. BUILDING TEMPLATE", chatstatus=chatstatus)
     
@@ -144,19 +157,37 @@ def codeCaller(chatstatus):
     template        = scriptCallingTemplate()
     if scriptType == 'python':
         createdFiles = "\n".join(utils.outputFiles(chatstatus)) # A string of previously created files
-        filled_template = template.format(scriptName=scriptName, scriptDocumentation=docstrings, output_path=chatstatus['output-directory'], files=createdFiles)
+        filled_template = template.format(scriptName=scriptName,
+                                          scriptDocumentation=docstrings,
+                                          output_path=chatstatus['output-directory'],
+                                          files=createdFiles
+                                         )
     else:
-        filled_template = template.format(scriptName=scriptName, scriptDocumentation=docstrings, output_path=chatstatus['output-directory'])
+        filled_template = template.format(scriptName=scriptName,
+                                          scriptDocumentation=docstrings,
+                                          output_path=chatstatus['output-directory']
+                                         )
     PROMPT          = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     log.debugLog(PROMPT, chatstatus=chatstatus)
     conversation    = ConversationChain(prompt  = PROMPT,
                                         llm     =    llm,
-                                        verbose =   chatstatus['config']['debug'],
+                                        verbose = chatstatus['config']['debug'],
                                         memory  = memory,
                                        )
     response = conversation.predict(input=chatstatus['prompt'])
     responseParser = {'python': extract_python_code, 'MATLAB': extract_matlab_code}.get(scriptType)
     code2execute = responseParser(response, chatstatus)
+
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+                                                         prompt          = PROMPT,
+                                                         input           = chatstatus['prompt'],
+                                                         output          = response,
+                                                         parsedOutput    = {
+                                                             'code': code2execute
+                                                         },
+                                                         purpose         = 'Format function call'
+                                                        )
+                                         )
 
     # Check if it requires previous inputs
     code2execute = utils.add_output_file_path_to_string(code2execute, chatstatus)
