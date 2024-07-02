@@ -70,7 +70,7 @@ from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
 from BRAD.planner import planner
 from BRAD.coder import codeCaller
-from BRAD.writer import summarizeSteps
+from BRAD.writer import summarizeSteps, chatReport
 from BRAD import log
 
 def getModules():
@@ -102,7 +102,7 @@ def getModules():
         'SNAKE'  : callSnakemake,    # snakemake,
         'PLANNER': planner,
         'CODE'   : codeCaller,
-        'WRITE'  : summarizeSteps,
+        'WRITE'  : chatReport, # summarizeSteps,
         'ROUTER' : reroute,
     }
     return module_functions
@@ -294,7 +294,8 @@ def chat(
         persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/",
         llm=None,
         ragvectordb=None,
-        embeddings_model=None
+        embeddings_model=None,
+        restart=None,
     ):
     """
     Initializes and runs the RAG chatbot, allowing interaction with various models and databases, and logs the conversation.
@@ -332,10 +333,16 @@ def chat(
     log_dir = os.path.join(base_dir, config['log_path'])
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    new_dir_name = dt.now().strftime("%Y-%m-%d_%H-%M-%S")
-    new_log_dir = os.path.join(log_dir, new_dir_name)
-    os.makedirs(new_log_dir)
-    chatname = os.path.join(new_log_dir, 'log.json')
+    if restart is None:
+        new_dir_name = dt.now().strftime("%Y-%m-%d_%H-%M-%S")
+        new_log_dir = os.path.join(log_dir, new_dir_name)
+        os.makedirs(new_log_dir)
+        chatname = os.path.join(new_log_dir, 'log.json')
+        chatlog  = {}
+    else:
+        new_log_dir = restart
+        chatname = os.path.join(restart, 'log.json')
+        chatlog  = json.load(open(chatname))
 
     # Initialize the dictionaries of tables and databases accessible to BRAD
     databases = {} # a dictionary to look up databases
@@ -365,7 +372,6 @@ def chat(
     chatstatus['memory'] = memory
     chatstatus['databases'] = databases
     chatstatus['output-directory'] = new_log_dir
-    chatlog           = {}
     if chatstatus['config']['experiment']:
         experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
         chatstatus['experiment-output'] = '-'.join(experimentName.split())
