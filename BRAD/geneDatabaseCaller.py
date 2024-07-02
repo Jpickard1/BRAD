@@ -65,6 +65,9 @@ def geneDBRetriever(chatstatus):
     else:
         geneList = response['genes']
 
+    if len(geneList) > chatstatus['config']['DATABASE']['max_search_terms']:
+        geneList = geneList[:chatstatus['config']['DATABASE']['max_search_terms']]
+
     # Print gene list if debugging
     log.debugLog(geneList, chatstatus=chatstatus)
 

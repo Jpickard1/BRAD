@@ -9,6 +9,12 @@
         "add_from_scrape": true,
         "max_search_terms": 2
     },
+    "DATABASE": {
+        "max_search_terms": 100
+    },
+    "WRITE": {
+        "latex-template-path": "/home/jpic/latex-test/templates"
+    },
     "max_articles_download": 1,
     "acceptable_data_files": [
         ".csv",
