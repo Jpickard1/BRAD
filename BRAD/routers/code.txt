@@ -243,3 +243,48 @@ convert the 2015 data to gene coordinate formate please
 load the 2015 dataset to h5ad format please
 convert the 2015 data to gene coordinate formate please
 build a LTV model using the 2015 output from Step 1
+load the 2015 dataset
+convert the 2015 dataset to gene coordinate format
+build a linear model of this dataset using Dynamic Mode Decomposition
+select biomarkers using the linear model we just created
+select biomarkers using the linear model we just created
+select biomarkers using the linear model we just created
+select biomarkers using the linear model we just created
+select biomarkers using the linear model we just created. Use a Gramian horizon of 5
+load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+load the cell cycle dataset
+Convert the dataset to gene coordinates
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Load the cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Perform biomarker or sensor selection on this data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Build a DMD or linear model of this data
+Perform biomarker or sensor selection on this data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset

@@ -91,3 +91,4 @@ Use WRITE to synthesize and summarize the entire analysis, including the finding
 Synthesize and summarize the entire analysis, including the findings from Step 1, the articles gathered in Step 3, and any subsequent iterations. Create a final report to encapsulate the entire analysis.
 Use WRITE to synthesize and summarize the entire analysis process, including the output from Step 1, the PubMed search results from Step 3 (if executed), and the iterative process between Step 1 and Step 4.
 Use WRITE to synthesize and summarize the information gathered from Steps 1-4. Create a concise report detailing PCNA's role in the cell cycle, its association with the pip Fucci system, and any relevant findings from the literature search.
+make a summary of all this

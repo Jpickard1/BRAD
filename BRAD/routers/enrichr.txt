@@ -233,3 +233,11 @@ Load the output file from Step 2 and use the Enrichr database to perform gene en
 "Use the DATABASE method to perform gene enrichment analysis on the output file from Step 2 using Enrichr. Identify the pathways PCNA is involved in and provide a list of significant enrichments."
 Load the output file from Step 2 and use Enrichr to perform gene set enrichment analysis to identify the pathways PCNA is involved in. Perform gene ontology analysis to determine the biological processes and molecular functions associated with PCNA.
 Load the output file from Step 2 and use Enrichr to perform gene enrichment analysis and identify the pathways PCNA is involved in. Use the gene set from the HWG analysis output file as input for the Enrichr analysis.
+perform gene enrichment on the state variables from the selected biomarkers
+load the biomarkers from the previous step and perform gene ernichment on the state field
+load the biomarkers from the previous step and perform gene ernichment on the state column
+load the biomarkers from the previous step and perform gene ernichment on the biomarker column
+load the biomarker file we created and perform gene enrichrment on the biomarker column
+load the biomarker file we created and perform gene enrichrment on the state column
+load the biomarker file we created and perform gene enrichrment on the state column
+load the biomarker file we created and perform gene enrichrment on the state column
