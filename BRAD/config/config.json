@@ -5,7 +5,17 @@
         "contextual_compression": false,
         "rerank": false
     },
-    "max_articles_download": 10,
+    "SCRAPE": {
+        "add_from_scrape": true,
+        "max_search_terms": 2
+    },
+    "DATABASE": {
+        "max_search_terms": 100
+    },
+    "WRITE": {
+        "latex-template-path": "/home/jpic/latex-test/templates"
+    },
+    "max_articles_download": 1,
     "acceptable_data_files": [
         ".csv",
         ".tsv"
@@ -23,10 +33,10 @@
         "colormap": "viridis",
         "fontsize": null
     },
-    "debug": "true",
+    "debug": 1,
     "log_path": "BRAD",
     "experiment": false,
     "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
-    "py-path": "/home/jpic/RAG-DEV/tutorials/geneformer/python",
+    "py-path": "/home/jpic/BRAD-Tools/",
     "image-path-extension": "images"
 }

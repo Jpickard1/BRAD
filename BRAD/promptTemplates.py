@@ -136,7 +136,64 @@ The code to execute from your response must be formatted as:
     Execute: subprocess.call([sys.executable, '<path to python script>', '<argument 1>', '<argument 2>', ..., '<argument n>'])
 This output should be exactly one line and no longer. Stop the response after this line.
 """
+    return template
 
+def pythonPromptTemplateWithFiles():
+    template = """Current conversation:\n{{history}}
+
+**PYTHON SCRIPT**
+You must run this python script:
+{scriptName}
+
+**PYTHON SCRIPT DOCUMENTATION**:
+This is the doc string of this python script:
+{scriptDocumentation}
+
+
+**CALL PYTHON SCRIPTS FROM PYTHON**:
+Use the `subprocess` module to call any Python script from another Python script. Here are some examples to call a few common Python scripts:
+
+To call a Python script `example_script.py` which has no arguments:
+
+```
+Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory']], capture_output=True, text=True)
+)
+```
+
+To call a Python script `example_script.py` with one argument:
+
+```
+Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1'], capture_output=True, text=True)
+)
+```
+
+To call a Python script `example_script.py` with two arguments:
+```
+Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1', 'arg2'], capture_output=True, text=True)
+)
+```
+
+Note that chatstatus['output-directory'] is ALWAYS passed as the first argument.
+
+The following files were previously created by BRAD and could be used as input to a function if necessary:
+{files}
+
+Query:{{input}}
+
+**INSTRUCTIONS**
+1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
+2. Using the `subprocess` module, provide the one line of code to execute the desired Python script with the given arguments. Assume the necessary modules (`subprocess` and `sys`) are already imported.
+3. The last line of your response should say "Execute: <Python code to execute>"
+4. Format the response/output as:
+    Arguments: 
+    Python Code Explanation: <2 sentences maximum>
+    Execute: <your code here>
+
+**IMPORTANT**
+The code to execute from your response must be formatted as:
+    Execute: subprocess.call([sys.executable, '<path to python script>', '<argument 1>', '<argument 2>', ..., '<argument n>'], capture_output=True, text=True))
+This output should be exactly one line and no longer. Stop the response after this line.
+"""
     return template
 
 def matlabPromptTemplate():

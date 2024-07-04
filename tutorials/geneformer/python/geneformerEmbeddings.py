@@ -1,4 +1,4 @@
-'''
+'''Get gene former embeddings of your data
 Get gene former embeddings of your data
 
 Arguments (three arguments):
@@ -21,6 +21,8 @@ Usage:
 Output file name should be `S<Step number>-EF-Embeddings.csv`
 
 This script uses Geneformer to embed gene expression data.
+
+We could add more documentation for this and make it a more complicated method too.
 '''
 import os
 import sys

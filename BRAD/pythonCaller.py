@@ -129,25 +129,39 @@ def execute_python_code(python_code, chatstatus):
     log.debugLog(python_code, chatstatus=chatstatus) 
     log.debugLog('END EVAL CHECK', chatstatus=chatstatus) 
 
-    # Unsure that chatstatus['output-directory'] is passed as an argument to the code:
+    # Ensure that chatstatus['output-directory'] is passed as an argument to the code:
     if "chatstatus['output-directory']" not in python_code:
         log.debugLog('PYTHON CODE OUTPUT DIRECTORY CHANGED', chatstatus=chatstatus) 
         python_code = python_code.replace(get_arguments_from_code(python_code)[2].strip(), "chatstatus['output-directory']")
         log.debugLog(python_code, chatstatus=chatstatus) 
-        
-    if python_code:
-        try:
-            # Attempt to evaluate the MATLAB code
-            eval(python_code)
-            log.debugLog("Debug: PYTHON code executed successfully.", chatstatus=chatstatus) 
-        except SyntaxError as se:
-            log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", chatstatus=chatstatus) 
-        except NameError as ne:
-            log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", chatstatus=chatstatus) 
-        except Exception as e:
-            log.debugLog(f"Debug: An error occurred during PYTHON code execution: {e}", chatstatus=chatstatus) 
-    else:
-        log.debugLog("Debug: No PYTHON code to execute.", chatstatus=chatstatus) 
+
+    # Ensure that we get the output from the script
+    response = None
+    python_code = "response = " + python_code
+    
+    try:
+        # Attempt to evaluate the MATLAB code
+        log.debugLog("Finalized PYTHON Call:", chatstatus=chatstatus)
+        log.debugLog("   ", chatstatus=chatstatus)
+        log.debugLog(python_code, chatstatus=chatstatus)
+        log.debugLog("   ", chatstatus=chatstatus)
+
+        # execute the code and get the response variable
+        local_scope = {'chatstatus': chatstatus, 'sys': sys, 'subprocess': subprocess}
+        exec(python_code, globals(), local_scope)
+        log.debugLog("Debug: PYTHON code executed successfully.", chatstatus=chatstatus)
+        response = local_scope.get('response', None)
+        log.debugLog("Code Execution Output:", chatstatus=chatstatus)
+        log.debugLog(response, chatstatus=chatstatus)
+        chatstatus['output'] = response.stdout.strip()
+        log.debugLog("Debug: PYTHON code output saved to output.", chatstatus=chatstatus) 
+    except SyntaxError as se:
+        log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", chatstatus=chatstatus) 
+    except NameError as ne:
+        log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", chatstatus=chatstatus) 
+    except Exception as e:
+        log.debugLog(f"Debug: An error occurred during PYTHON code execution: {e}", chatstatus=chatstatus) 
+
 
 # Extract the arguments from the string
 def get_arguments_from_code(code):
@@ -420,7 +434,7 @@ def extract_python_code(llm_output, chatstatus):
     ```
     Calling `extract_python_code(llm_output, chatstatus)` would return:
     ```
-    subprocess.call([sys.executable, 'script.py'])
+    subprocess.run([sys.executable, 'script.py'])
     ```
 
     If the LLM output does not include a valid Python execution command, the function might modify
@@ -435,9 +449,9 @@ def extract_python_code(llm_output, chatstatus):
     funcCall = llm_output.split('Execute:')
     log.debugLog(funcCall, chatstatus=chatstatus) 
     funcCall = funcCall[len(funcCall)-1].strip()
-    if funcCall[:32] != 'subprocess.call([sys.executable,':
+    if funcCall[:31] != 'subprocess.run([sys.executable,':
         log.debugLog(funcCall, chatstatus=chatstatus) 
-        funcCall = 'subprocess.call([sys.executable,' + funcCall[32:]
+        funcCall = 'subprocess.run([sys.executable,' + funcCall[32:]
         log.debugLog(funcCall, chatstatus=chatstatus) 
     return funcCall
     # Define the regex pattern to match the desired line

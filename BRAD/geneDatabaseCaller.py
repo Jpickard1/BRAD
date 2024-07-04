@@ -30,7 +30,7 @@ def geneDBRetriever(chatstatus):
     
     conversation = ConversationChain(prompt  = PROMPT,
                                      llm     = llm,
-                                     verbose = True,
+                                     verbose = chatstatus['config']['debug'],
                                      memory  = memory,
                                     )
     chainResponse = conversation.predict(input=query)
@@ -64,6 +64,9 @@ def geneDBRetriever(chatstatus):
         chatstatus, geneList = utils.loadFromFile(chatstatus)
     else:
         geneList = response['genes']
+
+    if len(geneList) > chatstatus['config']['DATABASE']['max_search_terms']:
+        geneList = geneList[:chatstatus['config']['DATABASE']['max_search_terms']]
 
     # Print gene list if debugging
     log.debugLog(geneList, chatstatus=chatstatus)

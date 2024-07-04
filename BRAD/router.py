@@ -13,6 +13,7 @@ from langchain_core.prompts.prompt import PromptTemplate
 
 from BRAD.promptTemplates import rerouteTemplate
 from BRAD import log
+from BRAD import utils
 
 def reroute(chatstatus):
     print('Call to REROUTER')
@@ -41,8 +42,15 @@ def reroute(chatstatus):
     # Extract output
     log.debugLog(res, chatstatus=chatstatus)
     log.debugLog(res.content, chatstatus=chatstatus)
-    nextStep = int(res.content.split('=')[1].split('\n')[0].strip())
+    # nextStep = int(res.content.split('=')[1].split('\n')[0].strip())
+    nextStep = utils.find_integer_in_string(res.content.split('\n')[0])
+    log.debugLog('EXTRACTED NEXT STEP', chatstatus=chatstatus)
     log.debugLog('Next Step=' + str(nextStep), chatstatus=chatstatus)
+    log.debugLog((nextStep is None), chatstatus=chatstatus)
+    if nextStep is None:
+        nextStep = chatstatus['queue pointer'] + 1
+        #nextStep = 3
+        #log.debugLog('    **RESET NEXT STEP HARDCODED**', chatstatus=chatstatus)
     chatstatus['process']['steps'].append(log.llmCallLog(
         llm     = llm,
         prompt  = template,
@@ -170,7 +178,7 @@ def getRouter():
         name = 'ROUTER',
         utterances = read_prompts(getRouterPath('router.txt'))
     )
-    encoder = HuggingFaceEncoder()
+    encoder = HuggingFaceEncoder(device='cpu')
     routes = [routeGget,
               routeScrape,
               routeTable,
