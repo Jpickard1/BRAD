@@ -33,7 +33,7 @@
         "colormap": "viridis",
         "fontsize": null
     },
-    "debug": "true",
+    "debug": 1,
     "log_path": "BRAD",
     "experiment": false,
     "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",

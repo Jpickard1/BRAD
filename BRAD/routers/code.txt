@@ -288,3 +288,31 @@ Convert the dataset to gene coordinates
 Load the 2015 cell cycle dataset
 Load the 2015 cell cycle dataset
 Load the 2015 cell cycle dataset
+Load the cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Load the cell cycle dataset
+Load the cell cycle dataset
+Load the cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Perform biomarker or sensor selection on this data
+Perform time varying biomarker selection on this data from times 0 to 3
+Perform time varying biomarker selection on this data from times 0 to 3. set the verbose option to true
+Perform time varying biomarker selection on this data from times 0 to 3. set the verbose option to true
+Perform time varying biomarker selection on this data from times 0 to 3. set the verbose option to true
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 10. set verbose to true.
+Perform time varying biomarker selection on this data from times 5-7. set verbose to true.
+Perform time varying biomarker selection on this data from times 5-7. set verbose to true.
+load the cell cycle dataset
+convert the 2015 file to gene former coordinates please
+Build a DMD or linear model of the 2015 GF embedded data
+convert the gene former embeddings to a time series dataset please
+build a linear model with dynamic mode decomposition of the gene former embeddings

@@ -173,6 +173,8 @@ def reconfig(chatstatus):
     
     prompt = chatstatus['prompt']
     _, key, value = prompt.split(maxsplit=2)
+    if key == 'debug':
+        value = (value.lower() == 'true')
     try:
         value = int(value)
     except ValueError:
@@ -410,7 +412,7 @@ def chat(
 
         # Outputs
         chatstatus = log.userOutput('==================================================', chatstatus=chatstatus)
-        chatstatus = log.userOutput('RAG >> ' + str(len(chatlog)) + ': ', chatstatus=chatstatus)
+        chatstatus = log.userOutput('BRAD >> ' + str(len(chatlog)) + ': ', chatstatus=chatstatus)
         
         # I wasn't able to add the {end = ''} info to the userOutput function
 

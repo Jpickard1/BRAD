@@ -151,7 +151,8 @@ def execute_python_code(python_code, chatstatus):
         exec(python_code, globals(), local_scope)
         log.debugLog("Debug: PYTHON code executed successfully.", chatstatus=chatstatus)
         response = local_scope.get('response', None)
-        # print(response)
+        log.debugLog("Code Execution Output:", chatstatus=chatstatus)
+        log.debugLog(response, chatstatus=chatstatus)
         chatstatus['output'] = response.stdout.strip()
         log.debugLog("Debug: PYTHON code output saved to output.", chatstatus=chatstatus) 
     except SyntaxError as se:

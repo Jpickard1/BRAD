@@ -30,7 +30,7 @@ def geneDBRetriever(chatstatus):
     
     conversation = ConversationChain(prompt  = PROMPT,
                                      llm     = llm,
-                                     verbose = True,
+                                     verbose = chatstatus['config']['debug'],
                                      memory  = memory,
                                     )
     chainResponse = conversation.predict(input=query)
