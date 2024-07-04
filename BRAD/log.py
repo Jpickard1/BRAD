@@ -83,7 +83,7 @@ def debugLog(output, chatstatus=None, display=None):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     if display:
         logging.info(output)
-    elif chatstatus['config']['debug'] or chatstatus['config']['debug'].lower() == 'true':
+    elif chatstatus['config']['debug']: # or str(chatstatus['config']['debug']).lower() == 'true':
         logging.info(output)
         # print('DEBUG')
         # print(output)

@@ -196,3 +196,123 @@ run the gene former code
 please run the geneformer code with this input file: /nfs/turbo/umms-indikar/shared/projects/geneformer/example_input_files/cell_classification/disease_classification/human_dcm_hcm_nf.dataset/
 please run the gene former code with this input: /nfs/turbo/umms-indikar/shared/projects/geneformer/example_input_files/cell_classification/disease_classification/human_dcm_hcm_nf.dataset/
 please run the gene former embedding code with this input file: /nfs/turbo/umms-indikar/shared/projects/geneformer/example_input_files/cell_classification/disease_classification/human_dcm_hcm_nf.dataset/
+select the 2015 dataset
+select the 2015 dataset
+select the 2015 dataset
+select the 2017 dataset
+select the 2018 dataset
+select the 2015 dataset
+select the 2018 dataset
+run the geneformer code
+load the 2015 dataset
+load the 2015 dataset
+load the 2018 dataset
+please load the 2015 dataset
+great thanks. Now load the 2018 dataset
+that is great! Now I'd like you to load the gene coordinates of the 2015 data using the previously created file
+that is great! Now I'd like you to load the gene coordinates of the 2015 data using the previously created file
+that is great! Now I'd like you to load the gene coordinates of the 2015 data using the previously created file
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+load the 2015 dataset
+load the 2015 dataset
+load the 2015 dataset
+load the 2018 dataset
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+load the 2015 dataset
+load the 2018 dataset
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+load the 2015 dataset
+load the 2018 dataset
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+load the 2015 dataset
+load the 2018 dataset
+now, using the file previously created for the 2018 data as input, load the gene coordinates of that dataset please
+great! Now I need you to do a similar thing and get the 2015 gene coordinates from the 2015 dataset and write them to S1-2015.pkl
+please take the 2018 output and build a DMD model with it
+load the 2015 dataset to h5ad format please
+load the 2015 dataset to h5ad format please
+take the 2015 file that was just generated and convert it to gene coordinate format
+great, now using the S1-2015.pkl file that was just created build a linear model with no model reduction using Dynamic Mode Decomposition
+great, now using the S1-2015.pkl file that was just created build a linear model with no model reduction using Dynamic Mode Decomposition
+load the 2018 dataset from the h5ad format
+convert the 2018 data that was generated to the gene coordinate format
+build a linear model with the 2018 data from Step 1. Save it to a file and make sure not to have overlapping file names
+load the 2015 dataset to h5ad format please
+convert the 2015 data to gene coordinate formate please
+load the 2015 dataset to h5ad format please
+convert the 2015 data to gene coordinate formate please
+build a LTV model using the 2015 output from Step 1
+load the 2015 dataset
+convert the 2015 dataset to gene coordinate format
+build a linear model of this dataset using Dynamic Mode Decomposition
+select biomarkers using the linear model we just created
+select biomarkers using the linear model we just created
+select biomarkers using the linear model we just created
+select biomarkers using the linear model we just created
+select biomarkers using the linear model we just created. Use a Gramian horizon of 5
+load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+load the cell cycle dataset
+Convert the dataset to gene coordinates
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Load the cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Perform biomarker or sensor selection on this data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Build a DMD or linear model of this data
+Perform biomarker or sensor selection on this data
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Load the cell cycle dataset
+Load the cell cycle dataset
+Load the cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Perform biomarker or sensor selection on this data
+Perform time varying biomarker selection on this data from times 0 to 3
+Perform time varying biomarker selection on this data from times 0 to 3. set the verbose option to true
+Perform time varying biomarker selection on this data from times 0 to 3. set the verbose option to true
+Perform time varying biomarker selection on this data from times 0 to 3. set the verbose option to true
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 10. set verbose to true.
+Perform time varying biomarker selection on this data from times 5-7. set verbose to true.
+Perform time varying biomarker selection on this data from times 5-7. set verbose to true.
+load the cell cycle dataset
+convert the 2015 file to gene former coordinates please
+Build a DMD or linear model of the 2015 GF embedded data
+convert the gene former embeddings to a time series dataset please
+build a linear model with dynamic mode decomposition of the gene former embeddings
