@@ -37,7 +37,7 @@ def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/
                    verbose          = verbose)
     return llm
 
-def load_nvidia(nvidia_model='meta/llama3-70b-instruct', nvidia_api_key=None, temperature=None):
+def load_nvidia(model_name='meta/llama3-70b-instruct', nvidia_api_key=None, temperature=None):
     """
     Loads the NVIDIA language model with the specified model name and API key.
 
@@ -62,8 +62,8 @@ def load_nvidia(nvidia_model='meta/llama3-70b-instruct', nvidia_api_key=None, te
     else:
         nvidia_api_key = os.environ["NVIDIA_API_KEY"]
         
-    llm = ChatNVIDIA(model   = nvidia_model,
-                     api_key = nvidia_api_key,
+    llm = ChatNVIDIA(model_name  = nvidia_model,
+                     api_key     = nvidia_api_key,
                      temperature = temperature,
           )
     return llm
@@ -72,7 +72,7 @@ def load_nvidia(nvidia_model='meta/llama3-70b-instruct', nvidia_api_key=None, te
 
 
 
-def load_openai(model='gpt-3.5-turbo-0125', api_key=None):
+def load_openai(model_name='gpt-3.5-turbo-0125', api_key=None):
     """
     Loads the NVIDIA language model with the specified model name and API key.
 
@@ -89,6 +89,9 @@ def load_openai(model='gpt-3.5-turbo-0125', api_key=None):
     :example:
     >>> nvidia_model = load_nvidia()
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+    # Date: July 1, 2024
     from openai import OpenAI
     from langchain_openai import ChatOpenAI
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
@@ -101,7 +104,7 @@ def load_openai(model='gpt-3.5-turbo-0125', api_key=None):
         api_key = os.environ["OPENAI_API_KEY"]
         
     llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
+        model=model_name,
         temperature=0,
         max_tokens=None,
         timeout=None,

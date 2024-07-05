@@ -51,12 +51,13 @@ def logger(chatlog, chatstatus, chatname):
     chatstatus['process'] = None
     return chatlog, chatstatus
 
-def llmCallLog(llm=None, prompt=None, input=None, query=None, output=None, parsedOutput=None, purpose=None):
+def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, parsedOutput=None, purpose=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
     llmLog = {
         'llm'          : str(llm),
+        'memory'       : str(memory),
         'prompt'       : str(prompt),
         'input'        : str(input),
         'output'       : str(output),
@@ -87,6 +88,17 @@ def debugLog(output, chatstatus=None, display=None):
         logging.info(output)
         # print('DEBUG')
         # print(output)
+
+def errorLog(errorMessage, info=None, chatstatus=None):
+    """This function displays and logs error messages"""
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.info(errorMessage)
+    chatstatus['process']['steps'].append(
+        'func'    : 'log.errorLog'
+        'message' : errorMessage,
+        'info'    : metadata,
+    )
+    
 
 def userOutput(output, chatstatus=None):
     """This function standardizes how information is printed to the user and allows for logging"""

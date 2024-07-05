@@ -223,6 +223,5 @@ def executeCode(chatstatus, code2execute, scriptType):
     #       jpic@umich.edu
     # Date: June 22, 2024
     executor = {'python': execute_python_code, 'MATLAB': execute_matlab_code}.get(scriptType)
-    log.debugLog("Executing Code!!", chatstatus=chatstatus)
     executor(code2execute, chatstatus)
 

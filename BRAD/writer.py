@@ -13,7 +13,28 @@ from BRAD.promptTemplates import setReportTitleTemplate, summarizeAnalysisPipeli
 from BRAD.pythonCaller import find_py_files, get_py_description, read_python_docstrings, pythonPromptTemplate, extract_python_code, execute_python_code
 
 def chatReport(chatstatus):
-    """This function should write a report of the chat"""
+    """
+    Generates a report of the chat conversation based on the logged interactions 
+    and writes it to a PDF file using a LaTeX template.
+
+    Args:
+        chatstatus (dict): A dictionary containing the language model, user prompt, 
+                           output directory, and other relevant information for generating 
+                           the chat report.
+
+    Returns:
+        dict: The updated chatstatus containing the path to the generated PDF report and 
+              any updates made during the report generation process.
+
+    Example
+    -------
+    >>> chatstatus = {
+    ...     'llm': llm_instance,
+    ...     'prompt': "Generate chat report",
+    ...     'output-directory': '/path/to/output',
+    ... }
+    >>> updated_chatstatus = chatReport(chatstatus)
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: July 2, 2024
@@ -59,6 +80,12 @@ def chatReport(chatstatus):
     return chatstatus
 
 def getReportDate():
+    """
+    Returns the current date formatted as a string in the format: "Day of the week, Month Day, Year".
+
+    Returns:
+        str: Formatted date string.
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: July 2, 2024
@@ -67,7 +94,17 @@ def getReportDate():
     return formatted_date
 
 def getReportTitle(chathistory, chatstatus):
-    """This function uses an llm to determine the title of a report that summarizes the work done by in the chatlog"""
+    """
+    Uses a language model to generate a descriptive title for a report summarizing the work done in the chatlog.
+
+    Args:
+        chathistory (dict): A dictionary containing the chat history with user inputs and model outputs.
+        chatstatus (dict): A dictionary containing the current chat status, including the language model instance 
+                           and user prompt.
+
+    Returns:
+        str: The generated report title based on the chatlog and user prompt.
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: July 2, 2024
@@ -90,11 +127,31 @@ Title=<put the title title here>
     response = chain.invoke(chathistory)
     log.debugLog(response, chatstatus=chatstatus)
     report_title = response.content.split('=')[1]
+    chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
+                                                         prompt       = prompt,
+                                                         input        = chathistory,
+                                                         output       = response,
+                                                         parsedOutput = {
+                                                             'report title' : report_title,
+                                                         },
+                                                         purpose      = 'generate a title for a pdf'
+                                                        )
+                                         )
     log.debugLog(report_title, chatstatus=chatstatus)
     return report_title
 
 def getReportSummary(chathistory, chatstatus):
-    """This function uses an llm summarize a chat session with BRAD based on the log"""
+    """
+    Uses a language model to generate a summary section for a report based on the chat session with BRAD.
+
+    Args:
+        chathistory (dict): A dictionary containing the chat history with user inputs and model outputs.
+        chatstatus (dict): A dictionary containing the current chat status, including the language model instance 
+                           and user prompt.
+
+    Returns:
+        str: The generated summary section for the report based on the chatlog and user prompt.
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: July 2, 2024
@@ -119,12 +176,32 @@ Summary=<put the title title here>
     response = chain.invoke(chathistory)
     log.debugLog(response, chatstatus=chatstatus)
     report_summary = response.content.split('=')[1]
+    chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
+                                                         prompt       = prompt,
+                                                         input        = chathistory,
+                                                         output       = response,
+                                                         parsedOutput = {
+                                                             'report summary' : report_summary,
+                                                         },
+                                                         purpose      = 'generate a summayr of the chat history'
+                                                        )
+                                         )
     log.debugLog(report_summary, chatstatus=chatstatus)
     return report_summary
 
 
 def getChatInputOutputs(chatstatus, chatlog):
-    """Creates a single string to summarize the chat history"""
+    """
+    Creates a single string to summarize the chat history between a user and BRAD.
+
+    Args:
+        chatstatus (dict): A dictionary containing the current chat status, not directly used in this function.
+        chatlog (dict): A dictionary representing the chat history with keys as indices and values as dictionaries
+                        containing 'prompt' and 'output' keys.
+
+    Returns:
+        str: A formatted string summarizing the chat history with inputs from the user and outputs from BRAD.
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: July 2, 2024
@@ -160,7 +237,11 @@ def getLatexTemplate(path2latexTemplate):
 
 
 def summarizeSteps(chatstatus):
-    """This function should write a report about what happened in a pipeline"""
+    """
+    .. warning: we will remove this soon
+    
+    This function should write a report about what happened in a pipeline
+    """
     query    = chatstatus['prompt']
     llm      = chatstatus['llm']              # get the llm
 
@@ -197,7 +278,16 @@ def summarizeSteps(chatstatus):
     return chatstatus #, report
 
 def reportToPdf(chatstatus, report):
-    """This function writes the report to a pdf file"""
+    """
+    Writes the formatted report to a PDF file.
+
+    Args:
+        chatstatus (dict): A dictionary containing the current chat status, used to track process steps and file paths.
+        report (str): The formatted report content in LaTeX format.
+
+    Returns:
+        tuple: A tuple containing the updated chat status dictionary and the filename of the generated PDF report.
+    """
     report = ensureLatexFormatting(report)
     report_file = 'REPORT.tex'
     chatstatus = utils.save(chatstatus, report, report_file)
@@ -206,6 +296,8 @@ def reportToPdf(chatstatus, report):
 
 def ensureLatexFormatting(report):
     """
+    .. warning: we need to make this function work better
+    
     This function ensures appropriate LaTeX formatting.
     
     For instance:
@@ -247,7 +339,11 @@ def ensureLatexFormatting(report):
     
 
 def setTitle(chatstatus, chatlog):
-    """This function sets the title of the report based on the initial user query"""
+    """
+    .. warning: we will remove this soon
+    
+    This function sets the title of the report based on the initial user query
+    """
 
     # Get the pro
     for promptNumber in chatlog.keys():
@@ -269,7 +365,11 @@ def setTitle(chatstatus, chatlog):
     return title
 
 def getPrompt(chatstatus, chatlog):
-    """This function finds the original prompt used to generate this report"""
+    """
+    .. warning: we will remove this soon
+    
+    This function finds the original prompt used to generate this report
+    """
     for promptNumber in chatlog.keys():
         if promptNumber == 'llm':
             continue
@@ -279,6 +379,7 @@ def getPrompt(chatstatus, chatlog):
     return ""
 
 def getProcessSummary(chatstatus, chatlog):
+    """Summarizes each stage of the process"""
     for promptNumber in chatlog.keys():
         if promptNumber == 'llm':
             continue
@@ -354,6 +455,7 @@ Summary=<put summary here>
     return response.content.split('=')[1]
 
 def ragReporter(chatlogStep, chatstatus):
+    """Summarize the output of the RAG stage"""
     output = chatlogStep['output']
     template = summarizeRAGTemplate()
     log.debugLog(template, display=True)
@@ -365,6 +467,7 @@ def ragReporter(chatlogStep, chatstatus):
     return processSummary
     
 def databaseReporter(chatlogStep, chatstatus):
+    """Summarize the output of the DATABASE lookup stage"""
     databaseTex = ""
     prompt = chatlogStep['prompt']
     output = chatlogStep['output']
@@ -430,6 +533,7 @@ def addTables(chatlogStep, chatstatus):
     return tableTex
 
 def getReferences(chatstatus, chatlog):
+    """Finds all documents used in the chat"""
     referenceList = []
     for promptNumber in chatlog.keys():
         if promptNumber == 'llm':
@@ -445,6 +549,7 @@ def getReferences(chatstatus, chatlog):
     return references
 
 def dataframe_to_latex(df):
+    """Converts a dataframe to latex"""
     df = df.head(20)
     for col in df.columns:
         if len(df[col].unique()) == 1:
@@ -472,6 +577,7 @@ def dataframe_to_latex(df):
     return latex_table
 
 def getFirstLatexReportOutline(title='BRAD Output'):
+    """A hardcoded latex template for generating a pdf report"""
     report = """\\documentclass{{article}}
 \\usepackage[margin=1in]{{geometry}}
 \\usepackage{{graphicx}}
