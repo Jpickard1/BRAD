@@ -55,6 +55,20 @@ def callMatlab(chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
+    
+    # Developer Comments:
+    # -------------------
+    # This function is responsible for selecting a matlab function to call and
+    # furmulating the function call.
+    #
+    # History:
+    #
+    # Issues:
+    # - This function doesn't use the llm to select the appropriate matlab script.
+    #   Currently, a word similarity score between the prompt and matlab codes
+    #   is performed and used to select the prompts, but we could follow an approach
+    #   similar to the coder.codeCaller() method that uses an llm to read the docstrings
+    #   and identify the best file. Note - the same approach is used by pythonCaller
     log.debugLog("Matlab Caller Start", chatstatus=chatstatus)
     prompt = chatstatus['prompt']                                        # Get the user prompt
     llm = chatstatus['llm']                                              # Get the llm
@@ -90,10 +104,20 @@ def callMatlab(chatstatus):
                                      verbose =   chatstatus['config']['debug'],
                                      memory  = memory,
                                     )
-    response = conversation.predict(input=chatstatus['prompt'] )
+    response = conversation.predict(input=chatstatus['prompt'])
     log.debugLog(debug, chatstatus=chatstatus)
     matlabCode = extract_matlab_code(response, chatstatus)
     log.debugLog(matlabCode, chatstatus=chatstatus)
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+                                                         prompt          = PROMPT,
+                                                         input           = chatstatus['prompt'],
+                                                         output          = response,
+                                                         parsedOutput    = {
+                                                             'matlabCode': matlabCode,
+                                                         },
+                                                         purpose         = 'formulate matlab function call'
+                                                        )
+                                         )
     execute_matlab_code(matlabCode, chatstatus)
     return chatstatus
 
@@ -137,6 +161,12 @@ def activateMatlabEngine(chatstatus):
         base_dir = os.path.expanduser('~')
         matlabPath = os.path.join(base_dir, chatstatus['config']['matlab-path'])
     mpath = chatstatus['matlabEng'].addpath(chatstatus['matlabEng'].genpath(matlabPath))
+    chatstatus['process']['steps'].append(
+        {
+            'func'    : 'matlabCaller.activateMatlabEngine',
+            'purpose' : 'turned on the matlab engine and added matlab files to its path'
+        }
+    )
     return chatstatus, mpath
 
 def execute_matlab_code(matlab_code, chatstatus):
@@ -176,6 +206,13 @@ def execute_matlab_code(matlab_code, chatstatus):
         try:
             # Attempt to evaluate the MATLAB code
             eval(matlab_code)
+            chatstatus['process']['steps'].append(
+                {
+                    'func'   : 'matlabCaller.execute_matlab_code',
+                    'code'   : matlab_code,
+                    'purpose': 'execute matlab code',
+                }
+            )
             log.debugLog("Debug: MATLAB code executed successfully.", chatstatus=chatstatus)
         except SyntaxError as se:
             log.debugLog(f"Debug: Syntax error in the MATLAB code: {se}", chatstatus=chatstatus)
@@ -410,24 +447,3 @@ def extract_matlab_code(llm_output, chatstatus):
         funcCall = 'eng' + funcCall[3:]
         log.debugLog(funcCall, chatstatus=chatstatus)
     return funcCall
-
-
-#def callMatlab_depricated(chatstatus, chatlog):
-#    """
-#    .. warning:: This function is being removed.
-#    """
-#        THIS IS THE INCORRECT DOCUMENTATION FOR THIS FUNCTION IT IS ONLY A TEST DELETE LATER
-#    IT DOES NOT WORK... WHY?
-#    Performs a search on Gene Ontology (GO) based on the provided query and allows downloading associated charts and papers.
-#
-#    :param query: The query list containing gene names or terms for GO search.
-#    :type query: list
-#    :return: A dictionary containing the GO search process details.
-#    :rtype: dict
-#    prompt = chatstatus['prompt']                                        # Get the user prompt
-#    chatstatus['process'] = {}                                           # Begin saving plotting arguments
-#    chatstatus['process']['name'] = 'Matlab'    
-#    config_file_path = 'configMatlab.json' # we could use this to add matlab files to path
-#    eng = matlab.engine.start_matlab()
-
-

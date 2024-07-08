@@ -519,9 +519,20 @@ def compile_latex_to_pdf(chatstatus, tex_file):
             check=True
         )
         log.debugLog(f"PDF generated successfully in {chatstatus['output-directory']}.", chatstatus=chatstatus)
+        chatstatus['process']['steps'].append(
+            {
+                'func' : 'utils.compile_latex_to_pdf',
+                'what' : 'tried to compile latex to a pdf'
+            }
+        )
     except subprocess.CalledProcessError as e:
         log.debugLog(f"An error occurred: {e}", chatstatus=chatstatus)
-
+        chatstatus['process']['steps'].append(
+            {
+                'func' : 'utils.compile_latex_to_pdf',
+                'what' : 'failed to compile latex to a pdf'
+            }
+        )        
     return chatstatus
 
 def add_output_file_path_to_string(string, chatstatus):

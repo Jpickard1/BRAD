@@ -51,6 +51,9 @@ def webScraping(chatstatus):
     :rtype: dict
 
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: May 20, 2024
     query    = chatstatus['prompt']
     llm      = chatstatus['llm']              # get the llm
     memory   = chatstatus['memory']           # get the memory of the model
@@ -80,6 +83,15 @@ def webScraping(chatstatus):
                                     )
     response = conversation.predict(input=query)
     llmResponse = parse_llm_response(response)
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+                                                         prompt          = PROMPT,
+                                                         memory          = memory,
+                                                         input           = query,
+                                                         output          = response,
+                                                         parsedOutput    = llmResponse,
+                                                         purpose         = 'identify how to web scrape'
+                                                        )
+                                         )
     llmKey, searchTerms = llmResponse['database'], llmResponse['search_terms']
 
     # Determine the target source
@@ -95,9 +107,6 @@ def webScraping(chatstatus):
         for numTerm, st in enumerate(searchTerms):
             if numTerm == chatstatus['config']['SCRAPE']['max_search_terms']:
                 break
-            # this is interesting that we don't return chatstatus. I think since
-            # dicts are pass by reference, it should be fine, but it is different
-            # from the rest of out codes
             scrape_function(st, chatstatus)
     except Exception as e:
         output = f'Error occurred while searching on {source}: {e}'
@@ -126,6 +135,8 @@ def arxiv(query, chatstatus):
     :rtype: tuple
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
     process = {}
     output = 'searching the following on arxiv: ' + query
     chatstatus = log.userOutput(output, chatstatus=chatstatus)
@@ -133,12 +144,19 @@ def arxiv(query, chatstatus):
     process['search results'] = df
     displayDf = df[['Title', 'Authors', 'Abstract']]
     display(displayDf)
-    output += '\n would you like to download these articles [Y/N]?'
-    chatstatus = log.userOutput('would you like to download these articles [Y/N]?', chatstatus=chatstatus)
+    output += '\n Would you like to download these articles [Y/N]?'
+    chatstatus = log.userOutput('Would you like to download these articles [Y/N]?', chatstatus=chatstatus)
     download = input().strip().upper()
+    chatstatus['process']['steps'].append(
+        {
+            'func'           : 'scraper.arxiv',
+            'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+            'input'          : download,
+            'purpose'        : 'decide to download pdfs or not'
+        }
+    )
     process['download'] = (download == 'Y')
     if download == 'Y':
-        #id_list = df['id'].to_list()
         output += arxiv_scrape(pdfs, chatstatus)
     return output, process
 
@@ -159,13 +177,14 @@ def search_pubmed_article(query, number_of_articles=10):
     :rtype: list
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     Entrez.email = 'inhyak@gmail.com'
     handle = Entrez.esearch(db='pubmed', term = query, retmax=number_of_articles, sort='relevance')
     record = Entrez.read(handle)
-    #record = Entrez.ecitmatch()
     handle.close()
     return record['IdList']
-    #return record
 
 def pubmed(query, chatstatus):
     """
@@ -179,6 +198,9 @@ def pubmed(query, chatstatus):
     :return: None
     :rtype: None
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     pmid_list = search_pubmed_article(query)
     citation_arr = []
     if pmid_list:
@@ -235,6 +257,9 @@ def biorxiv(query, chatstatus):
     :rtype: None
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     biorxiv_real_search(chatstatus  = chatstatus,
                         start_date  = datetime.date.today().replace(year=2015), 
                         end_date    = datetime.date.today(),
@@ -295,6 +320,9 @@ def biorxiv_real_search(chatstatus,
     :rtype: pd.DataFrame
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     ## keep track of timing
     overall_time = time.time()
 
@@ -457,6 +485,9 @@ def create_db(query, query2):
     :rtype: None
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     log.debugLog('creating database (this might take a while)', chatstatus=chatstatus)
     arxivscrape(query2)
     biorxiv_scrape(query2)
@@ -529,6 +560,9 @@ def arxiv_search(query, count):
     :rtype: tuple
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     #get the url
     split_query = query.split()
     url = "https://arxiv.org/search/?searchtype=all&query="
@@ -588,6 +622,9 @@ def arxiv_scrape(pdf_urls, chatstatus):
     :rtype: None
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     s = HTMLSession()
     try: 
         path = utils.pdfDownloadPath(chatstatus) # os.path.abspath(os.getcwd()) + '/specialized_docs'
@@ -625,6 +662,8 @@ def result_set_to_string(result_set):
     :return: The string representation of the result set.
     :rtype: str
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
 
     return ' '.join([element.get_text(strip=True) for element in result_set])
 
@@ -670,6 +709,10 @@ def updateDatabase(chatstatus):
     Returns:
         dict: The updated chat status after adding new documents to the database.
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 27, 2024
+
     # Determine which documents need to be added to the database
     new_docs_path = utils.pdfDownloadPath(chatstatus)
     

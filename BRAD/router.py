@@ -16,7 +16,33 @@ from BRAD import log
 from BRAD import utils
 
 def reroute(chatstatus):
-    print('Call to REROUTER')
+    """
+    Reroutes the conversation flow based on the current queue pointer and the user prompt. 
+    It retrieves historical chat logs, incorporates them into the conversation, and determines 
+    the next step in the pipeline using a language model.
+
+    Args:
+        chatstatus (dict): A dictionary containing the language model, user prompt, queue of processes, 
+                           and other relevant information for rerouting the conversation.
+
+    Returns:
+        dict: The updated chatstatus containing the modified queue pointer and any logs or updates made 
+              during the rerouting process.
+
+    Example
+    -------
+    >>> chatstatus = {
+    ...     'llm': llm_instance,
+    ...     'prompt': "Reroute conversation",
+    ...     'queue': [{'order': 1, 'module': 'RAG', 'prompt': '/force RAG Retrieve documents', 'description': '...'}],
+    ...     'output-directory': '/path/to/output',
+    ...     'process': {'steps': []}
+    ... }
+    >>> updated_chatstatus = reroute(chatstatus)
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 24, 2024
     log.debugLog('Call to REROUTER', chatstatus=chatstatus)
     llm = chatstatus['llm']
     prompt = chatstatus['prompt']
@@ -77,6 +103,9 @@ def read_prompts(file_path):
     :rtype: list
 
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: May 19, 2024
     sentences = []
     with open(file_path, 'r') as file:
         for line in file:
@@ -101,6 +130,9 @@ def add_sentence(file_path, sentence):
     :rtype: None
 
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: May 19, 2024
     with open(file_path, 'a') as file:
         file.write(sentence.strip() + '\n')
 
@@ -117,6 +149,9 @@ def getRouterPath(file):
     :return: The absolute path to the specified file in the 'routers' directory.
     :rtype: str
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 7, 2024
     current_script_path = os.path.abspath(__file__)
     current_script_dir = os.path.dirname(current_script_path)
     file_path = os.path.join(current_script_dir, 'routers', file) #'enrichr.txt')
@@ -134,6 +169,9 @@ def getRouter():
     :rtype: RouteLayer
 
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: May 16, 2024
     routeGget = Route(
         name = 'GGET',
         utterances = read_prompts(getRouterPath('enrichr.txt'))
@@ -207,6 +245,9 @@ def buildRoutes(prompt):
     :rtype: None
 
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: May 19, 2024
     words = prompt.split(' ')
     rebuiltPrompt = ''
     i = 0
@@ -247,6 +288,9 @@ def getTableRouter():
     :return: A router layer configured with a route for handling data-related tasks.
     :rtype: RouteLayer
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: May 18, 2024
     encoder = HuggingFaceEncoder()
     routes = [routeData]
     router = RouteLayer(encoder=encoder, routes=routes)    

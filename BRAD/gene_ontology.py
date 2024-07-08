@@ -24,24 +24,17 @@ def geneOntology(chatstatus, goQuery):
     :rtype: dict
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
     current_script_path = os.path.abspath(__file__)
     current_script_dir = os.path.dirname(current_script_path)
     file_path = os.path.join(current_script_dir, 'helperData', 'gene_list.txt')
     with open(file_path, 'r') as file:
         contents = file.read()
     gene_list = contents.split('\n')
-    real_list = goQuery # []
-    #for words in goQuery.split(' '):
-    #    words = words.upper()
-    #    if words in gene_list:
-    #        real_list.append(words)
+    real_list = goQuery
     if len(real_list) > 0:
         chatstatus = log.userOutput(real_list, chatstatus=chatstatus)
-        #chatstatus['output'] += '\n would you search Gene Ontology for these terms [Y/N]?'
-        #chatstatus = log.userOutput('\n would you search Gene Ontology for these terms [Y/N]?', chatstatus=chatstatus)
-        #go = input().strip().upper()
-        #chatstatus['process']['search'] = (go == 'Y')
-        #if go == 'Y':
         go_process = goSearch(real_list)
         chatstatus['process']['GO'] = go_process
     return chatstatus
@@ -57,6 +50,8 @@ def goSearch(query):
     :rtype: dict
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
     process = {}
     output = {}
     for terms in query:
@@ -64,23 +59,14 @@ def goSearch(query):
         process['output'] = output
         if geneStatus == True:
             chatstatus = log.userOutput('\n would you like to download charts associated with these genes [Y/N]?', chatstatus=chatstatus)
-            #download = input().strip().upper()
-            #process['chart_download'] = (download == 'Y')
-            #if download == 'Y':   
             for term in output:
                 go_id = str(term[0])
                 chartGO(go_id)
                 chatstatus = log.userOutput('\n would you like to download the paper associated with these genes [Y/N]?', chatstatus=chatstatus)
-                # download2 = input().strip().upper()
-                # process['paper_download'] = (download2 == 'Y')
-                # if download2 == 'Y':
                 pubmedPaper(go_id)
                     
         else:
             chatstatus = log.userOutput('\n would you like to download the gene product annotation [Y/N]?', chatstatus=chatstatus)
-            # download = input().strip().upper()
-            # process['annotation_download'] = (download == 'Y')
-            # if download == 'Y':
             for term in query:
                 chatstatus = log.userOutput(term, chatstatus=chatstatus)
                 annotations(term)
@@ -100,6 +86,8 @@ def textGO(query):
     :rtype: tuple
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
     gene = True
     requestURL = "https://www.ebi.ac.uk/QuickGO/services/ontology/go/search?query="+query+"&limit=25&page=1"
     r = requests.get(requestURL, headers={ "Accept" : "application/json"})
@@ -140,7 +128,6 @@ def textGO(query):
     return extracted_data, gene
 
     
-#Input is a GO:----- identification for a gene        
 def chartGO(identifier):
     """
     Downloads a chart for a specified Gene Ontology (GO) identifier.
@@ -153,6 +140,8 @@ def chartGO(identifier):
     :return: None
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
     try: 
         path = os.path.abspath(os.getcwd()) + '/go_charts'
         os.makedirs(path, exist_ok = True)
@@ -161,6 +150,7 @@ def chartGO(identifier):
         chatstatus = log.userOutput("Directory '%s' can not be created" % path, chatstatus=chatstatus)
     requestURL = "https://www.ebi.ac.uk/QuickGO/services/ontology/go/terms/{ids}/chart?ids=GO%3A"+identifier[3:]
     img_data = requests.get(requestURL).content
+
     # save chart
     with open(os.path.join(path, identifier[3:] + '.jpg'), 'wb') as handler:
         handler.write(img_data)
@@ -178,6 +168,9 @@ def pubmedPaper(identifier):
     :return: None
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+    
     requestURL2 = "https://www.ebi.ac.uk/QuickGO/services/ontology/go/terms/GO%3A"+identifier[3:]
     r = requests.get(requestURL2, headers={ "Accept" : "application/json"})
     if not r.ok:
@@ -231,6 +224,7 @@ def pubmedPaper(identifier):
                     chatstatus = log.userOutput(f"{idname} could not be gathered.", chatstatus=chatstatus)
         else:
             chatstatus = log.userOutput(f"No paper associated with {identifier} found on PubMed", chatstatus=chatstatus)
+
 #Input is a gene-product  
 def annotations(ids):
     """
@@ -244,6 +238,8 @@ def annotations(ids):
     :return: None
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
     try: 
         path = os.path.abspath(os.getcwd()) + '/go_annotations'
         os.makedirs(path, exist_ok = True) 

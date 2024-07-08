@@ -68,6 +68,19 @@ def queryDocs(chatstatus):
     :return: The updated chat status dictionary with the query results.
     :rtype: dict
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: May 20, 2024
+
+    # Developer Comments:
+    # -------------------
+    # This function performs Retrieval Augmented Generation. A separate method
+    # does the retireival, and this is primarily focused on the generation or
+    # llm calling
+    #
+    # History:
+    # Issues:
+
     llm      = chatstatus['llm']              # get the llm
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
@@ -75,32 +88,27 @@ def queryDocs(chatstatus):
 
     # query to database
     if vectordb is not None:
+        # solo, mutliquery, similarity, and mmr retrieval
+        chatstatus, docs = retrieval(chatstatus)
 
-        #path = "/nfs/turbo/umms-indikar/shared/projects/RAG/papers/EXP2/"
-        #best_score, text = restrictedDB(prompt, vectordb, path)
-        #threshold to invoke new vector database
-        #if best_score > 0.75:
-        #    chatstatus['databases']['RAG'] = text
-
-        #path = "/nfs/turbo/umms-indikar/shared/projects/RAG/papers/EXP2/"
-        #chatstatus['databases']['no_bib'] = restrictedDB(prompt, vectordb, path)
-
-        # solo & mutliquery retrieval determined by config.json
-        chatstatus, docs, scores = retrieval(chatstatus)
-
+        # rerank the documents according to pagerank algorithm
         if chatstatus['config']['RAG']['rerank']:
             docs = pagerank_rerank(docs, chatstatus)
 
-        # We could put contextual compression here
+        # contextual compression of the documents
         if chatstatus['config']['RAG']['contextual_compression']:
             docs = contextualCompression(docs, chatstatus)
 
-        # Build chain
+        # build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
 
-        # pass the database output to the llm
-        res = chain({"input_documents": docs, "question": prompt})
-        chatstatus = log.userOutput(res['output_text'], chatstatus=chatstatus)
+        # invoke the chain
+        response = chain({"input_documents": docs, "question": prompt})
+
+        # display output
+        chatstatus = log.userOutput(response['output_text'], chatstatus=chatstatus)
+
+        # display sources
         sources = []
         for doc in docs:
             source = doc.metadata.get('source')
@@ -110,10 +118,18 @@ def queryDocs(chatstatus):
         chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) 
         chatstatus = log.userOutput('\n'.join(sources), chatstatus=chatstatus) 
         chatstatus['process']['sources'] = sources
-        # change inputs to be json readable
-        res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
-        chatstatus['output'], ragResponse = res['output_text'], res
-        chatstatus['process']['steps'].append(ragResponse)
+        
+        # format outputs for logging
+        response['input_documents'] = getInputDocumentJSONs(response['input_documents'])
+        chatstatus['output'], ragResponse = response['output_text'], response
+        chatstatus['process']['steps'].append(log.llmCallLog(llm=llm,
+                                                             prompt=str(chain),
+                                                             input=prompt,
+                                                             output=response,
+                                                             parsedOutput=chatstatus['output'],
+                                                             purpose='RAG'
+                                                            )
+                                             )
     else:
         template = historyChatTemplate()
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
@@ -125,12 +141,71 @@ def queryDocs(chatstatus):
         prompt = getDefaultContext() + prompt
         response = conversation.predict(input=prompt)
         chatstatus = log.userOutput(response, chatstatus=chatstatus) 
-        
         chatstatus['output'] = response
+        chatstatus['process']['steps'].append(log.llmCallLog(llm=llm,
+                                                             prompt=PROMPT,
+                                                             input=prompt,
+                                                             output=response,
+                                                             parsedOutput=chatstatus['output'],
+                                                             purpose='chat without RAG'
+                                                            )
+                                             )
     return chatstatus
 
 
 def retrieval(chatstatus):
+    """
+    Performs retrieval from a vectorized database as the initial stage of the RAG pipeline. 
+    This function handles different types of retrieval including multiquery, similarity search, 
+    and max marginal relevance search.
+
+    Args:
+        chatstatus (dict): A dictionary containing the LLM, user prompt, vector database, 
+                           and configuration settings for the RAG pipeline.
+
+    Returns:
+        tuple: A tuple containing the updated chatstatus and a list of retrieved documents.
+
+    Example
+    -------
+    >>> chatstatus = {
+    ...     'llm': llm_instance,
+    ...     'prompt': "What is the capital of France?",
+    ...     'databases': {'RAG': vectordb_instance},
+    ...     'memory': memory_instance,
+    ...     'config': {
+    ...         'RAG': {
+    ...             'cut': True,
+    ...             'multiquery': False,
+    ...             'similarity': True,
+    ...             'mmr': True,
+    ...             'num_articles_retrieved': 5
+    ...         }
+    ...     },
+    ...     'process': {'steps': []}
+    ... }
+    >>> chatstatus, docs = retrieval(chatstatus)
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 16, 2024
+    
+    # Developer Comments:
+    # -------------------
+    # This function performs retrieval from a vectorized database as the initial
+    # stage of the RAG pipeline. It performs several different types of retrieval
+    # including multiquery, similarity search, and max marginal relevance search.
+    #
+    # History:
+    # - 2024-06-16: JP initialized the function with similarity search and multiquery
+    # - 2024-06-26: MC added cut() to remove poorly chunked pieces of text
+    # - 2024-06-29: MC added max_marginal_relevance_search for retrieval
+    #
+    # Issues:
+    # - The MultiQueryRetriever.from_llm doesn't give control over the number of
+    #   prompts or retrieved documents. Also, I don't think it generates great
+    #   prompts. We could reimplement this ourselves.
+    
     llm      = chatstatus['llm']              # get the llm
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
@@ -140,33 +215,32 @@ def retrieval(chatstatus):
         vectordb = cut(chatstatus, vectordb)
 
     if not chatstatus['config']['RAG']['multiquery']:
-        #without MMR
-        #documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
-        #docs, scores = getDocumentSimilarity(documentSearch)
-        #MMR
-        docs = vectordb.max_marginal_relevance_search(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
-        chatstatus['process']['steps'].append({
-            'func' : 'rag.retrieval',
-            'multiquery' : False,
-            'num-docs' : len(docs),
-            'docs' : str(docs),
-        })
-        scores = []
+        # initialize empty lists
+        docsSimilaritySearch, docsMMR = [], []
+        if chatstatus['config']['RAG']['similarity']:
+            documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
+            docsSimilaritySearch, scores = getDocumentSimilarity(documentSearch)
+
+        if chatstatus['config']['RAG']['mmr']:
+            docsMMR = vectordb.max_marginal_relevance_search(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
+        
+        docs = docsSimilaritySearch + docsMMR
     else:
         logging.basicConfig()
         logging.getLogger("langchain.retrievers.multi_query").setLevel(logging.INFO)
         retriever = MultiQueryRetriever.from_llm(retriever=vectordb.as_retriever(),
                                                  llm=llm
                                                 )
-        docs = retriever.get_relevant_documents(query=prompt)  # Note: No scores are generated when using multiquery
-        chatstatus['process']['steps'].append({
-            'func' : 'rag.retrieval',
-            'multiquery' : True,
-            'num-docs' : len(docs),
-            'docs' : str(docs),
-        })
-        scores = []
-    return chatstatus, docs, scores
+        docs = retriever.get_relevant_documents(query=prompt)
+    chatstatus['process']['steps'].append({
+        'func' : 'rag.retrieval',
+        'multiquery' : chatstatus['config']['RAG']['multiquery'],
+        'similarity' : chatstatus['config']['RAG']['similarity'],
+        'mmr' : chatstatus['config']['RAG']['mmr'],
+        'num-docs' : len(docs),
+        'docs' : str(docs),
+    })
+    return chatstatus, docs
 
 def contextualCompression(docs, chatstatus):
     """
@@ -187,6 +261,9 @@ def contextualCompression(docs, chatstatus):
         chatstatus = {'config': {'debug': True}}
         updatedDocs = contextualCompression(documentSearch, chatstatus)
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 5, 2024
     template = summarizeDocumentTemplate()
     PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
     reducedDocs = []
@@ -205,6 +282,8 @@ def contextualCompression(docs, chatstatus):
 
 def getPreviousInput(log, key):
     """
+    .. warning:: This method will be removed soon.
+    
     Retrieves previous input or output from the log based on the specified key.
 
     :param log: A list containing the chat log or history of interactions.
@@ -269,6 +348,8 @@ def getDocumentSimilarity(documents):
 # Define a function to get the wordnet POS tag
 def get_wordnet_pos(word):
     """
+    .. warning:: Marc do we need/use this function?
+    
     Gets the WordNet part of speech (POS) tag for a given word.
 
     :param word: The word for which to retrieve the POS tag.
@@ -669,14 +750,23 @@ def pagerank_rerank(docs, chatstatus):
 #removes repeat chunks in vectordb
 def remove_repeats(vectordb):
     """
-    Remove duplicate documents from a vector database based on their content.
+    Removes repeated chunks in the provided vector database.
 
-    Parameters:
-    - vectordb (object): Object representing the vector database, capable of fetching and deleting documents.
+    This function identifies duplicate documents in the vector database and removes
+    the repeated entries, keeping only the last occurrence of each duplicated document.
 
-    Returns:
-    - vectordb (object): Updated vector database object after removing duplicate documents.
+    :param vectordb: The vector database from which repeated documents should be removed.
+    :type vectordb: An instance of a vector database class with 'get' and 'delete' methods.
+
+    :raises KeyError: If the vector database does not contain 'ids' or 'documents' keys.
+
+    :return: The updated vector database with duplicate documents removed.
+    :rtype: An instance of the vector database class.
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+    # Date: June 18, 2024
+
     # Fetch document IDs and contents from vector database
     df = pd.DataFrame({'id': vectordb.get()['ids'], 'documents': vectordb.get()['documents']})
     

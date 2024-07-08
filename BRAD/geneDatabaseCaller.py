@@ -10,6 +10,37 @@ from BRAD.promptTemplates import geneDatabaseCallerTemplate
 from BRAD import log
 
 def geneDBRetriever(chatstatus):
+    """
+    Retrieves gene information from a specified database based on the user query. 
+    It uses a language model to determine the appropriate database and performs 
+    the search, handling various configurations and logging the process.
+
+    Args:
+        chatstatus (dict): A dictionary containing the user query, language model, 
+                           configurations, and other necessary data for the retrieval process.
+
+    Returns:
+        dict: The updated chatstatus containing the results of the database search 
+              and any modifications made during the process.
+
+    Example
+    -------
+    >>> chatstatus = {
+    ...     'llm': llm_instance,
+    ...     'prompt': "Retrieve gene information",
+    ...     'config': {
+    ...         'debug': True,
+    ...         'DATABASE': {'max_search_terms': 50}
+    ...     },
+    ...     'tables': [],
+    ...     'process': {'steps': []}
+    ... }
+    >>> chatstatus = geneDBRetriever(chatstatus)
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 6, 2024
+    
     query    = chatstatus['prompt']
     llm      = chatstatus['llm']              # get the llm
     # memory   = chatstatus['memory']           # get the memory of the model
@@ -75,7 +106,7 @@ def geneDBRetriever(chatstatus):
         chatstatus = dbCaller(chatstatus, geneList)
     except Exception as e:
         output = f'Error occurred while searching database: {e}'
-        log.debugLog(output, chatstatus=chatstatus)
+        log.errorLog(output, info='geneDatabaseCaller.geneDBRetriever', chatstatus=chatstatus)
     return chatstatus
 
 def parse_llm_response(response, chatstatus):
@@ -88,6 +119,10 @@ def parse_llm_response(response, chatstatus):
     Returns:
     dict: A dictionary with the database name and a list of search terms.
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 26, 2024
+    
     # Initialize an empty dictionary to hold the parsed data
     parsed_data = {}
 
@@ -110,6 +145,31 @@ def parse_llm_response(response, chatstatus):
     return parsed_data
     
 def getTablesFormatting(tables):
+    """
+    Formats the columns of each table in the given dictionary into a readable string. 
+    For each table, it lists the first 10 column names, appending '...' if there are more 
+    than 10 columns.
+
+    Args:
+        tables (dict): A dictionary where keys are table names and values are pandas DataFrame objects.
+
+    Returns:
+        str: A formatted string listing the first 10 column names of each table.
+
+    Example
+    -------
+    >>> tables = {
+    ...     'table1': pd.DataFrame(columns=['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8', 'col9', 'col10', 'col11']),
+    ...     'table2': pd.DataFrame(columns=['a', 'b', 'c'])
+    ... }
+    >>> result = getTablesFormatting(tables)
+    >>> print(result)
+    table1.columns = ['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8', 'col9', 'col10', '...']
+    table2.columns = ['a', 'b', 'c']
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 6, 2024
     tablesString = ""
     for tab in tables:
         columns_list = list(tables[tab].columns)
@@ -122,7 +182,7 @@ def getTablesFormatting(tables):
 
 def geneDatabaseRetriever(chatstatus):
     '''
-    :raises Warning: If multiple potential databases are provided or no database is specified.
+    :raises Warning: This function may be removed (I don't think it is used at all).
     '''
     query    = chatstatus['prompt']
     llm      = chatstatus['llm']              # get the llm
