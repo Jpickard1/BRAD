@@ -120,7 +120,7 @@ def queryDocs(chatstatus):
         chatstatus['process']['sources'] = sources
         
         # format outputs for logging
-        res['input_documents'] = getInputDocumentJSONs(res['input_documents'])
+        response['input_documents'] = getInputDocumentJSONs(response['input_documents'])
         chatstatus['output'], ragResponse = response['output_text'], response
         chatstatus['process']['steps'].append(log.llmCallLog(llm=llm,
                                                              prompt=str(chain),
@@ -224,7 +224,7 @@ def retrieval(chatstatus):
         if chatstatus['config']['RAG']['mmr']:
             docsMMR = vectordb.max_marginal_relevance_search(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
         
-        docs = list(set(docsSimilaritySearch) | set(docsMMR))
+        docs = docsSimilaritySearch + docsMMR
     else:
         logging.basicConfig()
         logging.getLogger("langchain.retrievers.multi_query").setLevel(logging.INFO)

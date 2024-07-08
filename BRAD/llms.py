@@ -62,7 +62,7 @@ def load_nvidia(model_name='meta/llama3-70b-instruct', nvidia_api_key=None, temp
     else:
         nvidia_api_key = os.environ["NVIDIA_API_KEY"]
         
-    llm = ChatNVIDIA(model_name  = nvidia_model,
+    llm = ChatNVIDIA(model_name  = model_name,
                      api_key     = nvidia_api_key,
                      temperature = temperature,
           )

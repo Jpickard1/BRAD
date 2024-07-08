@@ -5,7 +5,8 @@
         "contextual_compression": false,
         "rerank": false,
         "similarity": true,
-        "mmr": true
+        "mmr": true,
+	"cut": false
     },
     "SCRAPE": {
         "add_from_scrape": true,

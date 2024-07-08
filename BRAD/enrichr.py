@@ -79,13 +79,15 @@ def queryEnrichr(chatstatus, gene_list):
         warnings.warn('warning: setting db to default')
         db = default_enrichr_db
     
-    chatstatus['process']['steps'].append({
-                                              'genes'      : str(gene_list),
-                                              'plot'       : plot,
-                                              'save'       : save,
-                                              'database'   : db,
-                                              'default db' : dbfound,
-                                          }
+    chatstatus['process']['steps'].append(
+                                            {
+                                                  'genes'      : str(gene_list),
+                                                  'plot'       : plot,
+                                                  'save'       : save,
+                                                  'database'   : db,
+                                                  'default db' : dbfound,
+                                            }
+                                         )
 
     # query GO
     ax = None

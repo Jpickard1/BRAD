@@ -316,3 +316,8 @@ convert the 2015 file to gene former coordinates please
 Build a DMD or linear model of the 2015 GF embedded data
 convert the gene former embeddings to a time series dataset please
 build a linear model with dynamic mode decomposition of the gene former embeddings
+"Run the hwg analysis pipeline to find first order interactions of PCNA, utilizing the information obtained from the literature search in Step 1. Please provide the output file of the hwg codes."
+"Run the hwg analysis pipeline to find first order interactions of PCNA, utilizing the information obtained from the literature search in Step 1. Please provide the output file of the hwg codes."
+Execute the hwg analysis pipeline to find first order interactions of PCNA using the information obtained from Step 1 as context and input. Return the output file of the hwg codes.
+Execute the hwg analysis pipeline to find first order interactions of PCNA using the information obtained from Step 1 as context and input. Return the output file of the hwg codes.
+Execute the hwg analysis pipeline to find first order interactions of PCNA using the information obtained from Step 1 as context and input. Return the output file of the hwg codes.

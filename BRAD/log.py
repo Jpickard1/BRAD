@@ -94,9 +94,11 @@ def errorLog(errorMessage, info=None, chatstatus=None):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     logging.info(errorMessage)
     chatstatus['process']['steps'].append(
-        'func'    : 'log.errorLog'
-        'message' : errorMessage,
-        'info'    : metadata,
+        {
+            'func'    : 'log.errorLog',
+            'message' : errorMessage,
+            'info'    : metadata,
+        }
     )
     
 
