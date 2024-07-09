@@ -32,14 +32,20 @@ def geneOntology(chatstatus, goQuery):
     with open(file_path, 'r') as file:
         contents = file.read()
     gene_list = contents.split('\n')
-    real_list = goQuery
-    if len(real_list) > 0:
-        chatstatus = log.userOutput(real_list, chatstatus=chatstatus)
-        go_process = goSearch(real_list)
+    if len(goQuery) > 0:
+        #chatstatus = log.userOutput(real_list, chatstatus=chatstatus) 
+        #Joshua if you see this how exactly does the first argument in userOutput work? I saw it in log.py but it just adds it to the log? If so, i dont think we need this here necessarily. maybe you want to log it in a different place.
+        
+        #chatstatus['output'] += '\n would you search Gene Ontology for these terms [Y/N]?'
+        #chatstatus = log.userOutput('\n would you search Gene Ontology for these terms [Y/N]?', chatstatus=chatstatus)
+        #go = input().strip().upper()
+        #chatstatus['process']['search'] = (go == 'Y')
+        #if go == 'Y':
+        go_process = goSearch(goQuery, chatstatus)
         chatstatus['process']['GO'] = go_process
     return chatstatus
             
-def goSearch(query):
+def goSearch(query, chatstatus):
     """
     Performs a search on Gene Ontology (GO) based on the provided query and allows downloading associated charts and papers.
 
@@ -55,25 +61,29 @@ def goSearch(query):
     process = {}
     output = {}
     for terms in query:
-        output, geneStatus = textGO(terms)
+        output, geneStatus = textGO(terms, chatstatus)
         process['output'] = output
         if geneStatus == True:
             chatstatus = log.userOutput('\n would you like to download charts associated with these genes [Y/N]?', chatstatus=chatstatus)
             for term in output:
                 go_id = str(term[0])
-                chartGO(go_id)
+                chartGO(go_id, chatstatus)
                 chatstatus = log.userOutput('\n would you like to download the paper associated with these genes [Y/N]?', chatstatus=chatstatus)
-                pubmedPaper(go_id)
+                # download2 = input().strip().upper()
+                # process['paper_download'] = (download2 == 'Y')
+                # if download2 == 'Y':
+                pubmedPaper(go_id, chatstatus)
+
                     
         else:
             chatstatus = log.userOutput('\n would you like to download the gene product annotation [Y/N]?', chatstatus=chatstatus)
             for term in query:
                 chatstatus = log.userOutput(term, chatstatus=chatstatus)
-                annotations(term)
+                annotations(term, chatstatus)
     return process
 
 
-def textGO(query):
+def textGO(query, chatstatus):
     """
     Performs a text-based Gene Ontology (GO) search for a specified query and returns the extracted data and gene status.
 
@@ -128,7 +138,10 @@ def textGO(query):
     return extracted_data, gene
 
     
-def chartGO(identifier):
+
+#Input is a GO:----- identification for a gene        
+def chartGO(identifier, chatstatus):
+
     """
     Downloads a chart for a specified Gene Ontology (GO) identifier.
 
@@ -156,7 +169,7 @@ def chartGO(identifier):
         handler.write(img_data)
 
 #Input is a GO:----- identification for a gene     
-def pubmedPaper(identifier):
+def pubmedPaper(identifier, chatstatus):
     """
     Downloads PubMed papers associated with a specified Gene Ontology (GO) identifier.
 
@@ -180,14 +193,14 @@ def pubmedPaper(identifier):
     data = json.loads(responseBody)
     # Extract the dbId from the first result
     dbId = []
-    chatstatus = log.userOutput(data, chatstatus=chatstatus)
+    
+    #chatstatus = log.userOutput(data, chatstatus=chatstatus)
     if data['numberOfHits'] > 0:
         xrefs = data['results'][0].get('definition', {}).get('xrefs', [])
         if xrefs:
             for db in xrefs:
                 dbId.append(db['dbId'])
         s = HTMLSession()
-        chatstatus = log.userOutput(dbId, chatstatus=chatstatus)
         headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
         if len(dbId) > 0:
             try: 
@@ -226,7 +239,7 @@ def pubmedPaper(identifier):
             chatstatus = log.userOutput(f"No paper associated with {identifier} found on PubMed", chatstatus=chatstatus)
 
 #Input is a gene-product  
-def annotations(ids):
+def annotations(ids, chatstatus):
     """
     Downloads annotations for a specified gene product.
 
