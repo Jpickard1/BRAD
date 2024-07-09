@@ -246,3 +246,8 @@ load the biomarker file we created and perform gene enrichrment on the state col
 load the biomarker file we created and perform gene enrichrment on the state column
 load the biomarker file we created and perform gene enrichrment on the state column
 load the biomarker file we created and perform gene enrichrment on the state column
+"Perform gene enrichment analysis using the output file of the hwg codes from Step 2. Identify the pathways PCNA is involved in using bioinformatics databases such as Enrichr. Please provide a summary of the identified pathways and PCNA's role in each."
+"Perform gene enrichment analysis using the output file of the hwg codes from Step 2. Identify the pathways PCNA is involved in using bioinformatics databases such as Enrichr. Please provide a summary of the identified pathways and PCNA's role in each."
+Load the output file of the hwg codes from Step 2 and perform gene enrichment analysis to identify the pathways PCNA is involved in. Use Enrichr for the gene set enrichment analysis. Return the enriched pathways related to PCNA.
+Load the output file of the hwg codes from Step 2 and perform gene enrichment analysis to identify the pathways PCNA is involved in. Use Enrichr for the gene set enrichment analysis. Return the enriched pathways related to PCNA.
+Load the output file of the hwg codes from Step 2 and perform gene enrichment analysis to identify the pathways PCNA is involved in. Use Enrichr for the gene set enrichment analysis. Return the enriched pathways related to PCNA.

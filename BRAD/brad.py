@@ -60,7 +60,7 @@ from BRAD.enrichr import *
 from BRAD.scraper import *
 from BRAD.router import *
 from BRAD.tables import *
-from BRAD.rag import *
+from BRAD.rag import queryDocs, remove_repeats
 from BRAD.gene_ontology import *
 from BRAD.seabornCaller import *
 from BRAD.matlabCaller import *
@@ -264,6 +264,9 @@ def chatbotHelp():
     :return: None
     :rtype: None
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: May 19, 2024
     help_message = """
     Welcome to our RAG chatbot Help!
     
@@ -283,11 +286,7 @@ def chatbotHelp():
     --force option_name
 
     Enjoy chatting with the chatbot!
-    """
-    # Auth: Joshua Pickard
-    #       jpic@umich.edu
-    # Date: June 4, 2024
-    
+    """    
     chatstatus = log.userOutput(help_message, chatstatus=chatstatus)
     return
 
@@ -414,8 +413,6 @@ def chat(
         # Outputs
         chatstatus = log.userOutput('==================================================', chatstatus=chatstatus)
         chatstatus = log.userOutput('BRAD >> ' + str(len(chatlog)) + ': ', chatstatus=chatstatus)
-        
-        # I wasn't able to add the {end = ''} info to the userOutput function
 
         # select appropriate routeing function
         if route.upper() in module_functions.keys():
@@ -427,11 +424,14 @@ def chat(
         # get the specific module to use
         module = module_functions[routeName]
 
-        # Query module
+        # Standardize chatstatus/logging schema for all modules
+        #     see: https://github.com/Jpickard1/RAG-DEV/wiki/Logging
         chatstatus['process'] = {'module' : routeName,
                                  'steps'  : []
                             }
         chatstatus['output'] = ""
+        
+        # Query module
         chatstatus = module(chatstatus)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
@@ -449,27 +449,4 @@ def chat(
         chatlog, chatstatus = log.logger(chatlog, chatstatus, chatname)
         
     chatstatus = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + chatname, chatstatus=chatstatus)
-#removes repeat chunks in vectordb
-def remove_repeats(vectordb):
-    """
-    Removes repeated chunks in the provided vector database.
 
-    This function identifies duplicate documents in the vector database and removes
-    the repeated entries, keeping only the last occurrence of each duplicated document.
-
-    :param vectordb: The vector database from which repeated documents should be removed.
-    :type vectordb: An instance of a vector database class with 'get' and 'delete' methods.
-
-    :raises KeyError: If the vector database does not contain 'ids' or 'documents' keys.
-
-    :return: The updated vector database with duplicate documents removed.
-    :rtype: An instance of the vector database class.
-    """
-    # Auth: Marc Choi
-    #       machoi@umich.edu
-    # Date: June 18, 2024
-    df = pd.DataFrame({'id' :vectordb.get()['ids'] , 'documents' : vectordb.get()['documents']})
-    repeated_ids = df[df.duplicated(subset='documents', keep='last')]['id'].tolist()
-    if len(repeated_ids) > 0:
-        vectordb.delete(repeated_ids)
-    return vectordb

@@ -52,6 +52,21 @@ def callPython(chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
+    
+    # Developer Comments:
+    # -------------------
+    # This function is responsible for selecting a matlab function to call and
+    # furmulating the function call.
+    #
+    # History:
+    #
+    # Issues:
+    # - This function doesn't use the llm to select the appropriate python script.
+    #   Currently, a word similarity score between the prompt and matlab codes
+    #   is performed and used to select the prompts, but we could follow an approach
+    #   similar to the coder.codeCaller() method that uses an llm to read the docstrings
+    #   and identify the best file. Note - the same approach is used by matlabCaller
+    
     log.debugLog("Python Caller Start", chatstatus=chatstatus) 
     prompt = chatstatus['prompt']                                        # Get the user prompt
     llm = chatstatus['llm']                                              # Get the llm
@@ -87,17 +102,27 @@ def callPython(chatstatus):
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     log.debugLog(PROMPT, chatstatus=chatstatus) 
     conversation = ConversationChain(prompt  = PROMPT,
-                                     llm     =    llm,
-                                     verbose =   chatstatus['config']['debug'],
+                                     llm     = llm,
+                                     verbose = chatstatus['config']['debug'],
                                      memory  = memory,
                                     )
     response = conversation.predict(input=chatstatus['prompt'] )
     log.debugLog('START RESPONSE', chatstatus=chatstatus) 
     log.debugLog(response, chatstatus=chatstatus) 
     log.debugLog("END RESPONSE", chatstatus=chatstatus) 
-    matlabCode = extract_python_code(response, chatstatus)
-    log.debugLog(matlabCode, chatstatus=chatstatus) 
-    execute_python_code(matlabCode, chatstatus)
+    pythonCode = extract_python_code(response, chatstatus)
+    log.debugLog(matlabCode, chatstatus=chatstatus)
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+                                                         prompt          = PROMPT,
+                                                         input           = chatstatus['prompt'],
+                                                         output          = response,
+                                                         parsedOutput    = {
+                                                             'pythonCode': pythonCode,
+                                                         },
+                                                         purpose         = 'formulate python function call'
+                                                        )
+                                         )
+    execute_python_code(pythonCode, chatstatus)
     return chatstatus
 
 def execute_python_code(python_code, chatstatus):
@@ -153,14 +178,21 @@ def execute_python_code(python_code, chatstatus):
         response = local_scope.get('response', None)
         log.debugLog("Code Execution Output:", chatstatus=chatstatus)
         log.debugLog(response, chatstatus=chatstatus)
+        chatstatus['process']['steps'].append(
+            {
+                'func'   : 'pythonCaller.execute_python_code',
+                'code'   : python_code,
+                'purpose': 'execute python code',
+            }
+        )
         chatstatus['output'] = response.stdout.strip()
-        log.debugLog("Debug: PYTHON code output saved to output.", chatstatus=chatstatus) 
+        log.debugLog("Debug: PYTHON code output saved to output.", chatstatus=chatstatus)
     except SyntaxError as se:
-        log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", chatstatus=chatstatus) 
+        log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", chatstatus=chatstatus)
     except NameError as ne:
-        log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", chatstatus=chatstatus) 
+        log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", chatstatus=chatstatus)
     except Exception as e:
-        log.debugLog(f"Debug: An error occurred during PYTHON code execution: {e}", chatstatus=chatstatus) 
+        log.debugLog(f"Debug: An error occurred during PYTHON code execution: {e}", chatstatus=chatstatus)
 
 
 # Extract the arguments from the string
@@ -454,14 +486,3 @@ def extract_python_code(llm_output, chatstatus):
         funcCall = 'subprocess.run([sys.executable,' + funcCall[32:]
         log.debugLog(funcCall, chatstatus=chatstatus) 
     return funcCall
-    # Define the regex pattern to match the desired line
-    #pattern = r'Execute: `(.+)`'
-
-    # Search for the pattern in the LLM output
-    #match = re.search(pattern, llm_output)
-
-    # If a match is found, return the MATLAB code, else return None
-    #if match:
-    #    return match.group(1)
-    #else:
-    #    return None
