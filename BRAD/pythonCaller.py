@@ -21,7 +21,7 @@ import re
 import sys
 import subprocess
 
-from BRAD.promptTemplates import pythonPromptTemplate
+from BRAD.promptTemplates import pythonPromptTemplate, getPythonEditingTemplate
 from BRAD import log
 
 def callPython(chatstatus):
@@ -53,7 +53,7 @@ def callPython(chatstatus):
     #       jpic@umich.edu
     # Date: June 22, 2024
     
-    # Developer Comments:
+    # Dev. Comments:
     # -------------------
     # This function is responsible for selecting a matlab function to call and
     # furmulating the function call.
@@ -439,7 +439,7 @@ def get_py_description(file_path):
     oneliner = docstrings.split('\n')[1]
     return oneliner
 
-def extract_python_code(llm_output, chatstatus):
+def extract_python_code(llm_output, chatstatus, memory=None):
     """
     Parses the LLM output and extracts the Python code to execute.
 
@@ -475,14 +475,157 @@ def extract_python_code(llm_output, chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
+
+    # Dev. Comments:
+    # -------------------
+    # This function should take llm output and extract python code
+    #
+    # History:
+    # - 2024-06-22: initiall attempt to extract python from llms
+    # - 2024-07-08: (1) strip('\'"`') is added to remove trailing quotations
+    #               (2) <path/to/script> is set as a keyword to be replaced by
+    #                   python paths
+    #               (3) added a subsequent python call to edit the command when
+    #                   compile() fails
+    #
+    # Issues:
+    # - This is very sensitive to the particular model, prompt, and patterns in
+    #   the llm response.
+    
     log.debugLog("LLM OUTPUT PARSER", chatstatus=chatstatus) 
     log.debugLog(llm_output, chatstatus=chatstatus) 
 
     funcCall = llm_output.split('Execute:')
-    log.debugLog(funcCall, chatstatus=chatstatus) 
+    log.debugLog(funcCall, chatstatus=chatstatus)
     funcCall = funcCall[len(funcCall)-1].strip()
-    if funcCall[:31] != 'subprocess.run([sys.executable,':
-        log.debugLog(funcCall, chatstatus=chatstatus) 
-        funcCall = 'subprocess.run([sys.executable,' + funcCall[32:]
-        log.debugLog(funcCall, chatstatus=chatstatus) 
+    funcCall = funcCall.strip('\'"`')
+    
+    # Ensure placeholder path is replaced
+    funcCall = funcCall.replace('<path/to/script>/', chatstatus['config']['py-path'])
+    funcCall = funcCall.replace('<path/to/script>',  chatstatus['config']['py-path'])
+    
+    log.debugLog('Stripped funciton call', chatstatus=chatstatus)
+    log.debugLog(funcCall, chatstatus=chatstatus)
+    
+    if not funcCall.startswith('subprocess.run([sys.executable,'):
+        funcCall = 'subprocess.run([sys.executable' + funcCall[funcCall.find(','):]
+
+    log.debugLog('Cleaned up function call:\n', chatstatus=chatstatus)
+    log.debugLog(funcCall, chatstatus=chatstatus)
+    log.debugLog('\n', chatstatus=chatstatus)
+    try:
+        compile(funcCall, '<string>', 'exec')
+    except Exception as e:
+        return editPythonCode(funcCall, str(e), memory, chatstatus)
+    
     return funcCall
+
+def editPythonCode(funcCall, errorMessage, memory, chatstatus):
+    """
+    Edit the Python code based on the error message and chat status, with recursion depth limit.
+
+    Parameters:
+    funcCall (str): The Python code to be edited.
+    errorMessage (str): The error message related to the code.
+    chatstatus (dict): Dictionary containing chat status and configuration.
+
+    Returns:
+    str: The edited Python code ready for execution, or an error message if recursion limit is reached.
+    """
+
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 8, 2024
+
+    # Bound the recursion depth of this function
+    if chatstatus['recursion_depth'] > 5:
+        log.errorLog('Recursion depth limit reached. Please check the code and error message', chatstatus=chatstatus)
+        return "Recursion depth limit reached. Please check the code and error message."
+    chatstatus['recursion_depth'] += 1
+
+    # Extract the llm
+    llm = chatstatus['llm']
+
+    # Fill in the python editting template
+    template = getPythonEditingTemplate()
+    filled_template = template.format(
+        code1 = funcCall,
+        code2 = funcCall,
+        error = errorMessage
+    )
+    log.debugLog("Memory", chatstatus=chatstatus)
+    log.debugLog(memory,   chatstatus=chatstatus)
+    # Build the langchain
+    PROMPT          = PromptTemplate(input_variables=["history", "input"], template=filled_template)
+    log.debugLog(PROMPT, chatstatus=chatstatus)
+    conversation    = ConversationChain(prompt  = PROMPT,
+                                        llm     =    llm,
+                                        verbose = chatstatus['config']['debug'],
+                                        memory  = memory,
+                                       )
+
+    # Call the llm/langchain
+    response = conversation.predict(input=chatstatus['prompt'])
+
+    # Parse the code (recursion begins here)
+    code2execute = extract_python_code(response, chatstatus, memory=memory)
+
+    # log the llm output
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+                                                         prompt          = PROMPT,
+                                                         input           = chatstatus['prompt'],
+                                                         output          = response,
+                                                         parsedOutput    = {
+                                                             'code': code2execute
+                                                         },
+                                                         purpose         = 'Edit function call'
+                                                        )
+                                         )
+    # Decrement recursion depth after use
+    chatstatus['recursion_depth'] -= 1
+    return code2execute
+
+def has_unclosed_symbols(s):
+    """
+    Check for unclosed symbols in a string.
+
+    This function checks if a string has unclosed symbols such as quotes,
+    parentheses, brackets, or braces. It returns True if there are unclosed
+    symbols, and False otherwise.
+
+    Parameters:
+    s (str): The string to check for unclosed symbols.
+
+    Returns:
+    bool: True if there are unclosed symbols, False otherwise.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 8, 2024
+    
+    stack = []
+    pairs = {'(': ')', '[': ']', '{': '}'}
+    opening = pairs.keys()
+    closing = pairs.values()
+    
+    i = 0
+    while i < len(s):
+        char = s[i]
+        if char in pairs:
+            stack.append(pairs[char])
+        elif char in closing:
+            if not stack or char != stack.pop():
+                return True
+        elif char in ['"', "'"]:
+            # Check if this is an escaped quote
+            if i > 0 and s[i - 1] == '\\':
+                i += 1
+                continue
+            # Toggle the quote in the stack
+            if stack and stack[-1] == char:
+                stack.pop()
+            else:
+                stack.append(char)
+        i += 1
+    
+    return bool(stack)

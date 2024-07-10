@@ -399,7 +399,7 @@ def get_matlab_description(file_path):
     oneliner = docstrings.split('\n')[1][1:]
     return oneliner
 
-def extract_matlab_code(llm_output, chatstatus):
+def extract_matlab_code(llm_output, chatstatus, memory=None):
     """
     Extracts the MATLAB code to be executed from the LLM (Large Language Model) output.
 
@@ -412,6 +412,9 @@ def extract_matlab_code(llm_output, chatstatus):
         The output from the Large Language Model (LLM) containing the MATLAB code to be executed.
     chatstatus : dict
         A dictionary containing the chat status, including configuration settings.
+    memory: any
+        This is a dummy parameter for now that is used to keep this consistent with the corresponding
+        python code
 
     Returns
     -------
@@ -437,6 +440,21 @@ def extract_matlab_code(llm_output, chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
+
+    # Dev. Comments:
+    # -------------------
+    # This function should take llm output and extract python code
+    #
+    # History:
+    # - 2024-06-22: initiall attempt to extract python from llms
+    # - 2024-07-08: memory added as a parameter that doesn't do anything to keep
+    #               this function tied to extract_python_code
+    #
+    # Issues:
+    # - This is very sensitive to the particular model, prompt, and patterns in
+    #   the llm response.
+    # - this function tied to extract_python_code
+    
     log.debugLog('LLM OUTPUT PARSER', chatstatus=chatstatus)
     log.debugLog(llm_output, chatstatus=chatstatus)
     funcCall = llm_output.split('Execute:')

@@ -321,3 +321,39 @@ build a linear model with dynamic mode decomposition of the gene former embeddin
 Execute the hwg analysis pipeline to find first order interactions of PCNA using the information obtained from Step 1 as context and input. Return the output file of the hwg codes.
 Execute the hwg analysis pipeline to find first order interactions of PCNA using the information obtained from Step 1 as context and input. Return the output file of the hwg codes.
 Execute the hwg analysis pipeline to find first order interactions of PCNA using the information obtained from Step 1 as context and input. Return the output file of the hwg codes.
+Load the cell cycle dataset
+Load the cell cycle dataset
+Load the cell cycle dataset
+Load the cell cycle dataset with datasetSelectory.py
+Load the cell cycle dataset
+Load the cell cycle dataset
+Load the cell cycle dataset
+Load the cell cycle dataset
+Convert the dataset to gene coordinates
+Convert the dataset to gene coordinates
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this data
+Perform biomarker or sensor selection on this data
+Perform biomarker or sensor selection
+Load the cell cycle dataset
+Load the cell cycle dataset
+Load the cell cycle dataset with the 2015 argument
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this model
+Perform biomarker or sensor selection on this model
+Perform biomarker or sensor selection on this model on S2-2015LinearModel.pkl
+Perform biomarker or sensor selection on this model on S2-2015LinearModel.pkl from times 0 through time 5
+Perform biomarker or sensor selection on this model on S2-2015LinearModel.pkl
+Perform time varying biomarker selection on this data from times 0 to 3. set verbose to true.
+Perform time varying biomarker selection on this data from times 0 to 3.5. set verbose to true.
+Perform time varying biomarker selection on this data from times 6 to 5. set verbose to true.
+Perform time varying biomarker selection on this data from times 6 to 7. set verbose to true.
+Perform time varying biomarker selection on this data from times 6 to 7. set verbose to true.
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this model

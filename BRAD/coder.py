@@ -176,7 +176,7 @@ def codeCaller(chatstatus):
                                        )
     response = conversation.predict(input=chatstatus['prompt'])
     responseParser = {'python': extract_python_code, 'MATLAB': extract_matlab_code}.get(scriptType)
-    code2execute = responseParser(response, chatstatus)
+    code2execute = responseParser(response, chatstatus, memory=memory)
 
     chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
                                                          prompt          = PROMPT,
