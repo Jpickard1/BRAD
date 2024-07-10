@@ -157,20 +157,17 @@ To call a Python script `example_script.py` which has no arguments:
 
 ```
 Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory']], capture_output=True, text=True)
-)
 ```
 
 To call a Python script `example_script.py` with one argument:
 
 ```
 Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1'], capture_output=True, text=True)
-)
 ```
 
 To call a Python script `example_script.py` with two arguments:
 ```
 Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1', 'arg2'], capture_output=True, text=True)
-)
 ```
 
 Note that chatstatus['output-directory'] is ALWAYS passed as the first argument.
@@ -184,7 +181,7 @@ Query:{{input}}
 1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
 2. Using the `subprocess` module, provide the one line of code to execute the desired Python script with the given arguments. Assume the necessary modules (`subprocess` and `sys`) are already imported.
 3. The last line of your response should say "Execute: <Python code to execute>"
-4. Format the response/output as:
+4. Do not include any extra words or characters. Format the response/output as:
     Arguments: 
     Python Code Explanation: <2 sentences maximum>
     Execute: <your code here>
@@ -193,6 +190,37 @@ Query:{{input}}
 The code to execute from your response must be formatted as:
     Execute: subprocess.call([sys.executable, '<path to python script>', '<argument 1>', '<argument 2>', ..., '<argument n>'], capture_output=True, text=True))
 This output should be exactly one line and no longer. Stop the response after this line.
+"""
+    return template
+
+def getPythonEditingTemplate():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 8, 2024
+    template = """You are a programming assistant responsible for editing a piece of python code to make it runnable. The code was generated based upon a conversation with the user, but it currently has at least one bug in the code. Based upon the following information, please debug this code. Here is the current code
+
+**Current Code:**
+{code1}
+
+That code was generated in response to this user query: {{input}}
+
+This query is part of the larger chat conversation:
+
+**Chat History:**
+{{history}}
+
+**Current Code:**
+{code2}
+
+**Error Message:**
+{error}
+
+Please address this error in the current code, and return a revised piece of code. The revised code should not introduce any new issues or bugs in the code.
+
+Do not include any extra words or characters. Format the response/output as:
+    Arguments: <arguments to the code here>
+    Python Code Explanation: <2 sentences maximum explination of the bug and how the revised code fixes it.>
+    Execute: <revised code here>
 """
     return template
 

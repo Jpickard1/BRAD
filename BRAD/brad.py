@@ -220,6 +220,7 @@ def loadChatStatus():
         'experiment'        : False,
         'queue'             : [],
         'queue pointer'     : 0,
+        'recursion_depth'   : 0,
     }
     return chatstatus
 
