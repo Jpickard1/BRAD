@@ -1,12 +1,12 @@
 {
     "RAG": {
-        "num_articles_retrieved": 20,
+        "num_articles_retrieved": 10,
         "multiquery": false,
-        "contextual_compression": true,
+        "contextual_compression": false,
         "rerank": false,
-        "similarity": true,
+        "similarity": false,
         "mmr": true,
-    	"cut": false
+    	"cut": true
     },
     "SCRAPE": {
         "add_from_scrape": true,
