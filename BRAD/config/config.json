@@ -1,12 +1,12 @@
 {
     "RAG": {
-        "num_articles_retrieved": 3,
+        "num_articles_retrieved": 20,
         "multiquery": false,
-        "contextual_compression": false,
+        "contextual_compression": true,
         "rerank": false,
         "similarity": true,
         "mmr": true,
-	"cut": false
+    	"cut": false
     },
     "SCRAPE": {
         "add_from_scrape": true,
@@ -37,7 +37,7 @@
         "colormap": "viridis",
         "fontsize": null
     },
-    "debug": 0,
+    "debug": 1,
     "log_path": "BRAD",
     "experiment": false,
     "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
