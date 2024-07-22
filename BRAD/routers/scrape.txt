@@ -290,3 +290,30 @@ Search the arXiv platform for the latest research related to the question: "What
 Search the arXiv platform for the latest research related to the question: "What are single cell foundation models?"
 Search arXiv for the latest research related to the question: "What are single cell foundation models?" by using the following filters: sort by date (newest first) and limit the search to the past year.
 Search arXiv for the latest research related to the question: "What are single cell foundation models?" by using the following filters: sort by date (newest first) and limit the search to the past year.
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" by using the following filters: sort by date (newest first) and limit the search to the past year.
+Search arXiv for the latest research related to single cell foundation models, using the answer from Step 1 as a starting point to focus the search.
+Search the latest research on arXiv related to the question: "What are single cell foundation models?" Use the updated literature from Step 1 as a starting point.
+Search arXiv for the latest research related to the question "What are single cell foundation models?" using the answer from Step 1 as the initial search query.
+Search arXiv for the latest research related to the question "What are single cell foundation models?" using the answer from Step 1 as the initial search query.
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" Use the current date as the cutoff for research relevancy.
+Search the platform arXiv for the latest research related to the question "What are single cell foundation models?" using the information gathered in Step 1.
+Search the arXiv platform for the latest research related to the question: "What are single cell foundation models?" Use the response from Step 1 as context for the search.
+Search the latest research on arXiv related to the question: "What are single cell foundation models?"
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" Use the current date as the cutoff for relevance.
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" Use the current date as the cutoff for relevance.
+Search the latest research on arXiv related to the question: "What are single cell foundation models?" Use the information from Step 1 as a foundation for the search.
+Search the latest research on arXiv related to the question: "What are single cell foundation models?" Use the information from Step 1 as a foundation for the search.
+what is MYOD in reprogramming on pubmed?
+What is a single cell foundation model? Please base this off of PubMed
+What is a single cell foundation model? Please base this off of PubMed
+What is a single cell foundation model? Please base this off of PubMed
+Next, search the specific platform arXiv for the latest research related to this question. Gather any new preprints or articles discussing the relative advantages of Geneformer, scGPT, and logistic regression.
+Next, search the specific platform arXiv for the latest research related to this question. Gather any new preprints or articles discussing the relative advantages of Geneformer, scGPT, and logistic regression.
+Next, search the specific platform arXiv for the latest research related to this question. Gather any new preprints or articles discussing the relative advantages of Geneformer, scGPT, and logistic regression.
+Search arXiv for the latest research related to the advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression.
+Search arXiv for the latest research related to the advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression.
+Search arXiv for the latest research related to the advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression.
+Search arXiv for new research related to the relative advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression. Provide a list of the most recent and relevant papers.
+Search arXiv for new research related to the relative advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression. Provide a list of the most recent and relevant papers.
+Search PubMed for new research related to the role of MYOD in Weintraub's cellular reprogramming experiment.
+Search PubMed for new research related to the role of MYOD in Weintraub's cellular reprogramming experiment.

@@ -431,3 +431,28 @@ Please look up literature and documents in the text database to answer the quest
 Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
 Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
 Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Look up literature and documents from a text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents from a text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Begin by searching for literature related to the question: "What are the relative advantages of Geneformer and scGPT over standard methods like logistic regression?" Look up documents from a text database that discuss the advantages and disadvantages of these tools in comparison to logistic regression. Summarize the findings.
+Begin by searching for literature related to the question: "What are the relative advantages of Geneformer and scGPT over standard methods like logistic regression?" Look up documents from a text database that discuss the advantages and disadvantages of these tools in comparison to logistic regression. Summarize the findings.
+Begin by searching for literature related to the question: "What are the relative advantages of Geneformer and scGPT over standard methods like logistic regression?" Look up documents from a text database that discuss the advantages and disadvantages of these tools in comparison to logistic regression. Summarize the findings.
+Begin by searching for literature related to the question: "What are the relative advantages of Geneformer and scGPT over standard methods like logistic regression?" Look up documents from a text database that discuss the advantages and disadvantages of these tools in comparison to logistic regression. Summarize the findings.
+Search for literature related to the advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression. Summarize the findings in a clear and concise manner.
+Search for literature related to the advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression. Summarize the findings in a clear and concise manner.
+Search for literature related to the advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression. Summarize the findings in a clear and concise manner.
+Search for literature related to the advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression. Summarize the findings in a clear and concise manner.
+Search the text database to find information related to the relative advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression. Summarize the key points from the documents found.
+Search the text database to find information related to the relative advantages of scGPT, scFoundation, or other single cell foundation models over standard methods like logistic regression. Summarize the key points from the documents found.
+Look up literature and documents from a text database to answer the question: "What is the role of MYOD in Weintraub's cellular reprogramming experiment?"
+Look up literature and documents from a text database to answer the question: "What is the role of MYOD in Weintraub's cellular reprogramming experiment?"
