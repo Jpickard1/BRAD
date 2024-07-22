@@ -54,13 +54,14 @@ def reroute(chatstatus):
     for i in chatlog.keys():
         history += "========================================"
         history += '\n'
-        history += "Input: "  + chatlog[i]['prompt']  + '\n\n'
-        history += "Output: " + chatlog[i]['output'] + '\n\n'
+        history += "Input: "  + chatlog[i]['prompt']  + r'\n\n'
+        history += "Output: " + chatlog[i]['output'] + r'\n\n'
     log.debugLog(history, chatstatus=chatstatus)
     
     # Put history into the conversation
     template = rerouteTemplate()
-    template = template.format(chathistory=history)
+    template = template.format(chathistory=history,
+                               step_number=chatstatus['queue pointer'])
     PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
     chain = PROMPT | chatstatus['llm']
     res = chain.invoke(prompt)
@@ -72,11 +73,12 @@ def reroute(chatstatus):
     nextStep = utils.find_integer_in_string(res.content.split('\n')[0])
     log.debugLog('EXTRACTED NEXT STEP', chatstatus=chatstatus)
     log.debugLog('Next Step=' + str(nextStep), chatstatus=chatstatus)
-    log.debugLog((nextStep is None), chatstatus=chatstatus)
+    log.debugLog(f'(nextStep is None)={(nextStep is None)}', chatstatus=chatstatus)
     if nextStep is None:
         nextStep = chatstatus['queue pointer'] + 1
-        #nextStep = 3
-        #log.debugLog('    **RESET NEXT STEP HARDCODED**', chatstatus=chatstatus)
+    if str(nextStep) not in prompt:
+        log.debugLog(f'the next step identified was not valid according to the rerouting instructions. As a result, chatstatus["queue pointer"]={chatstatus["queue pointer"]+1}', chatstatus=chatstatus)
+        nextStep = chatstatus['queue pointer'] + 1
     chatstatus['process']['steps'].append(log.llmCallLog(
         llm     = llm,
         prompt  = template,

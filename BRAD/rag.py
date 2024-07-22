@@ -79,6 +79,8 @@ def queryDocs(chatstatus):
     # llm calling
     #
     # History:
+    #  2024-07-21: Added a new feature to change the doc.page_content to include
+    #              the source
     # Issues:
 
     llm      = chatstatus['llm']              # get the llm
@@ -99,6 +101,14 @@ def queryDocs(chatstatus):
         if chatstatus['config']['RAG']['contextual_compression']:
             docs = contextualCompression(docs, chatstatus)
 
+        for i, doc in enumerate(docs):
+            source = doc.metadata.get('source')
+            short_source = os.path.basename(str(source))
+            pageContent = doc.page_content
+            addingInRefs = "Source: " + short_source + "\nContent: " + pageContent
+            doc.page_content = addingInRefs
+            docs[i] = doc
+        
         # build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
 

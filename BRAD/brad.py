@@ -87,7 +87,8 @@ class chatbot():
         ragvectordb=None,
         embeddings_model=None,
         restart=None,
-        name='BRAD'
+        name='BRAD',
+        max_api_calls=None # This prevents BRAD from finding infinite loops and using all your API credits
     ):
         """
         Initializes and runs the chatbot.
@@ -102,6 +103,8 @@ class chatbot():
         :type ragvectordb: Chroma, optional
         :param embeddings_model: The embeddings model to be used. If None, it will be loaded within the function.
         :type embeddings_model: HuggingFaceEmbeddings, optional
+        :param max_api_calls: The maximum number of api / llm calls BRAD can make
+        :type max_api_calls: int, optional
     
         :raises FileNotFoundError: If the specified model or database directories do not exist.
         :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
@@ -145,6 +148,10 @@ class chatbot():
             new_log_dir = restart
             self.chatname = os.path.join(restart, 'log.json')
             self.chatlog  = json.load(open(chatname))
+
+        if max_api_calls is None:
+            max_api_calls = 1000
+        self.max_api_calls = max_api_calls
     
         # Initialize the dictionaries of tables and databases accessible to BRAD
         databases = {} # a dictionary to look up databases
@@ -246,6 +253,9 @@ class chatbot():
                                  'steps'  : []
                             }
         self.chatstatus['output'] = ""
+
+        # get current output files
+        output_files = utils.outputFiles(self.chatstatus)
         
         # Query module
         self.chatstatus = module(self.chatstatus)
@@ -253,16 +263,22 @@ class chatbot():
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
         log.debugLog('\n\n\nroute\n\n\n', chatstatus=self.chatstatus)
         log.debugLog(route, chatstatus=self.chatstatus)
-        if len(self.chatstatus['queue']) != 0 and route != 'PLANNER':
+        if len(self.chatstatus['queue']) != self.chatstatus['queue pointer'] and route != 'PLANNER':
             log.debugLog(self.chatstatus['queue'], chatstatus=self.chatstatus)
             new_output_files = utils.outputFiles(self.chatstatus)
             new_output_files = list(set(new_output_files).difference(set(output_files)))
-            self.chatstatus = utils.makeNamesConsistent(chatstatus, new_output_files)
+            self.chatstatus = utils.makeNamesConsistent(self.chatstatus, new_output_files)
             if self.chatstatus['process']['module'] != 'ROUTER':
                 self.chatstatus['queue pointer'] += 1
         
         # Log and reset these values
+        #print('Before Logging')
+        #print(self.chatstatus)
+        #print(self.chatstatus['process'])
         self.chatlog, self.chatstatus = log.logger(self.chatlog, self.chatstatus, self.chatname)
+        #print('\n\n\nAfter Logging')
+        #print(self.chatstatus)
+        #print(self.chatstatus['process'])
         return True
 
     def chat(self):
@@ -279,6 +295,8 @@ class chatbot():
         # - 2024-06-04: wrote 1st draft of this code in the brad.chat() method
         # - 2024-07-10: refactored brad.py file to a class and converted the code
         #               used to execute consecutive prompts into this function
+        # - 2024-07-21: added llm-api-calls to chat status to prevent the rerouting/
+        #               planner modules from executing unnecessarily long loops.
         while True:
             print('==================================================')
             if len(self.chatstatus['queue']) != 0 and self.chatstatus['queue pointer'] < len(self.chatstatus['queue']):
@@ -288,8 +306,25 @@ class chatbot():
             
             if not self.invoke(query):
                 break
+            # print(self.chatstatus)
+            
+            # update llm-api-calls
+            newCalls = self.getLLMcalls(self.chatstatus['process']['steps'])
+            self.chatstatus['llm-api-calls'] += newCalls
+            log.debugLog(f'current llm calls={self.chatstatus["llm-api-calls"]}', chatstatus=self.chatstatus)
+            if self.chatstatus['llm-api-calls'] > self.max_api_calls:
+                log.debugLog('The maximum number of llm calls has been exceeded', chatstatus=self.chatstatus)
+                break
         self.chatstatus = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + self.chatname, chatstatus=self.chatstatus)
 
+    def getLLMcalls(self, steps):
+        newLLMcalls = 0
+        emptyLLMlog = log.llmCallLog()
+        for step in steps:
+            if all(k in step.keys() for k in emptyLLMlog.keys()):
+                newLLMcalls += 1
+        return newLLMcalls
+    
     def getModules(self):
         """
         Returns a dictionary mapping module names to their corresponding function handles for various tasks.
@@ -437,6 +472,10 @@ class chatbot():
             'experiment'        : False,
             'queue'             : [],
             'queue pointer'     : 0,
+            'llm-api-calls'     : 0,
+            'search'            : {
+                'used terms' : [],
+            }
         }
         return chatstatus
 
@@ -525,7 +564,8 @@ def chat(
         ragvectordb=None,
         embeddings_model=None,
         restart=None,
-        name='BRAD'
+        name='BRAD',
+        max_api_calls=None
     ):
     """
     Initializes and runs the RAG chatbot, allowing interaction with various models and databases, and logs the conversation.
@@ -571,12 +611,13 @@ def chat(
     #               of the class structure
 
     bot = chatbot(
-        model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
-        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/",
-        llm=None,
-        ragvectordb=None,
-        embeddings_model=None,
-        restart=None,
-        name='BRAD'
+        model_path = model_path,
+        persist_directory = persist_directory,
+        llm=llm,
+        ragvectordb=ragvectordb,
+        embeddings_model=embeddings_model,
+        restart=restart,
+        name=name,
+        max_api_calls=max_api_calls
     )
     bot.chat()

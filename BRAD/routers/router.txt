@@ -124,3 +124,141 @@ Regardless of the output from previous steps, proceed to Step 1 to continue iter
 Use WRITE to synthesize and summarize the entire analysis process, including the output from Step 1, the PubMed search results from Step 3 (if executed), and the iterative process between Step 1 and Step 4.
 Evaluate the quality of the output from Step 1. If the output is high quality, proceed to Step 5. Otherwise, proceed to Step 3.
 Regardless of the output from previous steps, return to Step 1 to refine the search or explore related topics.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Analyze the summary produced in Step 1 to determine the quality and completeness of the information. If the summary provides a satisfactory answer to the user's question, proceed to Step 3. If not, return to Step 1 and repeat the process with updated literature.
+Analyze the summary produced in Step 1 to determine the quality and completeness of the information. If the summary provides a satisfactory answer to the user's question, proceed to Step 3. If not, return to Step 1 and repeat the process with updated literature.
+Analyze the summary produced in Step 1 to determine the quality and completeness of the information. If the summary provides a satisfactory answer to the user's question, proceed to Step 3. If not, return to Step 1 and repeat the process with updated literature.
+Analyze the summary produced in Step 1 to determine the quality and completeness of the information. If the summary provides a satisfactory answer to the user's question, proceed to Step 3. If not, return to Step 1 and repeat the process with updated literature.
+Analyze the summary produced in Step 1 to determine the quality and completeness of the information. If the summary provides a satisfactory answer to the user's question, proceed to Step 3. If not, return to Step 1 and repeat the process with updated literature.
+Analyze the summary produced in Step 1 to determine the quality and completeness of the information. If the summary provides a satisfactory answer to the user's question, proceed to Step 3. If not, return to Step 1 and repeat the process with updated literature.
+Analyze the summary produced in Step 1 to determine the quality and completeness of the information. If the summary provides a satisfactory answer to the user's question, proceed to Step 3. If not, return to Step 1 and repeat the process with updated literature.
+Based on the answer from the most recent RAG search, determine if the answer is sufficient and if the system can exit the pipeline, or if the system should return to step 1.
+Determine if the answer from Step 3 is sufficient or if further iteration is required. If the answer is adequate, proceed to the final report. If not, return to Step 1 with the updated literature.
+Determine if the answer from the text database is sufficient and the system can exit, or if the system should return to step 1 with the updated literature. Indicate the dependency on the results from Step 3.
+Analyze the information gathered in Steps 1 and 2 to determine if the answer to the question "what is the core of a hypergraph" is now satisfactory. If so, proceed to the final Step 5. If not, return to Step 1 using the updated literature as input for the RAG.
+Analyze the information gathered in Steps 1 and 2 to determine if the answer to the question "what is the core of a hypergraph" is now satisfactory. If so, proceed to the final Step 5. If not, return to Step 1 using the updated literature as input for the RAG.
+Analyze the information gathered in Steps 1 and 2 to determine if the answer to the question "what is the core of a hypergraph" is now satisfactory. If so, proceed to the final Step 5. If not, return to Step 1 using the updated literature as input for the RAG.
+Analyze the information gathered in Steps 1 and 2 to determine if the answer to the question "what is the core of a hypergraph" is now satisfactory. If so, proceed to the final Step 5. If not, return to Step 1 using the updated literature as input for the RAG.
+Analyze the information gathered in Steps 1 and 2 to determine if the answer to the question "what is the core of a hypergraph" is now satisfactory. If so, proceed to the final Step 5. If not, return to Step 1 using the updated literature as input for the RAG.
+Analyze the information gathered in Steps 1 and 2 to determine if the answer to the question "what is the core of a hypergraph" is now satisfactory. If so, proceed to the final Step 5. If not, return to Step 1 using the updated literature as input for the RAG.
+Analyze the information gathered in Steps 1 and 2 to determine if the answer to the question "what is the core of a hypergraph" is now satisfactory. If so, proceed to the final Step 5. If not, return to Step 1 using the updated literature as input for the RAG.
+Evaluate the quality and relevance of the information gathered in Step 1 and Step 2. Determine if the answer from Step 1 is sufficient or if further exploration is needed. If the answer is sufficient, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Evaluate the quality and relevance of the information gathered in Step 1 and Step 2. Determine if the answer from Step 1 is sufficient or if further exploration is needed. If the answer is sufficient, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Evaluate the quality and relevance of the information gathered in Step 1 and Step 2. Determine if the answer from Step 1 is sufficient or if further exploration is needed. If the answer is sufficient, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Evaluate the quality and relevance of the information gathered in Step 1 and Step 2. Determine if the answer from Step 1 is sufficient or if further exploration is needed. If the answer is sufficient, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Evaluate the quality and relevance of the information gathered in Step 1 and Step 2. Determine if the answer from Step 1 is sufficient or if further exploration is needed. If the answer is sufficient, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Evaluate the quality and relevance of the information gathered in Step 1 and Step 2. Determine if the answer from Step 1 is sufficient or if further exploration is needed. If the answer is sufficient, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Evaluate the quality and relevance of the information gathered in Step 1 and Step 2. Determine if the answer from Step 1 is sufficient or if further exploration is needed. If the answer is sufficient, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Determine if the information gathered in Step 1 adequately answers the user's question "What is the role of foundation models in single cell analysis?" If not, return to Step 1 and repeat with the updated literature from Step 2. If so, inform the user that the pipeline has successfully completed.
+Determine if the answer from Step 1 is good and the pipeline can exit or if the pipeline should return to Step 1 with the updated literature from Step 2.
+Determine if the answer from Step 1 is good and the pipeline can exit or if the pipeline should return to Step 1 with the updated literature from Step 2.
+Determine if the answer from Step 1 is good and the pipeline can exit or if the pipeline should return to Step 1 with the updated literature from Step 2.
+Determine if the answer from Step 1 is good and the pipeline can exit or if the pipeline should return to Step 1 with the updated literature from Step 2.
+Evaluate the initial answer from Step 1 and the new research from Step 2. Decide if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature.
+Evaluate the initial answer from Step 1 and the new research from Step 2. Decide if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature.
+Evaluate the initial answer from Step 1 and the new research from Step 2. Decide if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature.
+Evaluate the initial answer from Step 1 and the new research from Step 2. Decide if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature.
+Evaluate the initial answer from Step 1 and the new research from Step 2. Decide if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature.
+Evaluate the quality and relevance of the information obtained in Step 1 and compare it to the new research found in Step 2. If the initial answer from Step 1 is satisfactory and up-to-date, then exit the pipeline. If not, return to Step 1 for further refinement and updating of the answer using the new research obtained in Step 2.
+Evaluate the quality and relevance of the information obtained in Step 1 and compare it to the new research found in Step 2. If the initial answer from Step 1 is satisfactory and up-to-date, then exit the pipeline. If not, return to Step 1 for further refinement and updating of the answer using the new research obtained in Step 2.
+Evaluate the quality and relevance of the information obtained in Step 1 and compare it to the new research found in Step 2. If the initial answer from Step 1 is satisfactory and up-to-date, then exit the pipeline. If not, return to Step 1 for further refinement and updating of the answer using the new research obtained in Step 2.
+Determine if the summary from Step 1 and the research papers from Step 2 provide sufficient information to answer the user's query about the role of foundation models in single cell analysis. If yes, proceed to exit the pipeline. If not, return to Step 1 with the updated literature from Step 2.
+Determine if the summary from Step 1 and the research papers from Step 2 provide sufficient information to answer the user's query about the role of foundation models in single cell analysis. If yes, proceed to exit the pipeline. If not, return to Step 1 with the updated literature from Step 2.
+Determine if the summary from Step 1 and the research papers from Step 2 provide sufficient information to answer the user's query about the role of foundation models in single cell analysis. If yes, proceed to exit the pipeline. If not, return to Step 1 with the updated literature from Step 2.
+Based on the information gathered in Step 1 and Step 2, determine if the answer from Step 1 is sufficient and the pipeline can exit, or if the pipeline should return to Step 1 with the updated literature.
+Based on the information gathered in Step 1 and Step 2, determine if the answer from Step 1 is sufficient and the pipeline can exit, or if the pipeline should return to Step 1 with the updated literature.
+Based on the information gathered in Step 1 and Step 2, determine if the answer from Step 1 is sufficient and the pipeline can exit, or if the pipeline should return to Step 1 with the updated literature.
+Based on the information gathered in Step 1 and Step 2, determine if the answer from Step 1 is sufficient and the pipeline can exit, or if the pipeline should return to Step 1 with the updated literature.
+Based on the information gathered in Step 1 and Step 2, determine if the answer from Step 1 is sufficient and the pipeline can exit, or if the pipeline should return to Step 1 with the updated literature.
+Determine if the combined information from the text database and arXiv provides a satisfactory answer to the user's query. If so, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Determine if the combined information from the text database and arXiv provides a satisfactory answer to the user's query. If so, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Determine if the combined information from the text database and arXiv provides a satisfactory answer to the user's query. If so, proceed to Step 4. If not, return to Step 1 with the updated literature.
+Determine if the answer from Step 1 is good and the pipeline can exit or if the pipeline should return to step 1 with the updated literature from Step 2.
+Determine if the answer from Step 1 is good and the pipeline can exit or if the pipeline should return to step 1 with the updated literature from Step 2.
+Determine if the answer from Step 1 is good and the pipeline can exit or if the pipeline should return to step 1 with the updated literature from Step 2.
+Analyze the information from Step 1 and Step 2 to determine if the answer from Step 1 is sufficient or if further investigation is needed. If further investigation is required, return to Step 1 with the updated literature. If the answer from Step 1 is sufficient, then exit the pipeline.
+Analyze the information from Step 1 and Step 2 to determine if the answer from Step 1 is sufficient or if further investigation is needed. If further investigation is required, return to Step 1 with the updated literature. If the answer from Step 1 is sufficient, then exit the pipeline.
+Analyze the information from Step 1 and Step 2 to determine if the answer from Step 1 is sufficient or if further investigation is needed. If further investigation is required, return to Step 1 with the updated literature. If the answer from Step 1 is sufficient, then exit the pipeline.
+Analyze the answers from Step 1 and the new research from Step 2 to determine if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature.
+Analyze the answers from Step 1 and the new research from Step 2 to decide if the answer from Step 1 is good and the pipeline can exit or if the pipeline should return to Step 1 with the updated literature.
+Determine if the answer from the RAG step is sufficient, or if the pipeline should return to Step 1 with the updated literature from the arXiv search.
+Based on the results of Step 2, determine if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature.
+Determine if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature from Step 2.
+Determine if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature from Step 2.
+Based on the information gathered in Step 1 and Step 2, determine if the answer from Step 1 is satisfactory and the pipeline can exit, or if the pipeline should return to Step 1 with the updated literature from Step 2. Provide a summary of the findings and the rationale for the decision.
+Based on the information gathered so far, should the pipeline exit or return to Step 1 to incorporate the new research? Determine if the answer from Step 1 is sufficient or if further literature search is required.
+Based on the information gathered so far, should the pipeline exit or return to Step 1 to incorporate the new research? Determine if the answer from Step 1 is sufficient or if further literature search is required.
+Based on the information gathered so far, should the pipeline exit or return to Step 1 to incorporate the new research? Determine if the answer from Step 1 is sufficient or if further literature search is required.
+Based on the information gathered so far, should the pipeline exit or return to Step 1 to incorporate the new research? Determine if the answer from Step 1 is sufficient or if further literature search is required.
+Based on the information gathered so far, should the pipeline exit or return to Step 1 to incorporate the new research? Determine if the answer from Step 1 is sufficient or if further literature search is required.
+Based on the information gathered so far, should the pipeline exit or return to Step 1 to incorporate the new research? Determine if the answer from Step 1 is sufficient or if further literature search is required.
+Based on the information gathered so far, should the pipeline exit or return to Step 1 to incorporate the new research? Determine if the answer from Step 1 is sufficient or if further literature search is required.
+Based on the information gathered so far, should the pipeline exit or return to Step 1 to incorporate the new research? Determine if the answer from Step 1 is sufficient or if further literature search is required.
+Based on the information gathered so far, should the pipeline exit or return to Step 1 to incorporate the new research? Determine if the answer from Step 1 is sufficient or if further literature search is required.
+Based on the updated literature from arXiv, determine if the answer from Step 1 is still accurate and sufficient, or if the pipeline should return to Step 1 with the new information. If the answer is satisfactory, the pipeline can exit.
+Analyze the information from Step 1 and Step 2 to determine if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature. If the answer is sufficient, the pipeline can exit, otherwise, proceed to Step 1 again.
+Based on the information gathered in Step 1 and Step 2, determine if the answer from Step 1 is satisfactory and the pipeline can exit, or if the pipeline should return to Step 1 with the updated literature from Step 2. Provide a summary of the findings and the rationale for the decision.

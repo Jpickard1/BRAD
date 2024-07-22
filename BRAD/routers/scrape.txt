@@ -206,3 +206,87 @@ Use SCRAPE to search PubMed for the latest research articles related to the cell
 Search PubMed for the latest research articles related to the cell cycle. Use the keywords from the summary in Step 1 to refine the search. Provide a list of relevant articles.
 Use SCRAPE to search PubMed for the latest research articles related to cell cycle. Use the keywords extracted from Step 1 to refine the search.
 Use SCRAPE to search PubMed for the latest research articles related to the cell cycle. Provide a list of relevant articles that may aid in understanding PCNA's role in the cell cycle.
+Perform web scraping on arXiv, bioRxiv, and PubMed to gather additional information related to the cell cycle and Pip-fucci imaging system. Update the RAG database with this new information.
+Following the initial search, utilize the SCRAPE function to search arXiv, bioRxiv, and PubMed for recent research related to the PIP-FUCCI system and its relationship with the cell cycle. Add this new literature to the text database.
+If needed, use the SCRAPE method to search platforms like arXiv, bioRxiv, and PubMed for the latest research related to the PIP-FUCCI system and its relationship with the cell cycle.
+Next, utilize the SCRAPE method to search platforms like arXiv, bioRxiv, and PubMed for the latest research related to the relationship between the PIP-FUCCI system and the cell cycle.
+Search arXiv, bioRxiv, and PubMed for the latest research related to the relationship between the PIP-FUCCI system and the cell cycle, as the current understanding from the text database may not be up-to-date or comprehensive.
+Next, utilize the SCRAPE method to search platforms like arXiv, bioRxiv, and PubMed for the latest research related to the relationship between the PIP-FUCCI system and the cell cycle.
+find me pdfs related to the PIP-FUCCI system
+find me pdfs related to control of dynamical systems
+find me pdfs related to control of dynamical systems
+Scrape the latest research from arXiv, bioRxiv, and PubMed to find new information related to the user's question on "foundation models and their use in studying dynamical systems."
+With the current state of knowledge from the text database, proceed to search platforms like arXiv, bioRxiv, and PubMed for the latest research related to the topic "foundation models and their application in studying dynamical systems".
+Based on the answer from the most recent RAG search, determine if the answer is sufficient and if the system can exit the pipeline, or if the system should return to step 1.
+Based on the answer from the most recent RAG search, determine if the answer is sufficient and if the system can exit the pipeline, or if the system should return to step 1.
+Search arXiv for the latest research related to foundation models and their application in studying dynamical systems. Gather this new research for further analysis.
+Next, search arXiv for the latest research related to "foundation models and their application in studying dynamical systems".
+Next, search arXiv for the latest research related to foundation models and their application in studying dynamical systems. Limit the search to this platform as per user's instructions.
+Next, search arXiv for the latest research related to foundation models and their application in studying dynamical systems. Limit the search to this platform as per user's instructions.
+Next, utilize the SCRAPE function to search arXiv for the latest research related to the "core of a hypergraph." Return any new studies or papers that have been published since the documents retrieved in Step 1.
+Next, utilize the SCRAPE function to search arXiv for the latest research related to the "core of a hypergraph." Return any new studies or papers that have been published since the documents retrieved in Step 1.
+Next, utilize the SCRAPE function to search arXiv for the latest research related to the "core of a hypergraph." Return any new studies or papers that have been published since the documents retrieved in Step 1.
+Search arXiv for recent research related to "hypergraph's core." Return the most recent and relevant publications.
+Utilize the SCRAPE module to search arXiv for the latest research related to the question "Hypergraph Core". Narrow down the search to return the 5 most recent publications.
+Next, search arXiv for the latest research related to the role of foundation models in single cell analysis. Provide a list of relevant and recent articles, including their titles, authors, and publication dates.
+Search arXiv for new research related to the role of foundation models in single cell analysis using the search term "single cell foundation models."
+Scrape arXiv for the latest research related to the question "What is the role of foundation models in single cell analysis?" with the search term "single cell foundation models"
+Search arXiv for the latest research related to the question with the search term "single cell foundation models"
+Search arXiv for the latest research related to the question with the search term "single cell foundation models"
+Search arXiv for the latest research related to the question with the search term "single cell foundation models"
+Search arXiv for the latest research related to the question with the search term "single cell foundation models"
+Search arXiv for the latest research related to the question with the search term "single cell foundation models"
+Search arXiv for new research related to the question with the search term "single cell foundation models"
+Search through arXiv for new research related to the role of foundation models in single cell analysis using the search term "single cell foundation models."
+Search through arXiv for new research related to the role of foundation models in single cell analysis using the search term "single cell foundation models."
+Search through arXiv for new research related to the role of foundation models in single cell analysis using the search term "single cell foundation models."
+Search through arXiv for new research related to the role of foundation models in single cell analysis using the search term "single cell foundation models."
+Search through arXiv for new research related to the role of foundation models in single cell analysis using the search term "single cell foundation models."
+Search arXiv for new research related to the role of foundation models in single cell analysis, using the specific search terms "single cell foundation models" and "attention foundation models". Return the list of relevant research articles.
+Search arXiv for new research related to the role of foundation models in single cell analysis, using the specific search terms "single cell foundation models" and "attention foundation models". Return the list of relevant research articles.
+Search arXiv for new research related to the role of foundation models in single cell analysis, using the specific search terms "single cell foundation models" and "attention foundation models". Return the list of relevant research articles.
+Search arXiv for new research related to the role of foundation models in single cell analysis, using the specific search terms "single cell foundation models" and "attention foundation models". Return the list of relevant research articles.
+Search arXiv for the latest research related to the role of foundation models in single cell analysis using the search terms "single cell foundation models", "scientific foundation models", and "dynamics and transformers". Return the relevant research papers found.
+Search arXiv for the latest research related to the role of foundation models in single cell analysis using the search terms "single cell foundation models", "scientific foundation models", and "dynamics and transformers". Return the relevant research papers found.
+Search arXiv for the latest research related to the role of foundation models in single cell analysis using the search terms "single cell foundation models", "scientific foundation models", and "dynamics and transformers". Return the relevant research papers found.
+Search arXiv for the latest research related to the role of foundation models in single cell analysis using the search terms "single cell foundation models", "scientific foundation models", and "dynamics and transformers". Return the relevant research papers found.
+Search arXiv with the following terms: "single cell foundation models", "scientific foundation models", "dynamics and transformers" to find new research related to the role of foundation models in single cell analysis.
+Search arXiv with the following terms: "single cell foundation models", "scientific foundation models", "dynamics and transformers" to find new research related to the role of foundation models in single cell analysis.
+Search arXiv with the following terms: "single cell foundation models", "scientific foundation models", "dynamics and transformers" to find new research related to the role of foundation models in single cell analysis.
+Search arXiv with the following terms: "single cell foundation models", "scientific foundation models", "dynamics and transformers" to find new research related to the role of foundation models in single cell analysis.
+Search arXiv with the following terms: "single cell foundation models", "scientific foundation models", "dynamics and transformers" to find new research related to the role of foundation models in single cell analysis.
+Search arXiv for recent research related to "single cell foundation models." Filter results to only include papers published within the last year.
+Search arXiv for recent research related to "single cell foundation models." Filter results to only include papers published within the last year.
+Search arXiv for recent research related to "single cell foundation models." Filter results to only include papers published within the last year.
+Search arXiv for new research related to the question with the search terms "single cell foundation models", "scientific foundation models". Use the answer from Step 1 to guide the search.
+Search arXiv for new research related to the question with the search terms "single cell foundation models", "scientific foundation models". Use the answer from Step 1 to guide the search.
+Search arXiv for new research related to the question with the search terms "single cell foundation models", "scientific foundation models". Use the answer from Step 1 to guide the search.
+Search arXiv for the latest research related to this question using the search terms "single cell foundation models" and "scientific foundation models".
+Search arXiv for the latest research related to this question using the search terms "single cell foundation models" and "scientific foundation models".
+Search arXiv for the latest research related to this question using the search terms "single cell foundation models" and "scientific foundation models".
+Search the arXiv platform for the latest research related to the question: "What are scientific foundation models?"
+Search the arXiv platform for the latest research related to the question: "What are scientific foundation models?"
+Search the arXiv platform for the latest research related to the question: "What are scientific foundation models?" using the information obtained from Step 1.
+Search arXiv for the latest research related to single cell foundation models, using the current understanding from the RAG search as a foundation.
+Search arXiv for the latest research related to single cell foundation models, using the answer from Step 1 as a starting point to focus the search.
+Search arXiv for the latest research related to single cell foundation models, using the current understanding from the response in Step 1 as the baseline for relevance.
+Search arXiv for the latest research related to single cell foundation models, using the current understanding from the response in Step 1 as the baseline for relevance.
+Search arXiv for the latest research related to single cell foundation models, using the current understanding from the response in Step 1 as the baseline for relevance.
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the RAG output.
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" by using the following filters: sort by date (newest first) and limit the search to the past year.
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" by using the following filters: sort by date (newest first) and limit the search to the past year.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search the platform arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the previous step.
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the RAG output.
+Search the arXiv platform for the latest research related to the question: "What are single cell foundation models?"
+Search the arXiv platform for the latest research related to the question: "What are single cell foundation models?"
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" by using the following filters: sort by date (newest first) and limit the search to the past year.
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" by using the following filters: sort by date (newest first) and limit the search to the past year.

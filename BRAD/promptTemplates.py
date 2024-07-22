@@ -57,11 +57,28 @@ def rerouteTemplate():
 
 History: {chathistory}
 
-Routing Decisions: {{user_query}}
+**Routing Decisions**
+You are currently at step {step_number}. Based on the plan and following instructions, determine which step to proceed to.
+{{user_query}}
 
 **OUTPUT**
 Next Step=<step number>
 REASONING=<why did you choose that step next>
+"""
+    return template
+
+def scrapeTemplate():
+    template = """Current conversation:\n{{history}}
+
+Query:{{input}}
+
+From the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose no more than 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Do not include general purpose search terms such as "recent advances", "novel", "current research", "latest trends", "theoretical foundations", or other general query terms. Also, do not use very general fields as serch terms such as: "dynamical systems", "machine learning", or "single cell". It is correct to use these terms with modifications to be more specific, so that "biological dynamical systems", "machine learning for genomics", or "single cell clustering" would be good terms to search.
+
+The following search terms have been previously uses and identical terms should be avoided in this search: {search_terms}
+
+**Format your output as follows. Do not include any addition information:**
+Database: <ARXIV, PUBMED, or BIORXIV>
+Search Terms: <improved search terms>
 """
     return template
 

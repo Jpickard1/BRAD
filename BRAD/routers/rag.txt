@@ -333,3 +333,101 @@ Use RAG to search literature and documents from a text database to understand th
 Conduct a literature search on the role of PCNA in the cell cycle and cell cycle imaging. Return relevant documents and summarize the findings on the role of PCNA in the cell cycle.
 Conduct a literature search on the role of PCNA in the cell cycle and cell cycle imaging. Return relevant documents and summarize the findings on the role of PCNA in the cell cycle.
 Conduct a literature search on the role of PCNA in the cell cycle and cell cycle imaging. Return relevant documents and summarize the findings on the role of PCNA in the cell cycle.
+Initiate a search in the RAG database regarding the cell cycle and Pip-fucci imaging system.
+Begin by querying the RAG database to gather information on the cell cycle and Pip-fucci imaging system.
+Initiate a search in the RAG database regarding the cell cycle and Pip-fucci imaging system.
+Determine if the RAG response is confident and adequate. If not, proceed to the next step.
+Perform web scraping on arXiv, bioRxiv, and PubMed to gather additional information related to the cell cycle and Pip-fucci imaging system. Update the RAG database with this new information.
+Begin by using the RAG to search internal text databases for information about the relationship between the PIP-FUCCI system and the cell cycle. Summarize and present the findings.
+Begin by using the RAG to search text databases for literature and documents related to the PIP-FUCCI system and its relationship with the cell cycle. Summarize the key findings and present the information in a coherent manner.
+Begin by using the RAG to search through literature and documents to answer the question "what is the relationship between the PIP-FUCCI system and the cell cycle".
+Begin by searching the text database to answer the question: "What is the relationship between the PIP-FUCCI system and the cell cycle?"
+Begin by using the RAG to search through literature and documents to answer the question "what is the relationship between the PIP-FUCCI system and the cell cycle".
+Begin by searching the text database to find an answer for the user's question: "what is a foundation model and how are they used to study dynamical systems."
+Begin by searching a text database to find an answer for the question "what is a foundation model and how are they used to study dynamical systems".
+Utilizing the updated literature from the web scraping, search the text database again for an answer to the question "what is a foundation model and how are they used to study dynamical systems".
+Based on the answer from the most recent RAG search, determine if the answer is sufficient and if the system can exit the pipeline, or if the system should return to step 1.
+Based on the answer from the most recent RAG search, determine if the answer is sufficient and if the system can exit the pipeline, or if the system should return to step 1.
+Begin by using the text database to find an answer to the user's question: "what is a foundation model and how are they used to study dynamical systems."
+Utilize the updated literature to refine the answer to the user's question: "what is a foundation model and how are they used to study dynamical systems."
+Begin by searching the text database to find information on the topic "what is a foundation model and how are they used to study dynamical systems".
+Begin by using the text database to find an answer to the question "what is a foundation model and how are they used to study dynamical systems."
+Utilize the text database again to see if the new research from arXiv has updated or improved the previous answer to the question.
+Begin by using the text database to find an answer to the question "what is a foundation model and how are they used to study dynamical systems."
+Begin by using the RAG to search the text database for existing information on the "core of a hypergraph." Return any relevant documents or literature on the topic.
+Analyze the information gathered in Steps 1 and 2 to determine if the answer to the question "what is the core of a hypergraph" is now satisfactory. If so, proceed to the final Step 5. If not, return to Step 1 using the updated literature as input for the RAG.
+Begin by using the RAG to search the text database for existing information on the "core of a hypergraph." Return any relevant documents or literature on the topic.
+Analyze the information gathered in Steps 1 and 2 to determine if the answer to the question "what is the core of a hypergraph" is now satisfactory. If so, proceed to the final Step 5. If not, return to Step 1 using the updated literature as input for the RAG.
+Begin by using the RAG to search the text database for existing information on the "core of a hypergraph." Return any relevant documents or literature on the topic.
+Begin by searching the text database to find information on the concept of a "hypergraph's core." Return any relevant definitions or explanations.
+Begin by using the RAG module to look up literature and documents in the text database that address the user's query: "what is the core of a hypergraph". Return the top 10 most relevant articles.
+Begin by searching for existing literature on the role of foundation models in single cell analysis. Summarize the key findings and conclusions in a clear and concise manner.
+Begin by searching the text database to find answers to the question "What is the role of foundation models in single cell analysis?" Summarize and provide the key findings as a response.
+Determine if the answer from Step 1 is sufficient or if the pipeline should return to Step 1 with the updated literature from Step 2. An answer may be considered sufficient if it provides a clear understanding of the role of foundation models in single cell analysis and is supported by relevant sources. If not, the pipeline should return to Step 1 to incorporate the latest research found in Step 2 and re-evaluate the answer. If the answer is sufficient, the pipeline can exit.
+Search the text database to find literature related to the question "What is the role of foundation models in single cell analysis?"
+Look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Look up literature and documents in a text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents related to the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents related to the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents related to the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents related to the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents related to the question: "What is the role of foundation models in single cell analysis?"
+Search the text database to find literature related to the role of foundation models in single cell analysis. Summarize the key findings and determine the current state of knowledge on this topic.
+Search the text database to find literature related to the role of foundation models in single cell analysis. Summarize the key findings and determine the current state of knowledge on this topic.
+Search the text database to find literature related to the role of foundation models in single cell analysis. Summarize the key findings and determine the current state of knowledge on this topic.
+Search the text database to find literature related to the role of foundation models in single cell analysis. Summarize the key findings and determine the current state of knowledge on this topic.
+Search the text database to find information related to the role of foundation models in single cell analysis. Return a summary of the findings.
+Search the text database to find information related to the role of foundation models in single cell analysis. Return a summary of the findings.
+Search the text database to find information related to the role of foundation models in single cell analysis. Return a summary of the findings.
+Search the text database to find information related to the role of foundation models in single cell analysis. Return a summary of the findings.
+Please look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents in the text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Search the text database to find information on "the role of foundation models in single cell analysis." Summarize the key findings.
+Search the text database to find information on "the role of foundation models in single cell analysis." Summarize the key findings.
+Search the text database to find information on "the role of foundation models in single cell analysis." Summarize the key findings.
+Search the text database to find information on "the role of foundation models in single cell analysis." Summarize the key findings.
+Look up literature and documents from a text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Look up literature and documents from a text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Look up literature and documents from a text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Look up literature and documents from a text database to answer the question: "What is the role of foundation models in single cell analysis?"
+Begin by searching the text database to find the answer to the question: "What is the role of foundation models in single cell analysis?"
+Begin by searching the text database to find the answer to the question: "What is the role of foundation models in single cell analysis?"
+Begin by searching the text database to find the answer to the question: "What is the role of foundation models in single cell analysis?"
+Please look up literature and documents in the text database to answer the question: "What are scientific foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are scientific foundation models?"
+Look up literature and documents from a text database to answer the question: "What are scientific foundation models?"
+Look up literature and documents from a text database to answer the question: "What are single cell foundation models?"
+Search arXiv for the latest research related to single cell foundation models, using the current understanding from the RAG search as a foundation.
+Determine if the answer from the RAG step is sufficient, or if the pipeline should return to Step 1 with the updated literature from the arXiv search.
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Look up literature and documents from a text database to answer the question: "What are single cell foundation models?"
+Look up literature and documents from a text database to answer the question "What are single cell foundation models?"
+Look up literature and documents from a text database to answer the question "What are single cell foundation models?"
+Look up literature and documents from a text database to answer the question "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the RAG output.
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Search arXiv for the latest research related to the question: "What are single cell foundation models?" using the current understanding from the RAG output.
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"
+Please look up literature and documents in the text database to answer the question: "What are single cell foundation models?"

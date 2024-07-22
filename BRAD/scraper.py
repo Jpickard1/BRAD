@@ -35,6 +35,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.document_loaders import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from BRAD.promptTemplates import scrapeTemplate
 from BRAD import utils
 from BRAD import log
 
@@ -66,15 +67,8 @@ def webScraping(chatstatus):
     }
     
     # Identify the database and the search terms
-    template = """Current conversation:\n{history}
-    
-    Query:{input}
-    
-    From the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose no more than 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Format your output as follows with no additions:
-    
-    Database: <ARXIV, PUBMED, or BIORXIV>
-    Search Terms: <improved search terms>
-    """
+    template = scrapeTemplate()
+    template = template.format(search_terms=chatstatus['search']['used terms'])
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
     conversation = ConversationChain(prompt  = PROMPT,
                                      llm     = llm,
@@ -83,6 +77,7 @@ def webScraping(chatstatus):
                                     )
     response = conversation.predict(input=query)
     llmResponse = parse_llm_response(response)
+    log.debugLog(llmResponse, chatstatus=chatstatus)
     chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
                                                          prompt          = PROMPT,
                                                          memory          = memory,
@@ -92,7 +87,7 @@ def webScraping(chatstatus):
                                                          purpose         = 'identify how to web scrape'
                                                         )
                                          )
-    llmKey, searchTerms = llmResponse['database'], llmResponse['search_terms']
+    llmKey, searchTerms = llmResponse['database'].upper(), llmResponse['search_terms']
 
     # Determine the target source
     source = next((key for key in scraping_functions if key == llmKey), 'PUBMED')
@@ -140,21 +135,26 @@ def arxiv(query, chatstatus):
     process = {}
     output = 'searching the following on arxiv: ' + query
     chatstatus = log.userOutput(output, chatstatus=chatstatus)
-    df, pdfs = arxiv_search(query, 10)
+    df, pdfs = arxiv_search(query, 10, chatstatus=chatstatus)
     process['search results'] = df
     displayDf = df[['Title', 'Authors', 'Abstract']]
     display(displayDf)
-    output += '\n Would you like to download these articles [Y/N]?'
-    chatstatus = log.userOutput('Would you like to download these articles [Y/N]?', chatstatus=chatstatus)
-    download = input().strip().upper()
-    chatstatus['process']['steps'].append(
-        {
-            'func'           : 'scraper.arxiv',
-            'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
-            'input'          : download,
-            'purpose'        : 'decide to download pdfs or not'
-        }
-    )
+    if chatstatus['config']['SCRAPE']['save_search_results']:
+        utils.save(chatstatus, df, "arxiv-search-" + str(query) + '.csv')
+    if len(chatstatus['queue']) == 0:
+        output += '\n Would you like to download these articles [Y/N]?'
+        chatstatus = log.userOutput('Would you like to download these articles [Y/N]?', chatstatus=chatstatus)
+        download = input().strip().upper()
+        chatstatus['process']['steps'].append(
+            {
+                'func'           : 'scraper.arxiv',
+                'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+                'input'          : download,
+                'purpose'        : 'decide to download pdfs or not'
+            }
+        )
+    else:
+        download = 'Y'
     process['download'] = (download == 'Y')
     if download == 'Y':
         output += arxiv_scrape(pdfs, chatstatus)
@@ -162,7 +162,7 @@ def arxiv(query, chatstatus):
 
 
 
-def search_pubmed_article(query, number_of_articles=10):
+def search_pubmed_article(query, number_of_articles=10, chatstatus=None):
     """
     Searches PubMed for articles matching the specified query and retrieves their PMIDs.
 
@@ -179,10 +179,13 @@ def search_pubmed_article(query, number_of_articles=10):
     """
     # Auth: Marc Choi
     #       machoi@umich.edu
-
     Entrez.email = 'inhyak@gmail.com'
+    log.debugLog("search_pubmed_article", chatstatus=chatstatus)
+    log.debugLog(f'term={query}', chatstatus=chatstatus)
     handle = Entrez.esearch(db='pubmed', term = query, retmax=number_of_articles, sort='relevance')
+    log.debugLog(f'handle={str(handle)}', chatstatus=chatstatus)
     record = Entrez.read(handle)
+    log.debugLog(f'record={str(record)}', chatstatus=chatstatus)
     handle.close()
     return record['IdList']
 
@@ -201,7 +204,7 @@ def pubmed(query, chatstatus):
     # Auth: Marc Choi
     #       machoi@umich.edu
 
-    pmid_list = search_pubmed_article(query)
+    pmid_list = search_pubmed_article(query, chatstatus=chatstatus)
     citation_arr = []
     if pmid_list:
         for pmid in pmid_list:
@@ -545,7 +548,7 @@ def create_db(query, query2):
 
 
 
-def arxiv_search(query, count):
+def arxiv_search(query, count, chatstatus=None):
     """
     Searches for articles on arXiv based on the given query and retrieves a specified number of results.
 
@@ -606,6 +609,8 @@ def arxiv_search(query, count):
         if i >= count:
             break
     df = pd.DataFrame(paper_list)
+    if chatstatus['config']['debug']:
+        display(df.head())
     pdf_urls = [attempt for attempt in arxiv_urls if 'pdf' in attempt.lower()]
     return df, pdf_urls
     
@@ -749,6 +754,10 @@ def updateDatabase(chatstatus):
 
     # Add to the database
     log.debugLog('Adding texts to database', chatstatus)
+    log.debugLog(f'len(docs)={len(docs)}', chatstatus)
+    if len(docs) == 0:
+        log.debugLog('exiting updateDatabase() because no new docs were found', chatstatus)
+        return chatstatus
     chatstatus['databases']['RAG'].add_texts(texts = docs,
                                              meta  = meta)
     log.debugLog('Done adding texts to database', chatstatus)

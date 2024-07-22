@@ -48,7 +48,7 @@ def logger(chatlog, chatstatus, chatname):
     }
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
-    chatstatus['process'] = None
+    # chatstatus['process'] = None
     return chatlog, chatstatus
 
 def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, parsedOutput=None, purpose=None):

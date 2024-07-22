@@ -10,7 +10,8 @@
     },
     "SCRAPE": {
         "add_from_scrape": true,
-        "max_search_terms": 2
+        "max_search_terms": 2,
+        "save_search_results": true
     },
     "DATABASE": {
         "max_search_terms": 100
@@ -36,10 +37,10 @@
         "colormap": "viridis",
         "fontsize": null
     },
-    "debug": 1,
+    "debug": 0,
     "log_path": "BRAD",
     "experiment": false,
     "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
-    "py-path": "/home/jpic/BRAD-Tools/",
+    "py-path": "/home/jpic/BRAD-Tools/foundation-models/",
     "image-path-extension": "images"
 }
