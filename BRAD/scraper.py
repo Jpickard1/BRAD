@@ -213,6 +213,7 @@ def pubmed(query, chatstatus):
         s = HTMLSession()
 
         headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
+
         try: 
             path = utils.pdfDownloadPath(chatstatus) # os.path.abspath(os.getcwd()) + '/specialized_docs'
             os.makedirs(path, exist_ok = True)
@@ -225,17 +226,19 @@ def pubmed(query, chatstatus):
                 r = s.get(base_url + pmc + '/', headers = headers, timeout = 5)
                 if r.html.find('a.id-link', first=True) is not None:
                     pdf_url = r.html.find('a.id-link', first=True).attrs['href']
-                    if 'https://ncbi.nlm.nih.gov' not in pdf_url:
+                    if 'ncbi.nlm.nih.gov' not in pdf_url:
                         continue
                     r = s.get(pdf_url, headers = headers, timeout = 5)
                     try:
-                        pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']
-                        r = s.get(pdf_real, stream=True)
+                        ending = r.html.find('a.int-view', first=True).attrs['href']
+                        pdf_real = 'https://ncbi.nlm.nih.gov'+ending
+                        r = s.get(pdf_real, stream=True, timeout = 5)
                         with open(os.path.join(path, pmc + '.pdf'), 'wb') as f:
                             for chunk in r.iter_content(chunk_size = 1024):
                                 if chunk:
                                     f.write(chunk)
                     except AttributeError as e:
+                        print(e)
                         log.debugLog(f"{pmc} could not be gathered.", chatstatus=chatstatus)
                         pass                
                     
