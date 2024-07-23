@@ -147,7 +147,7 @@ class chatbot():
         else:
             new_log_dir = restart
             self.chatname = os.path.join(restart, 'log.json')
-            self.chatlog  = json.load(open(chatname))
+            self.chatlog  = json.load(open(self.chatname))
 
         if max_api_calls is None:
             max_api_calls = 1000
