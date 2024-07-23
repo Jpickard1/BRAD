@@ -13,6 +13,16 @@
         "max_search_terms": 2,
         "save_search_results": true
     },
+    "CODE": {
+        "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
+        "py-path": "/home/jpic/BRAD-Tools/foundation-models/",
+        "path": [
+            "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
+            "/home/jpic/BRAD-Tools/foundation-models/",
+            "/home/jpic/BRAD-Tools/dynamics-observability",
+            "/home/jpic/BRAD-Tools/"
+        ]
+    },
     "DATABASE": {
         "max_search_terms": 100
     },
@@ -40,7 +50,5 @@
     "debug": 1,
     "log_path": "BRAD",
     "experiment": false,
-    "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
-    "py-path": "/home/jpic/BRAD-Tools/foundation-models/",
     "image-path-extension": "images"
 }

@@ -139,6 +139,10 @@ Note that chatstatus['output-directory'] is ALWAYS passed as the first argument.
 
 Query:{{input}}
 
+**PYTHON SCRIPT**
+Please use the correct script name and path. You must run this python script:
+{scriptName}
+
 **INSTRUCTIONS**
 1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
 2. Using the `subprocess` module, provide the one line of code to execute the desired Python script with the given arguments. Assume the necessary modules (`subprocess` and `sys`) are already imported.
@@ -193,6 +197,10 @@ The following files were previously created by BRAD and could be used as input t
 {files}
 
 Query:{{input}}
+
+**PYTHON SCRIPT**
+Please use the correct script name and path. You must run this python script:
+{scriptName}
 
 **INSTRUCTIONS**
 1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
