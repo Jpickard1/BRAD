@@ -27,6 +27,34 @@ Prompt: [Description of action for chatbot to do Step 2, i.e. do A, B, C. Use in
 """
     return template
 
+def plannerTemplateForLibrarySelection():
+    template = """**INSTRUCTIONS:**
+You are planning a bioinformatics analysis pipeline to address a user's query. You must determine if there already exist a predesigned pipeline that will respond to a user's query, or if a new, custom process must be designed for this particular query. The multi-step workflow can use the available methods listed below.
+
+**Available Methods within a Pipeline:**
+1. **RAG**: Look up literature and documents from a text database.
+2. **SCRAPE**: Search platforms like arXiv, bioRxiv, and PubMed for the latest research.
+3. **DATABASE**: Utilize bioinformatics databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.
+4. **CODE**: Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.
+5. **WRITE**: Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.
+6. **ROUTER**: Determine which step we should proceed to next.
+
+User Query: {{input}}
+
+**Available Pipelines**
+{pipeline_list}
+
+CUSTOM: The option to build a new pipeline
+
+The custom pipeline should be selected if no current pipeline addreses the user's query. If the custom pipeline is selected, please do not attempt to design the pipeline now. We will work to design it at a later point.
+
+**Output**:
+Please formate your output as follows:
+Pipeline Name: <available pipeline name above or "CUSTOM">
+Explination: <reason for selecting the above pipeline>
+"""
+    return template
+    
 def plannerEditingTemplate():
     template = """Based on the most recently proposed Current Plan and the user's new requirements and requested changes, create a revised plan.
 
@@ -72,7 +100,7 @@ def scrapeTemplate():
 
 Query:{{input}}
 
-From the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose no more than 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Do not include general purpose search terms such as "recent advances", "novel", "current research", "latest trends", "theoretical foundations", or other general query terms. Also, do not use very general fields as serch terms such as: "dynamical systems", "machine learning", or "single cell". It is correct to use these terms with modifications to be more specific, so that "biological dynamical systems", "machine learning for genomics", or "single cell clustering" would be good terms to search.
+From the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose at least 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Do not include general purpose search terms such as "recent advances", "novel", "current research", "latest trends", "theoretical foundations", or other general query terms. Also, do not use very general fields as serch terms such as: "dynamical systems", "machine learning", or "single cell". It is correct to use these terms with modifications to be more specific, so that "biological dynamical systems", "machine learning for genomics", or "single cell clustering" would be good terms to search.
 
 The following search terms have been previously uses and identical terms should be avoided in this search: {search_terms}
 
