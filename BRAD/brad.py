@@ -88,7 +88,8 @@ class chatbot():
         embeddings_model=None,
         restart=None,
         name='BRAD',
-        max_api_calls=None # This prevents BRAD from finding infinite loops and using all your API credits
+        max_api_calls=None, # This prevents BRAD from finding infinite loops and using all your API credits,
+        interactive=True    # this indicates if BRAD is in interactive more or not
     ):
         """
         Initializes and runs the chatbot.
@@ -125,6 +126,7 @@ class chatbot():
         # - 2024-06-04: wrote 1st draft of this code in the brad.chat() method
         # - 2024-07-10: refactored brad.py file to a class and converted the code
         #               used to initialize the chat session to initialize this class
+        # - 2024-07-23: added interactive and max_api_call arguments
         # Issues:
         # - We should change the structure of the classes/modules. In this 1st iteration
         #   chatstatus was packed as a class variable and used similar to before, but it
@@ -132,6 +134,7 @@ class chatbot():
         # super().__init__()
         self.chatstatus = self.loadChatStatus()
         self.name       = name.strip()
+        self.chatstatus['interactive'] = interactive # By default a chatbot is not interactive
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     
         base_dir = os.path.expanduser('~')
@@ -163,10 +166,13 @@ class chatbot():
             # llm = load_llama(model_path) # load the llama
             #llm = load_openai()
         if ragvectordb is None:
-            chatstatus = log.userOutput('\nWould you like to use a database with ' + self.name + ' [Y/N]?', chatstatus=self.chatstatus)
-            loadDB = input().strip().upper()
-            if loadDB == 'Y':
-                ragvectordb, embeddings_model = self.load_literature_db(persist_directory) # load the literature database
+            if self.chatstatus['interactive']:
+                chatstatus = log.userOutput('\nWould you like to use a database with ' + self.name + ' [Y/N]?', chatstatus=self.chatstatus)
+                loadDB = input().strip().upper()
+                if loadDB == 'Y':
+                    ragvectordb, embeddings_model = self.load_literature_db(persist_directory) # load the literature database
+                else:
+                    ragvectordb, embeddings_model = None, None
             else:
                 ragvectordb, embeddings_model = None, None
         
@@ -256,6 +262,9 @@ class chatbot():
 
         # get current output files
         output_files = utils.outputFiles(self.chatstatus)
+
+        # if not self.chatstatus['interactive']:
+        #     self.chatstatus['queue'] = [[]] # don't let it us an empty queue if it is not interactive
         
         # Query module
         self.chatstatus = module(self.chatstatus)
@@ -279,7 +288,7 @@ class chatbot():
         #print('\n\n\nAfter Logging')
         #print(self.chatstatus)
         #print(self.chatstatus['process'])
-        return True
+        return self.chatstatus['output']
 
     def chat(self):
         """This opens a chat session where a user can execute a series of prompts"""
@@ -297,6 +306,7 @@ class chatbot():
         #               used to execute consecutive prompts into this function
         # - 2024-07-21: added llm-api-calls to chat status to prevent the rerouting/
         #               planner modules from executing unnecessarily long loops.
+        self.chatstatus['interactive'] = True
         while True:
             print('==================================================')
             if len(self.chatstatus['queue']) != 0 and self.chatstatus['queue pointer'] < len(self.chatstatus['queue']):
@@ -315,6 +325,7 @@ class chatbot():
             if self.chatstatus['llm-api-calls'] > self.max_api_calls:
                 log.debugLog('The maximum number of llm calls has been exceeded', chatstatus=self.chatstatus)
                 break
+        self.chatstatus['interactive'] = False
         self.chatstatus = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + self.chatname, chatstatus=self.chatstatus)
 
     def getLLMcalls(self, steps):
