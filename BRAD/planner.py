@@ -1,9 +1,14 @@
+import os
+import re
+import json
+import difflib
+
 from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationChain
+from langchain.chains import ConversationChain, LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_core.prompts.prompt import PromptTemplate
-import re
-from BRAD.promptTemplates import plannerTemplate, plannerEditingTemplate
+
+from BRAD.promptTemplates import plannerTemplate, plannerEditingTemplate, plannerTemplateForLibrarySelection
 from BRAD import log
 
 """This module is responsible for creating sequences of steps to be run by other modules of BRAD"""
@@ -38,71 +43,155 @@ def planner(chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 16, 2024
+
+    # Dev. Comments:
+    # -------------------
+    # This function initializes a chat session and the chatstatus variable
+    #
+    # History:
+    # - 2024-06-16: 1st draft of this method
+    # - 2024-07-25: this function is refactors to allow the planner to save
+    #               new pipelines and rerun old pipelines.
+    #
+    # Issues:
+    # - The parsing of new/custom pipelines into prompts and a queue doesn't work
+    #   all that well
+    # - The queue should be implemented with a class rather than with only a list,
+    #   IP, and set of prompts
+    #
+    # TODOs:
+    # - add code to let BRAD fill in the template of a prebuilt pipeline
+    # - add code to save new pipelines
+
     llm      = chatstatus['llm']              # get the llm
     prompt   = chatstatus['prompt']           # get the user prompt
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
-    template = plannerTemplate()
-    PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
-    conversation = ConversationChain(prompt  = PROMPT,
-                                     llm     = llm,
-                                     verbose = chatstatus['config']['debug'],
-                                     memory  = memory,
-                                    )
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Select to use a prebuilt tempalte or design out own
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    template = plannerTemplateForLibrarySelection()
+    pipelines, pipelineSummary = getKnownPipelines()
+    template = template.format(pipeline_list=pipelineSummary)
+    PROMPT = PromptTemplate(input_variables=["input"], template=template)
+    conversation = LLMChain(prompt  = PROMPT,
+                            llm     = llm,
+                            verbose = chatstatus['config']['debug'],
+                            )
     response = conversation.predict(input=prompt)
-    response += '\n\n'
-    chatstatus = log.userOutput(response, chatstatus=chatstatus)
-    chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
-                                                         prompt       = PROMPT,
-                                                         memory       = memory,
-                                                         input        = prompt,
-                                                         output       = response,
-                                                         parsedOutput = {
-                                                             'output' : response,
-                                                         },
-                                                         purpose      = 'generate a proposed set of prompts'
-                                                        )
-                                         )
-    while True:
-        chatstatus = log.userOutput('Do you want to proceed with this plan? [Y/N/edit]', chatstatus=chatstatus)
-        prompt2 = input('Input >> ')
+    log.debugLog(response, chatstatus=chatstatus)
+    pipelineSelection = response.split('\n')[0].split(':')[1]
+    pipeline_names = [name.upper() for name in pipelines.keys()]
+    pipeline_names.append('CUSTOM')
+    selected_pipeline = difflib.get_close_matches(pipelineSelection.upper(), pipeline_names, n=1, cutoff=0.0)
+    if len(selected_pipeline) == 0:
+        selected_pipeline = "CUSTOM"
+    else:
+        selected_pipeline = selected_pipeline[0]
+    log.debugLog(f'selected_pipeline={selected_pipeline}', chatstatus=chatstatus)
+    chatstatus['process']['steps'].append(
+        log.llmCallLog(
+            llm          = llm,
+            prompt       = PROMPT,
+            input        = prompt,
+            output       = response,
+            parsedOutput = {
+                'selected pipeline': selected_pipeline
+            },
+            purpose      = 'determine if a known pipeline can be used or a new one si required'
+        )
+    )
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Building a custom pipeline
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    if selected_pipeline == 'CUSTOM':
+        template = plannerTemplate()
+        PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
+        conversation = ConversationChain(prompt  = PROMPT,
+                                         llm     = llm,
+                                         verbose = chatstatus['config']['debug'],
+                                         memory  = memory,
+                                        )
+        response = conversation.predict(input=prompt)
+        response += '\n\n'
+        chatstatus = log.userOutput(response, chatstatus=chatstatus)
+        chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
+                                                             prompt       = PROMPT,
+                                                             memory       = memory,
+                                                             input        = prompt,
+                                                             output       = response,
+                                                             parsedOutput = {
+                                                                 'output' : response,
+                                                             },
+                                                             purpose      = 'generate a proposed set of prompts'
+                                                            )
+                                             )
+        while True:
+            chatstatus = log.userOutput('Do you want to proceed with this plan? [Y/N/edit]', chatstatus=chatstatus)
+            prompt2 = input('Input >> ')
+            chatstatus['process']['steps'].append(
+                {
+                    'func'           : 'planner.planner',
+                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+                    'input'          : prompt2,
+                    'purpose'        : 'get new user input'
+                }
+            )
+            if prompt2 == 'Y':
+                break
+            elif prompt2 == 'N':
+                return chatstatus
+            else:
+                template = plannerEditingTemplate()
+                template = template.format(plan=response)
+                log.debugLog(template, chatstatus=chatstatus)
+                PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
+                chain    = PROMPT | llm
+                
+                # Call chain
+                response = chain.invoke(prompt2).content.strip() + '\n\n'
+                chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
+                                                                     prompt       = PROMPT,
+                                                                     # memory should be included in this chain
+                                                                     # memory       = memory,
+                                                                     input        = prompt2,
+                                                                     output       = response,
+                                                                     parsedOutput = {
+                                                                         'output' : response,
+                                                                     },
+                                                                     purpose      = 'update the proposed set of prompts'
+                                                                    )
+                                                     )
+                chatstatus = log.userOutput(response, chatstatus=chatstatus)
+
+        processes = response2processes(response)
+        log.debugLog(processes, chatstatus=chatstatus)
         chatstatus['process']['steps'].append(
             {
-                'func'           : 'planner.planner',
-                'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
-                'input'          : prompt2,
-                'purpose'        : 'get new user input'
+                'func' : 'planner.planner',
+                'what' : 'designed a new pipeline'
             }
         )
-        if prompt2 == 'Y':
-            break
-        elif prompt2 == 'N':
-            return chatstatus
-        else:
-            template = plannerEditingTemplate()
-            template = template.format(plan=response)
-            log.debugLog(template, chatstatus=chatstatus)
-            PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
-            chain    = PROMPT | llm
-            
-            # Call chain
-            response = chain.invoke(prompt2).content.strip() + '\n\n'
-            chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
-                                                                 prompt       = PROMPT,
-                                                                 # memory should be included in this chain
-                                                                 # memory       = memory,
-                                                                 input        = prompt2,
-                                                                 output       = response,
-                                                                 parsedOutput = {
-                                                                     'output' : response,
-                                                                 },
-                                                                 purpose      = 'update the proposed set of prompts'
-                                                                )
-                                                 )
-            chatstatus = log.userOutput(response, chatstatus=chatstatus)
-            
-    processes = response2processes(response)
-    log.debugLog(processes, chatstatus=chatstatus)
+
+        # TODO: add code to save new pipelines
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Parameterize a predesigned pipeline
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    else:
+        pipeline = pipelines[selected_pipeline]
+        processes = pipeline['queue']
+        chatstatus['process']['steps'].append(
+            {
+                'func' : 'planner.planner',
+                'what' : 'loaded an older pipeline'
+            }
+        )
+
+        # TODO: Add code that allows BRAD to fill in missing pieces of a pipeline / use templated pipelines
+        
     chatstatus['queue'] = processes
     chatstatus['queue pointer'] = 1 # the 0 object is a place holder
     chatstatus['process']['steps'].append(
@@ -189,4 +278,51 @@ def response2processes(response):
             })
     return processes
 
+def getKnownPipelines():
+    """
+    This function reads all available pipeline JSON files in the 'pipelines' directory
+    and extracts their 'name' and 'description' fields. It formulates a summary string
+    that can be used as input to an LLM prompt for selecting the appropriate pipeline.
 
+    Returns:
+        tuple: A tuple containing two elements:
+            - pipelines (list): A list of dictionaries where each dictionary represents
+              a pipeline read from a JSON file.
+            - summary (str): A formatted string summarizing the 'name' and 'description'
+              of each pipeline.
+    
+    Example Usage:
+        pipelines, summary = getKnownPipelines()
+        print(summary)
+        # Output:
+        # Name: Pipeline1  Description: This is the first pipeline.
+        # Name: Pipeline2  Description: This is the second pipeline.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 25, 2024
+    
+    # Get the path to the 'pipelines' directory
+    current_script_path = os.path.abspath(__file__)
+    current_script_dir = os.path.dirname(current_script_path)
+    pipelines_dir = os.path.join(current_script_dir, 'pipelines')
+
+    # Initialize an empty list to store pipeline dictionaries
+    pipelines = {}
+    summary = ""
+
+    # Read all JSON files in the 'pipelines' directory
+    for file_name in os.listdir(pipelines_dir):
+        if file_name.endswith('.json'):
+            file_path = os.path.join(pipelines_dir, file_name)
+            with open(file_path, 'r') as file:
+                pipeline = json.load(file)
+                pipelines[pipeline['name'].upper()] = {
+                    'path' : file_path,
+                    'description': pipeline['description'],
+                    'queue': pipeline['queue']
+                }
+                # Extract 'name' and 'description' to build the summary string
+                summary += f"Name: {pipeline['name']}\tDescription: {pipeline['description']}\n"
+
+    return pipelines, summary
