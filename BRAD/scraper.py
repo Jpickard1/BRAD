@@ -78,7 +78,14 @@ def webScraping(chatstatus):
     response = conversation.predict(input=query)
     llmResponse = parse_llm_response(response)
     log.debugLog(llmResponse, chatstatus=chatstatus)
-    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+    try:
+        llmType = str(llm.model)
+    except:
+        try:
+            llmType = str(llm.model_name)
+        except:
+            llmType = str(llm)
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llmType,
                                                          prompt          = PROMPT,
                                                          memory          = memory,
                                                          input           = query,
@@ -95,24 +102,27 @@ def webScraping(chatstatus):
     scrape_function = scraping_functions[source]
     
     # Execute the scraping function and handle errors
-    try:
-        output = f'searching on {source}...'
-        log.debugLog(output, chatstatus=chatstatus)
-        log.debugLog('Search Terms: ' + str(searchTerms), chatstatus=chatstatus)
-        for numTerm, st in enumerate(searchTerms):
-            if numTerm == chatstatus['config']['SCRAPE']['max_search_terms']:
-                break
-            scrape_function(st, chatstatus)
-    except Exception as e:
-        output = f'Error occurred while searching on {source}: {e}'
-        log.debugLog(output, chatstatus=chatstatus)
-        process = {'searched': 'ERROR'}
-
-    if chatstatus['config']['SCRAPE']['add_from_scrape']:
-        chatstatus = updateDatabase(chatstatus)
+    if chatstatus['config']['SCRAPE']['perform_search']:
+        try:
+            output = f'searching on {source}...'
+            log.debugLog(output, chatstatus=chatstatus)
+            log.debugLog('Search Terms: ' + str(searchTerms), chatstatus=chatstatus)
+            for numTerm, st in enumerate(searchTerms):
+                if numTerm == chatstatus['config']['SCRAPE']['max_search_terms']:
+                    break
+                scrape_function(st, chatstatus)
+        except Exception as e:
+            output = f'Error occurred while searching on {source}: {e}'
+            log.debugLog(output, chatstatus=chatstatus)
+            process = {'searched': 'ERROR'}
     
-    chatstatus['process']['steps'].append(process)
-    chatstatus['output'] = "Articles were successfully downloaded."
+        if chatstatus['config']['SCRAPE']['add_from_scrape']:
+            chatstatus = updateDatabase(chatstatus)
+        
+        chatstatus['process']['steps'].append(process)
+        chatstatus['output'] = "Articles were successfully downloaded."
+    else:
+        chatstatus['output'] = "No articles were searched."        
     return chatstatus
 
 
@@ -142,17 +152,20 @@ def arxiv(query, chatstatus):
     if chatstatus['config']['SCRAPE']['save_search_results']:
         utils.save(chatstatus, df, "arxiv-search-" + str(query) + '.csv')
     if len(chatstatus['queue']) == 0:
-        output += '\n Would you like to download these articles [Y/N]?'
-        chatstatus = log.userOutput('Would you like to download these articles [Y/N]?', chatstatus=chatstatus)
-        download = input().strip().upper()
-        chatstatus['process']['steps'].append(
-            {
-                'func'           : 'scraper.arxiv',
-                'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
-                'input'          : download,
-                'purpose'        : 'decide to download pdfs or not'
-            }
-        )
+        if chatstatus['interactive']:
+            output += '\n Would you like to download these articles [Y/N]?'
+            chatstatus = log.userOutput('Would you like to download these articles [Y/N]?', chatstatus=chatstatus)
+            download = input().strip().upper()
+            chatstatus['process']['steps'].append(
+                {
+                    'func'           : 'scraper.arxiv',
+                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+                    'input'          : download,
+                    'purpose'        : 'decide to download pdfs or not'
+                }
+            )
+        else:
+            download = chatstatus['SCRAPE']['download_search_results']
     else:
         download = 'Y'
     process['download'] = (download == 'Y')
@@ -723,6 +736,9 @@ def updateDatabase(chatstatus):
 
     # Determine which documents need to be added to the database
     new_docs_path = utils.pdfDownloadPath(chatstatus)
+
+    if chatstatus['databases']['RAG'] is None:
+        return chatstatus
     
     if not os.path.isdir(new_docs_path):
         return chatstatus
