@@ -89,7 +89,9 @@ class chatbot():
         restart=None,
         name='BRAD',
         max_api_calls=None, # This prevents BRAD from finding infinite loops and using all your API credits,
-        interactive=True    # this indicates if BRAD is in interactive more or not
+        interactive=True,   # This indicates if BRAD is in interactive more or not
+        config=None         # This parameter lets a user specify an additional configuration file that will
+                            # overwrite configurations with the same key
     ):
         """
         Initializes and runs the chatbot.
@@ -127,12 +129,13 @@ class chatbot():
         # - 2024-07-10: refactored brad.py file to a class and converted the code
         #               used to initialize the chat session to initialize this class
         # - 2024-07-23: added interactive and max_api_call arguments
+        # - 2024-07-29: added config (optional) argument to overwrite the defaults
         # Issues:
         # - We should change the structure of the classes/modules. In this 1st iteration
         #   chatstatus was packed as a class variable and used similar to before, but it
         #   is likely reasonable to split this variable up into separate class variables.
         # super().__init__()
-        self.chatstatus = self.loadChatStatus()
+        self.chatstatus = self.loadChatStatus(config=config)
         self.name       = name.strip()
         self.chatstatus['interactive'] = interactive # By default a chatbot is not interactive
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -308,16 +311,28 @@ class chatbot():
         #               planner modules from executing unnecessarily long loops.
         self.chatstatus['interactive'] = True
         while True:
+            # Begin processing a new prompt
             print('==================================================')
-            if len(self.chatstatus['queue']) != 0 and self.chatstatus['queue pointer'] < len(self.chatstatus['queue']):
+            # Get the prompt from the user or from the queue
+            if len(self.chatstatus['queue']) != 0 and self.chatstatus['queue pointer'] < len(self.chatstatus['queue']) and self.chatstatus['queue pointer'] != 0 and not self.chatstatus['interactive']:
                 query = self.chatstatus['queue'][self.chatstatus['queue pointer']]['prompt']
+
+                # update memory to use previous points of the pipeline
+                if 'input' in list(self.chatstatus['queue'][self.chatstatus['queue pointer']].keys()):
+                    self.updateMemory()
+                    resetMemory = True
+            
             else:
                 query = input('Input >> ')  # get query from user
             
+            # This line needs to change to check if we should exist the chat session
             if not self.invoke(query):
                 break
-            # print(self.chatstatus)
-            
+
+            # reset memory
+            if resetMemory:
+                self.resetMemory()
+                
             # update llm-api-calls
             newCalls = self.getLLMcalls(self.chatstatus['process']['steps'])
             self.chatstatus['llm-api-calls'] += newCalls
@@ -328,7 +343,50 @@ class chatbot():
         self.chatstatus['interactive'] = False
         self.chatstatus = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + self.chatname, chatstatus=self.chatstatus)
 
+    def updateMemory(self):
+        """Thils function lets BRAD reset his memory to focus on specific previous interactions. This is useful
+        when BRAD is executing a pipeline and want to manage how input flows from one section to the next."""
+        # Auth: Joshua Pickard
+        #       jpic@umich.edu
+        # Date: July 28, 2024
+
+        # get previous stages that must occur in the input
+        inputs = self.chatstatus['queue'][self.chatstatus['queue pointer']]['input']
+
+        # build a new memory object based upon the previous inputs and outputs of each stage
+        memory = ConversationBufferMemory()
+        for stage in inputs:
+            stageHistory = self.chatstatus['queue'][stage]['history']
+            memory.add_user_message(stageHistory['input'][-1])
+            memory.add_ai_message(stageHistory['output'][-1])
+
+        # Update the chatstatus main memory
+        chatstatus['main memory'] = chatstatus['memory']
+        chatstatus['memory'] = memory
+        return
+                
+
+    def resetMemory(self):
+        """Thils function undoes the effects of updateMemory."""
+        # Auth: Joshua Pickard
+        #       jpic@umich.edu
+        # Date: July 28, 2024
+
+        # Update the chatstatus main memory
+        mainMemory = chatstatus['main memory']
+        stageMemory = chatstatus['main memory']
+        
+        recent_messages = stageMemory.buffer[-2:]  # Adjust -2 index to control # of recent messages
+        for msg in recent_messages:
+            mainMemory.add_message(msg['role'], msg['content'])
+
+        chatstatus['memory'] = mainMemory
+        return
+    
     def getLLMcalls(self, steps):
+        # Auth: Joshua Pickard
+        #       jpic@umich.edu
+        # Date: July 2024
         newLLMcalls = 0
         emptyLLMlog = log.llmCallLog()
         for step in steps:
@@ -370,7 +428,7 @@ class chatbot():
         }
         return module_functions
 
-    def load_config(self):
+    def load_config(self, configfile=None):
         """
         Loads the configuration settings from a JSON file.
     
@@ -385,12 +443,40 @@ class chatbot():
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: June 4, 2024
+
+        # History:
+        # - 2024-06-04: wrote 1st draft of this code
+        # - 2024-07-29: added a new argument to allow additional configuration
+        #               files to overwrite the defaults
+
+        def deep_update(original, updates):
+            """
+            Recursively update the original dictionary with the updates dictionary.
+            """
+            for key, value in updates.items():
+                if isinstance(value, dict) and key in original:
+                    original[key] = deep_update(original.get(key, {}), value)
+                else:
+                    original[key] = value
+            return original
         
+        # Read the default configurations
         current_script_path = os.path.abspath(__file__)
         current_script_dir = os.path.dirname(current_script_path)
         file_path = os.path.join(current_script_dir, 'config', 'config.json')
         with open(file_path, 'r') as f:
-            return json.load(f)
+            defaultConfigs = json.load(f)
+
+        # Read the specific configurations
+        if configfile:
+            with open(configfile, 'r') as f:
+                newConfigs = json.load(f)
+            defaultConfigs = deep_update(defaultConfigs, newConfigs)
+
+        # both defaultConfigs and newConfigs are dictionaries with nested entries
+        # please overwrite all nested entries in the defaultConfigs with the entries
+        # from the newConfigs dictionary
+    
     
     def save_config(self):
         """
@@ -453,7 +539,7 @@ class chatbot():
             chatstatus = log.userOutput("Configuration " + str(key) + " not found", chatstatus=self.chatstatus)
         return chatstatus
 
-    def loadChatStatus(self):
+    def loadChatStatus(self, config=None):
         """
         Initializes and loads the chat status with default values and configuration settings from a file.
     
@@ -470,7 +556,7 @@ class chatbot():
         # Date: June 4, 2024
     
         chatstatus = {
-            'config'            : self.load_config(),
+            'config'            : self.load_config(configfile=config),
             'prompt'            : None,
             'output'            : None,
             'process'           : {},

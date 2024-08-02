@@ -72,7 +72,7 @@ def planner(chatstatus):
     # Select to use a prebuilt tempalte or design out own
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     template = plannerTemplateForLibrarySelection()
-    pipelines, pipelineSummary = getKnownPipelines()
+    pipelines, pipelineSummary = getKnownPipelines(chatstatus)
     template = template.format(pipeline_list=pipelineSummary)
     PROMPT = PromptTemplate(input_variables=["input"], template=template)
     conversation = LLMChain(prompt  = PROMPT,
@@ -182,7 +182,15 @@ def planner(chatstatus):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     else:
         pipeline = pipelines[selected_pipeline]
-        processes = pipeline['queue']
+        loadedProcesses, processes = pipeline['queue'], {}
+        for key, value in loadedProcesses.items():
+            # Check if the key is a string that can be converted to an integer
+            if isinstance(key, str) and key.isdigit():
+                new_key = int(key)
+            else:
+                new_key = key
+            processes[new_key] = value
+        chatstatus = displayPipeline2User(processes, chatstatus=chatstatus)
         chatstatus['process']['steps'].append(
             {
                 'func' : 'planner.planner',
@@ -191,7 +199,8 @@ def planner(chatstatus):
         )
 
         # TODO: Add code that allows BRAD to fill in missing pieces of a pipeline / use templated pipelines
-        
+
+    chatstatus['interactive'] = False
     chatstatus['queue'] = processes
     chatstatus['queue pointer'] = 1 # the 0 object is a place holder
     chatstatus['process']['steps'].append(
@@ -200,6 +209,13 @@ def planner(chatstatus):
             'what' : 'set the queue and set the queue pointer to 1'
         }
     )
+    return chatstatus
+
+def displayPipeline2User(process, chatstatus=None):
+    for key, value in process.items():
+        chatstatus=log.userOutput("** Step " + str(key) + "**", chatstatus=chatstatus)
+        chatstatus=log.userOutput(str(value), chatstatus=chatstatus)
+        chatstatus=log.userOutput("\n", chatstatus=chatstatus)
     return chatstatus
 
 def response2processes(response):
@@ -278,7 +294,7 @@ def response2processes(response):
             })
     return processes
 
-def getKnownPipelines():
+def getKnownPipelines(chatstatus):
     """
     This function reads all available pipeline JSON files in the 'pipelines' directory
     and extracts their 'name' and 'description' fields. It formulates a summary string
@@ -292,7 +308,7 @@ def getKnownPipelines():
               of each pipeline.
     
     Example Usage:
-        pipelines, summary = getKnownPipelines()
+        pipelines, summary = getKnownPipelines(chatstatus)
         print(summary)
         # Output:
         # Name: Pipeline1  Description: This is the first pipeline.
@@ -303,9 +319,10 @@ def getKnownPipelines():
     # Date: July 25, 2024
     
     # Get the path to the 'pipelines' directory
-    current_script_path = os.path.abspath(__file__)
-    current_script_dir = os.path.dirname(current_script_path)
-    pipelines_dir = os.path.join(current_script_dir, 'pipelines')
+    # current_script_path = os.path.abspath(__file__)
+    # current_script_dir = os.path.dirname(current_script_path)
+    # pipelines_dir = os.path.join(current_script_dir, 'pipelines')
+    pipelines_dir = chatstatus['config']['PLANNER']['path']    
 
     # Initialize an empty list to store pipeline dictionaries
     pipelines = {}
