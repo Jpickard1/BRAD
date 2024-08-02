@@ -362,3 +362,22 @@ please embed all of the Tabula Sapiens data with scGPT
 please embed all of the Tabula Sapiens data with scGPT
 please embed all of the Tabula Sapiens data with scGPT
 please embed all of the Tabula Sapiens data with scGPT
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Load the 2015 cell cycle dataset
+Convert the dataset to gene coordinates
+Convert the dataset to gene coordinates
+Build a DMD or linear model of the 2015 data
+Build a DMD or linear model of the 2015 data
+Build a DMD or linear model of the 2015 data
+Build a DMD or linear model of the 2015 data
+Build a DMD or linear model of the 2015 data
+Build a DMD or linear model of the 2015 data
+Perform biomarker or sensor selection on this model

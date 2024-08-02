@@ -89,31 +89,39 @@ def codeCaller(chatstatus):
     memory = ConversationBufferMemory(ai_prefix="BRAD")                  # chatstatus['memory']
 
     # Get available matlab and python scripts
-    if chatstatus['config']['py-path'] == 'py-tutorial/': # Admittedly, I'm not sure what's going on here - JP
-        pyPath = chatstatus['config']['py-path']
-    else:
-        base_dir = os.path.expanduser('~')
-        pyPath = os.path.join(base_dir, chatstatus['config']['py-path'])
+    path = chatstatus['config']['CODE']['path']
+    #if chatstatus['config']['py-path'] == 'py-tutorial/': # Admittedly, I'm not sure what's going on here - JP
+    #    pyPath = chatstatus['config']['py-path']
+    #else:
+    #    base_dir = os.path.expanduser('~')
+    #    pyPath = os.path.join(base_dir, chatstatus['config']['py-path'])
 
-    if chatstatus['config']['matlab-path'] == 'matlab-tutorial/':
-        matlabPath = chatstatus['config']['matlab-path']
-    else:
-        base_dir = os.path.expanduser('~')
-        matlabPath = os.path.join(base_dir, chatstatus['config']['matlab-path'])
+    #if chatstatus['config']['matlab-path'] == 'matlab-tutorial/':
+    #    matlabPath = chatstatus['config']['matlab-path']
+    #else:
+    #    base_dir = os.path.expanduser('~')
+    #    matlabPath = os.path.join(base_dir, chatstatus['config']['matlab-path'])
 
-    pythonScripts = find_py_files(pyPath)
-    matlabScripts = find_matlab_files(matlabPath)
+    scripts = {}
+    for fdir in path:
+        scripts[fdir] = {}
+        scripts[fdir]['python'] = find_py_files(fdir) # pythonScripts
+        scripts[fdir]['matlab'] = find_matlab_files(fdir) # matlabScripts
 
+    # print(scripts)
+    
     # Get matlab and python docstrings
     scriptPurpose = {}
-    for script in pythonScripts:
-        scriptPurpose[script] = {'description': get_py_description(os.path.join(pyPath, script + '.py')), 'type': 'python'}
-    for script in matlabScripts:
-        scriptPurpose[script] = {'description': get_matlab_description(os.path.join(matlabPath, script + '.m')), 'type': 'MATLAB'}
+    for fdir in path:
+        # print(fdir)
+        for script in scripts[fdir]['python']:
+            scriptPurpose[script] = {'description': get_py_description(os.path.join(fdir, script + '.py')), 'type': 'python'}
+        for script in scripts[fdir]['matlab']:
+            scriptPurpose[script] = {'description': get_matlab_description(os.path.join(fdir, script + '.m')), 'type': 'MATLAB'}
     script_list = ""
     for script in scriptPurpose.keys():
         script_list += "Script Name: " + script + ", \t Description: " + scriptPurpose[script]['description'] + '\n'
-    
+
     # Determine which code needs to be executed (first llm call)
     template = scriptSelectorTemplate()
     template = template.format(script_list=script_list)
@@ -125,12 +133,22 @@ def codeCaller(chatstatus):
     log.debugLog(res.content, chatstatus=chatstatus)
     scriptName   = res.content.strip().split('\n')[0].split(':')[1].strip()
     scriptType   = scriptPurpose[scriptName]['type']
-    scriptPath   = {'python': pyPath, 'MATLAB': matlabPath}.get(scriptType, log.debugLog("Warning! the type doesn't exist", chatstatus=chatstatus))
+    scriptPath = None
+    for fdir in path:
+        if scriptName in scripts[fdir][scriptType]:
+            scriptPath = fdir
+            break
+    if scriptPath is None:
+        log.debugLog('the scriptPath was not found', chatstatus=chatstatus)
+        log.debugLog(f'scripts={scripts}', chatstatus=chatstatus)
+        log.debugLog(f'scriptName={scriptName}', chatstatus=chatstatus)
+        log.debugLog(f'scriptType={scriptType}', chatstatus=chatstatus)
+
     if scriptType == 'MATLAB':
         chatstatus, _ = activateMatlabEngine(chatstatus) # turn on and add matlab files to path
     else:
         log.debugLog('scriptPath=' + str(scriptPath), chatstatus=chatstatus)
-        log.debugLog('pyPath=' + str(pyPath), chatstatus=chatstatus)
+        # log.debugLog('pyPath=' + str(pyPath), chatstatus=chatstatus)
         scriptName = os.path.join(scriptPath, scriptName)
     scriptSuffix = {'python': '.py', 'MATLAB': '.m'}.get(scriptType)
     scriptName  += scriptSuffix
@@ -176,7 +194,7 @@ def codeCaller(chatstatus):
                                        )
     response = conversation.predict(input=chatstatus['prompt'])
     responseParser = {'python': extract_python_code, 'MATLAB': extract_matlab_code}.get(scriptType)
-    code2execute = responseParser(response, chatstatus, memory=memory)
+    code2execute = responseParser(response, scriptPath, chatstatus, memory=memory)
 
     chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
                                                          prompt          = PROMPT,

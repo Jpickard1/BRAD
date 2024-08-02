@@ -110,7 +110,7 @@ def callPython(chatstatus):
     log.debugLog('START RESPONSE', chatstatus=chatstatus) 
     log.debugLog(response, chatstatus=chatstatus) 
     log.debugLog("END RESPONSE", chatstatus=chatstatus) 
-    pythonCode = extract_python_code(response, chatstatus)
+    pythonCode = extract_python_code(response, chatstatus['config']['py-path'], chatstatus)
     log.debugLog(matlabCode, chatstatus=chatstatus)
     chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
                                                          prompt          = PROMPT,
@@ -267,11 +267,21 @@ def find_py_files(path):
     #       jpic@umich.edu
     # Date: June 22, 2024
 
+    # Dev. Comments:
+    # -------------------
+    # This function executes a single user prompt with BRAD
+    #
+    # History:
+    # - 2024-06-22: initial draft
+    # - 2024-07-22: this function is modified to not use recursive search so as
+    #               to allow a path list, as opposed to a single matlab path, to
+    #               be used to point to where BRAD should find code
+
     # Construct the search pattern for .m files
-    search_pattern = os.path.join(path, '**', '*.py')
+    search_pattern = os.path.join(path, '*.py')
     
     # Find all .m files recursively
-    py_files = glob.glob(search_pattern, recursive=True)
+    py_files = glob.glob(search_pattern, recursive=False)
 
     # Extract only the file names from the full paths
     file_names = [os.path.basename(file)[:-3] for file in py_files]
@@ -439,7 +449,7 @@ def get_py_description(file_path):
     oneliner = docstrings.split('\n')[1]
     return oneliner
 
-def extract_python_code(llm_output, chatstatus, memory=None):
+def extract_python_code(llm_output, scriptPath, chatstatus, memory=None):
     """
     Parses the LLM output and extracts the Python code to execute.
 
@@ -498,11 +508,13 @@ def extract_python_code(llm_output, chatstatus, memory=None):
     funcCall = llm_output.split('Execute:')
     log.debugLog(funcCall, chatstatus=chatstatus)
     funcCall = funcCall[len(funcCall)-1].strip()
-    funcCall = funcCall.strip('\'"`')
+    if funcCall.startswith('```python'):
+        funcCall = funcCall.split('\n')[1]
+    funcCall = funcCall.strip('\'"`') # remove specific characters (single quotes', double quotes ", and backticks `` ``) 
     
     # Ensure placeholder path is replaced
-    funcCall = funcCall.replace('<path/to/script>/', chatstatus['config']['py-path'])
-    funcCall = funcCall.replace('<path/to/script>',  chatstatus['config']['py-path'])
+    funcCall = funcCall.replace('<path/to/script>/', scriptPath)
+    funcCall = funcCall.replace('<path/to/script>',  scriptPath)
     
     log.debugLog('Stripped funciton call', chatstatus=chatstatus)
     log.debugLog(funcCall, chatstatus=chatstatus)
@@ -568,7 +580,7 @@ def editPythonCode(funcCall, errorMessage, memory, chatstatus):
     response = conversation.predict(input=chatstatus['prompt'])
 
     # Parse the code (recursion begins here)
-    code2execute = extract_python_code(response, chatstatus, memory=memory)
+    code2execute = extract_python_code(response, chatstatus['config']['py-path'], chatstatus, memory=memory)
 
     # log the llm output
     chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,

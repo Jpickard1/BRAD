@@ -257,12 +257,22 @@ def find_matlab_files(path):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
+
+    # Dev. Comments:
+    # -------------------
+    # This function executes a single user prompt with BRAD
+    #
+    # History:
+    # - 2024-06-22: initial draft
+    # - 2024-07-22: this function is modified to not use recursive search so as
+    #               to allow a path list, as opposed to a single matlab path, to
+    #               be used to point to where BRAD should find code
     
     # Construct the search pattern for .m files
-    search_pattern = os.path.join(path, '**', '*.m')
+    search_pattern = os.path.join(path, '*.m')
     
     # Find all .m files recursively
-    matlab_files = glob.glob(search_pattern, recursive=True)
+    matlab_files = glob.glob(search_pattern, recursive=False)
 
     # Extract only the file names from the full paths
     file_names = [os.path.basename(file)[:-2] for file in matlab_files]
