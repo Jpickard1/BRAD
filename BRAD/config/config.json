@@ -10,8 +10,10 @@
     },
     "SCRAPE": {
         "add_from_scrape": true,
-        "max_search_terms": 2,
-        "save_search_results": true
+        "max_search_terms": 10,
+        "save_search_results": false,
+        "download_search_results": false,
+        "perform_search": false
     },
     "CODE": {
         "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
@@ -29,11 +31,15 @@
     "WRITE": {
         "latex-template-path": "/home/jpic/latex-test/templates"
     },
+    "PLANNER": {
+        "path": "/home/jpic/RAG-DEV/tutorials/biomarkers/pipelines"
+    },
     "max_articles_download": 1,
     "acceptable_data_files": [
         ".csv",
         ".tsv"
     ],
+    "recursion_depth": 0,
     "max_enrichr_pval": 0.5,
     "enable_logging": true,
     "num_df_rows_display": 3,
@@ -48,7 +54,8 @@
         "fontsize": null
     },
     "debug": 1,
-    "log_path": "BRAD",
+    "log_path": "/home/jpic/BRAD",
     "experiment": false,
-    "image-path-extension": "images"
+    "image-path-extension": "images",
+    "forgetful": 0
 }
