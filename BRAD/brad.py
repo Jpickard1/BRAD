@@ -82,7 +82,7 @@ class chatbot():
 
     def __init__(self,
         model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
-        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/",
+        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/DigitalLibrary-10-June-2024/",
         llm=None,
         ragvectordb=None,
         embeddings_model=None,
@@ -159,9 +159,9 @@ class chatbot():
     
         # Initialize the RAG database
         if llm is None:
-            llm = load_nvidia()
+            #llm = load_nvidia()
             # llm = load_llama(model_path) # load the llama
-            #llm = load_openai()
+            llm = load_openai()
         if ragvectordb is None:
             chatstatus = log.userOutput('\nWould you like to use a database with ' + self.name + ' [Y/N]?', chatstatus=self.chatstatus)
             loadDB = input().strip().upper()
@@ -481,7 +481,7 @@ class chatbot():
 
     def load_literature_db(
         self,
-        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/"
+        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/DigitalLibrary-10-June-2024/"
     ):
         """
         Loads a literature database using specified embedding model and settings.
@@ -502,12 +502,15 @@ class chatbot():
     
         # load database
         embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')        # Embedding model
-        db_name = "DB_cosine_cSize_%d_cOver_%d" % (700, 200)
+        db_name = 'NewDigitalLibrary'
         _client_settings = chromadb.PersistentClient(path=(persist_directory + db_name))
         vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings_model, client=_client_settings, collection_name=db_name)
+        print(len(vectordb.get()['ids']))
         if len(vectordb.get()['ids']) == 0:
+            print('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
             warnings.warn('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
         vectordb = remove_repeats(vectordb)
+        print(len(vectordb))
         return vectordb, embeddings_model
 
     def chatbotHelp(self):
@@ -559,7 +562,7 @@ class chatbot():
 
 def chat(
         model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
-        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/",
+        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/DigitalLibrary-10-June-2024/",
         llm=None,
         ragvectordb=None,
         embeddings_model=None,
