@@ -265,7 +265,7 @@ class chatbot():
 
         # get current output files
         output_files = utils.outputFiles(self.chatstatus)
-
+        IP = self.chatstatus['queue pointer']
         # if not self.chatstatus['interactive']:
         #     self.chatstatus['queue'] = [[]] # don't let it us an empty queue if it is not interactive
         
@@ -276,21 +276,21 @@ class chatbot():
         log.debugLog('\n\n\nroute\n\n\n', chatstatus=self.chatstatus)
         log.debugLog(route, chatstatus=self.chatstatus)
         if len(self.chatstatus['queue']) != self.chatstatus['queue pointer'] and route != 'PLANNER':
-            log.debugLog(self.chatstatus['queue'], chatstatus=self.chatstatus)
+            # log.debugLog(self.chatstatus['queue'], chatstatus=self.chatstatus)
             new_output_files = utils.outputFiles(self.chatstatus)
             new_output_files = list(set(new_output_files).difference(set(output_files)))
+            if 'output' not in self.chatstatus['queue'][IP].keys():
+                self.chatstatus['queue'][IP]['outputs'] = new_output_files
             self.chatstatus = utils.makeNamesConsistent(self.chatstatus, new_output_files)
             if self.chatstatus['process']['module'] != 'ROUTER':
                 self.chatstatus['queue pointer'] += 1
+
+        # Clear memory
+        if self.chatstatus['config']['forgetful']:
+            self.chatstatus['memory'].clear()
         
         # Log and reset these values
-        #print('Before Logging')
-        #print(self.chatstatus)
-        #print(self.chatstatus['process'])
         self.chatlog, self.chatstatus = log.logger(self.chatlog, self.chatstatus, self.chatname)
-        #print('\n\n\nAfter Logging')
-        #print(self.chatstatus)
-        #print(self.chatstatus['process'])
         return self.chatstatus['output']
 
     def chat(self):
@@ -313,25 +313,64 @@ class chatbot():
         while True:
             # Begin processing a new prompt
             print('==================================================')
+
+            # By default the memory is not messed with in BRAD (but on special occasions it is!)
+            resetMemory = False
+
             # Get the prompt from the user or from the queue
             if len(self.chatstatus['queue']) != 0 and self.chatstatus['queue pointer'] < len(self.chatstatus['queue']) and self.chatstatus['queue pointer'] != 0 and not self.chatstatus['interactive']:
                 query = self.chatstatus['queue'][self.chatstatus['queue pointer']]['prompt']
 
                 # update memory to use previous points of the pipeline
-                if 'input' in list(self.chatstatus['queue'][self.chatstatus['queue pointer']].keys()):
-                    self.updateMemory()
-                    resetMemory = True
+                if 'inputs' in list(self.chatstatus['queue'][self.chatstatus['queue pointer']].keys()):
+                    # This is piecemeal for now
+                    # if multiple inputs go to file caller, that can be handled during funciton call creation
+                    # only single inputs can go to DATABASE
+                    # only single inputs can go to ROUTER
+                    # only single inputs can go to PLANNER
+                    print('hacky integration of old results')
+                    print(query)
+                    print(self.chatstatus['queue'][self.chatstatus['queue pointer']]['module'])
+                    if self.chatstatus['queue'][self.chatstatus['queue pointer']]['module'] == 'RAG':
+                        print('RAG MODULE')
+                        print(f"self.chatstatus['queue'].keys()={self.chatstatus['queue'].keys()}")
+                        inputStages = self.chatstatus['queue'][self.chatstatus['queue pointer']]['inputs']
+                        print(inputStages)
+                        query += "**Previous Work**\nYou have generated the following data previously in the pipeline:\n\n"
+                        for ISIP in inputStages:
+                            fileName  = self.chatstatus['queue'][ISIP]['outputs']
+                            print(fileName)
+                            for file in fileName:
+                                file = os.path.join(self.chatstatus['output-directory'], file)
+                                if not os.path.exists(file):
+                                    continue
+                                try:
+                                    print(file)
+                                    dfMemory  = pd.read_csv(file)
+                                    if 'state' in df.columns:
+                                        query += "Top Ranked Biomarkers:\n"
+                                        query += str(df['state'].values[:100])[1:-1]
+                                    if 'p_val' in df.columns:
+                                        query += "Relevant Biological Processes from Enrichr:"
+                                        query += str(df[['path_name']].values[:10])
+                                except:
+                                    print('this part of the code doesnt work so great, yet!')
+                    # self.updateMemory()
+                    # resetMemory = True
             
             else:
                 query = input('Input >> ')  # get query from user
             
             # This line needs to change to check if we should exist the chat session
-            if not self.invoke(query):
+            output = self.invoke(query)
+
+            # output is false on exit
+            if not output:
                 break
 
             # reset memory
-            if resetMemory:
-                self.resetMemory()
+            # if resetMemory:
+            #    self.resetMemory()
                 
             # update llm-api-calls
             newCalls = self.getLLMcalls(self.chatstatus['process']['steps'])
@@ -350,6 +389,8 @@ class chatbot():
         #       jpic@umich.edu
         # Date: July 28, 2024
 
+        log.debugLog('updateMemory is starting', chatstatus=chatstatus)
+        
         # get previous stages that must occur in the input
         inputs = self.chatstatus['queue'][self.chatstatus['queue pointer']]['input']
 
@@ -467,16 +508,16 @@ class chatbot():
         with open(file_path, 'r') as f:
             defaultConfigs = json.load(f)
 
+        # print(defaultConfigs)
+
         # Read the specific configurations
         if configfile:
             with open(configfile, 'r') as f:
                 newConfigs = json.load(f)
             defaultConfigs = deep_update(defaultConfigs, newConfigs)
 
-        # both defaultConfigs and newConfigs are dictionaries with nested entries
-        # please overwrite all nested entries in the defaultConfigs with the entries
-        # from the newConfigs dictionary
-    
+        # print(defaultConfigs)
+        return defaultConfigs    
     
     def save_config(self):
         """
@@ -572,7 +613,8 @@ class chatbot():
             'llm-api-calls'     : 0,
             'search'            : {
                 'used terms' : [],
-            }
+            },
+            'recursion_depth': 0
         }
         return chatstatus
 
@@ -662,7 +704,8 @@ def chat(
         embeddings_model=None,
         restart=None,
         name='BRAD',
-        max_api_calls=None
+        max_api_calls=None,
+        config=None
     ):
     """
     Initializes and runs the RAG chatbot, allowing interaction with various models and databases, and logs the conversation.
@@ -715,6 +758,7 @@ def chat(
         embeddings_model=embeddings_model,
         restart=restart,
         name=name,
-        max_api_calls=max_api_calls
+        max_api_calls=max_api_calls,
+        config=config
     )
     bot.chat()
