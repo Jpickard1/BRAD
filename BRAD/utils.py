@@ -229,10 +229,18 @@ def makeNamesConsistent(chatstatus, files):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
+
+    # Dev. Comments:
+    # -------------------
+    # This function executes a single user prompt with BRAD
+    #
+    # Issues:
+    # - It is not clear why there are 2 for loops that renamd files
+    #
     if len(chatstatus['queue']) != 0:
         log.debugLog('Finding Stage Number of Pipeline', chatstatus=chatstatus)
         log.debugLog(chatstatus['queue'], chatstatus=chatstatus)
-        stageNum = chatstatus['queue pointer'] # [0]['order'] + 1
+        IP = chatstatus['queue pointer'] # [0]['order'] + 1
     else:
         return
     renamedFiles = []
@@ -241,7 +249,7 @@ def makeNamesConsistent(chatstatus, files):
             old_path = os.path.join(chatstatus['output-directory'], file)
             if os.path.isdir(old_path):
                 continue
-            new_path = os.path.join(chatstatus['output-directory'], 'S' + str(stageNum) + '-' + file)
+            new_path = os.path.join(chatstatus['output-directory'], 'S' + str(IP) + '-' + file)
             renamedFiles.append(
                 {
                     'old-name' : old_path,
@@ -249,6 +257,9 @@ def makeNamesConsistent(chatstatus, files):
                 }
             )
             os.rename(old_path, new_path)
+            if 'output' not in chatstatus['queue'][IP].keys():
+                chatstatus['queue'][IP] = []
+            chatstatus['queue'][IP]['output'].append(new_path)
     for file in outputFiles(chatstatus):
         old_path = os.path.join(chatstatus['output-directory'], file)
         new_path = os.path.join(chatstatus['output-directory'], file.replace('/', '').replace('\\', ''))
@@ -260,6 +271,9 @@ def makeNamesConsistent(chatstatus, files):
                 }
             )
             os.rename(old_path, new_path)
+            if 'output' not in chatstatus['queue'][IP].keys():
+                chatstatus['queue'][IP] = []
+            chatstatus['queue'][IP]['output'].append(new_path)
     chatstatus['process']['steps'].append(
         {
             'func'  : 'utils.makeNamesConsistent',
