@@ -21,8 +21,8 @@ import re
 import sys
 import subprocess
 
-from BRAD.promptTemplates import pythonPromptTemplate
-
+from BRAD.promptTemplates import pythonPromptTemplate, getPythonEditingTemplate
+from BRAD import log
 
 def callPython(chatstatus):
     """
@@ -52,7 +52,22 @@ def callPython(chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
-    print('Python Caller Start')
+    
+    # Dev. Comments:
+    # -------------------
+    # This function is responsible for selecting a matlab function to call and
+    # furmulating the function call.
+    #
+    # History:
+    #
+    # Issues:
+    # - This function doesn't use the llm to select the appropriate python script.
+    #   Currently, a word similarity score between the prompt and matlab codes
+    #   is performed and used to select the prompts, but we could follow an approach
+    #   similar to the coder.codeCaller() method that uses an llm to read the docstrings
+    #   and identify the best file. Note - the same approach is used by matlabCaller
+    
+    log.debugLog("Python Caller Start", chatstatus=chatstatus) 
     prompt = chatstatus['prompt']                                        # Get the user prompt
     llm = chatstatus['llm']                                              # Get the llm
     memory = chatstatus['memory']
@@ -65,39 +80,49 @@ def callPython(chatstatus):
     else:
         base_dir = os.path.expanduser('~')
         pyPath = os.path.join(base_dir, chatstatus['config']['py-path'])
-    print('Python scripts added to PATH') if chatstatus['config']['debug'] else None
+    log.debugLog('Python scripts added to PATH', chatstatus=chatstatus) 
 
     # Identify python scripts files we are adding to the path of BRAD
     pyScripts = find_py_files(pyPath)
-    print(pyScripts) if chatstatus['config']['debug'] else None
+    log.debugLog(pyScripts, chatstatus=chatstatus) 
     # Identify which file we should use
     pyScript = find_closest_function(prompt, pyScripts)
-    print(pyScript) if chatstatus['config']['debug'] else None
+    log.debugLog(pyScript, chatstatus=chatstatus) 
     # Identify pyton script arguments
     pyScriptPath = os.path.join(pyPath, pyScript + '.py')
-    print(pyScriptPath) if chatstatus['config']['debug'] else None
+    log.debugLog(pyScriptPath, chatstatus=chatstatus) 
     # Get matlab docstrings
     pyScriptDocStrings = read_python_docstrings(pyScriptPath)
-    print(pyScriptDocStrings) if chatstatus['config']['debug'] else None
+    log.debugLog(pyScriptDocStrings, chatstatus=chatstatus) 
     template = pythonPromptTemplate()
-    print(template) if chatstatus['config']['debug'] else None
+    log.debugLog(template, chatstatus=chatstatus) 
     # matlabDocStrings = callMatlab(chatstatus)
     filled_template = template.format(scriptName=pyScriptPath, scriptDocumentation=pyScriptDocStrings)
-    print(filled_template) if chatstatus['config']['debug'] else None
+    chatstatus = log.userOutput(filled_template, chatstatus=chatstatus)
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
-    print(PROMPT) if chatstatus['config']['debug'] else None
+    log.debugLog(PROMPT, chatstatus=chatstatus) 
     conversation = ConversationChain(prompt  = PROMPT,
-                                     llm     =    llm,
-                                     verbose =   chatstatus['config']['debug'],
+                                     llm     = llm,
+                                     verbose = chatstatus['config']['debug'],
                                      memory  = memory,
                                     )
     response = conversation.predict(input=chatstatus['prompt'] )
-    print('START RESPONSE') if chatstatus['config']['debug'] else None
-    print(response) if chatstatus['config']['debug'] else None
-    print('END RESPONSE') if chatstatus['config']['debug'] else None
-    matlabCode = extract_python_code(response, chatstatus)
-    print(matlabCode) if chatstatus['config']['debug'] else None
-    execute_python_code(matlabCode, chatstatus)
+    log.debugLog('START RESPONSE', chatstatus=chatstatus) 
+    log.debugLog(response, chatstatus=chatstatus) 
+    log.debugLog("END RESPONSE", chatstatus=chatstatus) 
+    pythonCode = extract_python_code(response, chatstatus)
+    log.debugLog(matlabCode, chatstatus=chatstatus)
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+                                                         prompt          = PROMPT,
+                                                         input           = chatstatus['prompt'],
+                                                         output          = response,
+                                                         parsedOutput    = {
+                                                             'pythonCode': pythonCode,
+                                                         },
+                                                         purpose         = 'formulate python function call'
+                                                        )
+                                         )
+    execute_python_code(pythonCode, chatstatus)
     return chatstatus
 
 def execute_python_code(python_code, chatstatus):
@@ -125,29 +150,50 @@ def execute_python_code(python_code, chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
-    print('EVAL') if chatstatus['config']['debug'] else None
-    print(python_code) if chatstatus['config']['debug'] else None
-    print('END EVAL CHECK') if chatstatus['config']['debug'] else None
+    log.debugLog('EVAL', chatstatus=chatstatus) 
+    log.debugLog(python_code, chatstatus=chatstatus) 
+    log.debugLog('END EVAL CHECK', chatstatus=chatstatus) 
 
-    # Unsure that chatstatus['output-directory'] is passed as an argument to the code:
+    # Ensure that chatstatus['output-directory'] is passed as an argument to the code:
     if "chatstatus['output-directory']" not in python_code:
-        print('PYTHON CODE OUTPUT DIRECTORY CHANGED')
+        log.debugLog('PYTHON CODE OUTPUT DIRECTORY CHANGED', chatstatus=chatstatus) 
         python_code = python_code.replace(get_arguments_from_code(python_code)[2].strip(), "chatstatus['output-directory']")
-        print(python_code)
-        
-    if python_code:
-        try:
-            # Attempt to evaluate the MATLAB code
-            eval(python_code)
-            print("Debug: PYTHON code executed successfully.")
-        except SyntaxError as se:
-            print(f"Debug: Syntax error in the PYTHON code: {se}")
-        except NameError as ne:
-            print(f"Debug: Name error, possibly undefined function or variable: {ne}")
-        except Exception as e:
-            print(f"Debug: An error occurred during PYTHON code execution: {e}")
-    else:
-        print("Debug: No PYTHON code to execute.")
+        log.debugLog(python_code, chatstatus=chatstatus) 
+
+    # Ensure that we get the output from the script
+    response = None
+    python_code = "response = " + python_code
+    
+    try:
+        # Attempt to evaluate the MATLAB code
+        log.debugLog("Finalized PYTHON Call:", chatstatus=chatstatus)
+        log.debugLog("   ", chatstatus=chatstatus)
+        log.debugLog(python_code, chatstatus=chatstatus)
+        log.debugLog("   ", chatstatus=chatstatus)
+
+        # execute the code and get the response variable
+        local_scope = {'chatstatus': chatstatus, 'sys': sys, 'subprocess': subprocess}
+        exec(python_code, globals(), local_scope)
+        log.debugLog("Debug: PYTHON code executed successfully.", chatstatus=chatstatus)
+        response = local_scope.get('response', None)
+        log.debugLog("Code Execution Output:", chatstatus=chatstatus)
+        log.debugLog(response, chatstatus=chatstatus)
+        chatstatus['process']['steps'].append(
+            {
+                'func'   : 'pythonCaller.execute_python_code',
+                'code'   : python_code,
+                'purpose': 'execute python code',
+            }
+        )
+        chatstatus['output'] = response.stdout.strip()
+        log.debugLog("Debug: PYTHON code output saved to output.", chatstatus=chatstatus)
+    except SyntaxError as se:
+        log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", chatstatus=chatstatus)
+    except NameError as ne:
+        log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", chatstatus=chatstatus)
+    except Exception as e:
+        log.debugLog(f"Debug: An error occurred during PYTHON code execution: {e}", chatstatus=chatstatus)
+
 
 # Extract the arguments from the string
 def get_arguments_from_code(code):
@@ -393,7 +439,7 @@ def get_py_description(file_path):
     oneliner = docstrings.split('\n')[1]
     return oneliner
 
-def extract_python_code(llm_output, chatstatus):
+def extract_python_code(llm_output, chatstatus, memory=None):
     """
     Parses the LLM output and extracts the Python code to execute.
 
@@ -420,7 +466,7 @@ def extract_python_code(llm_output, chatstatus):
     ```
     Calling `extract_python_code(llm_output, chatstatus)` would return:
     ```
-    subprocess.call([sys.executable, 'script.py'])
+    subprocess.run([sys.executable, 'script.py'])
     ```
 
     If the LLM output does not include a valid Python execution command, the function might modify
@@ -430,24 +476,156 @@ def extract_python_code(llm_output, chatstatus):
     #       jpic@umich.edu
     # Date: June 22, 2024
 
-    print('LLM OUTPUT PARSER') if chatstatus['config']['debug'] else None
-    print(llm_output) if chatstatus['config']['debug'] else None
+    # Dev. Comments:
+    # -------------------
+    # This function should take llm output and extract python code
+    #
+    # History:
+    # - 2024-06-22: initiall attempt to extract python from llms
+    # - 2024-07-08: (1) strip('\'"`') is added to remove trailing quotations
+    #               (2) <path/to/script> is set as a keyword to be replaced by
+    #                   python paths
+    #               (3) added a subsequent python call to edit the command when
+    #                   compile() fails
+    #
+    # Issues:
+    # - This is very sensitive to the particular model, prompt, and patterns in
+    #   the llm response.
+    
+    log.debugLog("LLM OUTPUT PARSER", chatstatus=chatstatus) 
+    log.debugLog(llm_output, chatstatus=chatstatus) 
+
     funcCall = llm_output.split('Execute:')
-    print(funcCall) if chatstatus['config']['debug'] else None
+    log.debugLog(funcCall, chatstatus=chatstatus)
     funcCall = funcCall[len(funcCall)-1].strip()
-    if funcCall[:32] != 'subprocess.call([sys.executable,':
-        print(funcCall) if chatstatus['config']['debug'] else None
-        funcCall = 'subprocess.call([sys.executable,' + funcCall[32:]
-        print(funcCall) if chatstatus['config']['debug'] else None
+    funcCall = funcCall.strip('\'"`')
+    
+    # Ensure placeholder path is replaced
+    funcCall = funcCall.replace('<path/to/script>/', chatstatus['config']['py-path'])
+    funcCall = funcCall.replace('<path/to/script>',  chatstatus['config']['py-path'])
+    
+    log.debugLog('Stripped funciton call', chatstatus=chatstatus)
+    log.debugLog(funcCall, chatstatus=chatstatus)
+    
+    if not funcCall.startswith('subprocess.run([sys.executable,'):
+        funcCall = 'subprocess.run([sys.executable' + funcCall[funcCall.find(','):]
+
+    log.debugLog('Cleaned up function call:\n', chatstatus=chatstatus)
+    log.debugLog(funcCall, chatstatus=chatstatus)
+    log.debugLog('\n', chatstatus=chatstatus)
+    try:
+        compile(funcCall, '<string>', 'exec')
+    except Exception as e:
+        return editPythonCode(funcCall, str(e), memory, chatstatus)
+    
     return funcCall
-    # Define the regex pattern to match the desired line
-    #pattern = r'Execute: `(.+)`'
 
-    # Search for the pattern in the LLM output
-    #match = re.search(pattern, llm_output)
+def editPythonCode(funcCall, errorMessage, memory, chatstatus):
+    """
+    Edit the Python code based on the error message and chat status, with recursion depth limit.
 
-    # If a match is found, return the MATLAB code, else return None
-    #if match:
-    #    return match.group(1)
-    #else:
-    #    return None
+    Parameters:
+    funcCall (str): The Python code to be edited.
+    errorMessage (str): The error message related to the code.
+    chatstatus (dict): Dictionary containing chat status and configuration.
+
+    Returns:
+    str: The edited Python code ready for execution, or an error message if recursion limit is reached.
+    """
+
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 8, 2024
+
+    # Bound the recursion depth of this function
+    if chatstatus['recursion_depth'] > 5:
+        log.errorLog('Recursion depth limit reached. Please check the code and error message', chatstatus=chatstatus)
+        return "Recursion depth limit reached. Please check the code and error message."
+    chatstatus['recursion_depth'] += 1
+
+    # Extract the llm
+    llm = chatstatus['llm']
+
+    # Fill in the python editting template
+    template = getPythonEditingTemplate()
+    filled_template = template.format(
+        code1 = funcCall,
+        code2 = funcCall,
+        error = errorMessage
+    )
+    log.debugLog("Memory", chatstatus=chatstatus)
+    log.debugLog(memory,   chatstatus=chatstatus)
+    # Build the langchain
+    PROMPT          = PromptTemplate(input_variables=["history", "input"], template=filled_template)
+    log.debugLog(PROMPT, chatstatus=chatstatus)
+    conversation    = ConversationChain(prompt  = PROMPT,
+                                        llm     =    llm,
+                                        verbose = chatstatus['config']['debug'],
+                                        memory  = memory,
+                                       )
+
+    # Call the llm/langchain
+    response = conversation.predict(input=chatstatus['prompt'])
+
+    # Parse the code (recursion begins here)
+    code2execute = extract_python_code(response, chatstatus, memory=memory)
+
+    # log the llm output
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+                                                         prompt          = PROMPT,
+                                                         input           = chatstatus['prompt'],
+                                                         output          = response,
+                                                         parsedOutput    = {
+                                                             'code': code2execute
+                                                         },
+                                                         purpose         = 'Edit function call'
+                                                        )
+                                         )
+    # Decrement recursion depth after use
+    chatstatus['recursion_depth'] -= 1
+    return code2execute
+
+def has_unclosed_symbols(s):
+    """
+    Check for unclosed symbols in a string.
+
+    This function checks if a string has unclosed symbols such as quotes,
+    parentheses, brackets, or braces. It returns True if there are unclosed
+    symbols, and False otherwise.
+
+    Parameters:
+    s (str): The string to check for unclosed symbols.
+
+    Returns:
+    bool: True if there are unclosed symbols, False otherwise.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 8, 2024
+    
+    stack = []
+    pairs = {'(': ')', '[': ']', '{': '}'}
+    opening = pairs.keys()
+    closing = pairs.values()
+    
+    i = 0
+    while i < len(s):
+        char = s[i]
+        if char in pairs:
+            stack.append(pairs[char])
+        elif char in closing:
+            if not stack or char != stack.pop():
+                return True
+        elif char in ['"', "'"]:
+            # Check if this is an escaped quote
+            if i > 0 and s[i - 1] == '\\':
+                i += 1
+                continue
+            # Toggle the quote in the stack
+            if stack and stack[-1] == char:
+                stack.pop()
+            else:
+                stack.append(char)
+        i += 1
+    
+    return bool(stack)

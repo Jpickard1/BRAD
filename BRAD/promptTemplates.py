@@ -6,11 +6,12 @@ def plannerTemplate():
 You are planning a bioinformatics analysis pipeline to address a user's query. Your task is to outline a multi-step workflow using the available methods listed below. Each method should be used appropriately to ensure a thorough analysis. For each step in the pipeline, explain the goal of the process as well as provide a prompt to the chatbot that will execute that step. If information is passed between stages, such as from literature or code to databases, indicate the dependencies of steps in the prompt.
 
 **Available Methods:**
-1. **Retrieval Augmented Generation**(RAG): Look up literature and documents from a text database.
-2. **Web Search for New Literature**(SCRAPE): Search platforms like arXiv, bioRxiv, and PubMed for the latest research.
-3. **Bioinformatics Databases**(DATABASE): Utilize databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.
-4. **Run Codes**(CODE): Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.
-5. **Write a Report**(WRITE): Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.
+1. **RAG**: Look up literature and documents from a text database.
+2. **SCRAPE**: Search platforms like arXiv, bioRxiv, and PubMed for the latest research.
+3. **DATABASE**: Utilize bioinformatics databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.
+4. **CODE**: Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.
+5. **WRITE**: Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.
+6. **ROUTER**: Determine which step we should proceed to next.
 
 Current conversation: {history}\n
 
@@ -22,9 +23,6 @@ Prompt: [Description of action for chatbot to do Step 1, i.e. do X, Y, Z]
 
 **Step 2 (method, eg. CODE)**:
 Prompt: [Description of action for chatbot to do Step 2, i.e. do A, B, C. Use information from Step X]
-
-**Step 3 (method, eg. DATABASE)**:
-Prompt: [Description of action for chatbot to do Step 3, i.e. do D, E, F. Use information from Step Y]
 ...
 """
     return template
@@ -51,6 +49,19 @@ Prompt: [Description of action for chatbot to do Step 1, i.e. do X, Y, Z]
 **Step 2 (method, eg. CODE)**:
 Prompt: [Description of action for chatbot to do Step 2, i.e. do X, Y, Z]
 ...
+"""
+    return template
+
+def rerouteTemplate():
+    template = """You are executing a bioinformatics pipeline and must decide which step to execute next. We have already seen the following output, and at this point, you must determine which step to run next based on the chat history.
+
+History: {chathistory}
+
+Routing Decisions: {{user_query}}
+
+**OUTPUT**
+Next Step=<step number>
+REASONING=<why did you choose that step next>
 """
     return template
 
@@ -125,7 +136,92 @@ The code to execute from your response must be formatted as:
     Execute: subprocess.call([sys.executable, '<path to python script>', '<argument 1>', '<argument 2>', ..., '<argument n>'])
 This output should be exactly one line and no longer. Stop the response after this line.
 """
+    return template
 
+def pythonPromptTemplateWithFiles():
+    template = """Current conversation:\n{{history}}
+
+**PYTHON SCRIPT**
+You must run this python script:
+{scriptName}
+
+**PYTHON SCRIPT DOCUMENTATION**:
+This is the doc string of this python script:
+{scriptDocumentation}
+
+
+**CALL PYTHON SCRIPTS FROM PYTHON**:
+Use the `subprocess` module to call any Python script from another Python script. Here are some examples to call a few common Python scripts:
+
+To call a Python script `example_script.py` which has no arguments:
+
+```
+Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory']], capture_output=True, text=True)
+```
+
+To call a Python script `example_script.py` with one argument:
+
+```
+Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1'], capture_output=True, text=True)
+```
+
+To call a Python script `example_script.py` with two arguments:
+```
+Execute: subprocess.run([sys.executable, '<full path to script/> example_script.py', chatstatus['output-directory'], 'arg1', 'arg2'], capture_output=True, text=True)
+```
+
+Note that chatstatus['output-directory'] is ALWAYS passed as the first argument.
+
+The following files were previously created by BRAD and could be used as input to a function if necessary:
+{files}
+
+Query:{{input}}
+
+**INSTRUCTIONS**
+1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
+2. Using the `subprocess` module, provide the one line of code to execute the desired Python script with the given arguments. Assume the necessary modules (`subprocess` and `sys`) are already imported.
+3. The last line of your response should say "Execute: <Python code to execute>"
+4. Do not include any extra words or characters. Format the response/output as:
+    Arguments: 
+    Python Code Explanation: <2 sentences maximum>
+    Execute: <your code here>
+
+**IMPORTANT**
+The code to execute from your response must be formatted as:
+    Execute: subprocess.call([sys.executable, '<path to python script>', '<argument 1>', '<argument 2>', ..., '<argument n>'], capture_output=True, text=True))
+This output should be exactly one line and no longer. Stop the response after this line.
+"""
+    return template
+
+def getPythonEditingTemplate():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: July 8, 2024
+    template = """You are a programming assistant responsible for editing a piece of python code to make it runnable. The code was generated based upon a conversation with the user, but it currently has at least one bug in the code. Based upon the following information, please debug this code. Here is the current code
+
+**Current Code:**
+{code1}
+
+That code was generated in response to this user query: {{input}}
+
+This query is part of the larger chat conversation:
+
+**Chat History:**
+{{history}}
+
+**Current Code:**
+{code2}
+
+**Error Message:**
+{error}
+
+Please address this error in the current code, and return a revised piece of code. The revised code should not introduce any new issues or bugs in the code.
+
+Do not include any extra words or characters. Format the response/output as:
+    Arguments: <arguments to the code here>
+    Python Code Explanation: <2 sentences maximum explination of the bug and how the revised code fixes it.>
+    Execute: <revised code here>
+"""
     return template
 
 def matlabPromptTemplate():

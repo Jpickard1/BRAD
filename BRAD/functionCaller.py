@@ -5,6 +5,7 @@ import torch
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 import ast
 import time
+from BRAD import log
 
 def getFunctionArgs(chatstatus):
     """
@@ -24,12 +25,12 @@ def getFunctionArgs(chatstatus):
     plot_args = chatstatus['process']['params']
 
     if chatstatus['config']['debug']:
-        print("Possible Values:")
+        chatstatus = log.userOutput("Possible Values:", chatstatus=chatstatus)
         display(plot_args)
 
     # Directory where the model and tokenizer are saved
     model_dir = '/home/jpic/JP-CS-CrazyIdea/t5-small-finetuned-data-v4' # t5-small-finetuned-data-v2'
-    print(model_dir)
+    log.debugLog(model_dir, chatstatus=chatstatus)
 
     # Load the tokenizer and model from the saved directory
     tokenizer = T5Tokenizer.from_pretrained(model_dir)
@@ -60,9 +61,9 @@ def getFunctionArgs(chatstatus):
             plot_args_infr[k] = plot_args[k]
 
     if chatstatus['config']['debug']:
-        print("Inference result:")
+        log.debugLog("Inference result:", chatstatus=chatstatus)
         display(plot_args_infr)
-        print(f"Time taken for inference: {end_time - start_time} seconds")
+        log.debugLog(f"Time taken for inference: {end_time - start_time} seconds", chatstatus=chatstatus)
     return plot_args_infr
     
 # Function to perform inference

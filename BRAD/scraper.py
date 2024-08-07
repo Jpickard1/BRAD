@@ -26,7 +26,17 @@ from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import Chroma
+import chromadb
+import subprocess
+
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.document_loaders import DirectoryLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 from BRAD import utils
+from BRAD import log
 
 def webScraping(chatstatus):
     """
@@ -41,6 +51,9 @@ def webScraping(chatstatus):
     :rtype: dict
 
     """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: May 20, 2024
     query    = chatstatus['prompt']
     llm      = chatstatus['llm']              # get the llm
     memory   = chatstatus['memory']           # get the memory of the model
@@ -70,6 +83,15 @@ def webScraping(chatstatus):
                                     )
     response = conversation.predict(input=query)
     llmResponse = parse_llm_response(response)
+    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+                                                         prompt          = PROMPT,
+                                                         memory          = memory,
+                                                         input           = query,
+                                                         output          = response,
+                                                         parsedOutput    = llmResponse,
+                                                         purpose         = 'identify how to web scrape'
+                                                        )
+                                         )
     llmKey, searchTerms = llmResponse['database'], llmResponse['search_terms']
 
     # Determine the target source
@@ -80,60 +102,26 @@ def webScraping(chatstatus):
     # Execute the scraping function and handle errors
     try:
         output = f'searching on {source}...'
-        print(output)
-        print('Search Terms: ' + str(searchTerms)) if chatstatus['config']['debug'] else None
-        for st in searchTerms:
+        log.debugLog(output, chatstatus=chatstatus)
+        log.debugLog('Search Terms: ' + str(searchTerms), chatstatus=chatstatus)
+        for numTerm, st in enumerate(searchTerms):
+            if numTerm == chatstatus['config']['SCRAPE']['max_search_terms']:
+                break
             scrape_function(st, chatstatus)
-        searchTerms = ' '.join(searchTerms)
-        scrape_function(searchTerms)
     except Exception as e:
         output = f'Error occurred while searching on {source}: {e}'
-        print(output)
+        log.debugLog(output, chatstatus=chatstatus)
         process = {'searched': 'ERROR'}
 
-    chatstatus['process'] = process
-    chatstatus['output']  = output
+    if chatstatus['config']['SCRAPE']['add_from_scrape']:
+        chatstatus = updateDatabase(chatstatus)
+    
+    chatstatus['process']['steps'].append(process)
+    chatstatus['output'] = "Articles were successfully downloaded."
     return chatstatus
 
-def webScraping_depricated(chatstatus):
-    query = chatstatus['prompt']
-    
-    # Define the mapping of keywords to functions
-    scraping_functions = {
-        'ARXIV'   : arxiv,
-        'BIORXIV' : biorxiv,
-        'PUBMED'  : pubmed
-    }
-    
-    # Normalize the query
-    query_tokens = query.upper().split()
-    query = query.lower()
-    query = query.replace('arxiv', '')
-    query = query.replace('biorxiv', '')
-    query = query.replace('pubmed', '')
-    query = ' '.join(query.split())
-    remove_punctuation = str.maketrans('', '', string.punctuation)
-    query = query.translate(remove_punctuation)
-    
-    # Determine the target source
-    source = next((key for key in scraping_functions if key in query_tokens), 'PUBMED')
-    process = {'searched': source}
-    scrape_function = scraping_functions[source]
-    
-    # Execute the scraping function and handle errors
-    try:
-        output = f'searching on {source}'
-        print(output)
-        scrape_function(query)
-    except Exception as e:
-        output = f'Error occurred while searching on {source}: {e}'
-        print(output)
-        process = {'searched': 'ERROR'}
 
-    chatstatus['process'] = process
-    chatstatus['output']  = output
-    return chatstatus
-
+  
 def arxiv(query, chatstatus):
     """
     Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.
@@ -147,84 +135,32 @@ def arxiv(query, chatstatus):
     :rtype: tuple
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
     process = {}
     output = 'searching the following on arxiv: ' + query
-    print(output)
+    chatstatus = log.userOutput(output, chatstatus=chatstatus)
     df, pdfs = arxiv_search(query, 10)
     process['search results'] = df
     displayDf = df[['Title', 'Authors', 'Abstract']]
     display(displayDf)
-    output += '\n would you like to download these articles [Y/N]?'
-    print('would you like to download these articles [Y/N]?')
+    output += '\n Would you like to download these articles [Y/N]?'
+    chatstatus = log.userOutput('Would you like to download these articles [Y/N]?', chatstatus=chatstatus)
     download = input().strip().upper()
+    chatstatus['process']['steps'].append(
+        {
+            'func'           : 'scraper.arxiv',
+            'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+            'input'          : download,
+            'purpose'        : 'decide to download pdfs or not'
+        }
+    )
     process['download'] = (download == 'Y')
     if download == 'Y':
-        #id_list = df['id'].to_list()
-        output += arxiv_scrape(pdfs)
+        output += arxiv_scrape(pdfs, chatstatus)
     return output, process
 
-def arxiv_search1(query):
-    """
-    DEPRECATED: Searches for articles on the arXiv repository based on the given query.
 
-    :param query: The search query for arXiv.
-    :type query: str
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A DataFrame containing the search results.
-    :rtype: pd.DataFrame
-    """
-    pd.set_option('display.max_colwidth', None)
-    #date_from='2024-04-01',date_until='2024-05-01',
-    #
-    scraper = arxivscraper.Scraper(category='q-bio', date_from='2023-05-01',date_until='2024-05-01', filters={'abstract':[query]})
-    output = scraper.scrape()
-    cols = ('id', 'title', 'categories', 'abstract', 'doi', 'created', 'updated', 'authors')
-    df = pd.DataFrame(output,columns=cols)
-    return df
-
-def arxiv_scrape1(id_list):
-    """
-    DEPRECATED: Downloads articles from arXiv as PDFs based on the given list of IDs.
-
-    :param id_list: A list of article IDs to download from arXiv.
-    :type id_list: list
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A string indicating the outcome of the download process.
-    :rtype: str
-    """
-    output = ''
-    session = HTMLSession()
-    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
-    try:
-        path = os.path.join(os.getcwd(), 'specialized_docs')
-        os.makedirs(path, exist_ok = True) 
-        output = f"Directory '{path}' created successfully"
-    except OSError:
-        output = f"Directory '{path}' could not be created"
-    print(output)
-
-    #Scrape arxiv and
-    for arxiv_id  in id_list:
-        try:
-            pdf_url = f'https://arxiv.org/pdf/{arxiv_id}'
-            local_path = os.path.join(path, f'{arxiv_id}.pdf')
-            print(f'{pdf_url} --> {local_path}')
-            output += f'\n{pdf_url} --> {local_path}'
-
-            response = session.get(pdf_url, stream=True)
-            response.raise_for_status()
-
-            with open(os.path.join(path, ids + '.pdf'), 'wb') as f:
-                for chunk in response.iter_content(chunk_size = 1024):
-                    f.write(chunk)
-        except (ConnectionError, requests.exceptions.RequestException) as e:
-            print(f"{arxiv_id} could not be gathered: {e}")
-            output += f"\n{arxiv_id} could not be gathered."
-    return output
 
 def search_pubmed_article(query, number_of_articles=10):
     """
@@ -241,13 +177,14 @@ def search_pubmed_article(query, number_of_articles=10):
     :rtype: list
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     Entrez.email = 'inhyak@gmail.com'
     handle = Entrez.esearch(db='pubmed', term = query, retmax=number_of_articles, sort='relevance')
     record = Entrez.read(handle)
-    #record = Entrez.ecitmatch()
     handle.close()
     return record['IdList']
-    #return record
 
 def pubmed(query, chatstatus):
     """
@@ -261,6 +198,9 @@ def pubmed(query, chatstatus):
     :return: None
     :rtype: None
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     pmid_list = search_pubmed_article(query)
     citation_arr = []
     if pmid_list:
@@ -272,37 +212,37 @@ def pubmed(query, chatstatus):
         headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
         try: 
             path = utils.pdfDownloadPath(chatstatus) # os.path.abspath(os.getcwd()) + '/specialized_docs'
-            os.makedirs(path, exist_ok = True) 
-            print("Directory '%s' created successfully" % path) 
+            os.makedirs(path, exist_ok = True)
+            log.debugLog("Directory '%s' created successfully" % path, chatstatus=chatstatus)
         except OSError as error: 
-            print("Directory '%s' can not be created" % path) 
+            log.debugLog("Directory '%s' can not be created" % path, chatstatus=chatstatus)
         for pmc in citation_arr:
             try:
                 base_url = 'https://pubmed.ncbi.nlm.nih.gov/'
                 r = s.get(base_url + pmc + '/', headers = headers, timeout = 5)
-                pdf_url = r.html.find('a.id-link', first=True).attrs['href']
-                if "doi" in pdf_url:
-                    continue
-                r = s.get(pdf_url, headers = headers, timeout = 5)
-                try:
-                    pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']
-                    r = s.get(pdf_real, stream=True)
-                    with open(os.path.join(path, pmc + '.pdf'), 'wb') as f:
-                        for chunk in r.iter_content(chunk_size = 1024):
-                            if chunk:
-                                f.write(chunk)
-                except AttributeError as e:
-                    pass
-                    print(f"{pmc} could not be gathered.")
-                
+                if r.html.find('a.id-link', first=True) is not None:
+                    pdf_url = r.html.find('a.id-link', first=True).attrs['href']
+                    if 'https://ncbi.nlm.nih.gov' not in pdf_url:
+                        continue
+                    r = s.get(pdf_url, headers = headers, timeout = 5)
+                    try:
+                        pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']
+                        r = s.get(pdf_real, stream=True)
+                        with open(os.path.join(path, pmc + '.pdf'), 'wb') as f:
+                            for chunk in r.iter_content(chunk_size = 1024):
+                                if chunk:
+                                    f.write(chunk)
+                    except AttributeError as e:
+                        log.debugLog(f"{pmc} could not be gathered.", chatstatus=chatstatus)
+                        pass                
                     
             except ConnectionError as e:
                 pass
-                print(f"{pmc} could not be gathered.")
+                log.debugLog(f"{pmc} could not be gathered.", chatstatus=chatstatus)
 
     else:
-        print("no articles found")
-    print("pdf collection complete!")
+        log.debugLog("no articles found", chatstatus=chatstatus)
+    log.debugLog("pdf collection complete!", chatstatus=chatstatus)
 
 def biorxiv(query, chatstatus):
     """
@@ -317,30 +257,36 @@ def biorxiv(query, chatstatus):
     :rtype: None
 
     """
-    biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015), 
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
+    biorxiv_real_search(chatstatus  = chatstatus,
+                        start_date  = datetime.date.today().replace(year=2015), 
                         end_date    = datetime.date.today(),
                         subjects    = [], 
                         journal     = 'biorxiv',
                         kwd         = [query], 
                         kwd_type    = 'all', 
                         athr        = [], 
-                        max_records = 75, 
+                        max_records = 10, 
                         max_time    = 300,
                         cols        = ['title', 'authors', 'url'],
                         abstracts   = False
-                       )
+                        )
 
-def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015), 
+def biorxiv_real_search(chatstatus,
+                        start_date  = datetime.date.today().replace(year=2015), 
                         end_date    = datetime.date.today(), 
                         subjects    = [], 
                         journal     = 'biorxiv',
                         kwd         = [], 
                         kwd_type    = 'all', 
                         athr        = [], 
-                        max_records = 75, 
+                        max_records = 10, 
                         max_time    = 300,
                         cols        = ['title', 'authors', 'url'],
-                        abstracts   = False):
+                        abstracts   = False
+                        ):
 
     """
     Searches for articles on arXiv, bioRxiv, or PubMed based on the given queries and creates a database from the scraped articles and PDFs.
@@ -374,6 +320,9 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
     :rtype: pd.DataFrame
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     ## keep track of timing
     overall_time = time.time()
 
@@ -404,7 +353,9 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
         
     ## keyword selection
     if len(kwd) > 0:
-        kwd_str = 'abstract_title%3A' + ('%252C%2B').join([kwd[0]] + [('%2B').join(keyword.split()) for keyword in kwd[1:]])
+        kwd_string = ' '.join(kwd)
+        intermediate_string = kwd_string.replace(' ', '%2B')
+        kwd_str = 'abstract_title%3A' + intermediate_string
         kwd_str = kwd_str + '%20abstract_title_flags%3Amatch-' + kwd_type
         url += '%20' + kwd_str
 	## author selection
@@ -420,10 +371,11 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
     url += '%20' + date_str
 
 	## fixed formatting
-    num_page_results = 75
+    num_page_results = max_records
     url += '%20numresults%3A' + str(num_page_results) + '%20format_result%3Acondensed' + '%20sort%3Arelevance-rank'
+    
+    log.debugLog(url, chatstatus=chatstatus)
 
-    print(url)
 	## lists to store date
     titles = []
     author_lists = []
@@ -436,7 +388,7 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
 	## loop through other pages of search if they exist
     while True:
         # keep user aware of status
-        print('Fetching search results {:d} to {:d}...'.format(num_page_results*page+1, num_page_results*(page+1)))
+        log.debugLog('Fetching search results {:d} to {:d}...'.format(num_page_results*page+1, num_page_results*(page+1)), chatstatus=chatstatus)
         # access url and pull html data
         if page == 0:
             url_response = requests.post(url)
@@ -444,9 +396,10 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
             # find out how many results there are, and make sure don't pull more than user wants
             num_results_text = html.find('div', attrs={'class': 'highwire-search-summary'}).text.strip().split()[0]
             if num_results_text == 'No':
-                print('No results found matching search criteria.')
+                log.debugLog("No results found matching search criteria.", chatstatus=chatstatus)
                 return()
-                
+
+            num_results_text = num_results_text.replace(',', '')
             num_results = int(num_results_text)
             num_fetch_results = min(max_records, num_results)
         else:
@@ -473,26 +426,25 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
 
 	## keep user informed on why task ended
     if num_results > max_records:
-        print('Max number of records ({:d}) reached. Fetched in {:.1f} seconds.'.format(max_records, time.time() - overall_time))
+        log.debugLog('Max number of records ({:d}) reached. Fetched in {:.1f} seconds.'.format(max_records, time.time() - overall_time), chatstatus=chatstatus)
     elif time.time() - overall_time > max_time:
-        print('Max time ({:.0f} seconds) reached. Fetched {:d} records in {:.1f} seconds.'.format(max_time, num_fetch_results, time.time() - overall_time))
+        log.debugLog('Max time ({:.0f} seconds) reached. Fetched {:d} records in {:.1f} seconds.'.format(max_time, num_fetch_results, time.time() - overall_time), chatstatus=chatstatus)
     else:
-        print('Fetched {:d} records in {:.1f} seconds.'.format(num_fetch_results, time.time() - overall_time))
+        log.debugLog('Fetched {:d} records in {:.1f} seconds.'.format(num_fetch_results, time.time() - overall_time), chatstatus=chatstatus)
 		## check if abstracts are to be pulled
     if abstracts:
-        print('Fetching abstracts for {:d} papers...'.format(len(full_records_df)))
+        log.debugLog('Fetching abstracts for {:d} papers...'.format(len(full_records_df)), chatstatus=chatstatus)
         full_records_df['abstract'] = [bs(requests.post(paper_url).text, features='html.parser').find('div', attrs={'class': 'section abstract'}).text.replace('Abstract','').replace('\n','') for paper_url in full_records_df.url]
         cols += ['abstract']
-        print('Abstracts fetched.')
+        log.debugLog('Abstracts fetched.', chatstatus=chatstatus)
 
     try: 
         path = utils.pdfDownloadPath(chatstatus) # os.path.abspath(os.getcwd()) + '/specialized_docs'
         os.makedirs(path, exist_ok = True) 
-        print("Directory '%s' created successfully" % path) 
+        log.debugLog("Directory '%s' created successfully" % path, chatstatus=chatstatus)
     except OSError as error: 
-        print("Directory '%s' can not be created" % path) 
-
-    print('Downloading {:d} PDFs to {:s}...'.format(len(full_records_df), path))
+        log.debugLog("Directory '%s' can not be created" % path, chatstatus=chatstatus)
+    log.debugLog('Downloading {:d} PDFs to {:s}...'.format(len(full_records_df), path), chatstatus=chatstatus)
     pdf_urls = [''.join(url) + '.full.pdf' for url in full_records_df.url] # list of urls to pull pdfs from
 
 	# create filenames to export pdfs to
@@ -507,12 +459,12 @@ def biorxiv_real_search(start_date  = datetime.date.today().replace(year=2015),
         file.write(response.content)
         file.close()
         gc.collect()
-    print('Download complete.')
+    chatstatus = log.userOutput("Download complete.", chatstatus=chatstatus)
 
 	## create dataframe to be returned
     records_df = full_records_df[cols]
 	
-    print('Total time to fetch and manipulate records was {:.1f} seconds.'.format(time.time() - overall_time))
+    chatstatus = log.userOutput('Total time to fetch and manipulate records was {:.1f} seconds.'.format(time.time() - overall_time), chatstatus=chatstatus)
 
 	## return the results
     return(records_df)
@@ -533,14 +485,17 @@ def create_db(query, query2):
     :rtype: None
 
     """
-    print('creating database (this might take a while)')
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
+    log.debugLog('creating database (this might take a while)', chatstatus=chatstatus)
     arxivscrape(query2)
     biorxiv_scrape(query2)
     pubmedscrape(query)
     
     local = os.getcwd()  ## Get local dir
     os.chdir(local)      ## shift the work dir to local dir
-    print('\nWork Directory: {}'.format(local))
+    log.debugLog('\nWork Directory: {}'.format(local), chatstatus=chatstatus)
 
     #%% Phase 1 - Load DB
     embeddings_model = HuggingFaceEmbeddings(
@@ -548,14 +503,13 @@ def create_db(query, query2):
 
 #%% Phase 1 - Load documents
     path_docs = utils.pdfDownloadPath(chatstatus) # './specialized_docs/'
-
-    print('\nDocuments loading from:',path_docs)
+    log.debugLog('\nDocuments loading from:',path_docs, chatstatus=chatstatus)
     text_loader_kwargs={'autodetect_encoding': True}
     loader = DirectoryLoader(path_docs, glob="**/*.pdf", loader_cls=UnstructuredPDFLoader, 
                           loader_kwargs=text_loader_kwargs, show_progress=True,
                           use_multithreading=True)
-    docs_data = loader.load()  
-    print('\nDocuments loaded...')
+    docs_data = loader.load()
+    log.debugLog('\nDocuments loaded...', chatstatus=chatstatus)
 
 #%% Phase 2 - Split the text
     from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -572,11 +526,10 @@ def create_db(query, query2):
                                                         chunk_overlap = arr_chunk_overlap[j], 
                                                         separators=[" ", ",", "\n", ". "])
             data_splits = text_splitter.split_documents(docs_data)
-            
-            print('\nDocuments split into chunks...')
+            log.debugLog('\nDocuments split into chunks...', chatstatus=chatstatus)
         
         #%% Phase 2 - Split the text
-            print('\nInitializing Chroma Database...')
+            log.debugLog('\nInitializing Chroma Database...', chatstatus=chatstatus)
             db_name = "custom_DB_cosine_cSize_%d_cOver_%d" %(arr_chunk_size[i], arr_chunk_overlap[j])
         
             p2_2 = subprocess.run('mkdir  %s/*'%(persist_directory+db_name), shell=True)
@@ -587,133 +540,10 @@ def create_db(query, query2):
                                     client = _client_settings,
                                     collection_name = db_name,
                                     collection_metadata={"hnsw:space": "cosine"})
-        
-            print('Completed Chroma Database: ', db_name)
+            log.debugLog('Completed Chroma Database: ' + str(db_name), chatstatus=chatstatus)
             del vectordb, text_splitter, data_splits
 
 
-# This code appears to be unused - JP
-def fetch_details(pmid):
-    """
-    Fetches detailed information for a given PubMed article using its PMID.
-
-    :param pmid: The PubMed ID of the article to fetch details for.
-    :type pmid: str
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A dictionary containing detailed information about the PubMed article.
-    :rtype: dict
-
-    """
-    handle = Entrez.efetch(db='pubmed', id=pmid, retmode = 'xml')
-    records = Entrez.read(handle)
-    handle.close()
-    return records
-
-def webScraping2(query):
-    """
-    Performs web scraping based on the provided query, searching arXiv, bioRxiv, or PubMed.
-
-    :param query: The keyword to search for in the specified sources.
-    :type query: str
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A tuple containing the output message and the source searched.
-    :rtype: tuple
-
-    """
-    process = {}
-    if 'ARXIV' in query.upper().split(' '):
-        output = 'searching on arxiv'
-        print(output)
-        arxivscrape(query)
-        process['searched'] = 'ARXIV'
-    elif 'BIORXIV' in query.upper().split(' '):
-        output = 'searching on bioRxiv'
-        print(output)
-        biorxiv_scrape(query)
-        process['searched'] = 'BIORXIV'
-    elif 'PUBMED' in query.upper().split(' '):
-        output = 'searching on PubMed'
-        print(output)
-        pubmedscrape(query)
-        process['searched'] = 'PUBMED'
-    else:
-        output = 'by default, searching on PUBMED'
-        print(output)
-        pubmedscrape(query)
-        process['searched'] = 'PUBMED'
-    return output, process['searched']
-
-
-'''
-def arxiv(query):
-    """
-    Scrape research papers from the arXiv repository based on a query and download the PDFs.
-
-    Parameters:
-    query (str): The search term to filter papers by their abstracts.
-
-    Functionality:
-    1. Initializes the scraper with specific parameters for the q-bio category and a specified date range.
-    2. Uses the query to filter papers by their abstracts.
-    3. Scrapes the metadata of the filtered papers and stores it in a DataFrame.
-    4. Extracts the IDs of the papers from the DataFrame.
-    5. Creates a directory named 'specialized_docs' in the current working directory to store the downloaded PDFs.
-    6. Iterates over the list of paper IDs, constructs the PDF URLs, and downloads the PDFs.
-    7. Saves each PDF in the 'specialized_docs' directory.
-    8. Handles connection errors during the download process.
-
-    Requirements:
-    - arxivscraper: A module to scrape arXiv metadata.
-    - requests_html: Used for handling HTTP sessions and downloading PDFs.
-    - pandas: For handling data in DataFrame format.
-    - os: For creating directories and handling file paths.
-
-    Example:
-    arxivscrape('machine learning')
-    This will scrape papers related to 'machine learning' in their abstracts within the specified category and date range, and download their PDFs.
-
-    Notes:
-    - Ensure you have the necessary packages installed: arxivscraper, requests_html, pandas.
-    - Modify the category and date range in the Scraper initialization as needed.
-    """
-    scraper = arxivscraper.Scraper(category='q-bio', date_from='2024-04-01',date_until='2024-05-01',t=10, filters={'abstract':[query]})
-    output = scraper.scrape()
-    cols = ('id', 'title', 'categories', 'abstract', 'doi', 'created', 'updated', 'authors')
-    df = pd.DataFrame(output,columns=cols)
-    id_list = df['id'].to_list()
-    s = HTMLSession()
-
-    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
-
-    #Create directory to store pdfs
-    try:
-        path = os.path.abspath(os.getcwd()) + '/specialized_docs'
-        os.makedirs(path, exist_ok = True) 
-        print("Directory '%s' created successfully" % path)
-    except OSError as error:
-        print("Directory '%s' can not be created" % path)
-
-    #Scrape arxiv and
-    for ids in id_list:
-        try:
-            base_url = 'https://arxiv.org/pdf/'
-            pdf_url = base_url+ids
-            print(pdf_url)
-            r = s.get(pdf_url, stream=True)
-            print(r)
-            with open(os.path.join(path, ids + '.pdf'), 'wb') as f:
-                for chunk in r.iter_content(chunk_size = 1024):
-                    if chunk:
-                        f.write(chunk)
-                    
-        except ConnectionError as e:
-            pass
-            print(f"{ids} could not be gathered.")
-'''
 
 def arxiv_search(query, count):
     """
@@ -730,19 +560,22 @@ def arxiv_search(query, count):
     :rtype: tuple
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     #get the url
     split_query = query.split()
     url = "https://arxiv.org/search/?searchtype=all&query="
     for term in split_query:
         url = url+term+"+"
     url = url[:-1]+"&abstracts=show&size=50&order="
-    print(url)
+    log.debugLog(url, chatstatus=chatstatus)
     try: 
         path = os.path.abspath(os.getcwd()) + '/arxiv'
         os.makedirs(path, exist_ok = True) 
-        print("Directory '%s' created successfully" % path) 
+        log.debugLog("Directory '%s' created successfully" % path, chatstatus=chatstatus)
     except OSError as error: 
-        print("Directory '%s' can not be created" % path) 
+        log.debugLog("Directory '%s' can not be created" % path, chatstatus=chatstatus)
 
     # query the website and return the html to the variable 'page'
     page = requests.get(url)
@@ -776,7 +609,7 @@ def arxiv_search(query, count):
     pdf_urls = [attempt for attempt in arxiv_urls if 'pdf' in attempt.lower()]
     return df, pdf_urls
     
-def arxiv_scrape(pdf_urls):
+def arxiv_scrape(pdf_urls, chatstatus):
     """
     Downloads PDFs from a list of URLs pointing to arXiv articles.
 
@@ -789,13 +622,16 @@ def arxiv_scrape(pdf_urls):
     :rtype: None
 
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
     s = HTMLSession()
     try: 
         path = utils.pdfDownloadPath(chatstatus) # os.path.abspath(os.getcwd()) + '/specialized_docs'
         os.makedirs(path, exist_ok = True) 
-        print("Directory '%s' created successfully" % path) 
+        log.debugLog("Directory '%s' created successfully" % path, chatstatus=chatstatus) 
     except OSError as error: 
-        print("Directory '%s' can not be created" % path) 
+        log.debugLog("Directory '%s' can not be created" % path, chatstatus=chatstatus)
 
     headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
     pdf_string = ""
@@ -811,7 +647,7 @@ def arxiv_scrape(pdf_urls):
                     
         except ConnectionError as e:
             pass
-            print(f"{pmc} could not be gathered.")
+            log.debugLog(f"{pmc} could not be gathered.", chatstatus=chatstatus)
     return pdf_string
             
 def result_set_to_string(result_set):
@@ -826,6 +662,8 @@ def result_set_to_string(result_set):
     :return: The string representation of the result set.
     :rtype: str
     """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
 
     return ' '.join([element.get_text(strip=True) for element in result_set])
 
@@ -855,3 +693,63 @@ def parse_llm_response(response):
     parsed_data["search_terms"] = search_terms
 
     return parsed_data
+
+def updateDatabase(chatstatus):
+    """
+    .. warning: This function contains hardcoded values related to text chunking
+    
+    Update the database with new documents based on the given chat status.
+
+    This function determines which documents need to be added to the database, downloads them,
+    splits them into chunks, and adds the formatted chunks to the specified database.
+
+    Args:
+        chatstatus (dict): The current chat status containing database information and other parameters.
+
+    Returns:
+        dict: The updated chat status after adding new documents to the database.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 27, 2024
+
+    # Determine which documents need to be added to the database
+    new_docs_path = utils.pdfDownloadPath(chatstatus)
+    
+    if not os.path.isdir(new_docs_path):
+        return chatstatus
+
+    # Warning! these values are hard coded
+    chunk_size=[700]
+    chunk_overlap=[200]
+    
+    # Load all the documents
+    text_loader_kwargs = {'autodetect_encoding': True}
+    new_loader = DirectoryLoader(new_docs_path,
+                                 glob="**/*.pdf",
+                                 loader_cls=PyPDFLoader,
+                                 show_progress=True,
+                                 use_multithreading=True)
+    new_docs_data = new_loader.load()
+    print('\nNew documents loaded...')
+    
+    # Split the new document into chunks
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size[0],
+                                                    chunk_overlap=chunk_overlap[0],
+                                                    separators=[" ", ",", "\n", ". "])
+    new_data_splits = text_splitter.split_documents(new_docs_data)
+    print("New document split into chunks...")
+
+    # Format the document splits to be placed into the database
+    new_data_splits
+    docs, meta = [], []
+    for doc in new_data_splits:
+        docs.append(doc.page_content)
+        meta.append(doc.metadata)
+
+    # Add to the database
+    log.debugLog('Adding texts to database', chatstatus)
+    chatstatus['databases']['RAG'].add_texts(texts = docs,
+                                             meta  = meta)
+    log.debugLog('Done adding texts to database', chatstatus)
+    return chatstatus

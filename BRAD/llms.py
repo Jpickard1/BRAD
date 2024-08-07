@@ -37,7 +37,7 @@ def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/
                    verbose          = verbose)
     return llm
 
-def load_nvidia(nvidia_model='meta/llama3-70b-instruct', nvidia_api_key=None, temperature=None):
+def load_nvidia(model_name='meta/llama3-70b-instruct', nvidia_api_key=None, temperature=None):
     """
     Loads the NVIDIA language model with the specified model name and API key.
 
@@ -62,8 +62,53 @@ def load_nvidia(nvidia_model='meta/llama3-70b-instruct', nvidia_api_key=None, te
     else:
         nvidia_api_key = os.environ["NVIDIA_API_KEY"]
         
-    llm = ChatNVIDIA(model   = nvidia_model,
-                     api_key = nvidia_api_key,
+    llm = ChatNVIDIA(model_name  = model_name,
+                     api_key     = nvidia_api_key,
                      temperature = temperature,
           )
+    return llm
+
+    
+
+
+
+def load_openai(model_name='gpt-3.5-turbo-0125', api_key=None):
+    """
+    Loads the NVIDIA language model with the specified model name and API key.
+
+    :param nvidia_model: Name of the NVIDIA model to load.
+    :type nvidia_model: str, optional
+    :param nvidia_api_key: API key for accessing NVIDIA's services. If not provided, it will be prompted.
+    :type nvidia_api_key: str, optional
+
+    :raises AssertionError: If the provided NVIDIA API key is not valid.
+
+    :return: The loaded NVIDIA language model.
+    :rtype: langchain_nvidia_ai_endpoints.ChatNVIDIA
+
+    :example:
+    >>> nvidia_model = load_nvidia()
+    """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+    # Date: July 1, 2024
+    from openai import OpenAI
+    from langchain_openai import ChatOpenAI
+    from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
+    #all the Open AI API keys do not all start with a similar character
+    if not os.environ.get("OPEN_API_KEY", "").startswith("sk-"):
+        api_key = getpass.getpass("Enter your Open AI API key: ")
+        assert api_key.startswith("sk-"), f"{api_key}... is not a valid key"
+        os.environ["OPENAI_API_KEY"] = api_key
+    else:
+        api_key = os.environ["OPENAI_API_KEY"]
+        
+    llm = ChatOpenAI(
+        model=model_name,
+        temperature=0,
+        max_tokens=None,
+        timeout=None,
+        max_retries=2,
+    )
+
     return llm

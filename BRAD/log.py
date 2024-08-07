@@ -22,7 +22,8 @@ def logger(chatlog, chatstatus, chatname):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 4, 2024
-
+    
+    
     debugLog('\n\nPLANNER:\n\n' + str(chatstatus['process']), chatstatus)
     
     process_serializable = {
@@ -41,20 +42,22 @@ def logger(chatlog, chatstatus, chatname):
                     'tab'       : chatstatus['current table']['tab'].to_json() if chatstatus['current table']['tab'] is not None else None,
                 },
             'current documents' : chatstatus['current documents'],
+            'queue pointer'     : chatstatus['queue pointer'],
+            'queue'             : chatstatus['queue'].copy()
         },
-        'planned' : chatstatus['planned'].copy()
     }
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
     chatstatus['process'] = None
     return chatlog, chatstatus
 
-def llmCallLog(llm=None, prompt=None, input=None, query=None, output=None, parsedOutput=None, purpose=None):
+def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, parsedOutput=None, purpose=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
     llmLog = {
         'llm'          : str(llm),
+        'memory'       : str(memory),
         'prompt'       : str(prompt),
         'input'        : str(input),
         'output'       : str(output),
@@ -78,21 +81,38 @@ def debugLog(output, chatstatus=None, display=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     if display:
         logging.info(output)
-    else:
-        logging.info(output) if chatstatus['config']['debug'] else None
+    elif chatstatus['config']['debug']: # or str(chatstatus['config']['debug']).lower() == 'true':
+        logging.info(output)
+        # print('DEBUG')
+        # print(output)
+
+def errorLog(errorMessage, info=None, chatstatus=None):
+    """This function displays and logs error messages"""
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.info(errorMessage)
+    chatstatus['process']['steps'].append(
+        {
+            'func'    : 'log.errorLog',
+            'message' : errorMessage,
+            'info'    : metadata,
+        }
+    )
+    
 
 def userOutput(output, chatstatus=None):
     """This function standardizes how information is printed to the user and allows for logging"""
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 20, 2024
+    
     print(output)
-    if chatstatus['process']['output'] is None:
-        chatstatus['process']['output'] = output
+    if 'output' not in chatstatus.keys() or chatstatus['output'] is None:
+        chatstatus['output'] = output
     else:
-        chatstatus['process']['output'] += output
+        chatstatus['output'] += output
     return chatstatus
 
 def is_json_serializable(value):

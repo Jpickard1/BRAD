@@ -20,7 +20,7 @@ def save(chatstatus, data, name):
 
     Args:
         chatstatus (dict): A dictionary containing the current chat status, 
-                           including planned pipeline stages and output directory.
+                           including queued pipeline stages and output directory.
         data (pd.DataFrame or str): The data to be saved. It can be either a 
                                     pandas DataFrame (for CSV output) or a string (for .tex output).
         name (str): The name of the output file.
@@ -34,7 +34,7 @@ def save(chatstatus, data, name):
     Example
     -------
     >>> chatstatus = {
-    >>>     'planned': [{'order': 1}],
+    >>>     'queue': [{'order': 1}],
     >>>     'output-directory': '/path/to/output',
     >>>     'process': {'steps': []}
     >>> }
@@ -46,8 +46,8 @@ def save(chatstatus, data, name):
     # Date: June 19, 2024
 
     # If this is part of a pipeline, then add the stage number to the printed output
-    if len(chatstatus['planned']) != 0:
-        stageNum = chatstatus['planned'][0]['order']
+    if len(chatstatus['queue']) != 0:
+        stageNum = chatstatus['queue pointer'] + 1#[0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], name)
 
@@ -78,7 +78,7 @@ def savefig(chatstatus, ax, name):
 
     Args:
         chatstatus (dict): A dictionary containing the current chat status, including 
-                           planned pipeline stages and output directory.
+                           queued pipeline stages and output directory.
         ax (matplotlib.axes.Axes): The matplotlib axis object containing the figure to be saved.
         name (str): The name of the output file.
 
@@ -88,7 +88,7 @@ def savefig(chatstatus, ax, name):
     Example
     -------
     >>> chatstatus = {
-    >>>     'planned': [{'order': 1}],
+    >>>     'queue': [{'order': 1}],
     >>>     'output-directory': '/path/to/output',
     >>>     'config': {'image-path-extension': 'images'},
     >>>     'process': {'steps': []}
@@ -99,12 +99,12 @@ def savefig(chatstatus, ax, name):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    print('SAVEFIG')
-    if len(chatstatus['planned']) != 0:
-        stageNum = chatstatus['planned'][0]['order']
+    log.debugLog("SAVEFIG", chatstatus=chatstatus)
+    if len(chatstatus['queue']) != 0:
+        stageNum = chatstatus['queue pointer'] + 1 # [0]['order']
         name = 'S' + str(stageNum) + '-' + name
     output_path = os.path.join(chatstatus['output-directory'], chatstatus['config']['image-path-extension'], name)
-    ensure_directory_exists(output_path)
+    ensure_directory_exists(output_path, chatstatus)
     plt.savefig(output_path)
     log.debugLog('The image was saved to: ' + output_path, chatstatus=chatstatus)
     chatstatus['process']['steps'].append(
@@ -115,7 +115,7 @@ def savefig(chatstatus, ax, name):
     )
     return chatstatus
 
-def ensure_directory_exists(file_path):
+def ensure_directory_exists(file_path, chatstatus):
     """
     Ensure that the directory for a given file path exists, creating it if necessary.
 
@@ -128,7 +128,7 @@ def ensure_directory_exists(file_path):
 
     Example
     -------
-    >>> ensure_directory_exists('/path/to/output/figure.png')
+    >>> ensure_directory_exists('/path/to/output/figure.png', chatstatus)
     >>> # If the directory '/path/to/output' does not exist, it will be created.
     """
     # Auth: Joshua Pickard
@@ -137,9 +137,9 @@ def ensure_directory_exists(file_path):
     directory_path = os.path.dirname(file_path)
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
-        print(f"Directory '{directory_path}' created.")
+        log.debugLog(f"Directory '{directory_path}' created.", chatstatus=chatstatus)
     else:
-        print(f"Directory '{directory_path}' already exists.")
+        log.debugLog(f"Directory '{directory_path}' already exists.", chatstatus=chatstatus)
 
 
 def pdfDownloadPath(chatstatus):
@@ -209,7 +209,7 @@ def makeNamesConsistent(chatstatus, files):
 
     Args:
         chatstatus (dict): A dictionary containing the chat status and configuration details.
-                           It must include the keys 'planned' and 'output-directory'.
+                           It must include the keys 'queue' and 'output-directory'.
         files (list): A list of filenames to be processed.
 
     Returns:
@@ -218,7 +218,7 @@ def makeNamesConsistent(chatstatus, files):
     Example
     -------
     >>> chatstatus = {
-    >>>     'planned': [{'order': 1}],
+    >>>     'queue': [{'order': 1}],
     >>>     'output-directory': '/path/to/output',
     >>>     'process': {'steps': []}
     >>> }
@@ -229,10 +229,10 @@ def makeNamesConsistent(chatstatus, files):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    if len(chatstatus['planned']) != 0:
+    if len(chatstatus['queue']) != 0:
         log.debugLog('Finding Stage Number of Pipeline', chatstatus=chatstatus)
-        log.debugLog(chatstatus['planned'], chatstatus=chatstatus)
-        stageNum = chatstatus['planned'][0]['order'] + 1
+        log.debugLog(chatstatus['queue'], chatstatus=chatstatus)
+        stageNum = chatstatus['queue pointer'] # [0]['order'] + 1
     else:
         return
     renamedFiles = []
@@ -311,7 +311,7 @@ def loadFromFile(chatstatus):
     chain    = PROMPT | llm
 
     # Call chain
-    print(prompt)
+    chatstatus = log.userOutput(prompt, chatstatus=chatstatus)
     response = chain.invoke(prompt).content.strip()
     
     # Regular expressions to extract file and fields
@@ -464,8 +464,8 @@ def outputFromPriorStep(chatstatus, step, values=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
-    print(chatstatus)
-    print(step)
+    log.debugLog(chatstatus, chatstatus=chatstatus)
+    log.debugLog(step, chatstatus=chatstatus)
     step_output_files = []
     file = None
     for filename in os.listdir(chatstatus['output-directory']):
@@ -473,11 +473,11 @@ def outputFromPriorStep(chatstatus, step, values=None):
             step_output_files.append(filename)
         if filename.startswith('S' + step):
             file = filename
-    print(file)
+    chatstatus = log.userOutput(file, chatstatus=chatstatus)
     if file.endswith('.csv'):
         file_path = os.path.join(chatstatus['output-directory'], file)
         df = pd.read_csv(file_path)
-        print(df)
+        chatstatus = log.userOutput(df, chatstatus=chatstatus)
         if values is not None:
             df = df[values]
     return df
@@ -518,11 +518,56 @@ def compile_latex_to_pdf(chatstatus, tex_file):
             ['pdflatex', '-output-directory', chatstatus['output-directory'], tex_file_path], 
             check=True
         )
-        print(f"PDF generated successfully in {chatstatus['output-directory']}.")
+        log.debugLog(f"PDF generated successfully in {chatstatus['output-directory']}.", chatstatus=chatstatus)
+        chatstatus['process']['steps'].append(
+            {
+                'func' : 'utils.compile_latex_to_pdf',
+                'what' : 'tried to compile latex to a pdf'
+            }
+        )
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred: {e}")
-
+        log.debugLog(f"An error occurred: {e}", chatstatus=chatstatus)
+        chatstatus['process']['steps'].append(
+            {
+                'func' : 'utils.compile_latex_to_pdf',
+                'what' : 'failed to compile latex to a pdf'
+            }
+        )        
     return chatstatus
+
+def add_output_file_path_to_string(string, chatstatus):
+    """
+    Modifies the given string to include the appropriate file paths for any files 
+    previously generated by BRAD. If a file from the generated files list is found 
+    in the string, and it is not immediately preceded by the append path, the 
+    function inserts the append path before the file name.
+
+    Parameters:
+    string (str): The input string to be modified.
+    chatstatus (dict): A dictionary containing chat status information, including 
+                       'output-path' and a function outputFiles that returns a list 
+                       of generated file names.
+
+    Returns:
+    str: The modified string with appropriate file paths included.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: June 30, 2024
+    
+    # Retrieve the list of generated files and the output path
+    generated_files = outputFiles(chatstatus)  # Returns a list of strings each indicating a file name
+    append_path = chatstatus['output-directory']
+
+    # Check and modify the string if necessary
+    for file in generated_files:
+        if file in string:
+            fileWpath = os.path.join(append_path, file)
+            if fileWpath not in string:
+                string = string.replace(file, fileWpath)
+                log.debugLog("Replacing: " + file + ' with ' + fileWpath, chatstatus=chatstatus)
+                log.debugLog("New String: " + str(string), chatstatus=chatstatus)
+    return string
 
 def load_file_to_dataframe(filename):
     """
@@ -561,3 +606,15 @@ def load_file_to_dataframe(filename):
         return None
     
     return df
+
+def find_integer_in_string(text):
+    # Find all sequences of digits in the text
+    match = re.search(r'\d+', text)
+    
+    if match:
+        # Convert the found string to an integer
+        return int(match.group(0))
+    else:
+        # Return None if no integer is found
+        return None
+

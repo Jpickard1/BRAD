@@ -172,3 +172,37 @@ Retrieve the latest research articles related to "MYOD" by scraping relevant sou
 Retrieve the latest research articles related to "MYOD" by scraping relevant sources like arXiv, bioRxiv, and PubMed. Utilize the information obtained from the Enrichr database to refine the search query.
 Retrieve the latest research articles related to "MYOD" by using prebuilt bioinformatics pipelines or custom code that scrapes relevant sources like arXiv, bioRxiv, and PubMed. Utilize the information obtained from the Enrichr database to refine the search query.
 Search for new literature related to the gene interactions and identified pathways. Use this information to expand the knowledge base and contribute to the final report.
+Evaluate the confidence score from Step 1. If the confidence score is above a certain threshold (e.g., 0.8), proceed to Step 5 (WRITE). Otherwise, proceed to Step 3 (SCRAPE).
+Evaluate the confidence level from Step 1. If the confidence level is high (> 0.8), proceed to Step 5 (WRITE). Otherwise, proceed to Step 3 (SCRAPE).
+Evaluate the confidence level from Step 1. If the confidence level is high (> 0.8), proceed to Step 5 (WRITE). Otherwise, proceed to Step 3 (SCRAPE).
+Use SCRAPE to search platforms like arXiv, bioRxiv, and PubMed for the latest research articles related to MYOD and cellular reprogramming. Retrieve relevant articles and pass them to Step 4.
+Search platforms like arXiv, bioRxiv, and PubMed for the latest research articles related to MYOD and cellular reprogramming. Retrieve the abstracts and full texts of the articles.
+Evaluate the confidence level from Step 1. If the confidence level is high (> 0.8), proceed to Step 5 (WRITE). Otherwise, proceed to Step 3 (SCRAPE).
+Use SCRAPE to search platforms like arXiv, bioRxiv, and PubMed for the latest research articles related to MYOD and cellular reprogramming. Retrieve a list of relevant article titles and abstracts.
+Search arXiv, bioRxiv, and PubMed for latest research articles related to MYOD and cellular reprogramming.
+Based on the confidence level from Step 1, decide whether to proceed to Step 5 (WRITE) or Step 3 (SCRAPE). If the confidence level is high, proceed to Step 5. If not, proceed to Step 3.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the search query from Step 1 as input. Store the updated database.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the keywords "cell cycle" and "Pip-fucci imaging system" to filter the search results. Once the scraping is complete, proceed to Step 3.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the search terms from Step 1 as input. Store the updated information in the RAG database.
+Use SCRAPE to search bioRxiv for recent research articles related to the cell cycle. Use the keywords and concepts retrieved from Step 1 to refine the search.
+Search bioRxiv for the latest research articles related to the cell cycle. Return a list of relevant articles to proceed to the next step.
+Search bioRxiv for recent research articles related to the cell cycle using SCRAPE, and return a list of relevant articles.
+Search bioRxiv for the latest research articles related to cell cycle. Use the keywords "cell cycle" and "PCNA" to narrow down the search results.
+Search bioRxiv for the latest research articles related to the cell cycle. Retrieve a list of relevant articles and their abstracts.
+Search bioRxiv for the latest research articles related to cell cycle. Use the keywords obtained from Step 1 to refine the search.
+Search bioRxiv for the latest research articles related to cell cycle, using keywords extracted from the information gathered in Step 1.
+Search PubMed for the latest research articles related to cell cycle, using the information gathered in Step 1 as context.
+Use SCRAPE to search PubMed for recent research articles related to the cell cycle, considering the information gathered in Step 1.
+Search PubMed for the latest research articles related to the cell cycle. Retrieve a list of relevant articles and their abstracts.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle and retrieve a list of relevant publications.
+Use SCRAPE to search PubMed for the latest research articles related to cell cycle.
+Use SCRAPE to search PubMed for the latest research articles related to cell cycle.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle. Provide a list of relevant articles.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle, focusing on the role of PCNA and the pip Fucci system. Return a list of relevant article titles and abstracts.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle, using the information gathered in Step 1.
+Search PubMed for the latest research articles related to the cell cycle, focusing on PCNA and FUCCI. Save the list of relevant articles for later use.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle and provide a list of relevant publications.
+Search PubMed for the latest research articles related to the cell cycle. Use the keywords from the summary in Step 1 to refine the search. Provide a list of relevant articles.
+Use SCRAPE to search PubMed for the latest research articles related to cell cycle. Use the keywords extracted from Step 1 to refine the search.
+Use SCRAPE to search PubMed for the latest research articles related to the cell cycle. Provide a list of relevant articles that may aid in understanding PCNA's role in the cell cycle.

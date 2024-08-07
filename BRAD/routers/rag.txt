@@ -223,3 +223,113 @@ Execute the HWG analysis pipeline to find first-order interactions of PCNA using
 Use the RAG method to search literature and documents from a text database, specifically looking for information on the role of SOX4 in cellular reprogramming and iPSCs. Please answer the following question: "What role does SOX4 play in the cellular reprogramming of iPSCs?"
 Run the HWG analysis pipeline using the genes identified in Step 1 to find first-order interactions of SOX4. Load the relevant genes from the RAG output and execute the HWG code pipeline.
 Use the Retrieval Augmented Generation (RAG) method to search literature and documents from a text database, answering the query "What role does PCNA play in the cell cycle and cell cycle imaging?" and retrieve relevant information on PCNA's functions in the cell cycle.
+Use the RAG method to search literature and documents from a text database, focusing on the query "What role does PCNA play in the cell cycle and cell cycle imaging?" to gather relevant information on PCNA's function in cell cycle and imaging.
+Use the RAG method to search literature and documents from a text database related to the query "What role does PCNA play in the cell cycle and cell cycle imaging?" and return relevant results, including abstracts and keywords.
+Use the RAG method to search literature and documents from a text database, focusing on the query "What role does PCNA play in the cell cycle and cell cycle imaging?" to gather relevant information on PCNA's function in cell cycle and imaging.
+Use the RAG method to search literature and documents from a text database for the query "What role does PCNA play in the cell cycle and cell cycle imaging?" and provide a summary of relevant findings.
+Use the Retrieval Augmented Generation (RAG) method to search literature and documents from a text database, answering the query "What role does PCNA play in the cell cycle and cell cycle imaging?" and retrieve relevant information on PCNA's role in the cell cycle.
+Use the RAG method to search for literature on "What role does PCNA play in the cell cycle and cell cycle imaging?" and retrieve relevant documents and abstracts.
+Look up literature and documents from a text database related to PCNA and its first-order interactions in the hardwire genome. Return a summary of relevant findings.
+Perform literature search in text database to understand the role of MYOD in cellular reprogramming and provide a confidence level in the answer.
+Use RAG to look up literature and documents related to MYOD in the cellular reprogramming from a text database. Assess confidence in the answer and store the result.
+Perform RAG on the literature database to retrieve documents related to MYOD and cellular reprogramming. Analyze the results and provide a confidence score (0-100%) in the accuracy of the information gathered so far.
+Perform RAG on the literature database to gather information on the role of MYOD in cellular reprogramming. Return a confidence score based on the quality and quantity of relevant literature found.
+Perform literature search in text database to understand the role of MYOD in cellular reprogramming and provide a confidence level in the answer.
+Use the RAG method to look up literature and documents from a text database related to the role of MYOD in cellular reprogramming. Provide a confidence level in the answer based on the available literature.
+Perform literature search in text database to understand the role of MYOD in cellular reprogramming and provide a confidence level in the answer.
+Perform literature search in text databases to retrieve documents related to MYOD and cellular reprogramming. Analyze the retrieved documents to understand the role of MYOD in cellular reprogramming. Provide a confidence level (e.g., 0-100%) in the answer.
+Perform RAG on the literature database to retrieve documents related to MYOD and cellular reprogramming. Analyze the content to determine the role of MYOD in cellular reprogramming and provide a confidence score in your answer.
+Use the RAG method to look up literature and documents from a text database related to the role of MYOD in cellular reprogramming. Provide a confidence level in the answer based on the available literature.
+Perform literature search in text database to understand the role of MYOD in cellular reprogramming and provide a confidence level in the answer.
+Perform literature search in text database to understand the role of MYOD in cellular reprogramming and provide a confidence level in the answer.
+Perform literature search in text databases to retrieve documents related to MYOD and cellular reprogramming. Analyze the retrieved documents to understand the role of MYOD in cellular reprogramming. Provide a confidence level (e.g., 0-100%) in the answer.
+Perform RAG on the literature database to gather information on the role of MYOD in cellular reprogramming. Assess confidence level in the obtained answer.
+Perform literature search in text databases to retrieve documents related to MYOD and cellular reprogramming. Analyze the retrieved documents to understand the role of MYOD in cellular reprogramming. Provide a confidence level (e.g., 0-100%) in the answer.
+Use the RAG method to look up literature and documents from a text database related to the role of MYOD in cellular reprogramming. Provide a confidence level in the answer based on the available literature.
+Perform RAG on the literature database to retrieve documents related to MYOD and cellular reprogramming. Analyze the content to determine the role of MYOD in cellular reprogramming and provide a confidence score in your answer.
+Perform literature search in text database to understand the role of MYOD in cellular reprogramming and provide a confidence level in the answer.
+Use RAG to search the literature for "What role does PCNA play in the cell cycle and cell cycle imaging?" and retrieve relevant documents and abstracts.
+Use the RAG method to search literature and documents from a text database, specifically looking for information on "What role does PCNA play in the cell cycle and cell cycle imaging?".
+Use RAG to search literature and documents from a text database to answer the question "What role does PCNA play in the cell cycle and cell cycle imaging?" and return relevant abstracts and citations.
+Using RAG, perform a literature search on PCNA with the query "What role does PCNA play in the cell cycle and cell cycle imaging?" and return a summary of the relevant documents.
+Use the RAG method to search literature and documents from a text database, specifically looking for information on "What role does PCNA play in the cell cycle and cell cycle imaging?" to gather initial insights on PCNA's function.
+"Use the RAG method to search the literature for the role of PCNA in the cell cycle and cell cycle imaging. Provide a brief summary of the findings."
+Use the RAG method to search for literature on PCNA, focusing on its role in the cell cycle and cell cycle imaging. Provide a summary of the key findings.
+"Use the RAG method to search the literature for PCNA's role in the cell cycle and cell cycle imaging, and provide a brief summary of the findings."
+Use the RAG method to search literature and documents from a text database, specifically looking for information on the role of PCNA in the cell cycle and cell cycle imaging. Retrieve relevant articles and save the results for further analysis.
+"Use the RAG method to search the literature for the role of PCNA in the cell cycle and cell cycle imaging. Provide a brief summary of the key findings."
+Perform RAG on the role of MYOD in cellular reprogramming and return a confidence level in the answer.
+Perform RAG on the literature database to retrieve documents related to MYOD and cellular reprogramming. Analyze the content to determine the role of MYOD in cellular reprogramming and provide a confidence score in your answer.
+Perform a literature search on the role of MYOD in cellular reprogramming using the RAG method. Assess the confidence level of the results. If the confidence level is below 80%, proceed to Step 2. Otherwise, proceed to Step 5.
+Synthesize and summarize the information collected from the RAG searches, including the role of MYOD in cellular reprogramming. Write a detailed report on the findings, incorporating any relevant insights from the literature searches.
+Use the RAG method to search the text database for information related to the role of MYOD in cellular reprogramming. Provide a summary of the findings and a confidence level (e.g., 0-100%) in the accuracy of the answer.
+Perform literature search in text databases to retrieve documents related to MYOD and its role in cellular reprogramming. Analyze the literature to determine the confidence level in understanding the role of MYOD. Please provide a confidence score (e.g., 0-100%) and a brief summary of the findings.
+"Use the RAG method to search the literature for the role of PCNA in the cell cycle and cell cycle imaging. Provide a brief summary of the key findings."
+Perform literature search in text database to retrieve relevant information about the role of MYOD in cellular reprogramming, and provide a confidence score for the results.
+Perform RAG on the literature database to retrieve documents related to MYOD and cellular reprogramming. Analyze the content to determine the role of MYOD in cellular reprogramming and provide a confidence score (1-10) in the answer.
+Perform literature search in text databases to understand the role of MYOD in cellular reprogramming and provide a confidence level in the answer.
+Use the RAG method to search through the text database and retrieve information about Chubaka's role in defending Hoth during episode 5 of Star Wars. Provide a confidence score for the obtained information.
+Use the RAG method to search the text database for literature and documents related to Chewbacca's role in defending Hoth during Episode 5 of Star Wars. Analyze the confidence level of the found information. If confident, pass the result to Step 2. If not confident, pass the result to Step 2 for further processing.
+Use RAG to look up literature and documents from a text database related to Chewbacca's role in defending Hoth during episode 5 of Star Wars. Analyze the confidence level of the results.
+Evaluate the confidence level of the RAG results from Step 1. If the confidence level is above a certain threshold (e.g., 0.8), proceed to Step 5. Otherwise, proceed to Step 3.
+Use RAG to analyze the newly retrieved articles from Step 3 and update the confidence level of the results. Repeat this process until the confidence level meets the threshold. Use information from Step 3.
+Use WRITE to synthesize and summarize the information gathered from the RAG analysis. Create a detailed report on the role of Chewbacca in defending Hoth during episode 5 of Star Wars, incorporating all relevant findings.
+Use RAG to analyze the newly retrieved articles from Step 3 and update the confidence level of the results. Repeat this process until the confidence level meets the threshold. Use information from Step 3.
+Use WRITE to synthesize and summarize the information gathered from the RAG analysis. Create a detailed report on the role of Chewbacca in defending Hoth during episode 5 of Star Wars, incorporating all relevant findings.
+Use RAG to analyze the newly retrieved articles from Step 3 and update the confidence level of the results. Repeat this process until the confidence level meets the threshold. Use information from Step 3.
+Use WRITE to synthesize and summarize the information gathered from the RAG analysis. Create a detailed report on the role of Chewbacca in defending Hoth during episode 5 of Star Wars, incorporating all relevant findings.
+Search the text database using the prompt "What role does PCNA play in the cell cycle and cell cycle imaging?" to gather relevant literature on PCNA's function in the cell cycle.
+Use the RAG method to search for literature on PCNA, focusing on its role in the cell cycle and cell cycle imaging. Provide a summary of the key findings.
+Use RAG to search literature and documents from a text database to answer the question "What role does PCNA play in the cell cycle and cell cycle imaging?" and return relevant abstracts and information.
+Use the RAG method to search literature and documents from a text database, focusing on the role of PCNA in the cell cycle and cell cycle imaging. Specifically, retrieve information on "What role does PCNA play in the cell cycle and cell cycle imaging?"
+"Use the RAG method to search the literature for the role of PCNA in the cell cycle and cell cycle imaging. Provide a brief summary of the key findings."
+Use RAG to search literature and documents from a text database to answer the question "What role does PCNA play in the cell cycle and cell cycle imaging?" and return relevant abstracts and information.
+Use RAG to search the literature for "What role does PCNA play in the cell cycle and cell cycle imaging?" and retrieve relevant documents and abstracts.
+Search the RAG database for information related to the cell cycle and Pip-fucci imaging system. Evaluate the confidence of the answer and store the result. If the confidence is low, proceed to Step 2.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the search query from Step 1 as input. Store the updated database.
+Search the RAG database for information related to the cell cycle and Pip-fucci imaging system. If the confidence in the answer is below a certain threshold (e.g. 0.7), proceed to Step 2. Otherwise, go to Step 5.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the keywords "cell cycle" and "Pip-fucci imaging system" to filter the search results. Once the scraping is complete, proceed to Step 3.
+Search the RAG database for information related to the cell cycle and Pip-fucci imaging system. Evaluate the confidence of the answer and store the result. If the confidence is low, proceed to Step 2.
+Perform web scraping on platforms like arXiv, bioRxiv, and PubMed to update the RAG database with the latest research on the cell cycle and Pip-fucci imaging system. Use the search terms from Step 1 as input. Store the updated information in the RAG database.
+Search literature databases to explain the PCNA in the cell cycle and pip Fucci system.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Fucci system?" and provide a brief summary of the results.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and the pip Fucci system. Provide a summary of the findings.
+Search literature databases to explain the PCNA in the cell cycle and pip Fucci system.
+Search literature databases for information on PCNA in the cell cycle and the pip Fucci system. Provide a summary of the key findings.
+Use RAG to search the text database for information on PCNA in the cell cycle and pip Fucci system. Retrieve relevant documents and summarize the key findings.
+Search the literature database to gather information on PCNA's role in the cell cycle and pip Fucci system. Provide a summary of the results.
+Use RAG to search the text database for information on PCNA in the cell cycle and pip Fucci system. Retrieve relevant literature and documents.
+Search the literature database to find information on PCNA's role in the cell cycle and pip Fucci system. Return relevant results and summaries to proceed to the next step.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip-Fucci system?" and return the results.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and pip Fucci system. Return the results to ROUTER.
+Look up literature and documents from a text database to explain what PCNA is in the cell cycle and the pip Fucci system.
+Search the literature database to gather information on PCNA's role in the cell cycle and pip Fucci system. Provide a summary of the results.
+Look up literature and documents from a text database to explain what PCNA is in the cell cycle and the pip Fucci system.
+Look up literature and documents from a text database to find information about PCNA in the cell cycle and the pip Fucci system.
+Look up literature and documents from a text database to explain what PCNA is in the cell cycle and the pip Fucci system.
+Use RAG to search the text database for information on PCNA in the cell cycle and pip Fucci system, providing a brief summary of the findings.
+Search the literature database to gather information on PCNA (Proliferating Cell Nuclear Antigen) in the cell cycle and its relation to the Fucci system. Provide a brief summary of the findings.
+Use RAG to search the literature and documents from a text database to answer the question: "What is the PCNA in the cell cycle and pip Fucci system?"
+Use RAG to search the literature and documents from a text database to answer the question: "What is the PCNA in the cell cycle and pip Fucci system?" and provide a detailed explanation.
+Search the literature database to find information on PCNA's role in the cell cycle and pip fucci system. Return the relevant results and evaluation of their quality.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip-Fucci system?" and provide a brief summary.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip Fucci system?"
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip Fucci system?"
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and the pip Fucci system. Provide a summary of the findings.
+Use RAG to search the text database for information on PCNA in the cell cycle and pip Fucci system, providing a brief summary of the role of PCNA in the cell cycle and its relation to the pip Fucci system.
+Use RAG to search the literature and documents from a text database to answer the question: "What is the PCNA in the cell cycle and pip Fucci system?"
+Search the literature database to provide a brief overview of the PCNA protein in the cell cycle and its relation to the FUCCI system. Save the results for later use.
+Search the literature database to provide a brief overview of the PCNA protein in the cell cycle and its relation to the FUCCI system. Save the results for later use.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip-Fucci system?" and provide relevant information.
+Use RAG to search literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and PIP-FUCCI system?" and provide a summary of the findings.
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and the pip Fucci system. Provide a summary of the findings.
+Use RAG to lookup literature and documents from a text database to answer the question "What is the PCNA in the cell cycle and Pip Fucci system?"
+Use RAG to search literature and documents from a text database to understand the role of PCNA in the cell cycle and the pip Fucci system. Provide a detailed description of PCNA's function and its association with the cell cycle.
+"Conduct a literature search about the role of PCNA in the cell cycle and cell cycle imaging. Please summarize and provide key findings about PCNA's functions and significance in the cell cycle and any insights from cell cycle imaging studies."
+"Conduct a literature search about the role of PCNA in the cell cycle and cell cycle imaging. Please summarize and provide key findings about PCNA's functions and significance in the cell cycle and any insights from cell cycle imaging studies."
+"Conduct a literature search about the role of PCNA in the cell cycle and cell cycle imaging. Please summarize and provide key findings about PCNA's functions and significance in the cell cycle and any insights from cell cycle imaging studies."
+"Conduct a literature search about the role of PCNA in the cell cycle and cell cycle imaging. Please summarize and provide key findings about PCNA's functions and significance in the cell cycle and any insights from cell cycle imaging studies."
+"Conduct a literature search about the role of PCNA in the cell cycle and cell cycle imaging. Please summarize and provide key findings about PCNA's functions and significance in the cell cycle and any insights from cell cycle imaging studies. Additionally, search for the latest research on PCNA's role in the cell cycle through platforms like arXiv, bioRxiv, and PubMed."
+Conduct a literature search on the role of PCNA in the cell cycle and cell cycle imaging. Return relevant documents and summarize the findings on the role of PCNA in the cell cycle.
+Conduct a literature search on the role of PCNA in the cell cycle and cell cycle imaging. Return relevant documents and summarize the findings on the role of PCNA in the cell cycle.
+Conduct a literature search on the role of PCNA in the cell cycle and cell cycle imaging. Return relevant documents and summarize the findings on the role of PCNA in the cell cycle.
