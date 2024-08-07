@@ -15,15 +15,20 @@ Notes:
 
     2. they must have a one line description at the top of the docstring used for selecting which code to run
 """
+import os
+import glob
+import re
+import difflib
 
 from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
-import difflib
-import matlab.engine
-import os
-import glob
-import re
+
+try:
+    import matlab.engine
+except:
+    print('MATLAB not included')
+
 from BRAD.promptTemplates import matlabPromptTemplate
 from BRAD import log
 

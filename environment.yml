@@ -1,0 +1,28 @@
+name: BRAD-1
+channels:
+  - defaults
+dependencies:
+  - pip
+  - requests
+  - transformers
+  - scikit-learn
+  - pip:
+    - chromadb==0.5.4
+    - chroma-hnswlib==0.7.5
+    - tabulate
+    - sentence-transformers
+    - requests-html
+    - torch==2.3.1
+    - beautifulsoup4
+    - langchain_chroma
+    - langchain_community
+    - langchain_core
+    - langchain_nvidia_ai_endpoints
+    - langchain_text_splitters
+    - semantic-router
+    - lxml_html_clean
+    - Bio
+    - seaborn
+    - gget
+    - IPython
+    - pandas
