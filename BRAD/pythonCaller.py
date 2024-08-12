@@ -187,6 +187,10 @@ def execute_python_code(python_code, chatstatus):
         )
         chatstatus['output'] = response.stdout.strip()
         log.debugLog("Debug: PYTHON code output saved to output.", chatstatus=chatstatus)
+
+        # TODO: If the response contains a stderr then we should allow it the system to
+        # debug and reexecute the code
+    
     except SyntaxError as se:
         log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", chatstatus=chatstatus)
     except NameError as ne:
@@ -580,7 +584,7 @@ def editPythonCode(funcCall, errorMessage, memory, chatstatus):
     response = conversation.predict(input=chatstatus['prompt'])
 
     # Parse the code (recursion begins here)
-    code2execute = extract_python_code(response, chatstatus['config']['py-path'], chatstatus, memory=memory)
+    code2execute = extract_python_code(response, chatstatus['config']['CODE']['path'][0], chatstatus, memory=memory)
 
     # log the llm output
     chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
