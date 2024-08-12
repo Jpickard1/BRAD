@@ -175,21 +175,71 @@ def planner(chatstatus):
             }
         )
 
-        # TODO: add code to save new pipelines
+        # Check if the chat is interactive
+        if chatstatus['interactive']:
+            # Prompt the user to decide if they want to save the pipeline to a file
+            chatstatus = log.userOutput('Would you like to save this pipeline to a file? [Y/N]', chatstatus=chatstatus)
+            saveNewPipeline = input(">>>")
+        
+            # If the user chooses to save the pipeline
+            if saveNewPipeline.upper() == "Y":
+                # Prompt the user to enter a name for the pipeline
+                chatstatus = log.userOutput('Enter a name for your pipeline', chatstatus=chatstatus)
+                fname = input(">>>")
+        
+                # Prompt the user to enter a description for the pipeline
+                chatstatus = log.userOutput('Enter a description of your pipeline', chatstatus=chatstatus)
+                description = input(">>>")
+        
+                # Create a dictionary to store the pipeline information
+                pipelineJSONdict = {
+                    'name': fname,  # Use 'fname' instead of 'name' to match the input
+                    'description': description,
+                    'queue': processes  # Fixed typo: 'proecesses' to 'processes'
+                }
+                for k in pipelineJSONdict['queue'].keys():
+                    pipelineJSONdict['queue']['output'] = []
+        
+                # Get the directory path to save the pipeline file
+                pipelines_dir = chatstatus['config']['PLANNER']['path']
+        
+                # Construct the full file path
+                filepath = os.path.join(pipelines_dir, f"{fname}.json")
+        
+                # Save the pipelineJSONdict to a file
+                try:
+                    with open(filepath, 'w') as f:
+                        json.dump(pipelineJSONdict, f, indent=4)
+                    chatstatus = log.userOutput(f"Pipeline saved successfully to {filepath}", chatstatus=chatstatus)
+                except Exception as e:
+                    chatstatus = log.userOutput(f"Error saving pipeline: {e}", chatstatus=chatstatus)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # Parameterize a predesigned pipeline
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     else:
         pipeline = pipelines[selected_pipeline]
+        # Initialize processes dictionary from the loaded pipeline queue
         loadedProcesses, processes = pipeline['queue'], {}
-        for key, value in loadedProcesses.items():
-            # Check if the key is a string that can be converted to an integer
-            if isinstance(key, str) and key.isdigit():
-                new_key = int(key)
-            else:
-                new_key = key
-            processes[new_key] = value
+        
+        # If loadedProcesses is a dictionary
+        if isinstance(loadedProcesses, dict):
+            # Iterate over the items in the dictionary
+            for key, value in loadedProcesses.items():
+                # Convert the key to an integer if it is a string representation of a digit
+                new_key = int(key) if isinstance(key, str) and key.isdigit() else key
+                processes[new_key] = value
+        
+        # If loadedProcesses is a list
+        elif isinstance(loadedProcesses, list):
+            # Iterate over the list with indices
+            for key, value in enumerate(loadedProcesses):
+                processes[key] = value
+                
+        # If loadedProcesses is neither a dictionary nor a list, issue a warning
+        else:
+            log.debugLog("Warning: loadedProcesses is neither a dictionary nor a list", chatstatus=chatstatus)
+
         chatstatus = displayPipeline2User(processes, chatstatus=chatstatus)
         chatstatus['process']['steps'].append(
             {
@@ -268,8 +318,17 @@ def response2processes(response):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 16, 2024
+
+    # History:
+    # - 2024-06-16: 1st draft of this method
+    # - 2024-08-02: this was changed to split the prompts at the word "Step" as
+    #               opposed to "**Step ". It remains a problem that this will be
+    #               very brittle to the use by different LLMs.
+    #
+    # Issues:
+    # - This is VERY brittle to use by different LLMs
     modules = ['RAG', 'SCRAPE', 'DATABASE', 'CODE', 'WRITE', 'ROUTER']
-    stageStrings = response.split('**Step ')
+    stageStrings = response.split('Step')
     processes = [
         {
             'order'  : 0,
@@ -278,6 +337,7 @@ def response2processes(response):
             'description' : 'This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.',
         }
     ]
+    print(stageStrings)
     for i, stage in enumerate(stageStrings):
         stageNum = i
         found_modules = [module for module in modules if module in stage]
@@ -289,7 +349,7 @@ def response2processes(response):
             processes.append({
                 'order':stageNum,
                 'module':module,
-                'prompt':'/force ' + module + ' ' + prompt[0],
+                'prompt':'/force ' + module + ' ' + stage, # + prompt[0],
                 'description':stage,
             })
     return processes
@@ -322,7 +382,7 @@ def getKnownPipelines(chatstatus):
     # current_script_path = os.path.abspath(__file__)
     # current_script_dir = os.path.dirname(current_script_path)
     # pipelines_dir = os.path.join(current_script_dir, 'pipelines')
-    pipelines_dir = chatstatus['config']['PLANNER']['path']    
+    pipelines_dir = chatstatus['config']['PLANNER']['path']
 
     # Initialize an empty list to store pipeline dictionaries
     pipelines = {}
