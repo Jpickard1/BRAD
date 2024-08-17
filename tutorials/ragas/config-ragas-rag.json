@@ -1,0 +1,12 @@
+{
+    "RAG": {
+        "num_articles_retrieved": 10,
+        "multiquery": false,
+        "contextual_compression": false,
+        "rerank": false,
+        "similarity": false,
+        "mmr": true,
+    	"cut": false
+    },
+    "log_path": "/home/machoi/BRAD"
+}
