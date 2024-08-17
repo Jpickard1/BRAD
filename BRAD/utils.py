@@ -241,9 +241,12 @@ def makeNamesConsistent(chatstatus, files):
         log.debugLog('Finding Stage Number of Pipeline', chatstatus=chatstatus)
         log.debugLog(chatstatus['queue'], chatstatus=chatstatus)
         IP = chatstatus['queue pointer'] # [0]['order'] + 1
+        IP = int(IP)
     else:
         return
     renamedFiles = []
+    log.debugLog(f"{IP=}", chatstatus=chatstatus)
+    log.debugLog(f"{type(IP)=}", chatstatus=chatstatus)
     for file in files:
         if file[0] != 'S':
             old_path = os.path.join(chatstatus['output-directory'], file)
