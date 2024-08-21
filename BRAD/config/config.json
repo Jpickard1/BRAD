@@ -6,7 +6,7 @@
         "rerank": false,
         "similarity": false,
         "mmr": true,
-    	"cut": true
+    	"cut": false
     },
     "SCRAPE": {
         "add_from_scrape": true,
