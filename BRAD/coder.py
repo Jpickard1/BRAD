@@ -185,21 +185,40 @@ def codeCaller(chatstatus):
                                           scriptDocumentation=docstrings,
                                           output_path=chatstatus['output-directory']
                                          )
-    PROMPT          = PromptTemplate(input_variables=["history", "input"], template=filled_template)
+
+    # Create the prompt template
+    PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     log.debugLog(PROMPT, chatstatus=chatstatus)
-    conversation    = ConversationChain(prompt  = PROMPT,
-                                        llm     =    llm,
-                                        verbose = chatstatus['config']['debug'],
-                                        memory  = memory,
-                                       )
-    response = conversation.predict(input=chatstatus['prompt'])
+    
+    # this will allow better logging of the response from the query API
+    try:
+        # LCEL chain creation: prompt | llm
+        chain = PROMPT | llm
+        
+        # Execute the chain with input prompt
+        response = chain.invoke({"history": memory.abuffer(), "input": chatstatus['prompt']})
+        responseOriginal = response
+        response = response.content
+        
+    # this catches the initial implementation
+    except:
+        conversation    = ConversationChain(prompt  = PROMPT,
+                                            llm     =    llm,
+                                            verbose = chatstatus['config']['debug'],
+                                            memory  = memory,
+                                           )
+        response = conversation.predict(input=chatstatus['prompt'])
+        responseOriginal = response
+        
+    print(f"{responseOriginal=}")
+    
     responseParser = {'python': extract_python_code, 'MATLAB': extract_matlab_code}.get(scriptType)
     code2execute = responseParser(response, scriptPath, chatstatus, memory=memory)
 
     chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
                                                          prompt          = PROMPT,
                                                          input           = chatstatus['prompt'],
-                                                         output          = response,
+                                                         output          = responseOriginal,
                                                          parsedOutput    = {
                                                              'code': code2execute
                                                          },
