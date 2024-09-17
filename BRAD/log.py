@@ -97,7 +97,7 @@ def errorLog(errorMessage, info=None, chatstatus=None):
         {
             'func'    : 'log.errorLog',
             'message' : errorMessage,
-            'info'    : metadata,
+            'info'    : info
         }
     )
     
