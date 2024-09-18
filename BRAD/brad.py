@@ -28,7 +28,7 @@ import warnings
 import re
 import json
 import logging
-
+import time
 from typing import Optional, List
 
 # Bioinformatics
@@ -216,6 +216,9 @@ class chatbot():
         # - 2024-06-04: wrote 1st draft of this code in the brad.chat() method
         # - 2024-07-10: refactored brad.py file to a class and converted the code
         #               used to execute a single prompt into the invoke method
+
+        # start the clock
+        start_time = time.time()
         
         # This line packs a query into the chatstatus variable we were using previously
         self.chatstatus['prompt'] = query
@@ -288,9 +291,13 @@ class chatbot():
         # Clear memory
         if self.chatstatus['config']['forgetful']:
             self.chatstatus['memory'].clear()
+
+        # stop the clock
+        end_time = time.time()
+        elapsed_time = end_time - start_time
         
         # Log and reset these values
-        self.chatlog, self.chatstatus = log.logger(self.chatlog, self.chatstatus, self.chatname)
+        self.chatlog, self.chatstatus = log.logger(self.chatlog, self.chatstatus, self.chatname, elapsed_time=elapsed_time)
         return self.chatstatus['output']
 
     def chat(self):

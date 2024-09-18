@@ -1,7 +1,8 @@
 import json
 import logging
+import time
 
-def logger(chatlog, chatstatus, chatname):
+def logger(chatlog, chatstatus, chatname, elapsed_time=None):
     """
     Logs the chat status and process details into a specified chat log file.
 
@@ -32,6 +33,8 @@ def logger(chatlog, chatstatus, chatname):
         }
 
     chatlog[len(chatlog)] = {
+        'time'   : time.time(),
+        'elapsed time' : elapsed_time,
         'prompt' : chatstatus['prompt'],  # the input to the user
         'output' : chatstatus['output'],  # the output to the user
         'process': process_serializable,  # chatstatus['process'], # information about the process that ran
