@@ -197,8 +197,8 @@ def planner(chatstatus):
                     'description': description,
                     'queue': processes  # Fixed typo: 'proecesses' to 'processes'
                 }
-                for k in pipelineJSONdict['queue'].keys():
-                    pipelineJSONdict['queue']['output'] = []
+                for k in range(len(pipelineJSONdict['queue'])):
+                    pipelineJSONdict['queue'][k]['output'] = []
         
                 # Get the directory path to save the pipeline file
                 pipelines_dir = chatstatus['config']['PLANNER']['path']
