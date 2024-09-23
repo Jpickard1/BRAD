@@ -28,6 +28,9 @@
     "DATABASE": {
         "max_search_terms": 100
     },
+    "ROUTER": {
+        "build router db": true
+    },
     "WRITE": {
         "latex-template-path": "/home/jpic/latex-test/templates"
     },
