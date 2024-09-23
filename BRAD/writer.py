@@ -6,6 +6,10 @@ from tabulate import tabulate
 from datetime import datetime
 
 from langchain import PromptTemplate, LLMChain
+from langchain.output_parsers.json import SimpleJsonOutputParser
+from langchain.output_parsers import PydanticOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_core.pydantic_v1 import BaseModel, Field
 
 from BRAD import log
 from BRAD import utils
@@ -42,6 +46,7 @@ def chatReport(chatstatus):
     query    = chatstatus['prompt']
     llm      = chatstatus['llm']
 
+    # TODO: this should be path dependent in the configurations
     # Select the latex template. The specific latex template is hardcoded for now, but a latex-template-path
     # indicator has been added to the config.json file and we can do a selection process similar to how scripts
     # are selected to run
@@ -113,28 +118,31 @@ def getReportTitle(chathistory, chatstatus):
 {userinput}
 
 **Chatlog Overview:**
-{{chatlog}}
-
-Format your output exactly as follows.
-**Output:**
-Title=<put the title title here>
+{chatlog}
 """
-    template = template.format(userinput=chatstatus['prompt'])
-    print(template)
+    template = template.format(userinput=chatstatus['prompt'], chatlog=chathistory)
+    log.debugLog(f"{template=}", chatstatus=chatstatus)
     prompt = PromptTemplate(template=template, input_variables=["chatlog"])
-    chain = prompt | llm
-    log.debugLog('Calling getReportTitle', chatstatus=chatstatus)
-    response = chain.invoke(chathistory)
-    log.debugLog(response, chatstatus=chatstatus)
-    report_title = response.content.split('=')[1]
+    json_prompt = PromptTemplate.from_template(
+        "Return a JSON object with an `title` and `abstract` keys in response to the following: {question}"
+    )
+    json_parser = SimpleJsonOutputParser()
+    json_chain = json_prompt | llm | json_parser
+    response = json_chain.invoke({"question": template})
+    report_title = response['title']
+#    chain = prompt | llm
+#    log.debugLog('Calling getReportTitle', chatstatus=chatstatus)
+#    response = chain.invoke(chathistory)
+#    log.debugLog(response, chatstatus=chatstatus)
+#    report_title = response.content.split('=')[1]
     chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
-                                                         prompt       = prompt,
+                                                         prompt       = template,
                                                          input        = chathistory,
                                                          output       = response,
                                                          parsedOutput = {
                                                              'report title' : report_title,
                                                          },
-                                                         purpose      = 'generate a title for a pdf'
+                                                         purpose      = 'generate a title for a pdf (note: using pydantic parser)'
                                                         )
                                          )
     log.debugLog(report_title, chatstatus=chatstatus)
@@ -156,7 +164,7 @@ def getReportSummary(chathistory, chatstatus):
     #       jpic@umich.edu
     # Date: July 2, 2024
     llm      = chatstatus['llm']
-    template = """You are in charge of writing a report to summarize a chatbot session that performed a series of steps in a bioinformatics workflow. Given the following chatlog, write a section of to summarize this. Please use appropriate latex formatting, but do not worry about section titles or headings.
+    template = """You are in charge of writing a report to summarize a chatbot session that performed a series of steps in a bioinformatics workflow. Given the following chatlog, write a section of to summarize this. Your summary section should be at least three sentences long (minimum) and no longer than twelve sentences.
     
 This report is in reposnse to the following user request:
 {userinput}
@@ -164,12 +172,13 @@ This report is in reposnse to the following user request:
 **Chatlog Overview:**
 {{chatlog}}
 
-Format your output exactly as follows.
+Format your output exactly as follows. Do not include additional text/characters.
 **Output:**
 Summary=<put the title title here>
 """
     template = template.format(userinput=chatstatus['prompt'])
     print(template)
+    print(f"{chathistory=}")
     prompt = PromptTemplate(template=template, input_variables=["chatlog"])
     chain = prompt | llm
     log.debugLog('Calling getReportSummary', chatstatus=chatstatus)
@@ -440,7 +449,7 @@ def codeReporter(chatlogStep, currentreport='', chatstatus=None):
 
 Please format your output exactly as follows.
 **Output**
-Summary=<put summary here>
+Summary: <put summary here>
 """
     template = template.format(currentreport=currentreport,
                                docstring=docstring,
@@ -452,7 +461,7 @@ Summary=<put summary here>
     chain = PROMPT | chatstatus['llm']
     response = chain.invoke(chatlogStep['prompt'])
     print(response)
-    return response.content.split('=')[1]
+    return response.content # response.content.split('=')[1]
 
 def ragReporter(chatlogStep, chatstatus):
     """Summarize the output of the RAG stage"""

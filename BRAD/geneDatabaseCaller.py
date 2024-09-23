@@ -1,7 +1,9 @@
- 
+import time
+
 from langchain import PromptTemplate, LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
+from langchain_community.callbacks import get_openai_callback
 
 from BRAD.gene_ontology import geneOntology
 from BRAD.enrichr import queryEnrichr
@@ -64,19 +66,34 @@ def geneDBRetriever(chatstatus):
                                      verbose = chatstatus['config']['debug'],
                                      memory  = memory,
                                     )
-    chainResponse = conversation.predict(input=query)
-
+    # Invoke LLM tracking its usage
+    start_time = time.time()
+    with get_openai_callback() as cb:
+        chainResponse = conversation.predict(input=query)        
+    responseDetails = {
+        'content' : chainResponse,
+        'time' : time.time() - start_time,
+        'call back': {
+            "Total Tokens": cb.total_tokens,
+            "Prompt Tokens": cb.prompt_tokens,
+            "Completion Tokens": cb.completion_tokens,
+            "Total Cost (USD)": cb.total_cost
+        }
+    }
+    
     log.debugLog(chainResponse, chatstatus=chatstatus)    # Print gene list if debugging
     response = parse_llm_response(chainResponse, chatstatus)
 
-    chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
-                                                         prompt       = PROMPT,
-                                                         input        = query,
-                                                         output       = chainResponse,
-                                                         parsedOutput = response,
-                                                         purpose      = 'Select database'
-                                                        )
-                                             )
+    chatstatus['process']['steps'].append(
+        log.llmCallLog(
+            llm          = llm,
+            prompt       = PROMPT,
+            input        = query,
+            output       = responseDetails,
+            parsedOutput = response,
+            purpose      = 'Select database'
+        )
+    )
 
     log.debugLog(response, chatstatus=chatstatus)    # Print gene list if debugging
 

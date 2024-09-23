@@ -1,5 +1,6 @@
 import re
 import os
+import time
 import numpy as np
 import pandas as pd
 import subprocess
@@ -7,6 +8,8 @@ import difflib
 import matplotlib.pyplot as plt
 
 from langchain import PromptTemplate, LLMChain
+from langchain_community.callbacks import get_openai_callback
+
 from BRAD import log
 from BRAD.promptTemplates import fileChooserTemplate, fieldChooserTemplate
 
@@ -328,8 +331,19 @@ def loadFromFile(chatstatus):
     chain    = PROMPT | llm
 
     # Call chain
-    chatstatus = log.userOutput(prompt, chatstatus=chatstatus)
-    response = chain.invoke(prompt).content.strip()
+    chatstatus   = log.userOutput(prompt, chatstatus=chatstatus)
+    start_time = time.time()
+    with get_openai_callback() as cb:
+        responseFull = chain.invoke(prompt)
+    response = responseFull.content.strip()
+    responseFull = {'content': responseFull}
+    responseFull['time'] = time.time() - start_time
+    responseFull['call back'] = {
+            "Total Tokens": cb.total_tokens,
+            "Prompt Tokens": cb.prompt_tokens,
+            "Completion Tokens": cb.completion_tokens,
+            "Total Cost (USD)": cb.total_cost
+    }
     
     # Regular expressions to extract file and fields
     file_pattern = r"File:\s*(\S+)"
@@ -350,17 +364,19 @@ def loadFromFile(chatstatus):
     file = availableFilesList[np.argmax(scores)]
     
     log.debugLog('File=' + str(file) + '\n' + 'Fields=' + str(fields), chatstatus=chatstatus)
-    chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
-                                                         prompt       = PROMPT,
-                                                         input        = prompt,
-                                                         output       = response,
-                                                         parsedOutput = {
-                                                             'File'   : file,
-                                                             'Fields' : fields
-                                                         },
-                                                         purpose      = 'Select File'
-                                                        )
-                                        )
+    chatstatus['process']['steps'].append(
+        log.llmCallLog(
+            llm          = llm,
+            prompt       = PROMPT,
+            input        = prompt,
+            output       = responseFull,
+            parsedOutput = {
+                'File'   : file,
+                'Fields' : fields
+            },
+            purpose      = 'Select File'
+        )
+    )
     
     # Determine the delimiter based on the file extension
     delimiter = ',' if not file.endswith('.tsv') else '\t'

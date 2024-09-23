@@ -461,7 +461,8 @@ Chatbot: {output}
 Additional information:
 A table with {numrows} was downloaded. The table will be below your summary in the report.
 
-Please use this exact title output formatting:
+Format your exactly as follows. Do not include additional text/characters.
+**Output**
 summary = <put paragraph here>
 """
     return template
@@ -471,7 +472,8 @@ def summarizeRAGTemplate():
 
 Current Text: {output}
 
-Format your output as:
+Format your exactly as follows. Do not include additional text/characters.
+**Output**
 Latex Version=<put paragraphs here>
 """
     return template
@@ -479,3 +481,24 @@ Latex Version=<put paragraphs here>
 def historyChatTemplate():
     template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
     return template
+
+def getDefaultContext():
+    """
+    Returns the default context string for the chatbot, which provides background information and capabilities.
+
+    :param None: This function does not take any parameters.
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: A string containing the default context for the chatbot.
+    :rtype: str
+    """
+    llmContext = """Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,
+bioinformatics, genetics, and data science. You can be connected to a text database to augment your answers
+based on the literature with Retrieval Augmented Generation, or you can use several additional modules including
+searching the web for new articles, searching Gene Ontology or Enrichr bioinformatics databases, running snakemake
+and matlab pipelines, or analyzing your own codes. Please answer the following questions to the best of your
+ability.
+
+Prompt: """
+    return llmContext

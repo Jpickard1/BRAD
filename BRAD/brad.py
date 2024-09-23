@@ -241,7 +241,8 @@ class chatbot():
                 route = 'RAG'
         else:
             route = self.chatstatus['prompt'].split(' ')[1]            # use the forced router
-            buildRoutes(self.chatstatus['prompt'])
+            if self.chatstatus['config']['ROUTER']['build router db']:
+                buildRoutes(self.chatstatus['prompt'])
             self.chatstatus['prompt'] = " ".join(self.chatstatus['prompt'].split(' ')[2:]).strip()
 
         # Outputs
@@ -273,7 +274,10 @@ class chatbot():
         #     self.chatstatus['queue'] = [[]] # don't let it us an empty queue if it is not interactive
         
         # Query module
-        self.chatstatus = module(self.chatstatus)
+        try:
+            self.chatstatus = module(self.chatstatus)
+        except:
+            log.debugLog('An arror occurred during module execution!', chatstatus=self.chatstatus)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
         log.debugLog('\n\n\nroute\n\n\n', chatstatus=self.chatstatus)

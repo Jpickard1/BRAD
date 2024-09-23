@@ -33,7 +33,7 @@ def logger(chatlog, chatstatus, chatname, elapsed_time=None):
         }
 
     chatlog[len(chatlog)] = {
-        'time'   : time.time(),
+        'time'   : time.ctime(time.time()),
         'elapsed time' : elapsed_time,
         'prompt' : chatstatus['prompt'],  # the input to the user
         'output' : chatstatus['output'],  # the output to the user
