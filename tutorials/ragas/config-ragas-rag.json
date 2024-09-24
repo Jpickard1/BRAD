@@ -8,5 +8,8 @@
         "mmr": true,
     	"cut": false
     },
-    "log_path": "/home/machoi/BRAD"
+    "ROUTER": {
+        "build router db": false
+    },
+    "log_path": "/home/jpic/RAG-DEV/tutorials/ragas/output-logs"
 }
