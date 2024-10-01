@@ -46,11 +46,8 @@ from BRAD.promptTemplates import historyChatTemplate, summarizeDocumentTemplate,
 
 #Extraction
 import re
-#from nltk.corpus import words
-#from unidecode import unidecode
-#import nltk
-#from nltk.stem import WordNetLemmatizer
-#from nltk.corpus import wordnet
+
+
 
 import BRAD.gene_ontology as gonto
 from BRAD.gene_ontology import geneOntology
@@ -503,79 +500,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
             log.debugLog("Completed Chroma Database: ", chatstatus=chatstatus) if v else None 
             del vectordb, text_splitter, data_splits
 
-def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus):
-    scores = list(scores)
-    outputs = {
-        'prompt':[],
-        'response':[],
-        'hidden':[],
-        'hiddenRef':[],
-        'hiddenScore':[]
-    }
-    for i in range(len(docs) - 1):
-        outputs['known' + str(i)] = []
-        outputs['knownRef' + str(i)] = []
-        outputs['knownScore' + str(i)] = []
-    for i in range(len(docs)):
-        # query the model
-        usedDocs = docs[:i] + docs[i + 1:]
-        usedScores = scores[:i] + scores[i + 1:]
-        hiddenDoc = docs[i]
-        hiddenScore = scores[i]
-        response   = chain({"input_documents": usedDocs, "question": prompt})
-        # save the info
-        outputs['prompt'].append(prompt)
-        outputs['response'].append(response['output_text'])
-        outputs['hidden'].append(hiddenDoc.page_content)
-        outputs['hiddenRef'].append(hiddenDoc.metadata)
-        outputs['hiddenScore'].append(scores[i])
-        for j in range(len(docs) - 1):
-            outputs['known' + str(j)].append(usedDocs[j].page_content)
-            outputs['knownRef' + str(j)].append(usedDocs[j].metadata)
-            outputs['knownScore' + str(j)].append(scores[j])
 
-    df = pd.DataFrame(outputs)
-    # Check if the file exists
-    if os.path.isfile(chatstatus['experiment-output']):
-        # File exists, append to it
-        df.to_csv(chatstatus['experiment-output'], mode='a', header=False, index=False)
-    else:
-        # File does not exist, create a new file
-        df.to_csv(chatstatus['experiment-output'], mode='w', header=True, index=False)
-
-
-def scoring_experiment(chain, docs, scores, prompt):
-    log.debugLog(f"output of similarity search: {scores}", chatstatus=chatstatus) 
-    candidates = []    # also llm respons (maybe remove this)
-    reference = []     # hidden dodument
-    document_list = [] # LLM RESPONSES
-    # Iterate through the indices of the original list
-    for i in range(len(docs)):
-        # removes one of the documents
-        new_list = docs[:i] + docs[i + 1:]
-        reference.append(docs[i].dict()['page_content'])
-        chatstatus = log.userOutput(f"Masked Document: {docs[i].dict()['page_content']}\n", chatstatus=chatstatus) 
-        res = chain({"input_documents": new_list, "question": prompt})
-        chatstatus = log.userOutput(f"RAG response: {res['output_text']}", chatstatus=chatstatus) 
-        # Add the new list to the combinations list
-        candidates.append(res['output_text'])
-        document_list.append(Document(page_content = res['output_text']))
-    text_splitter = CharacterTextSplitter(chunk_size=700, chunk_overlap=200)
-    embedding_docs= text_splitter.split_documents(document_list)
-    # create the open-source embedding function
-    embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-
-    # load it into Chroma
-    db = Chroma.from_documents(embedding_docs, embedding_function)
-    new_docs, new_scores = getDocumentSimilarity(db.similarity_search_with_relevance_scores(prompt))
-    
-    # print results
-    chatstatus = log.userOutput(new_scores, chatstatus=chatstatus) 
-    #scorer = BERTScorer(lang="en", rescale_with_baseline=True)
-    #P, R, F1 = scorer.score(candidates, reference)
-    #log.debugLog(F1, chatstatus=chatstatus) 
-    
-    
 
 
 #To get a single document
