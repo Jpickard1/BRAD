@@ -1,0 +1,13 @@
+{
+    "CODE": {
+        "path": [
+            "/home/jpic/RAG-DEV/tutorials/planner/python"
+        ]
+    },
+    "PLANNER": {
+        "path": "/home/jpic/RAG-DEV/tutorials/planner/pipelines"
+    },
+    "debug": 1,
+    "log_path": "/home/jpic/RAG-DEV/tutorials/planner/output-directory/",
+    "image-path-extension": "images"
+}
