@@ -1,3 +1,16 @@
+"""
+Module: writer
+
+This module is responsible for compiling chat reports, histories, and logs from various interactions with the 
+large language model (LLM) and generating a comprehensive PDF document. The module streamlines the process of 
+documenting interactions, making it easier for users to review and analyze conversations.
+
+Usage:
+------
+This module is intended to be used in scenarios where there is a need to document interactions with the LLM. 
+By converting chat histories and logs into a well-organized PDF file, users can maintain a clear record of 
+conversations, facilitating further analysis and reflection on the interactions.
+"""
 import pandas as pd
 import os
 import re
