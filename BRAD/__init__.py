@@ -2,16 +2,11 @@ __version__ = '0.1.0'
 __all__     = ['brad',
                'llms',
                'enrichr',
-               'functionCaller',
                'gene_ontology',
                'geneDatabaseCaller',
-               'matlabCaller',
                'rag',
                'router',
                'scraper',
-               'seabornCaller',
-               'snakemakeCaller', 
-               'tables'
               ]
 
 # from .brad import *
