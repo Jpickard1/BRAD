@@ -62,7 +62,7 @@ def load_nvidia(model_name='meta/llama3-70b-instruct', nvidia_api_key=None, temp
     else:
         nvidia_api_key = os.environ["NVIDIA_API_KEY"]
         
-    llm = ChatNVIDIA(model_name  = model_name,
+    llm = ChatNVIDIA(model       = model_name,
                      api_key     = nvidia_api_key,
                      temperature = temperature,
           )
@@ -96,7 +96,7 @@ def load_openai(model_name='gpt-3.5-turbo-0125', api_key=None):
     from langchain_openai import ChatOpenAI
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
     #all the Open AI API keys do not all start with a similar character
-    if not os.environ.get("OPEN_API_KEY", "").startswith("sk-"):
+    if not os.environ.get("OPENAI_API_KEY", "").startswith("sk-"):
         api_key = getpass.getpass("Enter your Open AI API key: ")
         assert api_key.startswith("sk-"), f"{api_key}... is not a valid key"
         os.environ["OPENAI_API_KEY"] = api_key

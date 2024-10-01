@@ -1,7 +1,8 @@
 import json
 import logging
+import time
 
-def logger(chatlog, chatstatus, chatname):
+def logger(chatlog, chatstatus, chatname, elapsed_time=None):
     """
     Logs the chat status and process details into a specified chat log file.
 
@@ -32,6 +33,8 @@ def logger(chatlog, chatstatus, chatname):
         }
 
     chatlog[len(chatlog)] = {
+        'time'   : time.ctime(time.time()),
+        'elapsed time' : elapsed_time,
         'prompt' : chatstatus['prompt'],  # the input to the user
         'output' : chatstatus['output'],  # the output to the user
         'process': process_serializable,  # chatstatus['process'], # information about the process that ran
@@ -48,7 +51,7 @@ def logger(chatlog, chatstatus, chatname):
     }
     with open(chatname, 'w') as fp:
         json.dump(chatlog, fp, indent=4)
-    chatstatus['process'] = None
+    # chatstatus['process'] = None
     return chatlog, chatstatus
 
 def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, parsedOutput=None, purpose=None):
@@ -97,7 +100,7 @@ def errorLog(errorMessage, info=None, chatstatus=None):
         {
             'func'    : 'log.errorLog',
             'message' : errorMessage,
-            'info'    : metadata,
+            'info'    : info
         }
     )
     

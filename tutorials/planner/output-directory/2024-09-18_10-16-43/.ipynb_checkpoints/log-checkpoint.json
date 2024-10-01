@@ -1,0 +1,78 @@
+{
+    "0": {
+        "time": 1726669044.6466715,
+        "elapsed time": 1.1030998229980469,
+        "prompt": "What role does PCNA play in the cell cycle and cell cycle imaging?",
+        "output": "** Step 0**{'order': 0, 'module': 'PLANNER', 'prompt': None, 'description': 'This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.', 'output': []}\n** Step 1**{'order': 1, 'module': 'RAG', 'prompt': '/force RAG Search literature and documents in the text database for the query \"What role does PCNA play in the cell cycle and cell cycle imaging?\" and return a summary of the relevant findings.', 'description': 'Search literature and documents in the text database for the query \"What role does PCNA play in the cell cycle and cell cycle imaging?\" and return a summary of the relevant findings.', 'output': []}\n** Step 2**{'order': 2, 'module': 'CODE', 'prompt': '/force CODE Execute the HWG analysis pipeline to find first-order interactions of PCNA.', 'description': 'Execute the HWG analysis pipeline to find first-order interactions of PCNA.', 'output': []}\n** Step 3**{'order': 4, 'module': 'DATABASE', 'prompt': \"/force DATABASE Load the the 'Genes' column from the output file made during step 2 and use search these genes in Enrichr.\", 'description': '', 'output': []}\n** Step 4**{'order': 6, 'module': 'WRITE', 'prompt': '/force WRITE Synthesize and summarize the findings from each of these steps.', 'description': '', 'output': []}\n",
+        "process": {
+            "module": "PLANNER",
+            "steps": [
+                {
+                    "llm": "model='meta/llama3-70b-instruct'",
+                    "memory": "None",
+                    "prompt": "input_variables=['input'] template='**INSTRUCTIONS:**\\nYou are planning a bioinformatics analysis pipeline to address a user\\'s query. You must determine if there already exist a predesigned pipeline that will respond to a user\\'s query, or if a new, custom process must be designed for this particular query. The multi-step workflow can use the available methods listed below.\\n\\n**Available Methods within a Pipeline:**\\n1. **RAG**: Look up literature and documents from a text database.\\n2. **SCRAPE**: Search platforms like arXiv, bioRxiv, and PubMed for the latest research.\\n3. **DATABASE**: Utilize bioinformatics databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.\\n4. **CODE**: Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.\\n5. **WRITE**: Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.\\n6. **ROUTER**: Determine which step we should proceed to next.\\n\\nUser Query: {input}\\n\\n**Available Pipelines**\\nName: PCNA-pipeline\\tDescription: use this for all queries about PCNA\\n\\n\\nCUSTOM: The option to build a new pipeline\\n\\nThe custom pipeline should be selected if no current pipeline addreses the user\\'s query. If the custom pipeline is selected, please do not attempt to design the pipeline now. We will work to design it at a later point.\\n\\n**Output**:\\nPlease formate your output as follows:\\nPipeline Name: <available pipeline name above or \"CUSTOM\">\\nExplination: <reason for selecting the above pipeline>\\n'",
+                    "input": "What role does PCNA play in the cell cycle and cell cycle imaging?",
+                    "output": "Pipeline Name: PCNA-pipeline\nExplination: The available pipeline \"PCNA-pipeline\" is specifically designed to address queries about PCNA, which aligns with the user's query about the role of PCNA in the cell cycle and cell cycle imaging.",
+                    "parsedOutput": {
+                        "selected pipeline": "PCNA-PIPELINE"
+                    },
+                    "purpose": "determine if a known pipeline can be used or a new one si required"
+                },
+                {
+                    "func": "planner.planner",
+                    "what": "loaded an older pipeline"
+                },
+                {
+                    "func": "planner.planner",
+                    "what": "set the queue and set the queue pointer to 1"
+                }
+            ]
+        },
+        "status": {
+            "databases": "{'RAG': <langchain_community.vectorstores.chroma.Chroma object at 0x14d9e939cb90>}",
+            "current table": {
+                "key": null,
+                "tab": null
+            },
+            "current documents": null,
+            "queue pointer": 1,
+            "queue": {
+                "0": {
+                    "order": 0,
+                    "module": "PLANNER",
+                    "prompt": null,
+                    "description": "This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.",
+                    "output": []
+                },
+                "1": {
+                    "order": 1,
+                    "module": "RAG",
+                    "prompt": "/force RAG Search literature and documents in the text database for the query \"What role does PCNA play in the cell cycle and cell cycle imaging?\" and return a summary of the relevant findings.",
+                    "description": "Search literature and documents in the text database for the query \"What role does PCNA play in the cell cycle and cell cycle imaging?\" and return a summary of the relevant findings.",
+                    "output": []
+                },
+                "2": {
+                    "order": 2,
+                    "module": "CODE",
+                    "prompt": "/force CODE Execute the HWG analysis pipeline to find first-order interactions of PCNA.",
+                    "description": "Execute the HWG analysis pipeline to find first-order interactions of PCNA.",
+                    "output": []
+                },
+                "3": {
+                    "order": 4,
+                    "module": "DATABASE",
+                    "prompt": "/force DATABASE Load the the 'Genes' column from the output file made during step 2 and use search these genes in Enrichr.",
+                    "description": "",
+                    "output": []
+                },
+                "4": {
+                    "order": 6,
+                    "module": "WRITE",
+                    "prompt": "/force WRITE Synthesize and summarize the findings from each of these steps.",
+                    "description": "",
+                    "output": []
+                }
+            }
+        }
+    }
+}

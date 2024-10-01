@@ -1,0 +1,28 @@
+{
+    "RAG": {
+        "num_articles_retrieved": 30,
+        "multiquery": false,
+        "contextual_compression": false,
+        "rerank": false,
+        "similarity": false,
+        "mmr": true,
+    	"cut": true
+    },
+    "CODE": {
+        "path": [
+            "/home/jpic/RAG-DEV/tutorials/biomarkers/scripts/"
+        ]
+    },
+    "DATABASE": {
+        "max_search_terms": 100
+    },
+    "PLANNER": {
+        "path": "/home/jpic/RAG-DEV/tutorials/biomarkers/pipelines-v2"
+    },
+    "WRITE": {
+        "latex-template-path": "/home/jpic/latex-test/templates"
+    },
+    "debug": 1,
+    "log_path": "/nfs/turbo/umms-indikar/shared/projects/BRAD/paper-experiments/biomarker-eval",
+    "image-path-extension": "images"
+}

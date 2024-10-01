@@ -1,5 +1,6 @@
 import re
 import os
+import time
 import numpy as np
 import pandas as pd
 import subprocess
@@ -7,6 +8,8 @@ import difflib
 import matplotlib.pyplot as plt
 
 from langchain import PromptTemplate, LLMChain
+from langchain_community.callbacks import get_openai_callback
+
 from BRAD import log
 from BRAD.promptTemplates import fileChooserTemplate, fieldChooserTemplate
 
@@ -229,19 +232,30 @@ def makeNamesConsistent(chatstatus, files):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
+
+    # Dev. Comments:
+    # -------------------
+    # This function executes a single user prompt with BRAD
+    #
+    # Issues:
+    # - It is not clear why there are 2 for loops that renamd files
+    #
     if len(chatstatus['queue']) != 0:
         log.debugLog('Finding Stage Number of Pipeline', chatstatus=chatstatus)
         log.debugLog(chatstatus['queue'], chatstatus=chatstatus)
-        stageNum = chatstatus['queue pointer'] # [0]['order'] + 1
+        IP = chatstatus['queue pointer'] # [0]['order'] + 1
+        IP = int(IP)
     else:
         return
     renamedFiles = []
+    log.debugLog(f"{IP=}", chatstatus=chatstatus)
+    log.debugLog(f"{type(IP)=}", chatstatus=chatstatus)
     for file in files:
         if file[0] != 'S':
             old_path = os.path.join(chatstatus['output-directory'], file)
             if os.path.isdir(old_path):
                 continue
-            new_path = os.path.join(chatstatus['output-directory'], 'S' + str(stageNum) + '-' + file)
+            new_path = os.path.join(chatstatus['output-directory'], 'S' + str(IP) + '-' + file)
             renamedFiles.append(
                 {
                     'old-name' : old_path,
@@ -249,6 +263,9 @@ def makeNamesConsistent(chatstatus, files):
                 }
             )
             os.rename(old_path, new_path)
+            if 'output' not in chatstatus['queue'][IP].keys():
+                chatstatus['queue'][IP] = []
+            chatstatus['queue'][IP]['output'].append(new_path)
     for file in outputFiles(chatstatus):
         old_path = os.path.join(chatstatus['output-directory'], file)
         new_path = os.path.join(chatstatus['output-directory'], file.replace('/', '').replace('\\', ''))
@@ -260,6 +277,9 @@ def makeNamesConsistent(chatstatus, files):
                 }
             )
             os.rename(old_path, new_path)
+            if 'output' not in chatstatus['queue'][IP].keys():
+                chatstatus['queue'][IP] = []
+            chatstatus['queue'][IP]['output'].append(new_path)
     chatstatus['process']['steps'].append(
         {
             'func'  : 'utils.makeNamesConsistent',
@@ -311,8 +331,19 @@ def loadFromFile(chatstatus):
     chain    = PROMPT | llm
 
     # Call chain
-    chatstatus = log.userOutput(prompt, chatstatus=chatstatus)
-    response = chain.invoke(prompt).content.strip()
+    chatstatus   = log.userOutput(prompt, chatstatus=chatstatus)
+    start_time = time.time()
+    with get_openai_callback() as cb:
+        responseFull = chain.invoke(prompt)
+    response = responseFull.content.strip()
+    responseFull = {'content': responseFull}
+    responseFull['time'] = time.time() - start_time
+    responseFull['call back'] = {
+            "Total Tokens": cb.total_tokens,
+            "Prompt Tokens": cb.prompt_tokens,
+            "Completion Tokens": cb.completion_tokens,
+            "Total Cost (USD)": cb.total_cost
+    }
     
     # Regular expressions to extract file and fields
     file_pattern = r"File:\s*(\S+)"
@@ -333,17 +364,19 @@ def loadFromFile(chatstatus):
     file = availableFilesList[np.argmax(scores)]
     
     log.debugLog('File=' + str(file) + '\n' + 'Fields=' + str(fields), chatstatus=chatstatus)
-    chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
-                                                         prompt       = PROMPT,
-                                                         input        = prompt,
-                                                         output       = response,
-                                                         parsedOutput = {
-                                                             'File'   : file,
-                                                             'Fields' : fields
-                                                         },
-                                                         purpose      = 'Select File'
-                                                        )
-                                        )
+    chatstatus['process']['steps'].append(
+        log.llmCallLog(
+            llm          = llm,
+            prompt       = PROMPT,
+            input        = prompt,
+            output       = responseFull,
+            parsedOutput = {
+                'File'   : file,
+                'Fields' : fields
+            },
+            purpose      = 'Select File'
+        )
+    )
     
     # Determine the delimiter based on the file extension
     delimiter = ',' if not file.endswith('.tsv') else '\t'

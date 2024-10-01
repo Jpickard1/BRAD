@@ -1,0 +1,41 @@
+{
+    "name": "BOT2",
+    "description": "this pipeline investigates distances between source, target, and reprogrammed cells. BOT2 should use this pipeline",
+    "queue": [
+        {
+            "order": 0,
+            "module": "PLANNER",
+            "prompt": null,
+            "description": "This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.",
+            "output": []
+        },
+        {
+            "order": 1,
+            "module": "CODE",
+            "prompt": "/force CODE  1 (CODE)**:\nPrompt: Load the anndata object from the file located at `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad` and extract the embeddings for 'source', 'target', and each recipe from `adata.X`. **Generate a UMAP plot to visualize the embeddings.**\n\n**.",
+            "description": " 1 (CODE)**:\nPrompt: Load the anndata object from the file located at `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad` and extract the embeddings for 'source', 'target', and each recipe from `adata.X`. **Generate a UMAP plot to visualize the embeddings.**\n\n**",
+            "output": []
+        },
+        {
+            "order": 2,
+            "module": "CODE",
+            "prompt": "/force CODE  2 (CODE)**:\nPrompt: Compute the pairwise Euclidean distances between each 'source' embedding and each recipe embedding, using the extracted embeddings from the .h5ad file: `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad` Plot histograms and or other visualizations of the distances.",
+            "description": " 2 (CODE)**:\nPrompt: Compute the pairwise Euclidean distances between each 'source' embedding and each recipe embedding, using the extracted embeddings from ",
+            "output": []
+        },
+        {
+            "order": 4,
+            "module": "CODE",
+            "prompt": "/force CODE  2 (CODE)**:\nPrompt: Compute the pairwise Euclidean distances between each 'target' embedding and each recipe embedding, using the extracted embeddings from the .h5ad file: `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad` Plot histograms and or other visualizations of the distances.",
+            "description": " 3 (CODE)**:\nPrompt: Compute the pairwise Euclidean distances between each 'target' embedding and each recipe embedding, using the extracted embeddings from ",
+            "output": []
+        },
+        {
+            "order": 6,
+            "module": "CODE",
+            "prompt": "/force CODE  4 (CODE)**:\nPrompt: Store the computed distances in a matrix format and create a new ann data object, setting `.var` to be the `.obs` of the source and target cells used in the distance calculations and `.obs` to be the `.obs` of the reprogrammed cells used in the distance calculations. Explicitly save the new ann data object. **Generate a summary plot to visualize the new ann data object.**\n\nThe revised plan removes ",
+            "description": " 4 (CODE)**:\nPrompt: Store the computed distances in a matrix format and create a new ann data object, setting `.var` to be the `.obs` of the source and target cells used in the distance calculations and `.obs` to be the `.obs` of the reprogrammed cells used in the distance calculations. Explicitly save the new ann data object. **Generate a summary plot to visualize the new ann data object.**\n\nThe revised plan removes ",
+            "output": []
+        }
+    ]
+}

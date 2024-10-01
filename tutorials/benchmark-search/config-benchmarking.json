@@ -1,0 +1,16 @@
+{
+    "RAG": {
+        "contextual_compression": false
+    },
+    "CODE": {
+        "path": [
+            "/home/jpic/RAG-DEV/tutorials/scanpy/scripts"
+        ]
+    },
+    "ROUTER": {
+        "build router db": false
+    },
+    "debug": 0,
+    "log_path": "/home/jpic/RAG-DEV/tutorials/benchmark-search/",
+    "image-path-extension": "images"
+}

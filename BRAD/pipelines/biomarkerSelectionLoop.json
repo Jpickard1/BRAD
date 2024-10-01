@@ -1,0 +1,80 @@
+{
+    "name": "Biomarker Selection Loop",
+    "description": "This pipeline performs iterative biomarker selection on time series bulk RNAseq data.",
+    "queue": {
+        "0": {
+            "order": 0,
+            "module": "PLANNER",
+            "prompt": "none",
+            "description": "This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.",
+            "next": [1],
+            "inputs": []
+        },
+        "1": {
+            "order": 1,
+            "module": "CODE",
+            "prompt": "/force CODE Load the 2015 gene expression dataset with gene coordinates.",
+            "description": "This step is used to load the correct dataset to BRADs output directory",
+            "next": [2],
+            "inputs": []
+        },
+        "2": {
+            "order": 2,
+            "module": "CODE",
+            "prompt": "/force CODE build a dynamics model of the 2015 gene coordinate time series data. Please select the appropriate parameters and inputs based on previous iterations. Use {algorithm} with {parameters}",
+            "description": "This step builds models of the time series data that can be used for sensor selection.",
+            "template": ["algorithm", "parameters"],
+            "next": [3],
+            "inputs": []
+        },
+        "3": {
+            "order": 3,
+            "module": "CODE",
+            "prompt": "/force CODE perform biomarker selection on the model of the 2015 dataset. Please select the appropriate parameters and inputs based on previous iterations.",
+            "description": "This step performs biomarker selection via observability analysis.",
+            "template": ["parameters, please fill in"],
+            "next": [4],
+            "inputs": [2]
+        },
+        "4": {
+            "order": 4,
+            "module": "DATABASE",
+            "prompt": "/force DATABASE look up with Enrichr the identified genes from the biomarker selection step and identify relevant pathways and biological processes.",
+            "description": "This step performs gene enrichment on the selected biomarkers.",
+            "next": [5],
+            "inputs": [3]
+        },
+        "5": {
+            "order": 5,
+            "module": "RAG",
+            "prompt": "/force RAG Based on the previouse observability analysis for biomarker selection and the gene enrichment of the biomarkers, please determine the best genes to use as biomarkers or sensors in the estimation of the state of this dynamical system.",
+            "description": "This step uses the RAG and previous stages to decide which biomarkers to use.",
+            "next": [5],
+            "inputs": [3, 4]
+        },
+        "6": {
+            "order": 6,
+            "module": "CODE",
+            "prompt": "/force CODE Evaluate the output of the biomarkers selected in the previous stage to determine how well they observe the system.",
+            "description": "This step performs estimation based on the .",
+            "next": [7],
+            "inputs": [5]
+        },
+        "7": {
+            "order": 7,
+            "module": "ROUTER",
+            "prompt": "/force ROUTER Determine if the biomarker selection can be improved to better estimate the state of our system.",
+            "description": "Decide if the loop should be reexecuted or exit",
+            "next": [2, 8],
+            "inputs": [3, 4, 5, 6]
+        },
+        "8": {
+            "order": 8,
+            "module": "WRITE",
+            "prompt": "/force WRITE Write a report of this pipeline. Please discuss the details of each iteration",
+            "description": "create some output documentation",
+            "inputs": [],
+            "next": [9]
+        }
+    }
+}

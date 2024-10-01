@@ -1,28 +1,48 @@
 {
     "RAG": {
-        "num_articles_retrieved": 3,
+        "num_articles_retrieved": 10,
         "multiquery": false,
         "contextual_compression": false,
         "rerank": false,
-        "similarity": true,
+        "similarity": false,
         "mmr": true,
-	"cut": false
+    	"cut": false
     },
     "SCRAPE": {
         "add_from_scrape": true,
-        "max_search_terms": 2
+        "max_search_terms": 10,
+        "save_search_results": false,
+        "download_search_results": false,
+        "perform_search": false
+    },
+    "CODE": {
+        "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
+        "py-path": "/home/jpic/BRAD-Tools/foundation-models/",
+        "path": [
+            "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
+            "/home/jpic/BRAD-Tools/foundation-models/",
+            "/home/jpic/BRAD-Tools/dynamics-observability",
+            "/home/jpic/BRAD-Tools/"
+        ]
     },
     "DATABASE": {
         "max_search_terms": 100
     },
+    "ROUTER": {
+        "build router db": true
+    },
     "WRITE": {
         "latex-template-path": "/home/jpic/latex-test/templates"
+    },
+    "PLANNER": {
+        "path": "/home/jpic/RAG-DEV/tutorials/biomarkers/pipelines"
     },
     "max_articles_download": 1,
     "acceptable_data_files": [
         ".csv",
         ".tsv"
     ],
+    "recursion_depth": 0,
     "max_enrichr_pval": 0.5,
     "enable_logging": true,
     "num_df_rows_display": 3,
@@ -36,10 +56,9 @@
         "colormap": "viridis",
         "fontsize": null
     },
-    "debug": 1,
-    "log_path": "BRAD",
+    "debug": 0,
+    "log_path": "/home/jpic/BRAD",
     "experiment": false,
-    "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
-    "py-path": "/home/jpic/BRAD-Tools/",
-    "image-path-extension": "images"
+    "image-path-extension": "images",
+    "forgetful": 0
 }

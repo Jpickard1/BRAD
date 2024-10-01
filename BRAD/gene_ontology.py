@@ -7,6 +7,8 @@ import requests
 from requests.exceptions import ConnectionError
 import os
 import copy
+from io import StringIO
+
 from BRAD import log
 
 def geneOntology(chatstatus, goQuery):
@@ -239,7 +241,7 @@ def pubmedPaper(identifier, chatstatus):
             chatstatus = log.userOutput(f"No paper associated with {identifier} found on PubMed", chatstatus=chatstatus)
 
 #Input is a gene-product  
-def annotations(ids, chatstatus):
+def annotations_depricated(ids, chatstatus):
     """
     Downloads annotations for a specified gene product.
 
@@ -275,3 +277,77 @@ def annotations(ids, chatstatus):
         for line in lines:
             # Split each line by tab and write to the TSV file
             writer.writerow(line.split('\t'))
+
+#THIS ONE WORKS BETTER
+def annotations(ids, chatstatus):
+    """
+    Downloads annotations for a specified gene product.
+
+    :param ids: The gene product identifier for which the annotations are to be downloaded.
+    :type ids: str
+
+    :raises requests.HTTPError: If the HTTP request to download the annotations fails.
+
+    :return: None
+
+    """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+    try: 
+        path = os.path.abspath(os.getcwd()) + '/go_annotations'
+        os.makedirs(path, exist_ok = True) 
+        chatstatus = log.userOutput("Directory '%s' created successfully" % path, chatstatus=chatstatus)
+    except OSError as error: 
+        chatstatus = log.userOutput("Directory '%s' can not be created" % path, chatstatus=chatstatus)
+        
+        
+    requestURL = "https://amigo.geneontology.org/amigo/search/annotation?q="+ids
+    real_id = ids[3:]
+    fetch_annotation(real_id, path)
+
+
+def fetch_annotation(id, path):
+    # URL to fetch data from
+    url = 'https://golr-aux.geneontology.io/solr/select?defType=edismax&qt=standard&indent=on&wt=csv&rows=100000&start=0&fl=source%2Cbioentity_internal_id%2Cbioentity_label%2Cqualifier%2Cannotation_class%2Creference%2Cevidence_type%2Cevidence_with%2Caspect%2Cbioentity_name%2Csynonym%2Ctype%2Ctaxon%2Cdate%2Cassigned_by%2Cannotation_extension_class%2Cbioentity_isoform&facet=true&facet.mincount=1&facet.sort=count&json.nl=arrarr&facet.limit=25&hl=true&hl.simple.pre=%3Cem%20class%3D%22hilite%22%3E&hl.snippets=1000&csv.encapsulator=&csv.separator=%09&csv.header=false&csv.mv.separator=%7C&fq=document_category:%22annotation%22&facet.field=aspect&facet.field=taxon_subset_closure_label&facet.field=type&facet.field=evidence_subset_closure_label&facet.field=regulates_closure_label&facet.field=isa_partof_closure_label&facet.field=annotation_class_label&facet.field=qualifier&facet.field=annotation_extension_class_closure_label&facet.field=assigned_by&facet.field=panther_family_label&q=GO%3A'+id+'&qf=annotation_class%5E2&qf=annotation_class_label_searchable%5E1&qf=bioentity%5E2&qf=bioentity_label_searchable%5E1&qf=bioentity_name_searchable%5E1&qf=annotation_extension_class%5E2&qf=annotation_extension_class_label_searchable%5E1&qf=reference_searchable%5E1&qf=panther_family_searchable%5E1&qf=panther_family_label_searchable%5E1&qf=bioentity_isoform%5E1&qf=isa_partof_closure%5E1&qf=isa_partof_closure_label_searchable%5E1'
+    print(url)
+# Fetch data from the URL
+    response = requests.get(url)
+
+# Check if the request was successful
+    if response.status_code == 200:
+    # Read the data into a pandas DataFrame
+        data = StringIO(response.text)
+        df = pd.read_csv(data, sep='\t')  # '\t' is the tab separator as specified in the URL
+    
+    # Define the new column names
+        new_column_names = [
+            'Source',
+            'Bioentity Internal ID',
+            'Bioentity Label',
+            'Qualifier',
+            'Annotation Class',
+            'Reference',
+            'Evidence Type',
+            'Evidence With',
+            'Aspect',
+            'Bioentity Name',
+            'Synonym',
+            'Type',
+            'Taxon',
+            'Date',
+            'Assigned By',
+            'Annotation Extension Class',
+            'Bioentity Isoform'
+        ]
+    
+    # Rename the columns directly
+        df.columns = new_column_names
+    
+    # Save the updated DataFrame to a CSV file
+        df.to_csv(path+'/annotations_go_'+id+'.csv', index=False)
+        print("Data with updated column names has been saved to "+path+"/annotations_go_"+id+".csv")
+    else:
+        print(f"Failed to retrieve data. Status code: {response.status_code}")
+
+
+

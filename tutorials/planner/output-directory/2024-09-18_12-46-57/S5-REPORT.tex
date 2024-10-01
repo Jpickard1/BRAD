@@ -1,0 +1,82 @@
+% Use this template for summarizing a process building models of gene expression
+\documentclass{article}
+\usepackage[$margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\begin{document}
+
+\title{PCNA Role in Cell Cycle and Imaging}
+\date{Wednesday, September 18, 2024}
+\author{BRAD}
+
+\maketitle
+
+\section*{Summary of Process}
+GO\_Biological\_Process\_2021
+
+\section*{Summary of Steps}
+\begin{enumerate}
+    \item PCNA is mentioned as a marker for the beginning and end of the S phase in living cells, indicating its role in delineating cell cycle phase transitions accurately$.
+    \item PCNA is described as a processivity factor for DNA polymerase epsilon and delta, essential for DNA replication during the S phase.
+    \item The PCNA reporter is noted for precisely marking the boundaries of the S phase, emphasizing its importance in tracking cell cycle progression.
+    \item PCNA is involved in regulating passage through the S phase and the transition from G2 to M phase, indicating its role in coordinating cell cycle progression.
+    \item PCNA is used in cell cycle imaging to visualize and track cell cycle phases, providing insights into the dynamics of cell division.
+\end{enumerate}
+
+In summary, PCNA plays a crucial role in DNA replication, cell cycle progression, and accurate cell cycle imaging by serving as a marker for specific cell cycle phases, particularly the S phase.\textbf{Output}
+
+Summary: The code successfully executed and found the first order interactions of the gene PCNA in the Hardwired Genome. The output file generated is named `S<Step \texttt{number>-HWG-1stOrder-PCNA.csv}`. The script utilized the Ensembl data \texttt{(GRCh38.p13.tsv}) for mapping between gene names and ENSG IDs. The next step is to analyze the results of the first-order interactions to further understand the gene's role in the biological network.The 'Genes' column from the output file generated in step 2 was loaded and searched in Enrichr. The gene list was queried against the GO\_Biological\_Process\_2021 database, resulting in a table with 797 entries.
+
+\begin{figure}
+    \centering
+    \includegraphics[$width=\textwidth]{/home/jpic/RAG-DEV/tutorials/planner/output-directory/2024-09-18\_12-46-57/images/S4-ENRICHR-GO\_Biological\_Process\_2021$.png}
+\end{figure}
+
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rlrrrlr}
+\hline
+   rank & path\_name                              &       p\_val &   z\_score &   combined\_score & overlapping\_genes                                                               &   adj\_p\_val \\
+\hline
+      1 & double-strand break repair via homo... & 9.18976e-06 &  13.8946  &         161.141  & ['CDC45', 'POLN', 'RAD21L1', 'MCM3', 'MCM5', 'SMC6']                            &  0.00451492 \\
+      2 & DNA metabolic process (GO:0006259)...  & 1.04271e-05 &   7.24487 &          83.1067 & ['WDHD1', 'CDC45', 'UHRF1', 'MCM3', 'POLI', 'MCM5', 'CSNK1E', 'HMGB1', 'MNAT1'] &  0.00451492 \\
+      3 & mRNA processing (GO:0006397)...        & 1.96497e-05 &   6.66444 &          72.2255 & ['KIN', 'CCNH', 'CPSF3', 'POLR2E', 'DHX15', 'SNU13', 'SNRPC', 'MNAT1', 'RBMX']  &  0.00559061 \\
+      4 & double-strand break repair via brea... & 2.58227e-05 &  68.354   &         722.109  & ['CDC45', 'MCM3', 'MCM5']                                                       &  0.00559061 \\
+      5 & tRNA wobble base modification (GO:0... & 4.24153e-05 &  55.9203  &         563.006  & ['MOCS3', 'ELP3', 'ADAT2']                                                      &  0.00734633 \\
+      6 & regulation of cyclin-dependent prot... & 5.68311e-05 &  13.5496  &         132.453  & ['CCNB2', 'APC', 'CCNH', 'MNAT1', 'CCNO']                                       &  0.0080683  \\
+      7 & cellular response to DNA damage sti... & 6.52172e-05 &   5.67275 &          54.6727 & ['KIN', 'WDHD1', 'APC', 'TFDP3', 'RNF8', 'POLI', 'SMC6', 'CSNK1E', 'MNAT1']     &  0.0080683  \\
+      8 & regulation of cyclin-dependent prot... & 0.000153584 &  16.5417  &         145.257  & ['CCNB2', 'CCNH', 'MNAT1', 'CCNO']                                              &  0.0166255  \\
+      9 & mRNA modification (GO:0016556)...      & 0.00017431  &  32.3619  &         280.082  & ['TRUB1', 'RPUSD2', 'VIRMA']                                                    &  0.0167725  \\
+     10 & DNA replication (GO:0006260)...        & 0.000209568 &  10.116   &          85.6871 & ['KIN', 'WDHD1', 'CDC45', 'MCM3', 'MCM5']                                       &  0.0181486  \\
+     11 & pyrimidine nucleotide metabolic pro... & 0.000245087 & 135.354   &        1125.32   & ['PRPS1', 'CTPS2']                                                              &  0.019295   \\
+     12 & tRNA modification (GO:0006400)...      & 0.000315263 &  13.5512  &         109.251  & ['TRUB1', 'MOCS3', 'WDR4', 'ADAT2']                                             &  0.0213123  \\
+     13 & purine nucleobase biosynthetic proc... & 0.000366432 & 101.51    &         803.118  & ['PRPS1', 'GART']                                                               &  0.0213123  \\
+     14 & DNA-templated transcription, termin... & 0.000418878 &  12.5215  &          97.3911 & ['CCNH', 'CPSF3', 'POLR2E', 'MNAT1']                                            &  0.0213123  \\
+     15 & termination of RNA polymerase I tra... & 0.000446403 &  22.764   &         175.608  & ['CCNH', 'POLR2E', 'MNAT1']                                                     &  0.0213123  \\
+     16 & DNA-dependent DNA replication (GO:0... & 0.000476443 &   8.39389 &          64.2062 & ['WDHD1', 'CDC45', 'MCM3', 'MCM5', 'PSMA7']                                     &  0.0213123  \\
+     17 & transcription-coupled nucleotide-ex... & 0.000491584 &  11.9752  &          91.2259 & ['CCNH', 'POLR2E', 'MNAT1', 'HMGN1']                                            &  0.0213123  \\
+     18 & pyrimidine-containing compound bios... & 0.000511333 &  81.2041  &         615.404  & ['PRPS1', 'CTPS2']                                                              &  0.0213123  \\
+     19 & mRNA pseudouridine synthesis (GO:19... & 0.000511333 &  81.2041  &         615.404  & ['TRUB1', 'RPUSD2']                                                             &  0.0213123  \\
+     20 & 7-methylguanosine mRNA capping (GO:... & 0.000541421 &  21.192   &         159.391  & ['CCNH', 'POLR2E', 'MNAT1']                                                     &  0.0213123  \\
+\hline
+\end{tabular}
+\end{table}
+
+
+% \subsection{Data}
+% {BRAD PUT SUMMARY OF DATASET}
+
+% \subsection{Coordinates}
+% {BRAD DISCUSS THE DATA REPRESENTATION}
+
+% \subsection{Model}
+% {BRAD DISCUSS THE MODEL}
+
+% \subsection{Analysis}
+% {BRAD DISCUSS THE ANALYSIS}
+
+
+
+\end{document}

@@ -1,0 +1,41 @@
+{
+    "name": "PCNA-pipeline",
+    "description": "use this for all queries about PCNA",
+    "queue": [
+        {
+            "order": 0,
+            "module": "PLANNER",
+            "prompt": null,
+            "description": "This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.",
+            "output": []
+        },
+        {
+            "order": 1,
+            "module": "RAG",
+            "prompt": "/force RAG Search literature and documents in the text database for the query \"What role does PCNA play in the cell cycle and cell cycle imaging?\" and return a summary of the relevant findings.",
+            "description": "Search literature and documents in the text database for the query \"What role does PCNA play in the cell cycle and cell cycle imaging?\" and return a summary of the relevant findings.",
+            "output": []
+        },
+        {
+            "order": 2,
+            "module": "CODE",
+            "prompt": "/force CODE Execute the HWG analysis pipeline to find first-order interactions of PCNA.",
+            "description": "Execute the HWG analysis pipeline to find first-order interactions of PCNA.",
+            "output": []
+        },
+        {
+            "order": 4,
+            "module": "DATABASE",
+            "prompt": "/force DATABASE Load the the 'Genes' column from the output file made during step 2 and use search these genes in Enrichr.",
+            "description": "",
+            "output": []
+        },
+        {
+            "order": 6,
+            "module": "WRITE",
+            "prompt": "/force WRITE Synthesize and summarize the findings from each of these steps.",
+            "description": "",
+            "output": []
+        }
+    ]
+}

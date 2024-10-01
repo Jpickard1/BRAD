@@ -27,6 +27,34 @@ Prompt: [Description of action for chatbot to do Step 2, i.e. do A, B, C. Use in
 """
     return template
 
+def plannerTemplateForLibrarySelection():
+    template = """**INSTRUCTIONS:**
+You are planning a bioinformatics analysis pipeline to address a user's query. You must determine if there already exist a predesigned pipeline that will respond to a user's query, or if a new, custom process must be designed for this particular query. The multi-step workflow can use the available methods listed below.
+
+**Available Methods within a Pipeline:**
+1. **RAG**: Look up literature and documents from a text database.
+2. **SCRAPE**: Search platforms like arXiv, bioRxiv, and PubMed for the latest research.
+3. **DATABASE**: Utilize bioinformatics databases such as Gene Ontology and Enrichr to perform gene set enrichment analyses.
+4. **CODE**: Execute bioinformatics pipelines. Utilize prebuilt pipelines or develop new ones as needed.
+5. **WRITE**: Synthesize and summarize information. This can include summarizing database searches, code pipeline results, or creating a final report to encapsulate the entire analysis.
+6. **ROUTER**: Determine which step we should proceed to next.
+
+User Query: {{input}}
+
+**Available Pipelines**
+{pipeline_list}
+
+CUSTOM: The option to build a new pipeline
+
+The custom pipeline should be selected if no current pipeline addreses the user's query. If the custom pipeline is selected, please do not attempt to design the pipeline now. We will work to design it at a later point.
+
+**Output**:
+Please formate your output as follows:
+Pipeline Name: <available pipeline name above or "CUSTOM">
+Explination: <reason for selecting the above pipeline>
+"""
+    return template
+    
 def plannerEditingTemplate():
     template = """Based on the most recently proposed Current Plan and the user's new requirements and requested changes, create a revised plan.
 
@@ -57,11 +85,28 @@ def rerouteTemplate():
 
 History: {chathistory}
 
-Routing Decisions: {{user_query}}
+**Routing Decisions**
+You are currently at step {step_number}. Based on the plan and following instructions, determine which step to proceed to.
+{{user_query}}
 
 **OUTPUT**
 Next Step=<step number>
 REASONING=<why did you choose that step next>
+"""
+    return template
+
+def scrapeTemplate():
+    template = """Current conversation:\n{{history}}
+
+Query:{{input}}
+
+From the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose at least 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Do not include general purpose search terms such as "recent advances", "novel", "current research", "latest trends", "theoretical foundations", or other general query terms. Also, do not use very general fields as serch terms such as: "dynamical systems", "machine learning", or "single cell". It is correct to use these terms with modifications to be more specific, so that "biological dynamical systems", "machine learning for genomics", or "single cell clustering" would be good terms to search.
+
+The following search terms have been previously uses and identical terms should be avoided in this search: {search_terms}
+
+**Format your output as follows. Do not include any addition information:**
+Database: <ARXIV, PUBMED, or BIORXIV>
+Search Terms: <improved search terms>
 """
     return template
 
@@ -122,6 +167,10 @@ Note that chatstatus['output-directory'] is ALWAYS passed as the first argument.
 
 Query:{{input}}
 
+**PYTHON SCRIPT**
+Please use the correct script name and path. You must run this python script:
+{scriptName}
+
 **INSTRUCTIONS**
 1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
 2. Using the `subprocess` module, provide the one line of code to execute the desired Python script with the given arguments. Assume the necessary modules (`subprocess` and `sys`) are already imported.
@@ -176,6 +225,10 @@ The following files were previously created by BRAD and could be used as input t
 {files}
 
 Query:{{input}}
+
+**PYTHON SCRIPT**
+Please use the correct script name and path. You must run this python script:
+{scriptName}
 
 **INSTRUCTIONS**
 1. Given the user query and the documentation, identify each of the arguments found in the user's query that should be passed to the Python script.
@@ -408,7 +461,8 @@ Chatbot: {output}
 Additional information:
 A table with {numrows} was downloaded. The table will be below your summary in the report.
 
-Please use this exact title output formatting:
+Format your exactly as follows. Do not include additional text/characters.
+**Output**
 summary = <put paragraph here>
 """
     return template
@@ -418,7 +472,8 @@ def summarizeRAGTemplate():
 
 Current Text: {output}
 
-Format your output as:
+Format your exactly as follows. Do not include additional text/characters.
+**Output**
 Latex Version=<put paragraphs here>
 """
     return template
@@ -426,3 +481,24 @@ Latex Version=<put paragraphs here>
 def historyChatTemplate():
     template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
     return template
+
+def getDefaultContext():
+    """
+    Returns the default context string for the chatbot, which provides background information and capabilities.
+
+    :param None: This function does not take any parameters.
+
+    :raises None: This function does not raise any specific errors.
+
+    :return: A string containing the default context for the chatbot.
+    :rtype: str
+    """
+    llmContext = """Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,
+bioinformatics, genetics, and data science. You can be connected to a text database to augment your answers
+based on the literature with Retrieval Augmented Generation, or you can use several additional modules including
+searching the web for new articles, searching Gene Ontology or Enrichr bioinformatics databases, running snakemake
+and matlab pipelines, or analyzing your own codes. Please answer the following questions to the best of your
+ability.
+
+Prompt: """
+    return llmContext

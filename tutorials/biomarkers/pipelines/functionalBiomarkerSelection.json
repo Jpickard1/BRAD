@@ -1,0 +1,64 @@
+{
+    "name": "Functional Biomarker Selection",
+    "description": "Iteratitions are performed to identify functional biomarkers from time-series bulk RNAseq data.",
+    "queue": {
+        "0": {
+            "order": 0,
+            "module": "PLANNER",
+            "prompt": "none",
+            "description": "This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.",
+            "next": [1],
+            "inputs": []
+        },
+        "1": {
+            "order": 1,
+            "module": "CODE",
+            "prompt": "/force CODE Load the 2015 gene expression dataset with gene coordinates.",
+            "description": "This step is used to load the correct dataset to BRADs output directory",
+            "next": [2],
+            "inputs": []
+        },
+        "2": {
+            "order": 2,
+            "module": "CODE",
+            "prompt": "/force CODE build a dynamics model of the 2015 gene coordinate time series data. Please select the appropriate parameters and inputs based on previous iterations",
+            "description": "This step builds models of the time series data that can be used for sensor selection.",
+            "template": [],
+            "next": [3],
+            "inputs": []
+        },
+        "3": {
+            "order": 3,
+            "module": "CODE",
+            "prompt": "/force CODE perform biomarker selection on the model of the 2015 dataset. Please select the appropriate parameters and inputs based on previous iterations.",
+            "description": "This step performs biomarker selection via observability analysis.",
+            "template": [],
+            "next": [4],
+            "inputs": [2]
+        },
+        "4": {
+            "order": 4,
+            "module": "CODE",
+            "prompt": "/force CODE Evaluate the output of the biomarkers selected in the previous stage to determine how well they observe the system. Determine how many biomarkers should be used based on previous iterations.",
+            "description": "This step performs estimation based on the .",
+            "next": [5],
+            "inputs": [5]
+        },
+        "5": {
+            "order": 5,
+            "module": "ROUTER",
+            "prompt": "/force ROUTER Repeate this loop of building and selecting biomarkers. Determine if the biomarker selection can be improved to better estimate the state of our system. You can proceed by either going to step 2 to change the model of the dynamics (i.e. change the DMD parameters), by going to step 3 to change the biomarker selection codes, or by returning to step 4 to change how many biomarker/sensors are used in evaluation. Also, you can proceed to step 6 to exit the loop once you have completed 6 iterations.",
+            "description": "Decide if the loop should be reexecuted or exit",
+            "next": [2, 8],
+            "inputs": [2,3,4,6]
+        },
+        "6": {
+            "order": 8,
+            "module": "WRITE",
+            "prompt": "/force WRITE Write a report of this pipeline. Please discuss the details of each iteration",
+            "description": "create some output documentation",
+            "inputs": [],
+            "next": [7]
+        }
+    }
+}

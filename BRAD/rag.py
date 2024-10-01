@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import chromadb
+import time
 import subprocess
 import os
 from langchain.document_loaders import DirectoryLoader
@@ -29,6 +30,7 @@ from langchain_community.embeddings.sentence_transformer import (
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain_text_splitters import CharacterTextSplitter
 from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain_community.callbacks import get_openai_callback
 
 from sentence_transformers import SentenceTransformer, util
 
@@ -39,7 +41,7 @@ transformers.tokenization_utils.logger.setLevel(logging.ERROR)
 transformers.configuration_utils.logger.setLevel(logging.ERROR)
 transformers.modeling_utils.logger.setLevel(logging.ERROR)
 
-from BRAD.promptTemplates import historyChatTemplate, summarizeDocumentTemplate
+from BRAD.promptTemplates import historyChatTemplate, summarizeDocumentTemplate, getDefaultContext
 
 
 #Extraction
@@ -54,6 +56,10 @@ import BRAD.gene_ontology as gonto
 from BRAD.gene_ontology import geneOntology
 from BRAD import utils
 from BRAD import log
+
+# History:
+#  2024-09-22: Changing the chains to return information regarding API usage
+#              such as tokens, time, etc.
 
 def queryDocs(chatstatus):
     """
@@ -79,6 +85,9 @@ def queryDocs(chatstatus):
     # llm calling
     #
     # History:
+    #  2024-07-21: Added a new feature to change the doc.page_content to include
+    #              the source
+
     # Issues:
 
     llm      = chatstatus['llm']              # get the llm
@@ -99,11 +108,31 @@ def queryDocs(chatstatus):
         if chatstatus['config']['RAG']['contextual_compression']:
             docs = contextualCompression(docs, chatstatus)
 
+        for i, doc in enumerate(docs):
+            source = doc.metadata.get('source')
+            short_source = os.path.basename(str(source))
+            pageContent = doc.page_content
+            addingInRefs = "Source: " + short_source + "\nContent: " + pageContent
+            doc.page_content = addingInRefs
+            docs[i] = doc
+        
         # build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
 
         # invoke the chain
-        response = chain({"input_documents": docs, "question": prompt})
+        start_time = time.time()
+        with get_openai_callback() as cb:
+            response = chain({"input_documents": docs, "question": prompt})
+        response['metadata'] = {
+            'content' : response,
+            'time' : time.time() - start_time,
+            'call back': {
+                "Total Tokens": cb.total_tokens,
+                "Prompt Tokens": cb.prompt_tokens,
+                "Completion Tokens": cb.completion_tokens,
+                "Total Cost (USD)": cb.total_cost
+            }
+        }
 
         # display output
         chatstatus = log.userOutput(response['output_text'], chatstatus=chatstatus)
@@ -122,14 +151,16 @@ def queryDocs(chatstatus):
         # format outputs for logging
         response['input_documents'] = getInputDocumentJSONs(response['input_documents'])
         chatstatus['output'], ragResponse = response['output_text'], response
-        chatstatus['process']['steps'].append(log.llmCallLog(llm=llm,
-                                                             prompt=str(chain),
-                                                             input=prompt,
-                                                             output=response,
-                                                             parsedOutput=chatstatus['output'],
-                                                             purpose='RAG'
-                                                            )
-                                             )
+        chatstatus['process']['steps'].append(
+            log.llmCallLog(
+                llm=llm,
+                prompt=str(chain),
+                input=prompt,
+                output=response,
+                parsedOutput=chatstatus['output'],
+                purpose='RAG'
+            )
+        )
     else:
         template = historyChatTemplate()
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
@@ -139,17 +170,36 @@ def queryDocs(chatstatus):
                                          memory  = memory,
                                         )
         prompt = getDefaultContext() + prompt
-        response = conversation.predict(input=prompt)
-        chatstatus = log.userOutput(response, chatstatus=chatstatus) 
+
+        # Invoke LLM tracking its usage
+        start_time = time.time()
+        with get_openai_callback() as cb:
+            response = conversation.predict(input=prompt)        
+        responseDetails = {
+            'content' : response,
+            'time' : time.time() - start_time,
+            'call back': {
+                "Total Tokens": cb.total_tokens,
+                "Prompt Tokens": cb.prompt_tokens,
+                "Completion Tokens": cb.completion_tokens,
+                "Total Cost (USD)": cb.total_cost
+            }
+        }
+        # Log the LLM response
+        chatstatus['process']['steps'].append(
+            log.llmCallLog(
+                llm=llm,
+                prompt=PROMPT,
+                input=prompt,
+                output=responseDetails,
+                parsedOutput=response,
+                purpose='chat without RAG'
+            )
+        )
+
+        # Display output to the user
+        chatstatus = log.userOutput(response, chatstatus=chatstatus)
         chatstatus['output'] = response
-        chatstatus['process']['steps'].append(log.llmCallLog(llm=llm,
-                                                             prompt=PROMPT,
-                                                             input=prompt,
-                                                             output=response,
-                                                             parsedOutput=chatstatus['output'],
-                                                             purpose='chat without RAG'
-                                                            )
-                                             )
     return chatstatus
 
 
@@ -211,7 +261,9 @@ def retrieval(chatstatus):
     vectordb = chatstatus['databases']['RAG'] # get the vector database
     memory   = chatstatus['memory']           # get the memory of the model
 
-    if chatstatus['config']['RAG']['cut']:
+    start_time = time.time()
+    
+    if chatstatus['config']['RAG']['cut']:    # Can we remove this code?
         vectordb = cut(chatstatus, vectordb)
 
     if not chatstatus['config']['RAG']['multiquery']:
@@ -239,6 +291,7 @@ def retrieval(chatstatus):
         'mmr' : chatstatus['config']['RAG']['mmr'],
         'num-docs' : len(docs),
         'docs' : str(docs),
+        'time' : time.time() - start_time
     })
     return chatstatus, docs
 
@@ -270,8 +323,34 @@ def contextualCompression(docs, chatstatus):
     for i, doc in enumerate(docs):
         pageContent = doc.page_content
         prompt = PROMPT.format(text=pageContent, user_query=chatstatus['prompt'])
-        res = chatstatus['llm'].invoke(input=prompt)
+
+        # Use LLM
+        start_time = time.time()
+        with get_openai_callback() as cb:
+            res = chatstatus['llm'].invoke(input=prompt)
+        res.response_metadata['time'] = time.time() - start_time
+        res.response_metadata['call back'] = {
+            "Total Tokens": cb.total_tokens,
+            "Prompt Tokens": cb.prompt_tokens,
+            "Completion Tokens": cb.completion_tokens,
+            "Total Cost (USD)": cb.total_cost
+        }
+
         summary = res.content.strip()
+
+        # Log LLM
+        chatstatus['process']['steps'].append(
+            log.llmCallLog(
+                llm             = chatstatus['llm'],       # what LLM?
+                prompt          = PROMPT,                  # what prompt template?
+                input           = prompt,                  # what specific input to the llm or template?
+                output          = res,                     # what is the full llm output?
+                parsedOutput    = summary,                 # what is the useful output?
+                purpose         = 'contextual compression' # why did you use an llm
+            )
+        )
+        
+        # Display debug information
         if chatstatus['config']['debug']:
             log.debugLog('============', chatstatus=chatstatus) 
             log.debugLog(pageContent, chatstatus=chatstatus) 
@@ -366,27 +445,6 @@ def get_wordnet_pos(word):
                 "R": wordnet.ADV}
     return tag_dict.get(tag, wordnet.NOUN)
 
-
-def getDefaultContext():
-    """
-    Returns the default context string for the chatbot, which provides background information and capabilities.
-
-    :param None: This function does not take any parameters.
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A string containing the default context for the chatbot.
-    :rtype: str
-    """
-    llmContext = """Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,
-bioinformatics, genetics, and data science. You can be connected to a text database to augment your answers
-based on the literature with Retrieval Augmented Generation, or you can use several additional modules including
-searching the web for new articles, searching Gene Ontology or Enrichr bioinformatics databases, running snakemake
-and matlab pipelines, or analyzing your own codes. Please answer the following questions to the best of your
-ability.
-
-Prompt: """
-    return llmContext
 
 def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunck_overlap=[200], v=False):
     """

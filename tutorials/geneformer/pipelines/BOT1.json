@@ -1,0 +1,48 @@
+{
+    "name": "BOT1",
+    "description": "this plan is for basic visualization and summary of single cell data from the Geneformer reprogramming experiment. The data can be loaded in from ann data objects",
+    "queue": [
+        {
+            "order": 0,
+            "module": "PLANNER",
+            "prompt": null,
+            "description": "This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.",
+            "output": []
+        },
+        {
+            "order": 1,
+            "module": "CODE",
+            "prompt": "/force CODE  1 (CODE)**:\nPrompt: Load the anndata object from the file located at `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad` and create a basic summary of the data.\n\n**",
+            "description": " 1 (CODE)**:\nPrompt: Load the anndata object from the file located at `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad` and create a basic summary of the data.\n\n**",
+            "output": []
+        },
+        {
+            "order": 2,
+            "module": "CODE",
+            "prompt": "/force CODE  2 (CODE)**:\nPrompt: Using the loaded anndata object from `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad`, create UMAP plots of the data in 2D and 3D space and color the visualizations based on the 'recipe' column to distinguish between 'source', 'target', and different TF recipes.\n\n**",
+            "description": " 2 (CODE)**:\nPrompt: Using the loaded anndata object from `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad`, create UMAP plots of the data in 2D and 3D space and color the visualizations based on the 'recipe' column to distinguish between 'source', 'target', and different TF recipes.\n\n**",
+            "output": []
+        },
+        {
+            "order": 3,
+            "module": "CODE",
+            "prompt": "/force CODE  3 (CODE)**:\nPrompt: Using the loaded anndata object from `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad`, create t-SNE plots of the data in 2D and 3D space and color the visualizations based on the 'recipe' column to distinguish between 'source', 'target', and different TF recipes.\n\n**",
+            "description": " 3 (CODE)**:\nPrompt: Using the loaded anndata object from `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad`, create t-SNE plots of the data in 2D and 3D space and color the visualizations based on the 'recipe' column to distinguish between 'source', 'target', and different TF recipes.\n\n**",
+            "output": []
+        },
+        {
+            "order": 4,
+            "module": "CODE",
+            "prompt": "/force CODE  4 (CODE)**:\nPrompt: Using the loaded anndata object from `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad`, generate separate UMAP visualizations highlighting the presence of each TF (REL, STAT5A, FOS, ETV6, MEF2C, RUNX3, FOSB, GATA2, IKZF1, GFI1B) by coloring the points based on the True/False values in the respective columns.\n\n**",
+            "description": " 4 (CODE)**:\nPrompt: Using the loaded anndata object from `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad`, generate separate UMAP visualizations highlighting the presence of each TF (REL, STAT5A, FOS, ETV6, MEF2C, RUNX3, FOSB, GATA2, IKZF1, GFI1B) by coloring the points based on the True/False values in the respective columns.\n\n**",
+            "output": []
+        },
+        {
+            "order": 5,
+            "module": "CODE",
+            "prompt": "/force CODE  5 (CODE)**:\nPrompt: Using the loaded anndata object from `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad`, generate separate t-SNE visualizations highlighting the presence of each TF (REL, STAT5A, FOS, ETV6, MEF2C, RUNX3, FOSB, GATA2, IKZF1, GFI1B) by coloring the points based on the True/False values in the respective columns.\n\nThe removed ",
+            "description": " 5 (CODE)**:\nPrompt: Using the loaded anndata object from `/nfs/turbo/umms-indikar/shared/projects/geneformer/fib15k/jpic/HSC-reprogrammed-DE.h5ad`, generate separate t-SNE visualizations highlighting the presence of each TF (REL, STAT5A, FOS, ETV6, MEF2C, RUNX3, FOSB, GATA2, IKZF1, GFI1B) by coloring the points based on the True/False values in the respective columns.\n\nThe removed ",
+            "output": []
+        }
+    ]
+}
