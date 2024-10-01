@@ -502,50 +502,6 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
 
 
 
-
-#To get a single document
-def restrictedDB(chatstatus, vectordb, path):
-    """
-    Create a restricted database (newdb) based on a given prompt from chatstatus.
-
-    Parameters:
-    - chatstatus (dict): A dictionary containing information about the chat status,
-      including 'prompt' and 'output-directory'.
-    - vectordb: The vector database from which documents are retrieved.
-    - path (str): The path to the directory containing source documents.
-
-    Returns:
-    - best_score (float): The cosine similarity score of the best matching document.
-    - newdb (Chroma): A Chroma database object initialized with documents retrieved
-      based on the best matching document's title.
-    """
-    prompt = chatstatus['prompt']
-    embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')
-    db_name = "new_DB_cosine_cSize_%d_cOver_%d" % (700, 200)
-    
-    # Retrieve all source document titles and corresponding IDs
-    title_list, real_id_list = get_all_sources(vectordb, prompt, path)
-    
-    # Find the best matching document based on the prompt
-    best_title, best_score = best_match(prompt, title_list)
-    
-    # Retrieve titles and IDs based on the best matching document
-    title_list, real_id_list = get_all_sources(vectordb, best_title, path)
-    
-    # Retrieve texts of the best matching documents from vectordb
-    text = vectordb.get(ids=real_id_list)['documents']
-    
-    # Define the directory path for the new restricted database
-    new_path = chatstatus['output-directory'] + '/restricted'
-    
-    # Create a new Chroma database (newdb) and add texts to it
-    newdb = Chroma(persist_directory=new_path, embedding_function=embeddings_model, collection_name=db_name)
-    newdb.add_texts(text)
-    
-    return best_score, newdb
-
-
-
 def best_match(prompt, title_list):
     """
     Find the best matching title from the list based on cosine similarity with a given prompt.
