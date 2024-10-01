@@ -1,3 +1,106 @@
+"""
+This module provides logging utilities for tracking and managing the state of chat processes 
+and interactions within the BRAD framework. It includes functions for logging chat details, 
+language model (LLM) calls, file loads, debug information, and user-facing outputs. 
+The goal of this module is to standardize how logging and debugging information is handled 
+and ensure that the chat processes are consistently tracked.
+
+Functions:
+----------
+1. logger(chatlog, chatstatus, chatname, elapsed_time=None):
+    Logs the current status of the chat session, including input prompts, outputs, and the process details.
+    Serializes non-JSON serializable data and writes the log to a specified file.
+
+2. llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, parsedOutput=None, purpose=None):
+    Creates a log entry for a language model (LLM) call, capturing details such as the prompt, output, and purpose.
+
+3. loadFileLog(file=None, delimiter=None):
+    Creates a log entry for loading a file, logging details like the file name and delimiter used.
+
+4. debugLog(output, chatstatus=None, display=None):
+    Standardizes the logging of debugging information. Logs details based on the chat status or displays them directly.
+
+5. errorLog(errorMessage, info=None, chatstatus=None):
+    Logs error messages along with optional additional information and updates the chat process steps.
+
+6. userOutput(output, chatstatus=None):
+    Standardizes the output printed to the user and logs it into the chat status.
+
+7. is_json_serializable(value):
+    Checks if a given value can be serialized to JSON. Useful for ensuring that chat logs are compatible with JSON format.
+
+Usage:
+------
+The module is intended for logging various aspects of the BRAD chatbot's operations. It tracks interactions,
+such as user inputs, LLM outputs, errors, and file loading events. The functions support serialization of 
+non-JSON data and are designed to facilitate debugging and logging in a clear, consistent manner.
+
+Example:
+--------
+To log a chat process:
+>>> chatlog, chatstatus = logger(chatlog, chatstatus, 'chat_log.json')
+
+To log an LLM call:
+>>> llm_log = llmCallLog(llm=llm, prompt='Generate text', output='Text generated')
+
+To handle debug logs:
+>>> debugLog("This is a debug message", chatstatus)
+
+Log Format:
+-----------
+```
+[
+    0: {
+        'TIME'   : <time stamp>,
+        'PROMPT' : <input from the user or preplanned prompt>,
+        'OUTPUT' : <output displayed to the user>,
+        'STATUS' : {
+                'LLM' : <primary large language model being used>,
+                'Databases' : {
+                        'RAG' : <primary data base>,
+                        <other databases>: <more databases can be added>,
+                        ...
+                    },
+                'config' : {
+                        'debug' : True,
+                        'output-directory' : <path to output directory>,
+                        ...
+                    }
+            },
+        'PROCESS' : {
+                'MODULE' : <name of module i.e. RAG, DATABASE, CODER, etc.>
+                'STEPS' [
+                        # information for a particular step involved in executing the module. Some examples
+                        {
+                           'LLM' : <language model>,
+                           'prompt template' : <prompt template>,
+                           'model input' : <input to model>,
+                           'model output' : <output of model>
+                        },
+                        {
+                           'func' : 'rag.retreival',
+                           'num articles retrieved' : 10,
+                           'multiquery' : True,
+                           'compression' : True,
+                        }
+                    ]
+            },
+        'PLANNED' : [
+                <Next prompt in queue>,
+                ...
+            ]
+    },
+1 : {
+        'TIME'   : <time stamp>,
+        'PROMPT' : <second prompt>,
+        ...
+    },
+...
+]
+```
+
+"""
+
 import json
 import logging
 import time
