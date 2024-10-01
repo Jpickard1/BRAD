@@ -1,21 +1,22 @@
 """
-Module responsible for executing scripts within the BRAD framework.
+The SOFTWARE module handles the execution of scripts within the BRAD framework.
 
-This module facilitates the discovery, selection, and execution of Python and MATLAB scripts based on user prompts
-and configuration settings.
+This module enables the discovery, selection, and execution of both Python and MATLAB scripts, 
+based on user prompts and configuration settings.
 
-Requirements:
+Key Requirements:
 
-1. Python and MATLAB scripts are located at specified paths configured in `config/config.json`.
+1. Python scripts must be located at the paths specified in the configuration settings.
 
-2. Scripts are executed with the first argument denoting the output directory for saving any generated files.
+2. Scripts are executed with the first argument specifying the output directory where any 
+   generated files will be saved.
 
-3. Script files within the Python and MATLAB paths contain sufficient documentation, including:
+3. Each script file must include appropriate documentation, which should contain:
 
-   - A concise one-line summary at the beginning of the docstring (used by the llm for script selection).
+   - A brief one-line summary at the beginning of the docstring (used by the LLM for selecting scripts).
 
-   - Comprehensive descriptions detailing arguments, inputs, purposes, and usage examples (used by the llm for execution).
-
+   - Detailed descriptions that outline the arguments, inputs, purpose, and usage examples 
+     (used by the LLM for proper execution).
 """
 
 import os
