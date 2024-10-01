@@ -240,43 +240,6 @@ def pubmedPaper(identifier, chatstatus):
         else:
             chatstatus = log.userOutput(f"No paper associated with {identifier} found on PubMed", chatstatus=chatstatus)
 
-#Input is a gene-product  
-def annotations_depricated(ids, chatstatus):
-    """
-    Downloads annotations for a specified gene product.
-
-    :param ids: The gene product identifier for which the annotations are to be downloaded.
-    :type ids: str
-
-    :raises requests.HTTPError: If the HTTP request to download the annotations fails.
-
-    :return: None
-
-    """
-    # Auth: Marc Choi
-    #       machoi@umich.edu
-    try: 
-        path = os.path.abspath(os.getcwd()) + '/go_annotations'
-        os.makedirs(path, exist_ok = True) 
-        chatstatus = log.userOutput("Directory '%s' created successfully" % path, chatstatus=chatstatus)
-    except OSError as error: 
-        chatstatus = log.userOutput("Directory '%s' can not be created" % path, chatstatus=chatstatus)
-        
-    requestURL = "https://www.ebi.ac.uk/QuickGO/services/annotation/downloadSearch?geneProductId="+ids
-
-    r = requests.get(requestURL, headers={ "Accept" : "text/tsv"})
-
-    if not r.ok:
-        r.raise_for_status()
-        sys.exit()
-    responseBody = r.text
-    lines = responseBody.strip().split('\n')
-    with open(os.path.join(path, ids + '.tsv'), 'w', newline='') as file:
-        writer = csv.writer(file, delimiter='\t')
-    
-        for line in lines:
-            # Split each line by tab and write to the TSV file
-            writer.writerow(line.split('\t'))
 
 #THIS ONE WORKS BETTER
 def annotations(ids, chatstatus):
