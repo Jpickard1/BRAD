@@ -1,3 +1,28 @@
+"""
+Module: utils
+
+This module provides a collection of utility functions that facilitate common tasks for large language models (LLMs) 
+across various modules. These functions are designed to simplify file management, data handling, and directory 
+operations, enabling LLMs to perform essential tasks efficiently.
+
+Key Functions:
+--------------
+1. save(data, path): Saves the provided data to a specified file path.
+2. savefig(fig, path): Saves a given figure to a specified file path in a suitable format.
+3. ensure_directory_exists(directory): Checks if a directory exists; if not, it creates the directory.
+4. pdfDownloadPath(base_path): Generates a standard download path for PDF files based on the base path.
+5. getOutputFiles(directory): Retrieves a list of output files from the specified directory.
+6. makeNamesConsistent(names): Normalizes and standardizes a list of names for consistency.
+7. loadFile(path): Loads data from a specified file path and returns the content.
+8. fileFieldSelector(data, field): Selects specific fields from a data structure based on the provided field name.
+9. (additional utility functions as needed...)
+
+Usage:
+------
+These utility functions are intended to be imported and used in various modules that require basic functionalities 
+related to file and data handling. By centralizing these common tasks, the codebase remains organized and efficient.
+"""
+
 import re
 import os
 import time
