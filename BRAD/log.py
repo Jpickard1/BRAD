@@ -158,6 +158,12 @@ def logger(chatlog, chatstatus, chatname, elapsed_time=None):
     return chatlog, chatstatus
 
 def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, parsedOutput=None, purpose=None):
+    """
+    This function logs the information for each LLM call.
+    
+    `Note`: Working to make this work better with the OpenAI callback manager.
+
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
@@ -173,6 +179,9 @@ def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, pars
     return llmLog
 
 def loadFileLog(file=None, delimiter=None):
+    """
+    This function logs the information for each file loaded.
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 19, 2024
