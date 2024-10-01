@@ -56,7 +56,7 @@
         "colormap": "viridis",
         "fontsize": null
     },
-    "debug": 1,
+    "debug": 0,
     "log_path": "/home/jpic/BRAD",
     "experiment": false,
     "image-path-extension": "images",
