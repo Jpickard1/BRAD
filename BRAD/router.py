@@ -1,5 +1,5 @@
 """
-Module for managing routes using the semantic_router library. This module includes functions
+Module for managing routes using the semantic_router library and for the planner. This module includes functions
 for reading and writing prompts, configuring routes, and building router layers with predefined routes.
 """
 import os
@@ -277,23 +277,3 @@ def buildRoutes(prompt):
     filepath = paths[route]
     add_sentence(filepath, rebuiltPrompt)
 
-def getTableRouter():
-    """
-    .. warning:: We may be removing this soon. I don't think it is used.
-
-    Returns a router layer configured specifically for handling table-related tasks.
-
-    :param None: This function does not take any parameters.
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A router layer configured with a route for handling data-related tasks.
-    :rtype: RouteLayer
-    """
-    # Auth: Joshua Pickard
-    #       jpic@umich.edu
-    # Date: May 18, 2024
-    encoder = HuggingFaceEncoder()
-    routes = [routeData]
-    router = RouteLayer(encoder=encoder, routes=routes)    
-    return router
