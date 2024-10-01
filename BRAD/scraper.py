@@ -1,3 +1,22 @@
+"""
+Module: webScraping
+
+This module provides functionality for performing web scraping on various scientific databases based on the current chat status. 
+It facilitates the extraction of relevant articles and data from sources such as arXiv, bioRxiv, and PubMed. The scraping 
+process is initiated based on user-defined prompts, and the results are integrated back into the chat system.
+
+Main Function:
+---------------
+- webScraping(chatstatus): Executes web scraping based on the provided chat status, utilizing specific functions tailored 
+  for different sources. It handles the identification of databases, manages conversation with the language model, logs 
+  the process, and updates the chat status with the scraped data.
+
+Dependencies:
+-------------
+- The module relies on various utility functions and configurations defined in the chat system, including logging 
+  mechanisms and specific scraping functions for each source (arXiv, bioRxiv, PubMed).
+"""
+
 import subprocess
 from langchain.document_loaders import DirectoryLoader
 from langchain.document_loaders import UnstructuredPDFLoader
@@ -85,15 +104,17 @@ def webScraping(chatstatus):
             llmType = str(llm.model_name)
         except:
             llmType = str(llm)
-    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llmType,
-                                                         prompt          = PROMPT,
-                                                         memory          = memory,
-                                                         input           = query,
-                                                         output          = response,
-                                                         parsedOutput    = llmResponse,
-                                                         purpose         = 'identify how to web scrape'
-                                                        )
-                                         )
+    chatstatus['process']['steps'].append(
+        log.llmCallLog(
+            llm          = llmType,
+            prompt       = PROMPT,
+            memory       = memory,
+            input        = query,
+            output       = response,
+            parsedOutput = llmResponse,
+            purpose      = 'identify how to web scrape'
+        )
+    )
     llmKey, searchTerms = llmResponse['database'].upper(), llmResponse['search_terms']
 
     # Determine the target source
