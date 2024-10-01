@@ -2,12 +2,21 @@
 .csv
 .png
 .mat
+.out
+.pdf
+.tsv
 *.csv
 *.png
 *.mat
+*.out
+*.pdf
+*.tsv
 */*.csv
 */*.png
 */*.mat
+*/*.out
+*/*.pdf
+*/*.tsv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
