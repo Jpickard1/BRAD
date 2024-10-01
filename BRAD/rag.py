@@ -1,3 +1,33 @@
+"""
+Retrieval Augmented Generation Module
+
+This module implements functions to facilitate Retrieval Augmented Generation (RAG), which combines the strengths of document retrieval and language model generation to enhance the user's experience with rich, contextually relevant responses.
+
+Key Functions:
+---------------
+1. queryDocs(chatstatus):
+   Queries documents based on a user prompt and updates the chat status with the results. This function handles the retrieval of relevant documents from a vector database, applies contextual compression, reranks the documents if required, and invokes the language model to generate a response based on the retrieved documents. It also logs the interaction and displays the sources of the information.
+
+   Parameters:
+   - chatstatus (dict): A dictionary containing the current chat status, including user prompt, language model instance, vector database, and model memory.
+
+   Returns:
+   - dict: The updated chat status dictionary with the query results and sources.
+
+   Raises:
+   - KeyError: If required keys are not found in the chatstatus dictionary.
+   - AttributeError: If methods on the vector database or language model objects are called incorrectly.
+
+2. retrieval(chatstatus):
+   Performs the initial document retrieval from a vectorized database as part of the RAG pipeline. This function supports various retrieval methods, including similarity search and max marginal relevance (MMR) search, based on the user's configuration settings.
+
+   Parameters:
+   - chatstatus (dict): A dictionary containing the language model, user prompt, vector database, and configuration settings for the RAG pipeline.
+
+   Returns:
+   - tuple: A tuple containing the updated chat status and a list of retrieved documents.
+"""
+
 import pandas as pd
 import numpy as np
 import chromadb
