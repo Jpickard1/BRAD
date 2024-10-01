@@ -1,3 +1,50 @@
+"""
+Planner Module
+
+This module provides functions for generating and managing sequences of steps (pipelines) 
+to be executed by other BRAD modules. The core function, `planner`, interacts with the user 
+via language models to create a detailed plan based on a prompt, allowing for customization 
+and saving of pipelines. It also supports selecting pre-existing pipelines or designing new ones 
+when necessary.
+
+Functionality:
+--------------
+- The `planner` function is the primary function, designed to interact with the user, 
+  generate or select pipelines, and update the system state with finalized plans.
+- Users are allowed to edit and customize generated plans, with options to save new pipelines.
+- Prebuilt pipelines can be reused, or users can create custom ones as needed.
+- Includes utilities for displaying pipelines to the user and saving them for future use.
+
+Dependencies:
+-------------
+- `langchain` for handling conversations with the language model (LLM).
+- `BRAD.promptTemplates` for custom prompt templates used in planning.
+- `BRAD.log` for logging interactions and debugging.
+- Python standard libraries: `os`, `re`, `json`, and `difflib`.
+
+Author:
+-------
+Joshua Pickard  
+jpic@umich.edu  
+June 16, 2024
+
+Changelog:
+----------
+- **2024-06-16**: Initial draft of the `planner` function.
+- **2024-07-25**: Refactored to include pipeline saving and rerunning features.
+
+TODOs:
+------
+- Add functionality for automatically filling template pipelines.
+- Improve pipeline parsing into prompts and queues.
+
+Issues:
+-------
+- Parsing new or custom pipelines into prompts and queues could be optimized.
+- Queues are currently implemented as lists but may benefit from being a class structure for better flexibility.
+"""
+
+
 import os
 import re
 import json
@@ -10,8 +57,6 @@ from langchain_core.prompts.prompt import PromptTemplate
 
 from BRAD.promptTemplates import plannerTemplate, plannerEditingTemplate, plannerTemplateForLibrarySelection
 from BRAD import log
-
-"""This module is responsible for creating sequences of steps to be run by other modules of BRAD"""
 
 def planner(chatstatus):
     """
@@ -262,6 +307,40 @@ def planner(chatstatus):
     return chatstatus
 
 def displayPipeline2User(process, chatstatus=None):
+    """
+    Displays the steps of the process pipeline to the user, logging each step.
+
+    This function iterates through the steps of a process pipeline, outputs each step to the user in a
+    standardized format, and updates the chat status with the logged outputs. Each step is labeled as
+    "** Step X **", where X is the key, followed by the corresponding value of the process step.
+
+    :param process: A dictionary representing the process pipeline. Each key-value pair corresponds 
+                    to a step in the process, where the key is the step number or name, and the value 
+                    is the step's description or details.
+    :type process: dict
+    :param chatstatus: The current chat status dictionary to which the output will be appended. If not 
+                       provided, a default value of `None` is used.
+    :type chatstatus: dict, optional
+
+    :return: The updated chat status after logging all process steps.
+    :rtype: dict
+
+    Example:
+    --------
+    To display and log a process pipeline with two steps:
+    >>> process = {
+            1: "Initialize chatbot",
+            2: "Execute query"
+        }
+    >>> chatstatus = displayPipeline2User(process, chatstatus)
+    
+    This will log and display:
+    ** Step 1 **
+    Initialize chatbot
+    
+    ** Step 2 **
+    Execute query
+    """
     for key, value in process.items():
         chatstatus=log.userOutput("** Step " + str(key) + "**", chatstatus=chatstatus)
         chatstatus=log.userOutput(str(value), chatstatus=chatstatus)
