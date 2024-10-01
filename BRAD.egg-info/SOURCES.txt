@@ -1,6 +1,0 @@
-README.md
-pyproject.toml
-BRAD.egg-info/PKG-INFO
-BRAD.egg-info/SOURCES.txt
-BRAD.egg-info/dependency_links.txt
-BRAD.egg-info/top_level.txt
