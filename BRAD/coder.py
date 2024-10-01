@@ -25,11 +25,13 @@ from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
 from langchain_community.callbacks import get_openai_callback
 
-from BRAD.matlabCaller import find_matlab_files, get_matlab_description, read_matlab_docstrings, matlabPromptTemplate, activateMatlabEngine, extract_matlab_code, execute_matlab_code
 from BRAD.pythonCaller import find_py_files, get_py_description, read_python_docstrings, pythonPromptTemplate, extract_python_code, execute_python_code
 from BRAD.promptTemplates import scriptSelectorTemplate, pythonPromptTemplateWithFiles
 from BRAD import log
 from BRAD import utils
+
+# History:
+#  2024-10-01: This file was modified to remove support for running MATLAB codes
 
 def codeCaller(chatstatus):
     """
@@ -91,25 +93,12 @@ def codeCaller(chatstatus):
 
     # Get available matlab and python scripts
     path = chatstatus['config']['CODE']['path']
-    #if chatstatus['config']['py-path'] == 'py-tutorial/': # Admittedly, I'm not sure what's going on here - JP
-    #    pyPath = chatstatus['config']['py-path']
-    #else:
-    #    base_dir = os.path.expanduser('~')
-    #    pyPath = os.path.join(base_dir, chatstatus['config']['py-path'])
-
-    #if chatstatus['config']['matlab-path'] == 'matlab-tutorial/':
-    #    matlabPath = chatstatus['config']['matlab-path']
-    #else:
-    #    base_dir = os.path.expanduser('~')
-    #    matlabPath = os.path.join(base_dir, chatstatus['config']['matlab-path'])
 
     scripts = {}
     for fdir in path:
         scripts[fdir] = {}
         scripts[fdir]['python'] = find_py_files(fdir) # pythonScripts
         scripts[fdir]['matlab'] = find_matlab_files(fdir) # matlabScripts
-
-    # print(scripts)
     
     # Get matlab and python docstrings
     scriptPurpose = {}
@@ -117,8 +106,6 @@ def codeCaller(chatstatus):
         # print(fdir)
         for script in scripts[fdir]['python']:
             scriptPurpose[script] = {'description': get_py_description(os.path.join(fdir, script + '.py')), 'type': 'python'}
-        for script in scripts[fdir]['matlab']:
-            scriptPurpose[script] = {'description': get_matlab_description(os.path.join(fdir, script + '.m')), 'type': 'MATLAB'}
     script_list = ""
     for script in scriptPurpose.keys():
         script_list += "Script Name: " + script + ", \t Description: " + scriptPurpose[script]['description'] + '\n'
@@ -158,12 +145,14 @@ def codeCaller(chatstatus):
         log.debugLog(f'scriptName={scriptName}', chatstatus=chatstatus)
         log.debugLog(f'scriptType={scriptType}', chatstatus=chatstatus)
 
+    # NOTE: MATLAB is in an experimental stage and not fully integrated yet
     if scriptType == 'MATLAB':
         chatstatus, _ = activateMatlabEngine(chatstatus) # turn on and add matlab files to path
+        scriptName = os.path.join(scriptPath, scriptName)
     else:
         log.debugLog('scriptPath=' + str(scriptPath), chatstatus=chatstatus)
-        # log.debugLog('pyPath=' + str(pyPath), chatstatus=chatstatus)
         scriptName = os.path.join(scriptPath, scriptName)
+
     scriptSuffix = {'python': '.py', 'MATLAB': '.m'}.get(scriptType)
     scriptName  += scriptSuffix
 
@@ -185,22 +174,24 @@ def codeCaller(chatstatus):
     # Format code to execute: read the doc strings, format function call (second llm call), parse the llm output
     log.debugLog("ALL SCRIPTS FOUND. BUILDING TEMPLATE", chatstatus=chatstatus)
     
-    docstringReader = {'python': read_python_docstrings, 'MATLAB': read_matlab_docstrings}.get(scriptType)
+    docstringReader = {'python': read_python_docstrings}.get(scriptType)
     docstrings      = docstringReader(os.path.join(scriptPath, scriptName))
-    scriptCallingTemplate = {'python': pythonPromptTemplateWithFiles, 'MATLAB': matlabPromptTemplate}.get(scriptType)
+    scriptCallingTemplate = {'python': pythonPromptTemplateWithFiles}.get(scriptType)
     template        = scriptCallingTemplate()
     if scriptType == 'python':
         createdFiles = "\n".join(utils.outputFiles(chatstatus)) # A string of previously created files
-        filled_template = template.format(scriptName=scriptName,
-                                          scriptDocumentation=docstrings,
-                                          output_path=chatstatus['output-directory'],
-                                          files=createdFiles
-                                         )
+        filled_template = template.format(
+            scriptName=scriptName,
+            scriptDocumentation=docstrings,
+            output_path=chatstatus['output-directory'],
+            files=createdFiles
+        )
     else:
-        filled_template = template.format(scriptName=scriptName,
-                                          scriptDocumentation=docstrings,
-                                          output_path=chatstatus['output-directory']
-                                         )
+        filled_template = template.format(
+            scriptName=scriptName,
+            scriptDocumentation=docstrings,
+            output_path=chatstatus['output-directory']
+        )
 
     # Create the prompt template
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
@@ -227,11 +218,12 @@ def codeCaller(chatstatus):
         
     # this catches the initial implementation
     except:
-        conversation    = ConversationChain(prompt  = PROMPT,
-                                            llm     =    llm,
-                                            verbose = chatstatus['config']['debug'],
-                                            memory  = memory,
-                                           )
+        conversation = ConversationChain(
+            prompt  = PROMPT,
+            llm     =    llm,
+            verbose = chatstatus['config']['debug'],
+            memory  = memory,
+        )
         start_time = time.time()
         with get_openai_callback() as cb:
             response = conversation.predict(input=chatstatus['prompt'])
@@ -296,6 +288,6 @@ def executeCode(chatstatus, code2execute, scriptType):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
-    executor = {'python': execute_python_code, 'MATLAB': execute_matlab_code}.get(scriptType)
+    executor = {'python': execute_python_code}.get(scriptType)
     executor(code2execute, chatstatus)
 
