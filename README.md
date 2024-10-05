@@ -2,6 +2,16 @@
 
 ## Installation
 
+#### Docker
+The Docker build can be used to deploy brad without having to install packages manually.
+after installing either docker desktop or docker engine [docker intsallation](https://docs.docker.com/desktop/), you can run the following commands to install and run BRAD
+
+```
+docker build -t brad:local .
+docker run -it brad:local
+```
+
+
 ### Local Install
 
 ### Install with PIP
