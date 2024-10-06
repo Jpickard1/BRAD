@@ -24,4 +24,5 @@ sentence-transformers
 tabulate
 langchain_openai
 requests_html
+flask
 pydantic==2.9.2

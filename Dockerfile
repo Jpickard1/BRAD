@@ -34,7 +34,7 @@ RUN pip install -r requirements.txt --ignore-installed --no-cache-dir
 COPY . .
 
 # Install Brad
-RUN pip install .
+RUN pip install /usr/src/brad/
 RUN pip install langchain==0.3.1
 
 RUN mkdir /logs
