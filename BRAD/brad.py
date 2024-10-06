@@ -5,14 +5,13 @@ To integrate various capabilities with `brad.py`, three features are used:
 
     1. Semantic Routing: fast routing is used determine which module should process each user query.
 
-    2. Unified chat status: the `chatstatus` variable is used to manage language models, memory, debugging, and other configuration settings for different modules.
+    2. Unified chat status: the `state` variable is used to manage language models, memory, debugging, and other configuration settings for different modules.
 
     3. Standardized file sharing: the `utils.py` module standardizes how all data and new files are managed.
 
 """
 # Standard
 import pandas as pd
-import numpy as np
 from copy import deepcopy
 import os
 import sys
@@ -63,13 +62,9 @@ from BRAD.planner import *
 from BRAD.enrichr import *
 from BRAD.scraper import *
 from BRAD.router import *
-from BRAD.tables import *
 from BRAD.rag import queryDocs, remove_repeats
 from BRAD.gene_ontology import *
-from BRAD.seabornCaller import *
-from BRAD.matlabCaller import *
 from BRAD.pythonCaller import *
-from BRAD.snakemakeCaller import *
 from BRAD.llms import *
 from BRAD.geneDatabaseCaller import *
 from BRAD.planner import planner
@@ -122,7 +117,7 @@ class chatbot():
 
         # Dev. Comments:
         # -------------------
-        # This function initializes a chat session and the chatstatus variable
+        # This function initializes a chat session and the state variable
         #
         # History:
         # - 2024-06-04: wrote 1st draft of this code in the brad.chat() method
@@ -130,18 +125,19 @@ class chatbot():
         #               used to initialize the chat session to initialize this class
         # - 2024-07-23: added interactive and max_api_call arguments
         # - 2024-07-29: added config (optional) argument to overwrite the defaults
+        # - 2024-10-06: .chatstatus was renamed .state
         # Issues:
         # - We should change the structure of the classes/modules. In this 1st iteration
-        #   chatstatus was packed as a class variable and used similar to before, but it
+        #   state was packed as a class variable and used similar to before, but it
         #   is likely reasonable to split this variable up into separate class variables.
         # super().__init__()
-        self.chatstatus = self.loadChatStatus(config=config)
+        self.state = self.loadstate(config=config)
         self.name       = name.strip()
-        self.chatstatus['interactive'] = interactive # By default a chatbot is not interactive
+        self.state['interactive'] = interactive # By default a chatbot is not interactive
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     
         base_dir = os.path.expanduser('~')
-        log_dir = os.path.join(base_dir, self.chatstatus['config']['log_path'])
+        log_dir = os.path.join(base_dir, self.state['config']['log_path'])
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
         if restart is None:
@@ -169,8 +165,8 @@ class chatbot():
             # llm = load_llama(model_path) # load the llama
             llm = load_openai()
         if ragvectordb is None:
-            if self.chatstatus['interactive']:
-                chatstatus = log.userOutput('\nWould you like to use a database with ' + self.name + ' [Y/N]?', chatstatus=self.chatstatus)
+            if self.state['interactive']:
+                state = log.userOutput('\nWould you like to use a database with ' + self.name + ' [Y/N]?', state=self.state)
                 loadDB = input().strip().upper()
                 if loadDB == 'Y':
                     ragvectordb, embeddings_model = self.load_literature_db(persist_directory) # load the literature database
@@ -185,20 +181,20 @@ class chatbot():
         # Initialize the routers from router.py
         self.router = getRouter()
     
-        # Add other information to chatstatus
-        self.chatstatus['llm'] = llm
-        self.chatstatus['memory'] = memory
-        self.chatstatus['databases'] = databases
-        self.chatstatus['output-directory'] = new_log_dir
-        if self.chatstatus['config']['experiment']:
+        # Add other information to state
+        self.state['llm'] = llm
+        self.state['memory'] = memory
+        self.state['databases'] = databases
+        self.state['output-directory'] = new_log_dir
+        if self.state['config']['experiment']:
             self.experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
-            self.chatstatus['experiment-output'] = '-'.join(experimentName.split())
+            self.state['experiment-output'] = '-'.join(experimentName.split())
     
         # Initialize all modules
         self.module_functions = self.getModules()
     
         # Start loop
-        self.chatstatus = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', chatstatus=self.chatstatus)
+        self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
 
     def invoke(self, query):
         """
@@ -220,34 +216,34 @@ class chatbot():
         # start the clock
         start_time = time.time()
         
-        # This line packs a query into the chatstatus variable we were using previously
-        self.chatstatus['prompt'] = query
+        # This line packs a query into the state variable we were using previously
+        self.state['prompt'] = query
         
         # Handle explicit commands and routing
-        if self.chatstatus['prompt'].lower() in ['exit', 'quit', 'q', 'bye']:         # check to exit
+        if self.state['prompt'].lower() in ['exit', 'quit', 'q', 'bye']:         # check to exit
             return False
-        elif self.chatstatus['prompt'].lower() == 'help':              # print man to the screen
+        elif self.state['prompt'].lower() == 'help':              # print man to the screen
             self.chatbotHelp()
             return True
             # continue
         # Routing
-        elif self.chatstatus['prompt'].startswith('/set'):             # set a configuration variable
-            self.chatstatus = self.reconfig()
+        elif self.state['prompt'].startswith('/set'):             # set a configuration variable
+            self.state = self.reconfig()
             return True
             # continue
-        elif '/force' not in self.chatstatus['prompt'].split(' '):     # use the router
-            route = self.router(self.chatstatus['prompt']).name
+        elif '/force' not in self.state['prompt'].split(' '):     # use the router
+            route = self.router(self.state['prompt']).name
             if route is None:
                 route = 'RAG'
         else:
-            route = self.chatstatus['prompt'].split(' ')[1]            # use the forced router
-            if self.chatstatus['config']['ROUTER']['build router db']:
-                buildRoutes(self.chatstatus['prompt'])
-            self.chatstatus['prompt'] = " ".join(self.chatstatus['prompt'].split(' ')[2:]).strip()
+            route = self.state['prompt'].split(' ')[1]            # use the forced router
+            if self.state['config']['ROUTER']['build router db']:
+                buildRoutes(self.state['prompt'])
+            self.state['prompt'] = " ".join(self.state['prompt'].split(' ')[2:]).strip()
 
         # Outputs
-        self.chatstatus = log.userOutput('==================================================', chatstatus=self.chatstatus)
-        self.chatstatus = log.userOutput(self.name + ' >> ' + str(len(self.chatlog)) + ': ', chatstatus=self.chatstatus)
+        self.state = log.userOutput('==================================================', state=self.state)
+        self.state = log.userOutput(self.name + ' >> ' + str(len(self.chatlog)) + ': ', state=self.state)
 
         # select appropriate routeing function
         if route.upper() in self.module_functions.keys():
@@ -255,54 +251,54 @@ class chatbot():
         else:
             routeName = 'RAG'
 
-        log.debugLog(routeName, chatstatus=self.chatstatus)
+        log.debugLog(routeName, state=self.state)
 
         # get the specific module to use
         module = self.module_functions[routeName]
 
-        # Standardize chatstatus/logging schema for all modules
+        # Standardize state/logging schema for all modules
         #     see: https://github.com/Jpickard1/RAG-DEV/wiki/Logging
-        self.chatstatus['process'] = {'module' : routeName,
+        self.state['process'] = {'module' : routeName,
                                  'steps'  : []
                             }
-        self.chatstatus['output'] = ""
+        self.state['output'] = ""
 
         # get current output files
-        output_files = utils.outputFiles(self.chatstatus)
-        IP = self.chatstatus['queue pointer']
-        # if not self.chatstatus['interactive']:
-        #     self.chatstatus['queue'] = [[]] # don't let it us an empty queue if it is not interactive
+        output_files = utils.outputFiles(self.state)
+        IP = self.state['queue pointer']
+        # if not self.state['interactive']:
+        #     self.state['queue'] = [[]] # don't let it us an empty queue if it is not interactive
         
         # Query module
         try:
-            self.chatstatus = module(self.chatstatus)
+            self.state = module(self.state)
         except:
-            log.debugLog('An arror occurred during module execution!', chatstatus=self.chatstatus)
+            log.debugLog('An arror occurred during module execution!', state=self.state)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
-        log.debugLog('\n\n\nroute\n\n\n', chatstatus=self.chatstatus)
-        log.debugLog(route, chatstatus=self.chatstatus)
-        if len(self.chatstatus['queue']) != self.chatstatus['queue pointer'] and route != 'PLANNER':
-            # log.debugLog(self.chatstatus['queue'], chatstatus=self.chatstatus)
-            new_output_files = utils.outputFiles(self.chatstatus)
+        log.debugLog('\n\n\nroute\n\n\n', state=self.state)
+        log.debugLog(route, state=self.state)
+        if len(self.state['queue']) != self.state['queue pointer'] and route != 'PLANNER':
+            # log.debugLog(self.state['queue'], state=self.state)
+            new_output_files = utils.outputFiles(self.state)
             new_output_files = list(set(new_output_files).difference(set(output_files)))
-            if 'output' not in self.chatstatus['queue'][IP].keys():
-                self.chatstatus['queue'][IP]['outputs'] = new_output_files
-            self.chatstatus = utils.makeNamesConsistent(self.chatstatus, new_output_files)
-            if self.chatstatus['process']['module'] != 'ROUTER':
-                self.chatstatus['queue pointer'] += 1
+            if 'output' not in self.state['queue'][IP].keys():
+                self.state['queue'][IP]['outputs'] = new_output_files
+            self.state = utils.makeNamesConsistent(self.state, new_output_files)
+            if self.state['process']['module'] != 'ROUTER':
+                self.state['queue pointer'] += 1
 
         # Clear memory
-        if self.chatstatus['config']['forgetful']:
-            self.chatstatus['memory'].clear()
+        if self.state['config']['forgetful']:
+            self.state['memory'].clear()
 
         # stop the clock
         end_time = time.time()
         elapsed_time = end_time - start_time
         
         # Log and reset these values
-        self.chatlog, self.chatstatus = log.logger(self.chatlog, self.chatstatus, self.chatname, elapsed_time=elapsed_time)
-        return self.chatstatus['output']
+        self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=elapsed_time)
+        return self.state['output']
 
     def chat(self):
         """This opens a chat session where a user can execute a series of prompts"""
@@ -320,7 +316,7 @@ class chatbot():
         #               used to execute consecutive prompts into this function
         # - 2024-07-21: added llm-api-calls to chat status to prevent the rerouting/
         #               planner modules from executing unnecessarily long loops.
-        self.chatstatus['interactive'] = True
+        self.state['interactive'] = True
         while True:
             # Begin processing a new prompt
             print('==================================================')
@@ -329,11 +325,11 @@ class chatbot():
             resetMemory = False
 
             # Get the prompt from the user or from the queue
-            if len(self.chatstatus['queue']) != 0 and self.chatstatus['queue pointer'] < len(self.chatstatus['queue']) and self.chatstatus['queue pointer'] != 0 and not self.chatstatus['interactive']:
-                query = self.chatstatus['queue'][self.chatstatus['queue pointer']]['prompt']
+            if len(self.state['queue']) != 0 and self.state['queue pointer'] < len(self.state['queue']) and self.state['queue pointer'] != 0 and not self.state['interactive']:
+                query = self.state['queue'][self.state['queue pointer']]['prompt']
 
                 # update memory to use previous points of the pipeline
-                if 'inputs' in list(self.chatstatus['queue'][self.chatstatus['queue pointer']].keys()):
+                if 'inputs' in list(self.state['queue'][self.state['queue pointer']].keys()):
                     # This is piecemeal for now
                     # if multiple inputs go to file caller, that can be handled during funciton call creation
                     # only single inputs can go to DATABASE
@@ -341,18 +337,18 @@ class chatbot():
                     # only single inputs can go to PLANNER
                     print('hacky integration of old results')
                     print(query)
-                    print(self.chatstatus['queue'][self.chatstatus['queue pointer']]['module'])
-                    if self.chatstatus['queue'][self.chatstatus['queue pointer']]['module'] == 'RAG':
+                    print(self.state['queue'][self.state['queue pointer']]['module'])
+                    if self.state['queue'][self.state['queue pointer']]['module'] == 'RAG':
                         print('RAG MODULE')
-                        print(f"self.chatstatus['queue'].keys()={self.chatstatus['queue'].keys()}")
-                        inputStages = self.chatstatus['queue'][self.chatstatus['queue pointer']]['inputs']
+                        print(f"self.state['queue'].keys()={self.state['queue'].keys()}")
+                        inputStages = self.state['queue'][self.state['queue pointer']]['inputs']
                         print(inputStages)
                         query += "**Previous Work**\nYou have generated the following data previously in the pipeline:\n\n"
                         for ISIP in inputStages:
-                            fileName  = self.chatstatus['queue'][ISIP]['outputs']
+                            fileName  = self.state['queue'][ISIP]['outputs']
                             print(fileName)
                             for file in fileName:
-                                file = os.path.join(self.chatstatus['output-directory'], file)
+                                file = os.path.join(self.state['output-directory'], file)
                                 if not os.path.exists(file):
                                     continue
                                 try:
@@ -384,14 +380,14 @@ class chatbot():
             #    self.resetMemory()
                 
             # update llm-api-calls
-            newCalls = self.getLLMcalls(self.chatstatus['process']['steps'])
-            self.chatstatus['llm-api-calls'] += newCalls
-            log.debugLog(f'current llm calls={self.chatstatus["llm-api-calls"]}', chatstatus=self.chatstatus)
-            if self.chatstatus['llm-api-calls'] > self.max_api_calls:
-                log.debugLog('The maximum number of llm calls has been exceeded', chatstatus=self.chatstatus)
+            newCalls = self.getLLMcalls(self.state['process']['steps'])
+            self.state['llm-api-calls'] += newCalls
+            log.debugLog(f'current llm calls={self.state["llm-api-calls"]}', state=self.state)
+            if self.state['llm-api-calls'] > self.max_api_calls:
+                log.debugLog('The maximum number of llm calls has been exceeded', state=self.state)
                 break
-        self.chatstatus['interactive'] = False
-        self.chatstatus = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + self.chatname, chatstatus=self.chatstatus)
+        self.state['interactive'] = False
+        self.state = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + self.chatname, state=self.state)
 
     def updateMemory(self):
         """Thils function lets BRAD reset his memory to focus on specific previous interactions. This is useful
@@ -400,21 +396,21 @@ class chatbot():
         #       jpic@umich.edu
         # Date: July 28, 2024
 
-        log.debugLog('updateMemory is starting', chatstatus=chatstatus)
+        log.debugLog('updateMemory is starting', state=state)
         
         # get previous stages that must occur in the input
-        inputs = self.chatstatus['queue'][self.chatstatus['queue pointer']]['input']
+        inputs = self.state['queue'][self.state['queue pointer']]['input']
 
         # build a new memory object based upon the previous inputs and outputs of each stage
         memory = ConversationBufferMemory()
         for stage in inputs:
-            stageHistory = self.chatstatus['queue'][stage]['history']
+            stageHistory = self.state['queue'][stage]['history']
             memory.add_user_message(stageHistory['input'][-1])
             memory.add_ai_message(stageHistory['output'][-1])
 
-        # Update the chatstatus main memory
-        chatstatus['main memory'] = chatstatus['memory']
-        chatstatus['memory'] = memory
+        # Update the state main memory
+        state['main memory'] = state['memory']
+        state['memory'] = memory
         return
                 
 
@@ -424,15 +420,15 @@ class chatbot():
         #       jpic@umich.edu
         # Date: July 28, 2024
 
-        # Update the chatstatus main memory
-        mainMemory = chatstatus['main memory']
-        stageMemory = chatstatus['main memory']
+        # Update the state main memory
+        mainMemory = state['main memory']
+        stageMemory = state['main memory']
         
         recent_messages = stageMemory.buffer[-2:]  # Adjust -2 index to control # of recent messages
         for msg in recent_messages:
             mainMemory.add_message(msg['role'], msg['content'])
 
-        chatstatus['memory'] = mainMemory
+        state['memory'] = mainMemory
         return
     
     def getLLMcalls(self, steps):
@@ -465,14 +461,9 @@ class chatbot():
         # this + imports should be the only code someone needs to write to add a new module
         module_functions = {
             'DATABASE'   : geneDBRetriever,     # gget
-    #        'GGET'   : queryEnrichr,     # gget
-    #        'DATA'   : manipulateTable,  #
             'SCRAPE' : webScraping,      # webscrapping
-            'SNS'    : callSnsV3,        # seaborn
             'RAG'    : queryDocs,        # standard rag
-            'MATLAB' : callMatlab,       # matlab
             'PYTHON' : callPython,
-            'SNAKE'  : callSnakemake,    # snakemake,
             'PLANNER': planner,
             'CODE'   : codeCaller,
             'WRITE'  : chatReport, # summarizeSteps,
@@ -552,7 +543,7 @@ class chatbot():
         current_script_dir = os.path.dirname(current_script_path)
         file_path = os.path.join(current_script_dir, 'config', 'config.json')
         with open(file_path, 'w') as f:
-            json.dump(self.chatstatus['config'], f, indent=4)
+            json.dump(self.state['config'], f, indent=4)
 
     def reconfig(self):
         """
@@ -572,7 +563,7 @@ class chatbot():
         #       jpic@umich.edu
         # Date: June 4, 2024
         
-        prompt = self.chatstatus['prompt']
+        prompt = self.state['prompt']
         _, key, value = prompt.split(maxsplit=2)
         if key == 'debug':
             value = (value.lower() == 'true')
@@ -583,15 +574,15 @@ class chatbot():
                 value = float(value)
             except ValueError:
                 value = str(value)
-        if key in self.chatstatus['config']:
-            chatstatus['config'][key] = value
+        if key in self.state['config']:
+            state['config'][key] = value
             self.save_config()
-            chatstatus = log.userOutput("Configuration " + str(key) + " updated to " + str(value), chatstatus=self.chatstatus)
+            state = log.userOutput("Configuration " + str(key) + " updated to " + str(value), state=self.state)
         else:
-            chatstatus = log.userOutput("Configuration " + str(key) + " not found", chatstatus=self.chatstatus)
-        return chatstatus
+            state = log.userOutput("Configuration " + str(key) + " not found", state=self.state)
+        return state
 
-    def loadChatStatus(self, config=None):
+    def loadstate(self, config=None):
         """
         Initializes and loads the chat status with default values and configuration settings from a file.
     
@@ -607,7 +598,7 @@ class chatbot():
         #       jpic@umich.edu
         # Date: June 4, 2024
     
-        chatstatus = {
+        state = {
             'config'            : self.load_config(configfile=config),
             'prompt'            : None,
             'output'            : None,
@@ -627,7 +618,7 @@ class chatbot():
             },
             'recursion_depth': 0
         }
-        return chatstatus
+        return state
 
     def load_literature_db(
         self,
@@ -697,7 +688,7 @@ class chatbot():
     
         Enjoy chatting with the chatbot!
         """
-        self.chatstatus = log.userOutput(help_message, chatstatus=self.chatstatus)
+        self.state = log.userOutput(help_message, state=self.state)
         return
 
     def to_langchain(self):
@@ -722,7 +713,8 @@ def chat(
         config=None
     ):
     """
-    Initializes and runs the RAG chatbot, allowing interaction with various models and databases, and logs the conversation.
+    To interact with a BRAD Agent, this method instantiates a new agent, with all of the specified functionality, and uses the `chat()` method.
+    This allows a user to interface with the code without creating an agent.
 
     :param model_path: The path to the Llama model file, defaults to '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'.
     :type model_path: str, optional
