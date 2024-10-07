@@ -3,29 +3,17 @@ Retrieval Augmented Generation Module
 
 This module implements functions to facilitate Retrieval Augmented Generation (RAG), which combines the strengths of document retrieval and language model generation to enhance the user's experience with rich, contextually relevant responses.
 
-Key Functions:
----------------
-1. queryDocs(chatstatus):
-   Queries documents based on a user prompt and updates the chat status with the results. This function handles the retrieval of relevant documents from a vector database, applies contextual compression, reranks the documents if required, and invokes the language model to generate a response based on the retrieved documents. It also logs the interaction and displays the sources of the information.
+Key Functions
+-------------
+1. queryDocs:
+    Queries documents based on a user prompt and updates the chat status with the results. This function handles the retrieval of relevant documents from a vector database, applies contextual compression, reranks the documents if required, and invokes the language model to generate a response based on the retrieved documents. It also logs the interaction and displays the sources of the information.
 
-   Parameters:
-   - chatstatus (dict): A dictionary containing the current chat status, including user prompt, language model instance, vector database, and model memory.
+2. create_database:
+    This constructes a database of papers that can be used by the RAG pipeline in BRAD. This method requires a single directory of papers, books, or other pdf documents. This method should be used directly, outside of and prior to constructing an instance of the `Agent` class. Once a database is constructed, documents can be added or removed, and the database will persist on the local disk so that it only needs to be constructed once.
 
-   Returns:
-   - dict: The updated chat status dictionary with the query results and sources.
+Methods
+--------
 
-   Raises:
-   - KeyError: If required keys are not found in the chatstatus dictionary.
-   - AttributeError: If methods on the vector database or language model objects are called incorrectly.
-
-2. retrieval(chatstatus):
-   Performs the initial document retrieval from a vectorized database as part of the RAG pipeline. This function supports various retrieval methods, including similarity search and max marginal relevance (MMR) search, based on the user's configuration settings.
-
-   Parameters:
-   - chatstatus (dict): A dictionary containing the language model, user prompt, vector database, and configuration settings for the RAG pipeline.
-
-   Returns:
-   - tuple: A tuple containing the updated chat status and a list of retrieved documents.
 """
 
 import pandas as pd
@@ -62,14 +50,16 @@ from langchain_text_splitters import CharacterTextSplitter
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain_community.callbacks import get_openai_callback
 
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 from sentence_transformers import SentenceTransformer, util
 
 #BERTscore
 import logging
-import transformers
-transformers.tokenization_utils.logger.setLevel(logging.ERROR)
-transformers.configuration_utils.logger.setLevel(logging.ERROR)
-transformers.modeling_utils.logger.setLevel(logging.ERROR)
+# import transformers
+# transformers.tokenization_utils.logger.setLevel(logging.ERROR)
+# transformers.configuration_utils.logger.setLevel(logging.ERROR)
+# transformers.modeling_utils.logger.setLevel(logging.ERROR)
 
 from BRAD.promptTemplates import historyChatTemplate, summarizeDocumentTemplate, getDefaultContext
 
@@ -454,7 +444,7 @@ def getDocumentSimilarity(documents):
 # Define a function to get the wordnet POS tag
 def get_wordnet_pos(word):
     """
-    .. warning:: Marc do we need/use this function?
+    .. warning:: This function may be removed in the near future.
     
     Gets the WordNet part of speech (POS) tag for a given word.
 
@@ -473,7 +463,7 @@ def get_wordnet_pos(word):
     return tag_dict.get(tag, wordnet.NOUN)
 
 
-def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunck_overlap=[200], v=False):
+def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunk_overlap=[200], v=False):
     """
     .. note: This funciton is not called by the chatbot. Instead, it is required that the user build the database prior to using the chat.
     
@@ -502,7 +492,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
     loader = DirectoryLoader(docsPath,
                              glob="**/*.pdf",
                              loader_cls=PyPDFLoader, 
-                             loader_kwargs=text_loader_kwargs,
+                             # loader_kwargs=text_loader_kwargs,
                              show_progress=True,
                              use_multithreading=True)
     docs_data = loader.load()
@@ -527,8 +517,9 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
                                              client              = _client_settings,
                                              collection_name     = dbName,
                                              collection_metadata = {"hnsw:space": "cosine"})
-            log.debugLog("Completed Chroma Database: ", chatstatus=chatstatus) if v else None 
-            del vectordb, text_splitter, data_splits
+            log.debugLog("Completed Chroma Database: ", display=v)
+            del text_splitter, data_splits
+    return vectordb
 
 
 
@@ -572,16 +563,21 @@ def best_match(prompt, title_list):
 #Split into two methods?
 def get_all_sources(vectordb, prompt, path):
     """
-    Retrieve sources from vectordb based on a prompt and path, and filter based on the prompt.
-
-    Parameters:
-    - vectordb: The vector database object containing metadata and sources.
-    - prompt (str): The prompt or query to filter sources.
-    - path (str): The path to filter and clean source file paths.
-
-    Returns:
-    - real_source_list (list): A list of cleaned and filtered source names.
-    - filtered_ids (list): A list of IDs corresponding to filtered sources based on the prompt.
+    Retrieve sources from the vector database based on a prompt and path, and filter the results according to the prompt.
+    
+    :param vectordb: The vector database object containing metadata and sources for retrieval.
+    :type vectordb: object
+    
+    :param prompt: The prompt or query used to filter the sources retrieved from the vector database.
+    :type prompt: str
+    
+    :param path: The path used to filter and clean source file paths, ensuring consistency and relevance in the results.
+    :type path: str
+    
+    :return: A tuple containing:
+        - real_source_list: A list of cleaned and filtered source names that match the given prompt.
+        - filtered_ids: A list of IDs corresponding to the filtered sources based on the prompt.
+    :rtype: tuple
     """
     prompt = prompt.lower()
     
@@ -611,15 +607,17 @@ def get_all_sources(vectordb, prompt, path):
 def adj_matrix_builder(docs, chatstatus):
     """
     Build an adjacency matrix based on cosine similarity between a prompt and document content.
-
-    Parameters:
-    - docs (list): A list of documents or pages (objects) from which to build the adjacency matrix.
-    - chatstatus (dict): A dictionary containing information about the chat status and configuration,
-      including 'prompt', 'config', and 'num_articles_retrieved'.
-
-    Returns:
-    - real_cosine_sim (np.ndarray): A 2D numpy array representing the adjacency matrix,
-      where each element at position (i, j) indicates the similarity score between documents i and j.
+    
+    :param docs: A list of documents or pages (objects) from which to build the adjacency matrix.
+    :type docs: list
+    
+    :param chatstatus: A dictionary containing information about the chat status and configuration, 
+                       including 'prompt', 'config', and 'num_articles_retrieved'.
+    :type chatstatus: dict
+    
+    :return: A 2D numpy array representing the adjacency matrix, where each element at position (i, j) 
+             indicates the similarity score between documents i and j.
+    :rtype: np.ndarray
     """
     prompt_scale = 0.5  # Weighting scale for prompt similarity
     dimension = len(docs)
@@ -653,13 +651,15 @@ def adj_matrix_builder(docs, chatstatus):
 def normalize_adjacency_matrix(A):
     """
     Normalize an adjacency matrix by dividing each element by the sum of its column.
-
-    Parameters:
-    - A (np.ndarray): Input adjacency matrix to be normalized.
-
-    Returns:
-    - normalized_A (np.ndarray): Normalized adjacency matrix where each element at position (i, j)
-      is divided by the sum of the j-th column of the original matrix A.
+    
+    :param A: Input adjacency matrix to be normalized, where each element (i, j) represents the weight of 
+              the edge from node i to node j.
+    :type A: np.ndarray
+    
+    :return: Normalized adjacency matrix where each element at position (i, j) is divided by the sum of 
+             the j-th column of the original matrix A. This normalization ensures that the columns of the 
+             resulting matrix sum to 1, facilitating interpretation as probabilities or relative weights.
+    :rtype: np.ndarray
     """
     col_sums = A.sum(axis=0)  # Calculate sum of each column
     normalized_A = A / col_sums[np.newaxis, :]  # Normalize each element by its column sum
@@ -670,16 +670,27 @@ def normalize_adjacency_matrix(A):
 #weighted pagerank algorithm
 def pagerank_weighted(A, alpha=0.85, tol=1e-6, max_iter=100):
     """
-    Calculate PageRank vector for a weighted adjacency matrix A using the power iteration method.
-
-    Parameters:
-    - A (np.ndarray): Weighted adjacency matrix representing the graph structure.
-    - alpha (float, optional): Damping factor for the PageRank calculation (default is 0.85).
-    - tol (float, optional): Tolerance threshold for convergence (default is 1e-6).
-    - max_iter (int, optional): Maximum number of iterations for the power method (default is 100).
-
-    Returns:
-    - v (np.ndarray): PageRank vector representing the importance score of each node in the graph.
+    Calculate the PageRank vector for a weighted adjacency matrix A using the power iteration method.
+    
+    :param A: Weighted adjacency matrix representing the graph structure, where each element (i, j) indicates 
+              the weight of the edge from node i to node j.
+    :type A: np.ndarray
+    
+    :param alpha: Damping factor for the PageRank calculation, which controls the probability of following 
+                  an outgoing link versus randomly jumping to any node (default is 0.85).
+    :type alpha: float, optional
+    
+    :param tol: Tolerance threshold for convergence, determining the acceptable difference between successive 
+                PageRank vectors (default is 1e-6).
+    :type tol: float, optional
+    
+    :param max_iter: Maximum number of iterations for the power method, limiting the computation to ensure 
+                      it does not run indefinitely (default is 100).
+    :type max_iter: int, optional
+    
+    :return: PageRank vector representing the importance score of each node in the graph, where higher scores 
+             indicate greater importance or influence within the network.
+    :rtype: np.ndarray
     """
     n = A.shape[0]  # Number of nodes in the graph
     A_normalized = normalize_adjacency_matrix(A)  # Normalize the adjacency matrix
@@ -699,14 +710,19 @@ def pagerank_weighted(A, alpha=0.85, tol=1e-6, max_iter=100):
 def pagerank_rerank(docs, chatstatus):
     """
     Rerank a list of documents based on their PageRank scores computed from an adjacency matrix.
-
-    Parameters:
-    - docs (list): List of documents or pages to be reranked.
-    - chatstatus (dict): A dictionary containing information about the chat status and configuration,
-      including parameters for building the adjacency matrix.
-
-    Returns:
-    - reranked_docs (list): Reranked list of documents based on their PageRank scores.
+    
+    :param docs: List of documents or pages to be reranked, where each document is represented as an object 
+                 containing relevant information for scoring.
+    :type docs: list
+    
+    :param chatstatus: A dictionary containing information about the chat status and configuration, including 
+                       parameters for building the adjacency matrix, such as the 'num_articles_retrieved' 
+                       and 'config' settings.
+    :type chatstatus: dict
+    
+    :return: A reranked list of documents based on their PageRank scores, ordered from highest to lowest 
+             score, reflecting the importance of each document in the context of the provided adjacency matrix.
+    :rtype: list
     """
     adj_matrix = adj_matrix_builder(docs, chatstatus)  # Build adjacency matrix
     pagerank_scores = pagerank_weighted(A=adj_matrix)  # Compute PageRank scores
@@ -754,14 +770,14 @@ def remove_repeats(vectordb):
 def relative_frequency_of_char(input_string):
     """
     Calculate the relative frequency of the dot character ('.') in a given input string.
-
-    Parameters:
-    - input_string (str): The input string in which to calculate the relative frequency.
-
-    Returns:
-    - relative_frequency (float): The relative frequency of the dot character ('.') in the input string,
-      expressed as the ratio of dot occurrences to the total number of characters. Returns 0.0 if the input
-      string is empty.
+    
+    :param input_string: The input string in which to calculate the relative frequency of the dot character.
+    :type input_string: str
+    
+    :return: The relative frequency of the dot character ('.') in the input string, expressed as the ratio 
+             of dot occurrences to the total number of characters. If the input string is empty, it returns 
+             0.0 to indicate no occurrences.
+    :rtype: float
     """
     if not input_string:
         return 0.0  # Return 0 if the string is empty
@@ -775,16 +791,18 @@ def relative_frequency_of_char(input_string):
 def cut(chatstatus, vectordb):
     """
     Remove documents from a vector database based on a relative frequency threshold of a specific character.
-
-    Parameters:
-    - chatstatus (dict): A dictionary containing chat status information.
-    - vectordb (object): Object representing the vector database, capable of fetching and deleting documents.
-
-    Returns:
-    - vectordb (object): Updated vector database object after removing documents with a relative frequency
-      of a specific character above the determined cutoff.
-    """
     
+    :param chatstatus: A dictionary containing chat status information, including the relative frequency
+                       threshold for the character and other contextual details related to the ongoing 
+                       conversation.
+    :type chatstatus: dict
+    
+    :param vectordb: An object representing the vector database, which provides methods for fetching 
+                      and deleting documents based on certain criteria, including relative frequency.
+    
+    :return: The updated vector database object after removing documents that exceed the specified 
+             relative frequency threshold for the character.
+    """    
     # Fetch document IDs and contents from vector database
     df = pd.DataFrame({'id': vectordb.get()['ids'], 'documents': vectordb.get()['documents']})
     
