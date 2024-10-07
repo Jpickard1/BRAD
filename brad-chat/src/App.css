@@ -1,0 +1,93 @@
+
+body {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-color: #1b1c29;
+  font-family: 'Helvetica';
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+.App-header {
+  font-size: 1em;
+  width: 100%;
+  color: #e6f2ff;
+  align-items: center;
+}
+
+.App {
+  position: fixed;
+  top: 0;
+  left: 0;
+  text-align: center;
+  height: 100%;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-container {
+  display: flex;
+  /* width: 100%; */
+  height: 100%;
+  overflow: scroll;
+  /* border: 1px solid #ccc; */
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  margin-bottom: 1.3em;
+  padding: 5px 10px;
+  border-radius: 15px;
+  display: inline-block;
+  padding: 1em;
+  min-width: 2em;
+}
+
+.message.user {
+  background-color: #e6f2ff;
+  opacity: 0.8;
+  align-self: flex-end;
+}
+
+.message.bot {
+  background-color: #e6f2ff;
+  align-self: flex-start;
+}
+
+.message-input {
+  width: 50%;
+  display: flex;
+  padding: 1.5em;
+}
+
+.message-input input {
+  padding: 1em;
+  border-radius: 15px;
+  font-size: 1em;
+  flex: 1;
+}
+
+
+.message-input button {
+  padding: 5px 10px;
+  font-size: 1.5em;
+  border-radius: 30%;
+}
