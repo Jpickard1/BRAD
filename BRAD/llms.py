@@ -7,6 +7,24 @@ BRAD `Agent` will use OpenAI's `gpt-3.5-turbo-0125` model.
 
 Available LLMs
 --------------
+
+The BRAD architecture is LLM agnostic and interoperable with different LLMs. For convenience, the following LLMs have been integrated into BRAD (1-3), but in prinicpal, 
+any LLM could be used in this system
+
+1. `OpenAI <https://openai.com/>`_
+    The OpenAI API supports the use of gpt3, gpt-4o, and soon the o1 series of LLMs. To use these models, the user must (1) provide an OpenAI API key and (2) select an LLM
+
+2. `NVIDA <https://build.nvidia.com/explore/discover>`_
+    NVIDIA hosts LLMs from a variety of providers to streamline using LLMs from a variety of providers. Currently, these include `Llama <https://www.llama.com/>`_ models from META AI, `Gemma <https://ai.google.dev/gemma>`_ from Google, `Nemotron <https://docs.nvidia.com/nemo-framework/user-guide/latest/llms/nemotron/index.html>`_ from NVIDIA, and other models from Microsft, Stability AI, Mistral AI, and more. To use these models, a user must supply an API key from NVIDIA.
+
+3. Llama with `llama.cpp <https://github.com/ggerganov/llama.cpp>`_
+    A user can run LLM inference locally and integrate their LLM with BRAD. This is available directly for Llama models using the `llama.cpp` interface. Running models locally allows users to finetune their LLM of choice to be further customized for their usecase. This requires the user to have the hardward to support running LLM inference, independent of the BRAD architecture.
+
+4. Any LLM with `LangChain <https://python.langchain.com/docs/how_to/custom_llm/>`_
+    In principle, any LLM can be integrated into this system. To integrate a custom LLM or that from a different provider besides OpenAI or NVIDIA, the LLM must be made `LangChain` compatible. This can be done with minimal code, similar to the `BradLLM` class.
+
+Loading LLMs
+------------
 """
 
 import os

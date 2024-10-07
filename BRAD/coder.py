@@ -1,23 +1,31 @@
 """
-The SOFTWARE module handles the execution of scripts within the BRAD framework.
+Code Caller
+-----------
 
-This module enables the discovery, selection, and execution of both Python and MATLAB scripts, 
-based on user prompts and configuration settings.
+This module facilitates the discovery, selection, and execution of Python and MATLAB scripts 
+based on user prompts and predefined configuration settings.
 
-Key Requirements:
+Key Features:
 
-1. Python scripts must be located at the paths specified in the configuration settings.
+1. Python scripts must reside in the directories specified within the configuration settings.
 
-2. Scripts are executed with the first argument specifying the output directory where any 
-   generated files will be saved.
+2. Script execution requires the first argument to specify the output directory, where any 
+   resulting files will be saved.
 
-3. Each script file must include appropriate documentation, which should contain:
+3. Each script must include clear and structured documentation, consisting of:
 
-   - A brief one-line summary at the beginning of the docstring (used by the LLM for selecting scripts).
+   - A concise one-line summary at the beginning of the docstring (used by the LLM for script selection).
+   
+   - Comprehensive descriptions detailing the script’s arguments, inputs, purpose, and usage 
+     examples (utilized by the LLM for accurate execution).
 
-   - Detailed descriptions that outline the arguments, inputs, purpose, and usage examples 
-     (used by the LLM for proper execution).
+Methods
+~~~~~~~
+
+This module has the following methods:
+
 """
+
 
 import os
 import time
@@ -36,53 +44,17 @@ from BRAD import utils
 
 def codeCaller(chatstatus):
     """
-    Executes a script based on the user's prompt and chat status configuration.
-
+    Executes a Python script based on the user's prompt and chat status settings.
+    
     This function performs the following steps:
-
-        1. Finds available Python and MATLAB scripts in the specified directories.
+    
+        1. Searches the specified directories for available Python scripts.
         
-        2. Extracts docstrings from the scripts to understand their purpose.
+        2. Extracts and analyzes docstrings from each script to identify their purpose.
         
-        3. Uses llm to select appropriate codes to execute and format command to run the code with the correct inputs.
+        3. Uses a large language model (LLM) to select the most appropriate script and format the command with the correct inputs.
         
-        4. Executes the selected script and updates the chat status.
-
-    Parameters
-    ----------
-    chatstatus : dict
-        A dictionary containing the chat status, including user prompt, language model (llm),
-        configuration settings, and output directory.
-
-    Returns
-    -------
-    dict
-        Updated chat status after executing the selected script.
-
-    Notes
-    -----
-    The function makes two calls to a language model (llm) to determine which script to execute
-    and to format the execution command. It supports both Python and MATLAB scripts.
-
-    The function assumes that the configuration dictionary (`chatstatus['config']`) contains the keys:
-    - 'debug': A boolean indicating whether to print debug information.
-    - 'py-path': A string specifying the path to Python scripts.
-    - 'matlab-path': A string specifying the path to MATLAB scripts.
-    - 'output-directory': A string specifying the directory to store output files.
-
-    Example
-    -------
-    >>> chatstatus = {
-    ...     'config': {
-    ...         'debug': True,
-    ...         'py-path': 'py-tutorial/',
-    ...         'matlab-path': 'matlab-tutorial/',
-    ...         'output-directory': '/path/to/output'
-    ...     },
-    ...     'prompt': 'Run analysis',
-    ...     'llm': language_model_instance
-    ... }
-    >>> updated_status = codeCaller(chatstatus)
+        4. Executes the selected script and updates the chat status accordingly.
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -266,25 +238,16 @@ def codeCaller(chatstatus):
 
 def executeCode(chatstatus, code2execute, scriptType):
     """
-    Executes the given code based on the specified script type.
-
-    This function determines the appropriate executor for the provided code
-    (either Python or MATLAB) and executes it.
-
-    Parameters
-    ----------
-    chatstatus : dict
-        A dictionary containing the chat status, including configuration settings and other relevant data.
-    code2execute : str
-        The code to be executed.
-    scriptType : str
-        The type of the script to be executed. It should be either 'python' or 'MATLAB'.
-
-    Notes
-    -----
-    The actual execution is delegated to the appropriate function based on the script type. This function uses a dictionary to map the script type to the corresponding executor function:
-    - 'python': `execute_python_code`
-    - 'MATLAB': `execute_matlab_code`
+    Executes the provided code based on the specified script type.
+    
+    This function determines the appropriate execution environment (Python or MATLAB) based on the script type and runs the corresponding code.
+    
+    :param chatstatus: A dictionary containing the chat status, including configuration settings and other relevant data.
+    :type chatstatus: dict
+    :param code2execute: The code to be executed.
+    :type code2execute: str
+    :param scriptType: The type of the script to be executed. Must be either 'python' or 'MATLAB'.
+    :type scriptType: str
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu

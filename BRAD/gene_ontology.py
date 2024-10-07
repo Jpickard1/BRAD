@@ -1,3 +1,15 @@
+"""
+Gene Ontology (GO)
+------------------
+This module provides functions to perform `Gene Ontology (GO)`<https://geneontology.org/>_ searches, download charts, and retrieve associated publications and annotations based on gene terms. The module interacts with external APIs, such as QuickGO and PubMed, to gather the relevant information.
+
+Methods
+~~~~~~~
+
+This module has the following methods:
+
+"""
+
 import requests, sys
 import pandas as pd
 import json
@@ -35,14 +47,6 @@ def geneOntology(chatstatus, goQuery):
         contents = file.read()
     gene_list = contents.split('\n')
     if len(goQuery) > 0:
-        #chatstatus = log.userOutput(real_list, chatstatus=chatstatus) 
-        #Joshua if you see this how exactly does the first argument in userOutput work? I saw it in log.py but it just adds it to the log? If so, i dont think we need this here necessarily. maybe you want to log it in a different place.
-        
-        #chatstatus['output'] += '\n would you search Gene Ontology for these terms [Y/N]?'
-        #chatstatus = log.userOutput('\n would you search Gene Ontology for these terms [Y/N]?', chatstatus=chatstatus)
-        #go = input().strip().upper()
-        #chatstatus['process']['search'] = (go == 'Y')
-        #if go == 'Y':
         go_process = goSearch(goQuery, chatstatus)
         chatstatus['process']['GO'] = go_process
     return chatstatus
@@ -152,8 +156,6 @@ def chartGO(identifier, chatstatus):
 
     :raises requests.HTTPError: If the HTTP request to download the chart fails.
 
-    :return: None
-
     """
     # Auth: Marc Choi
     #       machoi@umich.edu
@@ -179,8 +181,6 @@ def pubmedPaper(identifier, chatstatus):
     :type identifier: str
 
     :raises requests.HTTPError: If the HTTP request to the PubMed API fails.
-
-    :return: None
 
     """
     # Auth: Marc Choi
@@ -250,8 +250,6 @@ def annotations(ids, chatstatus):
     :type ids: str
 
     :raises requests.HTTPError: If the HTTP request to download the annotations fails.
-
-    :return: None
 
     """
     # Auth: Marc Choi

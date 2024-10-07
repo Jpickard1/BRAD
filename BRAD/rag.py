@@ -1,20 +1,24 @@
 """
-Retrieval Augmented Generation Module
-
 This module implements functions to facilitate Retrieval Augmented Generation (RAG), which combines the strengths of document retrieval and language model generation to enhance the user's experience with rich, contextually relevant responses.
 
 Key Functions
--------------
+=============
+
 1. queryDocs:
     Queries documents based on a user prompt and updates the chat status with the results. This function handles the retrieval of relevant documents from a vector database, applies contextual compression, reranks the documents if required, and invokes the language model to generate a response based on the retrieved documents. It also logs the interaction and displays the sources of the information.
 
 2. create_database:
-    This constructes a database of papers that can be used by the RAG pipeline in BRAD. This method requires a single directory of papers, books, or other pdf documents. This method should be used directly, outside of and prior to constructing an instance of the `Agent` class. Once a database is constructed, documents can be added or removed, and the database will persist on the local disk so that it only needs to be constructed once.
+    Constructs a database of papers that can be used by the RAG pipeline in BRAD. This method requires a single directory of papers, books, or other pdf documents. This method should be used directly, outside of and prior to constructing an instance of the `Agent` class. Once a database is constructed, documents can be added or removed, and the database will persist on the local disk so that it only needs to be constructed once.
+
+There are several supporting methods as well.
 
 Methods
---------
+=======
+
+This module contains the following methods:
 
 """
+
 
 import pandas as pd
 import numpy as np
@@ -233,25 +237,6 @@ def retrieval(chatstatus):
     Returns:
         tuple: A tuple containing the updated chatstatus and a list of retrieved documents.
 
-    Example
-    -------
-    >>> chatstatus = {
-    ...     'llm': llm_instance,
-    ...     'prompt': "What is the capital of France?",
-    ...     'databases': {'RAG': vectordb_instance},
-    ...     'memory': memory_instance,
-    ...     'config': {
-    ...         'RAG': {
-    ...             'cut': True,
-    ...             'multiquery': False,
-    ...             'similarity': True,
-    ...             'mmr': True,
-    ...             'num_articles_retrieved': 5
-    ...         }
-    ...     },
-    ...     'process': {'steps': []}
-    ... }
-    >>> chatstatus, docs = retrieval(chatstatus)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu

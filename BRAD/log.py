@@ -9,8 +9,18 @@ automatically saved in the output directory.
 Log Format
 ----------
 Logs capture user interactions and actions taken by an `Agent`. These logs are saved in 
-the output directory and can be reviewed for debugging or analysis purposes.
+the output directory and can be reviewed for debugging or analysis purposes. Within the log
+record, entries are numbered according to their order in the chat. For a single entry, the following
+items are recorded:
 
+1. time: the time when the `Agent` responds to this query
+2. prompt: the input prompt from the user
+3. output: the message displayed to the user
+4. status: the `Agent` state after responding to the user. :ref:`state-schema-section`
+5. process: this records the tool module and the set of particular steps the `Agent` takes using the tool
+6. planned: a list of any steps that `Agent` plans to take
+
+These items are saved in the following schema:
 >>> [
 ...     0: {
 ...         'TIME'   : <time stamp>,
@@ -34,16 +44,16 @@ the output directory and can be reviewed for debugging or analysis purposes.
 ...                 'STEPS' [
 ...                         # information for a particular step involved in executing the module. Some examples
 ...                         {
-...                            'LLM' : <language model>,
-...                            'prompt template' : <prompt template>,
-...                            'model input' : <input to model>,
-...                            'model output' : <output of model>
-...                         },
-...                         {
 ...                            'func' : 'rag.retreival',
 ...                            'num articles retrieved' : 10,
 ...                            'multiquery' : True,
 ...                            'compression' : True,
+...                         },
+...                         {
+...                            'LLM' : <language model>,
+...                            'prompt template' : <prompt template>,
+...                            'model input' : <input to model>,
+...                            'model output' : <output of model>
 ...                         }
 ...                     ]
 ...             },
@@ -62,6 +72,14 @@ the output directory and can be reviewed for debugging or analysis purposes.
 
 Log Methods
 -----------
+
+The methods in the log module serve three key functions:
+
+1. Saving information to the log file.
+2. Ensuring consistency in how data is recorded within the `steps` section of the log (e.g., all LLM calls follow a uniform format).
+3. Displaying output, warnings, and error messages to the user.
+
+The following methods are available:
 """
 
 import json
@@ -273,8 +291,6 @@ def errorLog(errorMessage, info=None, state=None):
 
     :raises KeyError: If `state['process']['steps']` is not found, meaning the state has not been properly initialized 
                       for logging steps.
-
-    :return: None
 
     :note: The error is logged using Python's logging library, which outputs the error message with a timestamp 
            and logging level. Additionally, the error is tracked within the `state` object for review and debugging purposes.

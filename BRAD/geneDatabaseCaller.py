@@ -1,3 +1,25 @@
+"""
+Bioinformatics Database
+-----------------------
+
+This module provides functionality to retrieve structured data from bioinformatics databases 
+such as Enrichr and Gene Ontology. User queries are processed by an LLM to select and query an
+appropriate database.
+
+Main method:
+
+1. geneDBRetriever:
+    This method selects which database and search terms or files to use. After formualting the query terms
+    or loading data from a file, the method corresponding to each database is used for the corresponding query.
+
+Methods
+~~~~~~~
+
+This module has the following methods:
+
+"""
+
+
 import time
 
 from langchain import PromptTemplate, LLMChain
@@ -16,28 +38,14 @@ def geneDBRetriever(chatstatus):
     Retrieves gene information from a specified database based on the user query. 
     It uses a language model to determine the appropriate database and performs 
     the search, handling various configurations and logging the process.
-
-    Args:
-        chatstatus (dict): A dictionary containing the user query, language model, 
-                           configurations, and other necessary data for the retrieval process.
-
-    Returns:
-        dict: The updated chatstatus containing the results of the database search 
+    
+    :param chatstatus: A dictionary containing the user query, language model, 
+                       configurations, and other necessary data for the retrieval process.
+    :type chatstatus: dict
+    
+    :returns: The updated chatstatus containing the results of the database search 
               and any modifications made during the process.
-
-    Example
-    -------
-    >>> chatstatus = {
-    ...     'llm': llm_instance,
-    ...     'prompt': "Retrieve gene information",
-    ...     'config': {
-    ...         'debug': True,
-    ...         'DATABASE': {'max_search_terms': 50}
-    ...     },
-    ...     'tables': [],
-    ...     'process': {'steps': []}
-    ... }
-    >>> chatstatus = geneDBRetriever(chatstatus)
+    :rtype: dict
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -130,11 +138,11 @@ def parse_llm_response(response, chatstatus):
     """
     Parses the LLM response to extract the database name and search terms.
     
-    Parameters:
-    response (str): The response from the LLM.
+    :param response: The response from the LLM.
+    :type response: str
     
-    Returns:
-    dict: A dictionary with the database name and a list of search terms.
+    :returns: A dictionary with the database name and a list of search terms.
+    :rtype: dict
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -166,23 +174,12 @@ def getTablesFormatting(tables):
     Formats the columns of each table in the given dictionary into a readable string. 
     For each table, it lists the first 10 column names, appending '...' if there are more 
     than 10 columns.
-
-    Args:
-        tables (dict): A dictionary where keys are table names and values are pandas DataFrame objects.
-
-    Returns:
-        str: A formatted string listing the first 10 column names of each table.
-
-    Example
-    -------
-    >>> tables = {
-    ...     'table1': pd.DataFrame(columns=['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8', 'col9', 'col10', 'col11']),
-    ...     'table2': pd.DataFrame(columns=['a', 'b', 'c'])
-    ... }
-    >>> result = getTablesFormatting(tables)
-    >>> print(result)
-    table1.columns = ['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8', 'col9', 'col10', '...']
-    table2.columns = ['a', 'b', 'c']
+    
+    :param tables: A dictionary where keys are table names and values are pandas DataFrame objects.
+    :type tables: dict
+    
+    :returns: A formatted string listing the first 10 column names of each table.
+    :rtype: str
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu

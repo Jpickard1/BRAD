@@ -1,21 +1,36 @@
 """
-Module: webScraping
+Literature Repositories
+------------------------
 
-This module provides functionality for performing web scraping on various scientific databases based on the current chat status. 
-It facilitates the extraction of relevant articles and data from sources such as arXiv, bioRxiv, and PubMed. The scraping 
-process is initiated based on user-defined prompts, and the results are integrated back into the chat system.
+This module provides functionality for performing web scraping on various literature archives, including 
+`arXiv <https://arxiv.org>`_, `bioRxiv <https://www.biorxiv.org>`_, and `PubMed <https://pubmed.ncbi.nlm.nih.gov>`_. 
+The system scrapes these databases to find relevant literature, which can then be downloaded and included in the RAG 
+(Retrieval-Augmented Generation) database.
 
-Main Function:
----------------
-- webScraping(chatstatus): Executes web scraping based on the provided chat status, utilizing specific functions tailored 
-  for different sources. It handles the identification of databases, manages conversation with the language model, logs 
-  the process, and updates the chat status with the scraped data.
+**Main Functions**
 
-Dependencies:
--------------
-- The module relies on various utility functions and configurations defined in the chat system, including logging 
-  mechanisms and specific scraping functions for each source (arXiv, bioRxiv, PubMed).
+1. **webScraping**:  
+   Selects the correct literature repository based on user input and directs the scraping process to the appropriate database.
+
+2. **arxiv**:  
+   Scrapes literature from `arXiv <https://arxiv.org>`_, a preprint server for research papers in fields such as physics, mathematics, 
+   computer science, and biology.
+
+3. **biorxiv**:  
+   Scrapes literature from `bioRxiv <https://www.biorxiv.org>`_, a preprint repository focused on biology and life sciences.
+
+4. **pubmed**:  
+   Scrapes literature from `PubMed <https://pubmed.ncbi.nlm.nih.gov>`_, a database of biomedical and life sciences journal articles 
+   maintained by the National Library of Medicine (NLM).
+
+
+Methods
+-------
+
+This module has the following methods:
+
 """
+
 
 import subprocess
 from langchain.document_loaders import DirectoryLoader
@@ -64,8 +79,6 @@ def webScraping(chatstatus):
 
     :param chatstatus: The status of the chat, containing information about the current prompt and configuration.
     :type chatstatus: dict
-
-    :raises None: This function does not raise any specific errors.
 
     :return: The updated chat status after executing the web scraping process.
     :rtype: dict
@@ -155,8 +168,6 @@ def arxiv(query, chatstatus):
     :param query: The search query for arXiv.
     :type query: str
 
-    :raises None: This function does not raise any specific errors.
-
     :return: A tuple containing the output message and a process dictionary.
     :rtype: tuple
 
@@ -205,8 +216,6 @@ def search_pubmed_article(query, number_of_articles=10, chatstatus=None):
     :param number_of_articles: The maximum number of article PMIDs to return. Defaults to 10.
     :type number_of_articles: int
 
-    :raises None: This function does not raise any specific errors.
-
     :return: A list of PMIDs for articles matching the query.
     :rtype: list
 
@@ -229,11 +238,6 @@ def pubmed(query, chatstatus):
 
     :param query: The keyword to search for in PubMed articles.
     :type query: str
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: None
-    :rtype: None
     """
     # Auth: Marc Choi
     #       machoi@umich.edu
@@ -290,11 +294,6 @@ def biorxiv(query, chatstatus):
 
     :param query: The keyword to search for in bioRxiv articles.
     :type query: str
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: None
-    :rtype: None
 
     """
     # Auth: Marc Choi
@@ -353,8 +352,6 @@ def biorxiv_real_search(chatstatus,
     :type cols: list
     :param abstracts: Whether to include abstracts in the database. Defaults to False.
     :type abstracts: bool
-
-    :raises None: This function does not raise any specific errors.
 
     :return: The DataFrame containing the records fetched and processed.
     :rtype: pd.DataFrame
@@ -519,11 +516,6 @@ def create_db(query, query2):
     :type query: str
     :type query2: str
 
-    :raises None: This function does not raise any specific errors.
-
-    :return: None
-    :rtype: None
-
     """
     # Auth: Marc Choi
     #       machoi@umich.edu
@@ -537,11 +529,11 @@ def create_db(query, query2):
     os.chdir(local)      ## shift the work dir to local dir
     log.debugLog('\nWork Directory: {}'.format(local), chatstatus=chatstatus)
 
-    #%% Phase 1 - Load DB
+    # Phase 1 - Load embedding model
     embeddings_model = HuggingFaceEmbeddings(
         model_name='BAAI/bge-base-en-v1.5')
 
-#%% Phase 1 - Load documents
+    # Phase 2 - Load documents
     path_docs = utils.pdfDownloadPath(chatstatus) # './specialized_docs/'
     log.debugLog('\nDocuments loading from:',path_docs, chatstatus=chatstatus)
     text_loader_kwargs={'autodetect_encoding': True}
@@ -551,11 +543,11 @@ def create_db(query, query2):
     docs_data = loader.load()
     log.debugLog('\nDocuments loaded...', chatstatus=chatstatus)
 
-#%% Phase 2 - Split the text
+    # Phase 3 - Split the text
     from langchain.text_splitter import RecursiveCharacterTextSplitter
     persist_directory = "./custom_dbs_fullScale_cosine/"
 
-## User input ::
+    # User input
     arr_chunk_size = [700] #Chunk size 
     arr_chunk_overlap = [200] #Chunk overlap
 
@@ -593,8 +585,6 @@ def arxiv_search(query, count, chatstatus=None):
     :param count: The number of search results to retrieve.
     :type query: str
     :type count: int
-
-    :raises None: This function does not raise any specific errors.
 
     :return: A tuple containing a DataFrame with the search results and a list of PDF URLs.
     :rtype: tuple
@@ -658,11 +648,6 @@ def arxiv_scrape(pdf_urls, chatstatus):
     :param pdf_urls: A list of URLs pointing to arXiv articles in PDF format.
     :type pdf_urls: list
 
-    :raises None: This function does not raise any specific errors.
-
-    :return: None
-    :rtype: None
-
     """
     # Auth: Marc Choi
     #       machoi@umich.edu
@@ -699,8 +684,6 @@ def result_set_to_string(result_set):
     :param result_set: The result set to convert to a string.
     :type result_set: bs4.element.ResultSet
 
-    :raises None: This function does not raise any specific errors.
-
     :return: The string representation of the result set.
     :rtype: str
     """
@@ -713,11 +696,11 @@ def parse_llm_response(response):
     """
     Parses the LLM response to extract the database name and search terms.
     
-    Parameters:
-    response (str): The response from the LLM.
+    :param response: The response from the LLM.
+    :type response: str
     
-    Returns:
-    dict: A dictionary with the database name and a list of search terms.
+    :returns: A dictionary with the database name and a list of search terms.
+    :rtype: dict
     """
     # Initialize an empty dictionary to hold the parsed data
     parsed_data = {}

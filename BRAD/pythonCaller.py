@@ -1,4 +1,7 @@
 """
+Python Codes
+------------
+
 Module responsible for integrating python scripts execution into the BRAD system.
 
 This module provides functions to execute python scripts based on user prompts and configuration settings. It selects the appropriate function based on user input using a large language model (LLM) and executes the selected MATLAB code.
@@ -8,6 +11,12 @@ This module provides functions to execute python scripts based on user prompts a
     1. they must have full docstrings at the top of the file
 
     2. they must have a one line description at the top of the docstring used for selecting which code to run
+
+Methods
+~~~~~~~
+
+This module has the following methods:
+
 """
 
 from langchain import PromptTemplate, LLMChain
@@ -33,21 +42,16 @@ def callPython(chatstatus):
     2. Uses an llm to select the python function that best matches the user's prompt and format code to execute the script based upon the users input.
     3. Executes the selected python function and updates the chat status.
 
-    Parameters
-    ----------
-    chatstatus : dict
-        A dictionary containing the chat status, including user prompt, language model (llm),
-        memory, and configuration settings.
-
-    Returns
-    -------
-    dict
-        Updated chat status after executing the selected Python script.
-
-    Notes
-    -----
-    - This function is typically called from `brad.chat()` when the `Python` module is selected by the router.
-    - The Python code execution can also be initiated from `coder.codeCaller()`, which handles both Python and MATLAB scripts.
+    :param chatstatus: A dictionary containing the chat status, including user prompt, language model (LLM),
+                       memory, and configuration settings.
+    :type chatstatus: dict
+    
+    :returns: Updated chat status after executing the selected Python script.
+    :rtype: dict
+    
+    :notes: 
+        - This function is typically called from `brad.chat()` when the `Python` module is selected by the router.
+        - The Python code execution can also be initiated from `coder.codeCaller()`, which handles both Python and MATLAB scripts.
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -133,19 +137,15 @@ def execute_python_code(python_code, chatstatus):
     1. Checks if `chatstatus['output-directory']` is referenced in the provided Python code; if not, replaces a specific
        part of the code with `chatstatus['output-directory']`.
     2. Attempts to evaluate the Python code using `eval()`.
+    
+    :param python_code: The Python code to be executed.
+    :type python_code: str
+    :param chatstatus: A dictionary containing the chat status, including configuration settings and possibly `chatstatus['output-directory']`.
+    :type chatstatus: dict
 
-    Parameters
-    ----------
-    python_code : str
-        The Python code to be executed.
-
-    chatstatus : dict
-        A dictionary containing the chat status, including configuration settings and possibly `chatstatus['output-directory']`.
-
-    Notes
-    -----
-    - This function is typically called after extracting Python code from a response in a conversational context but it can be called from the `coder.codeCaller()` as well.
-    - It assumes the presence of `eval()`-compatible Python code and handles basic error handling.
+    :notes:
+        - This function is typically called after extracting Python code from a response in a conversational context but it can be called from the `coder.codeCaller()` as well.
+        - It assumes the presence of `eval()`-compatible Python code and handles basic error handling.
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -208,20 +208,15 @@ def get_arguments_from_code(code):
     that are typically passed to a Python script. It assumes the arguments are directly
     embedded in the provided string and separated by commas.
 
-    Parameters
-    ----------
-    code : str
-        The Python code or function call string containing comma-separated arguments.
-
-    Returns
-    -------
-    list of str
-        A list containing individual arguments extracted from the `code` string.
-
-    Notes
-    -----
-    - The function does not perform validation or parsing beyond simple comma splitting.
-    - It assumes the input `code` string represents valid Python syntax.
+    :param code: The Python code or function call string containing comma-separated arguments.
+    :type code: str
+    
+    :returns: A list containing individual arguments extracted from the `code` string.
+    :rtype: list of str
+    
+    :note:
+        - The function does not perform validation or parsing beyond simple comma splitting.
+        - It assumes the input `code` string represents valid Python syntax.
 
     Example
     -------
@@ -244,21 +239,16 @@ def find_py_files(path):
     This function searches for all Python files (.py) in the given directory and its subdirectories,
     returning a list of the file names without their extensions.
 
-    Parameters
-    ----------
-    path : str
-        The directory path where the search for Python files should begin.
-
-    Returns
-    -------
-    list of str
-        A list of Python file names (without the .py extension) found in the specified directory.
-
-    Notes
-    -----
-    - The function constructs a search pattern for .py files using `os.path.join` and `glob.glob`.
-    - It searches recursively (`recursive=True`) to find all matching .py files in subdirectories.
-    - The file names are extracted from the full paths and the .py extension is removed.
+    :param path: The directory path where the search for Python files should begin.
+    :type path: str
+    
+    :returns: A list of Python file names (without the .py extension) found in the specified directory.
+    :rtype: list of str
+    
+    :note:
+        - The function constructs a search pattern for .py files using `os.path.join` and `glob.glob`.
+        - It searches recursively (`recursive=True`) to find all matching .py files in subdirectories.
+        - The file names are extracted from the full paths, and the .py extension is removed.
 
     Example
     -------
@@ -300,22 +290,18 @@ def find_closest_function(query, functions):
     to the provided query within the list of function names. It returns the best match
     if any matches are found, otherwise it returns None.
 
-    Parameters
-    ----------
-    query : str
-        The query string to match against the list of functions.
-    functions : list of str
-        The list of function names to search within.
-
-    Returns
-    -------
-    str or None
-        The closest matching function name if a match is found; otherwise, None.
-
-    Notes
-    -----
-    - The function uses `difflib.get_close_matches` with `n=1` to find the single closest match
-      and `cutoff=0.0` to include all possible matches regardless of similarity.
+    :param query: The query string to match against the list of functions.
+    :type query: str
+    
+    :param functions: The list of function names to search within.
+    :type functions: list of str
+    
+    :returns: The closest matching function name if a match is found; otherwise, None.
+    :rtype: str or None
+    
+    :note:
+        - The function uses `difflib.get_close_matches` with `n=1` to find the single closest match
+          and `cutoff=0.0` to include all possible matches regardless of similarity.
 
     Example
     -------
@@ -343,47 +329,42 @@ def read_python_docstrings(file_path):
 
     This function extracts lines that are inside triple-quoted strings at the beginning of the file. It stops reading further lines once it encounters a line that does not belong to the docstring anymore.
 
-    Parameters
-    ----------
-    file_path : str
-        The path to the Python file from which to read the docstrings.
-
-    Returns
-    -------
-    str
-        A string containing the extracted docstrings, with each line separated by a newline character.
-
-    Notes
-    -----
-    - The function assumes that the docstrings are located at the beginning of the Python file.
-    - It stops reading further lines once a line that does not start with triple or double quotes
-      is encountered, assuming that the docstrings are defined as per Python conventions.
-    - The function preserves leading and trailing spaces in the docstring lines.
-
+    :param file_path: The path to the Python file from which to read the docstrings.
+    :type file_path: str
+    
+    :returns: A string containing the extracted docstrings, with each line separated by a newline character.
+    :rtype: str
+    
+    :note:
+        - The function assumes that the docstrings are located at the beginning of the Python file.
+        - It stops reading further lines once a line that does not start with triple or double quotes
+          is encountered, assuming that the docstrings are defined as per Python conventions.
+        - The function preserves leading and trailing spaces in the docstring lines.
+    
     Example
     -------
-    Given a Python file '/path/to/module.py' with the following content:
-
-    ```
-    '''
-    This is a sample module.
-
-    It demonstrates how to read docstrings from a Python file.
-    '''
-    def my_function():
-        pass
-    ```
-
-    Calling `read_python_docstrings('/path/to/module.py')` would return:
-    ```
-    '''
-    This is a sample module.
-
-    It demonstrates how to read docstrings from a Python file.
-    '''
-    ```
-
-    If the Python file does not start with a docstring, an empty string ('') is returned.
+    >>> Given a Python file '/path/to/module.py' with the following content:
+    >>> 
+    >>> ```
+    >>> '''
+    >>> This is a sample module.
+    >>> 
+    >>> It demonstrates how to read docstrings from a Python file.
+    >>> '''
+    >>> def my_function():
+    >>>     pass
+    >>> ```
+    >>> 
+    >>> Calling `read_python_docstrings('/path/to/module.py')` would return:
+    >>> ```
+    >>> '''
+    >>> This is a sample module.
+    >>> 
+    >>> It demonstrates how to read docstrings from a Python file.
+    >>> '''
+    >>> ```
+    >>> 
+    >>> If the Python file does not start with a docstring, an empty string ('') is returned.
 
     """
     # Auth: Joshua Pickard
@@ -461,30 +442,30 @@ def extract_python_code(llm_output, scriptPath, chatstatus, memory=None):
     typically extracting the final line of generated code intended for execution. It handles
     special cases where the generated code might need modification or formatting.
 
-    Parameters:
-    llm_output (str): The complete output string from the LLM tool, which includes generated Python code.
-
-    Returns:
-    str: The Python code to be executed.
-
-    Notes:
-    - The function assumes that the LLM output contains the generated Python code as the final line.
-    - It may modify the format of the code for compatibility or execution purposes.
-    - If the LLM output does not conform to expectations, this function may need adjustment.
-
-    Example:
-    If llm_output is:
-    ```
-    Some generated code...
-    Execute: subprocess.call([sys.executable, 'script.py'])
-    ```
-    Calling `extract_python_code(llm_output, chatstatus)` would return:
-    ```
-    subprocess.run([sys.executable, 'script.py'])
-    ```
-
-    If the LLM output does not include a valid Python execution command, the function might modify
-    or construct one based on expected patterns.
+    :param llm_output: The complete output string from the LLM tool, which includes generated Python code.
+    :type llm_output: str
+    
+    :returns: The Python code to be executed.
+    :rtype: str
+    
+    :note:
+        - The function assumes that the LLM output contains the generated Python code as the final line.
+        - It may modify the format of the code for compatibility or execution purposes.
+        - If the LLM output does not conform to expectations, this function may need adjustment.
+    
+    :example:
+        If `llm_output` is:
+        ```
+        Some generated code...
+        Execute: subprocess.call([sys.executable, 'script.py'])
+        ```
+        Calling `extract_python_code(llm_output, chatstatus)` would return:
+        ```
+        subprocess.run([sys.executable, 'script.py'])
+        ```
+    
+        If the LLM output does not include a valid Python execution command, the function might modify
+        or construct one based on expected patterns.
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -540,13 +521,17 @@ def editPythonCode(funcCall, errorMessage, memory, chatstatus):
     """
     Edit the Python code based on the error message and chat status, with recursion depth limit.
 
-    Parameters:
-    funcCall (str): The Python code to be edited.
-    errorMessage (str): The error message related to the code.
-    chatstatus (dict): Dictionary containing chat status and configuration.
-
-    Returns:
-    str: The edited Python code ready for execution, or an error message if recursion limit is reached.
+    :param funcCall: The Python code to be edited.
+    :type funcCall: str
+    
+    :param errorMessage: The error message related to the code.
+    :type errorMessage: str
+    
+    :param chatstatus: Dictionary containing chat status and configuration.
+    :type chatstatus: dict
+    
+    :returns: The edited Python code ready for execution, or an error message if recursion limit is reached.
+    :rtype: str
     """
 
     # Auth: Joshua Pickard
@@ -609,11 +594,12 @@ def has_unclosed_symbols(s):
     parentheses, brackets, or braces. It returns True if there are unclosed
     symbols, and False otherwise.
 
-    Parameters:
-    s (str): The string to check for unclosed symbols.
+    :param s: The string to check for unclosed symbols.
+    :type s: str
 
-    Returns:
-    bool: True if there are unclosed symbols, False otherwise.
+    :returns: True if there are unclosed symbols, False otherwise.
+    :rtype: bool
+
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -645,3 +631,4 @@ def has_unclosed_symbols(s):
         i += 1
     
     return bool(stack)
+

@@ -7,8 +7,11 @@ and more. Each function is designed to abstract repetitive operations and enhanc
 and reliability. The functions in this module can be imported as needed when building different aspects of the
 BRAD framework. 
 
+
 Methods
 -------
+
+This module contains the following methods:
 """
 
 import re

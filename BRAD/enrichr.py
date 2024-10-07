@@ -1,3 +1,16 @@
+"""
+Enrichr
+-------
+
+This module provides functionality to perform gene enrichment analysis using the `Enrichr <https://maayanlab.cloud/Enrichr/>`_ service. 
+It includes functions to query the Enrichr database with a list of genes and retrieve enrichment results that can be displayed, saved, and plotted.
+
+Methods
+~~~~~~~
+
+This module has the following methods:
+
+"""
 import pandas as pd
 from copy import deepcopy
 import os

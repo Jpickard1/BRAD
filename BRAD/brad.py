@@ -4,6 +4,50 @@ The `brad` module serves as the main interface for user interactions, whether th
 The `Agent` class creates a single chatbot instance that can be queried in various ways. 
 
 The `brad.chat` method allows users to initiate a command line chat session without needing to create an `Agent` instance.
+
+Main Methods
+-------------
+
+Main Methods:
+    
+1. `Agent.chat`
+    This method creates a chat session where a user and `Agent` can have a conversation with back-and-forth inputs.
+2. `Agent.invoke`
+    This method responds to an individual user query with a single tool.
+
+.. _state-schema-section:
+
+State Schema
+------------
+
+The `Agent` state is managed within a dictionary called `Agent.state`. This dictionary tracks the agents inputs, outputs, memory, configurations, and more.
+To pass this information between the `Agent` and each tool the `state` dictionary is passed as the single input to each tool module. The `state` is structured as:
+
+>>> Agent.state = {
+... 'config'            : {
+...     <configuration variables>
+... },
+... 'prompt'            : <user input>,
+... 'output'            : <streaming output of Agent>,
+... 'memory'            : <agent memory>,
+... 'process'           : {
+...     'MODULE'        : <Tool module used to respond to user input>,
+...     <module specific information>: {
+...         ...
+...     }
+... },
+... 'queue'             : [<list of instructions to follow>],
+... 'queue pointer'     : <instruction pointer to the queue>,
+... 'llm-api-calls'     : <number of LLM calls used by Agent>,
+... 'recursion_depth'   : <amount of recursion the Agent is using>
+>>> }
+    
+Class Methods
+-------------
+
+The `Agent` class is organized as follows:
+
+
 """
 # Standard
 import pandas as pd
