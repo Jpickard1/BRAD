@@ -6,7 +6,7 @@ brad = chatbot(interactive=False)
 
 @app.route("/invoke", methods=['POST'])
 def hello_world():
-    request_data = request.json()
+    request_data = request.json
     brad_query = request_data.get("message")
     brad_response = brad.invoke(brad_query)
     response_data = {
