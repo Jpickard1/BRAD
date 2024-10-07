@@ -1,47 +1,8 @@
 """
-Planner Module
-
-This module provides functions for generating and managing sequences of steps (pipelines) 
-to be executed by other BRAD modules. The core function, `planner`, interacts with the user 
-via language models to create a detailed plan based on a prompt, allowing for customization 
-and saving of pipelines. It also supports selecting pre-existing pipelines or designing new ones 
+This module provides functions for generating and managing agentic workflows or pipelines with multiple steps
+each to be executed by individual tool modules. The main method, `planner`, builds pipelines based on user input
+and the available modules. It also supports selecting pre-existing pipelines or designing new ones 
 when necessary.
-
-Functionality:
---------------
-- The `planner` function is the primary function, designed to interact with the user, 
-  generate or select pipelines, and update the system state with finalized plans.
-- Users are allowed to edit and customize generated plans, with options to save new pipelines.
-- Prebuilt pipelines can be reused, or users can create custom ones as needed.
-- Includes utilities for displaying pipelines to the user and saving them for future use.
-
-Dependencies:
--------------
-- `langchain` for handling conversations with the language model (LLM).
-- `BRAD.promptTemplates` for custom prompt templates used in planning.
-- `BRAD.log` for logging interactions and debugging.
-- Python standard libraries: `os`, `re`, `json`, and `difflib`.
-
-Author:
--------
-Joshua Pickard  
-jpic@umich.edu  
-June 16, 2024
-
-Changelog:
-----------
-- **2024-06-16**: Initial draft of the `planner` function.
-- **2024-07-25**: Refactored to include pipeline saving and rerunning features.
-
-TODOs:
-------
-- Add functionality for automatically filling template pipelines.
-- Improve pipeline parsing into prompts and queues.
-
-Issues:
--------
-- Parsing new or custom pipelines into prompts and queues could be optimized.
-- Queues are currently implemented as lists but may benefit from being a class structure for better flexibility.
 """
 
 
@@ -71,19 +32,6 @@ def planner(chatstatus):
         dict: The updated chatstatus containing the finalized plan and any modifications 
               made during the process.
 
-    Example
-    -------
-    >>> chatstatus = {
-    ...     'llm': llm_instance,
-    ...     'prompt': "Plan my week",
-    ...     'databases': {'RAG': vectordb_instance},
-    ...     'memory': memory_instance,
-    ...     'config': {
-    ...         'debug': True
-    ...     },
-    ...     'process': {'steps': []}
-    ... }
-    >>> updated_chatstatus = planner(chatstatus)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -309,11 +257,11 @@ def planner(chatstatus):
 def displayPipeline2User(process, chatstatus=None):
     """
     Displays the steps of the process pipeline to the user, logging each step.
-
+    
     This function iterates through the steps of a process pipeline, outputs each step to the user in a
     standardized format, and updates the chat status with the logged outputs. Each step is labeled as
-    "** Step X **", where X is the key, followed by the corresponding value of the process step.
-
+    **Step X**, where X is the key, followed by the corresponding value of the process step.
+    
     :param process: A dictionary representing the process pipeline. Each key-value pair corresponds 
                     to a step in the process, where the key is the step number or name, and the value 
                     is the step's description or details.
@@ -321,25 +269,10 @@ def displayPipeline2User(process, chatstatus=None):
     :param chatstatus: The current chat status dictionary to which the output will be appended. If not 
                        provided, a default value of `None` is used.
     :type chatstatus: dict, optional
-
+    
     :return: The updated chat status after logging all process steps.
     :rtype: dict
-
-    Example:
-    --------
-    To display and log a process pipeline with two steps:
-    >>> process = {
-            1: "Initialize chatbot",
-            2: "Execute query"
-        }
-    >>> chatstatus = displayPipeline2User(process, chatstatus)
     
-    This will log and display:
-    ** Step 1 **
-    Initialize chatbot
-    
-    ** Step 2 **
-    Execute query
     """
     for key, value in process.items():
         chatstatus=log.userOutput("** Step " + str(key) + "**", chatstatus=chatstatus)
@@ -352,47 +285,46 @@ def response2processes(response):
     Converts a response string into a list of processes, each with an order, module, 
     prompt, and description. It identifies modules from a predefined list and parses 
     the response into steps based on these modules.
-
+    
     Args:
         response (str): The response string containing the steps and corresponding details.
-
+    
     Returns:
         list: A list of dictionaries, each representing a process with the following keys:
               - 'order': The order of the process.
               - 'module': The module associated with the process.
               - 'prompt': The prompt to invoke the process.
               - 'description': A description of the process.
-
-    Example
-    -------
-    >>> response = '''
-    ... **Step 1: RAG**
-    ... Prompt: Retrieve documents related to AI research
-    ... **Step 2: SCRAPE**
-    ... Prompt: Scrape data from the specified website
-    ... '''
-    >>> processes = response2processes(response)
-    >>> print(processes)
-    [
-        {
-            'order': 0,
-            'module': 'PLANNER',
-            'prompt': None,
-            'description': 'This step designed the plan. It is placed in the queue because we needed a place holder for 0 indexed lists.',
-        },
-        {
-            'order': 1,
-            'module': 'RAG',
-            'prompt': '/force RAG Retrieve documents related to AI research',
-            'description': '**Step 1: RAG\nPrompt: Retrieve documents related to AI research\n',
-        },
-        {
-            'order': 2,
-            'module': 'SCRAPE',
-            'prompt': '/force SCRAPE Scrape data from the specified website',
-            'description': '**Step 2: SCRAPE\nPrompt: Scrape data from the specified website\n',
-        }
-    ]
+    
+    Example:
+        >>> response = '''
+        ... **Step 1: RAG**
+        ... Prompt: Retrieve documents related to AI research
+        ... **Step 2: SCRAPE**
+        ... Prompt: Scrape data from the specified website
+        ... '''
+        >>> processes = response2processes(response)
+        >>> print(processes)
+        [
+            {
+                'order': 0,
+                'module': 'PLANNER',
+                'prompt': None,
+                'description': 'This step designed the plan. It is placed in the queue because we needed a placeholder for 0-indexed lists.',
+            },
+            {
+                'order': 1,
+                'module': 'RAG',
+                'prompt': '/force RAG Retrieve documents related to AI research',
+                'description': '**Step 1: RAG\\nPrompt: Retrieve documents related to AI research\\n',
+            },
+            {
+                'order': 2,
+                'module': 'SCRAPE',
+                'prompt': '/force SCRAPE Scrape data from the specified website',
+                'description': '**Step 2: SCRAPE\\nPrompt: Scrape data from the specified website\\n',
+            }
+        ]
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -446,12 +378,6 @@ def getKnownPipelines(chatstatus):
             - summary (str): A formatted string summarizing the 'name' and 'description'
               of each pipeline.
     
-    Example Usage:
-        pipelines, summary = getKnownPipelines(chatstatus)
-        print(summary)
-        # Output:
-        # Name: Pipeline1  Description: This is the first pipeline.
-        # Name: Pipeline2  Description: This is the second pipeline.
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu

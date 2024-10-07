@@ -1,7 +1,23 @@
 """
-Module for managing routes using the semantic_router library and for the planner. This module includes functions
-for reading and writing prompts, configuring routes, and building router layers with predefined routes.
+This module manages routing decisions for both individual user inputs and agentic workflows using the semantic_router 
+library. It serves two key purposes within the BRAD framework: determining which tool or module to use for a specific 
+input, and orchestrating multi-step workflows by selecting the next stage in the process.
+
+1. **Tool Selection for Single Inputs**:  
+   When receiving input from a user, the router evaluates the context and selects the appropriate tool or module to handle 
+   the input. This ensures that the most suitable functionality is used to process each user request, improving the efficiency 
+   and accuracy of interactions. Semantic routing is used for this level or organization, and the routing database may be dynamically
+   updated as more user queries are recieved.
+
+2. **Agentic Workflow Management**:  
+   For agent-driven processes, the router manages the progression of tasks in a predefined workflow designed by the `planner`. It selects the next 
+   step based on the current state and the broader workflow plan, ensuring smooth transitions between stages. This feature is organized by the LLM and
+   is essential for workflows that involve multiple steps, tools, or decision points.
+
+Methods
+-------
 """
+
 import os
 import json
 from semantic_router import Route
@@ -17,28 +33,17 @@ from BRAD import utils
 
 def reroute(chatstatus):
     """
-    Reroutes the conversation flow based on the current queue pointer and the user prompt. 
-    It retrieves historical chat logs, incorporates them into the conversation, and determines 
-    the next step in the pipeline using a language model.
-
-    Args:
-        chatstatus (dict): A dictionary containing the language model, user prompt, queue of processes, 
-                           and other relevant information for rerouting the conversation.
-
-    Returns:
-        dict: The updated chatstatus containing the modified queue pointer and any logs or updates made 
-              during the rerouting process.
-
-    Example
-    -------
-    >>> chatstatus = {
-    ...     'llm': llm_instance,
-    ...     'prompt': "Reroute conversation",
-    ...     'queue': [{'order': 1, 'module': 'RAG', 'prompt': '/force RAG Retrieve documents', 'description': '...'}],
-    ...     'output-directory': '/path/to/output',
-    ...     'process': {'steps': []}
-    ... }
-    >>> updated_chatstatus = reroute(chatstatus)
+    Reroutes the conversation flow for agentic workflows based on the current queue pointer and the user prompt.
+    
+    This method uses the agent history and ongoing conversation, along with an LLM, 
+    to determine the subsequent step in the agentic workflow designed by the planner.
+    
+    :param chatstatus: A dictionary that holds the current state of the conversation, including the language model, 
+                       the user prompt, the process queue, and any other relevant information necessary for 
+                       effectively rerouting the conversation.
+    
+    :returns: An updated chatstatus dictionary reflecting changes made during the rerouting process.
+    :rtype: dict
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -94,16 +99,19 @@ def reroute(chatstatus):
 
 def read_prompts(file_path):
     """
-    Reads a text file where each line represents a sentence and returns a list of sentences.
+    Reads a text file where each line contains a sentence and returns a list of non-empty sentences. The
+    files contain previously used user inputs associated with tool modules.
+
+    This function opens the specified text file, reads each line, and returns a list containing the 
+    sentences. Leading and trailing whitespace is removed from each line, and empty lines are ignored.
 
     :param file_path: The path to the text file to be read.
     :type file_path: str
 
-    :raises FileNotFoundError: If the specified file does not exist.
+    :raises FileNotFoundError: If the specified file cannot be found.
 
-    :return: A list of sentences read from the text file.
-    :rtype: list
-
+    :return: A list of non-empty sentences extracted from the text file.
+    :rtype: list[str]
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -119,7 +127,7 @@ def read_prompts(file_path):
 
 def add_sentence(file_path, sentence):
     """
-    Adds a new sentence to the specified text file.
+    Adds a new sentence to the specified text file. These files contain user inputs associated with tool modules.
 
     :param file_path: The path to the text file where the sentence is to be added.
     :type file_path: str
@@ -127,9 +135,6 @@ def add_sentence(file_path, sentence):
     :type sentence: str
 
     :raises FileNotFoundError: If the specified file does not exist or cannot be created.
-
-    :return: None
-    :rtype: None
 
     """
     # Auth: Joshua Pickard
@@ -161,11 +166,9 @@ def getRouterPath(file):
     
 def getRouter():
     """
-    Returns a router layer configured with predefined routes for various tasks.
-
-    :param None: This function does not take any parameters.
-
-    :raises None: This function does not raise any specific errors.
+    Constructs a semantic router layer configured to determine the correct tool module for user queries.
+    This routing layer uses the routing files and previously used user inputs as data to predict which
+    tool module to use. These routing files are updated over time.
 
     :return: A router layer configured with predefined routes for tasks such as querying Enrichr, web scraping, and generating tables.
     :rtype: RouteLayer
@@ -236,15 +239,16 @@ def getRouter():
 
 def buildRoutes(prompt):
     """
-    Builds routes based on the provided prompt and updates the corresponding text files with the new prompts.
+    Constructs routes based on the provided prompt and updates the corresponding text files with the new prompts.
+
+    This function processes the input prompt to identify specific commands (e.g., `/force`) 
+    and builds a new prompt that is then appended to the designated router text file based on 
+    the identified route. Each command maps to a specific file, and if the command is not 
+    recognized, a KeyError will be raised.
 
     :param prompt: The prompt containing the information to be added to the router.
     :type prompt: str
-
     :raises KeyError: If the specified route is not found in the paths dictionary.
-
-    :return: None
-    :rtype: None
 
     """
     # Auth: Joshua Pickard

@@ -1,52 +1,5 @@
 """
-This module provides template generation for various bioinformatics pipeline planning and execution tasks. It defines several templates for chatbot-guided workflows, enabling automation and organization of multi-step bioinformatics analyses. The templates help the chatbot formulate detailed analysis steps, select appropriate scripts, route tasks, and generate Python execution commands.
-
-## Functions:
-
-1. **plannerTemplate**:
-   Generates a template for planning a bioinformatics pipeline. It provides instructions for outlining a multi-step workflow using available methods such as RAG (literature lookup), SCRAPE (search platforms like PubMed), DATABASE (gene set enrichment), CODE (execute pipelines), WRITE (synthesize reports), and ROUTER (determine the next step).
-   
-   - **Returns**: A formatted string with placeholders for the chatbot to guide each step of the bioinformatics pipeline.
-
-2. **plannerTemplateForLibrarySelection**:
-   Creates a template to determine if a predesigned pipeline exists to respond to the user's query or if a custom pipeline is required.
-   
-   - **Returns**: A formatted string where the chatbot compares available pipelines or selects a custom pipeline for later design.
-
-3. **plannerEditingTemplate**:
-   Generates a template for revising an existing pipeline based on new user requirements or changes. It helps the chatbot adjust the plan while specifying the methods used at each step.
-   
-   - **Returns**: A formatted string for chatbot-guided pipeline modification, indicating step dependencies and updated instructions.
-
-4. **rerouteTemplate**:
-   Provides a template for determining the next step in a bioinformatics pipeline based on prior outputs and conversation history.
-   
-   - **Returns**: A formatted string that helps the chatbot decide the next step and provide reasoning for the choice.
-
-5. **scrapeTemplate**:
-   Generates a template for scraping relevant research papers from platforms like arXiv, PubMed, and bioRxiv. The template provides specific search terms tailored to the user's query and avoids overly general search terms.
-   
-   - **Returns**: A formatted string with instructions for generating optimized search terms and selecting the correct database.
-
-6. **scriptSelectorTemplate**:
-   Creates a template for selecting the most appropriate bioinformatics script based on the user's query from a list of available scripts.
-   
-   - **Returns**: A formatted string where the chatbot selects the best-matching script and provides reasoning.
-
-7. **pythonPromptTemplate**:
-   Generates a template for executing a Python script based on user queries. It includes subprocess calls to execute Python scripts with no or multiple arguments.
-   
-   - **Returns**: A formatted string that helps the chatbot construct the appropriate `subprocess.call` command to run a Python script.
-
-8. **pythonPromptTemplateWithFiles**:
-   Similar to `pythonPromptTemplate`, but with additional functionality to handle input files. It generates a template for executing Python scripts that require previously created files.
-   
-   - **Returns**: A formatted string that includes file-handling instructions for the chatbot.
-
-9. **getPythonEditingTemplate**:
-   Generates a template for assisting in editing Python code based on chatbot interactions and user feedback, focusing on making the code runnable.
-   
-   - **Returns**: A formatted string to help the chatbot guide Python code editing.
+This module organizes all templates for inputing the conversation, user inputs, documents, file selection, or other information into an LLM throughout BRAD. Each method returns a single template, in the form of a string, that contains spaces for designed keywords to be filled in with the appropriate information.
 """
 
 
@@ -535,16 +488,6 @@ def historyChatTemplate():
     return template
 
 def getDefaultContext():
-    """
-    Returns the default context string for the chatbot, which provides background information and capabilities.
-
-    :param None: This function does not take any parameters.
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A string containing the default context for the chatbot.
-    :rtype: str
-    """
     llmContext = """Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,
 bioinformatics, genetics, and data science. You can be connected to a text database to augment your answers
 based on the literature with Retrieval Augmented Generation, or you can use several additional modules including

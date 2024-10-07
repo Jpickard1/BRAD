@@ -1,26 +1,14 @@
 """
-Module: utils
+This module provides a set of utility functions designed to streamline common tasks related to file management, 
+data handling, directory operations, and more across the core and tool modules. The goal of this module is to offer
+a reusable, general-purpose utilities that simplify routine tasks that interface the LLM with other aspects of the
+code. These tasks include saving and loading files, ensuring directories  exist, generating standardized file paths,
+and more. Each function is designed to abstract repetitive operations and enhance code clarity, maintainability,
+and reliability. The functions in this module can be imported as needed when building different aspects of the
+BRAD framework. 
 
-This module provides a collection of utility functions that facilitate common tasks for large language models (LLMs) 
-across various modules. These functions are designed to simplify file management, data handling, and directory 
-operations, enabling LLMs to perform essential tasks efficiently.
-
-Key Functions:
---------------
-1. save(data, path): Saves the provided data to a specified file path.
-2. savefig(fig, path): Saves a given figure to a specified file path in a suitable format.
-3. ensure_directory_exists(directory): Checks if a directory exists; if not, it creates the directory.
-4. pdfDownloadPath(base_path): Generates a standard download path for PDF files based on the base path.
-5. getOutputFiles(directory): Retrieves a list of output files from the specified directory.
-6. makeNamesConsistent(names): Normalizes and standardizes a list of names for consistency.
-7. loadFile(path): Loads data from a specified file path and returns the content.
-8. fileFieldSelector(data, field): Selects specific fields from a data structure based on the provided field name.
-9. (additional utility functions as needed...)
-
-Usage:
-------
-These utility functions are intended to be imported and used in various modules that require basic functionalities 
-related to file and data handling. By centralizing these common tasks, the codebase remains organized and efficient.
+Methods
+-------
 """
 
 import re
@@ -59,15 +47,6 @@ def save(chatstatus, data, name):
     Raises:
         ValueError: If the data type is not a DataFrame for CSV or a string for .tex files.
 
-    Example
-    -------
-    >>> chatstatus = {
-    >>>     'queue': [{'order': 1}],
-    >>>     'output-directory': '/path/to/output',
-    >>>     'process': {'steps': []}
-    >>> }
-    >>> data = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})
-    >>> save(chatstatus, data, 'results.csv')
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -113,16 +92,6 @@ def savefig(chatstatus, ax, name):
     Returns:
         dict: The updated `chatstatus` dictionary with information about the saved file.
 
-    Example
-    -------
-    >>> chatstatus = {
-    >>>     'queue': [{'order': 1}],
-    >>>     'output-directory': '/path/to/output',
-    >>>     'config': {'image-path-extension': 'images'},
-    >>>     'process': {'steps': []}
-    >>> }
-    >>> fig, ax = plt.subplots()
-    >>> savefig(chatstatus, ax, 'figure.png')
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -154,10 +123,6 @@ def ensure_directory_exists(file_path, chatstatus):
     Args:
         file_path (str): The full file path for which the directory needs to be checked/created.
 
-    Example
-    -------
-    >>> ensure_directory_exists('/path/to/output/figure.png', chatstatus)
-    >>> # If the directory '/path/to/output' does not exist, it will be created.
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -185,11 +150,6 @@ def pdfDownloadPath(chatstatus):
     Returns:
         str: The complete file path for downloading PDF files.
 
-    Example
-    -------
-    >>> chatstatus = {'output-directory': '/path/to/output'}
-    >>> pdf_path = pdfDownloadPath(chatstatus)
-    >>> # pdf_path will be '/path/to/output/pdf'
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -211,13 +171,6 @@ def outputFiles(chatstatus):
     Returns:
         list: A list of filenames present in the output directory.
 
-    Example
-    -------
-    >>> chatstatus = {
-    >>>     'output-directory': '/path/to/output'
-    >>> }
-    >>> files = outputFiles(chatstatus)
-    >>> # files will be a list of filenames in '/path/to/output'
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -243,16 +196,6 @@ def makeNamesConsistent(chatstatus, files):
     Returns:
         dict: Updated chatstatus with renamed files logged in 'process' steps.
 
-    Example
-    -------
-    >>> chatstatus = {
-    >>>     'queue': [{'order': 1}],
-    >>>     'output-directory': '/path/to/output',
-    >>>     'process': {'steps': []}
-    >>> }
-    >>> files = ['file1.txt', 'file2.txt']
-    >>> updated_chatstatus = makeNamesConsistent(chatstatus, files)
-    >>> # Files will be renamed to include the stage number and logged in chatstatus['process']['steps']
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -328,15 +271,6 @@ def loadFromFile(chatstatus):
     Returns:
         tuple: Updated chatstatus dictionary and a list of values from the specified fields in the file.
 
-    Example
-    -------
-    >>> chatstatus = {
-    >>>     'prompt': 'Choose a file containing gene expression data.',
-    >>>     'llm': your_language_model_instance,
-    >>>     'output-directory': '/path/to/output',
-    >>>     'process': {'steps': []}
-    >>> }
-    >>> updated_chatstatus, field_values = loadFromFile(chatstatus)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -434,15 +368,6 @@ def fieldSelectorFromDataFrame(chatstatus, df):
     Returns:
         tuple: Updated chatstatus dictionary and the selected field as a string.
 
-    Example
-    -------
-    >>> chatstatus = {
-    >>>     'prompt': 'Choose a column for analysis.',
-    >>>     'llm': your_language_model_instance,
-    >>>     'process': {'steps': []}
-    >>> }
-    >>> df = pd.DataFrame({'Gene': ['BRCA1', 'TP53'], 'Expression': [5.6, 8.2]})
-    >>> updated_chatstatus, selected_field = fieldSelectorFromDataFrame(chatstatus, df)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -487,10 +412,6 @@ def word_similarity(word1, word2):
         float: A float value between 0 and 1 representing the similarity ratio. A value of 1.0 means the words
                are identical, while 0.0 means they are completely different.
 
-    Example
-    -------
-    >>> similarity = word_similarity("apple", "apples")
-    >>> print(similarity)  # Output might be a high value close to 1.0
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -514,10 +435,6 @@ def outputFromPriorStep(chatstatus, step, values=None):
     Returns:
         pandas.DataFrame: The DataFrame containing the data from the output file of the specified step. If specific columns are provided, only those columns are included.
 
-    Example
-    -------
-    >>> df = outputFromPriorStep(chatstatus, "2", values=["gene", "expression"])
-    >>> print(df)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -556,10 +473,6 @@ def compile_latex_to_pdf(chatstatus, tex_file):
     Raises:
         FileNotFoundError: If the specified LaTeX file does not exist.
 
-    Example
-    -------
-    >>> chatstatus = {'output-directory': '/path/to/output'}
-    >>> chatstatus = compile_latex_to_pdf(chatstatus, 'report.tex')
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -601,13 +514,13 @@ def add_output_file_path_to_string(string, chatstatus):
     function inserts the append path before the file name.
 
     Parameters:
-    string (str): The input string to be modified.
-    chatstatus (dict): A dictionary containing chat status information, including 
-                       'output-path' and a function outputFiles that returns a list 
-                       of generated file names.
+        string (str): The input string to be modified.
+        chatstatus (dict): A dictionary containing chat status information, including 
+                           'output-path' and a function outputFiles that returns a list 
+                           of generated file names.
 
     Returns:
-    str: The modified string with appropriate file paths included.
+        str: The modified string with appropriate file paths included.
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -641,13 +554,6 @@ def load_file_to_dataframe(filename):
     -------
         pd.DataFrame or None: The loaded DataFrame if successful, or None if the file extension is not supported.
 
-    Example
-    -------
-    >>> df = load_file_to_dataframe('data.csv')
-    >>> if df is not None:
-    >>>     print(df.head())
-    >>> else:
-    >>>     print("Unsupported file format.")
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
