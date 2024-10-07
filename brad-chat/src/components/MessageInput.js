@@ -5,6 +5,7 @@ function MessageInput({ onSendMessage }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (message.trim()) {
       onSendMessage(message);
       setMessage('');
