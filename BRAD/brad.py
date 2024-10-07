@@ -1,14 +1,9 @@
 """
-This module provides a framework for a chatbot that interacts with various language models, databases, and software. These include literature-augmented generation, spreadsheet manipulation, web scraping, and more. The chatbot uses a combination of natural language processing models and specific task-oriented modules to handle user queries and provide relevant responses.
+The `brad` module serves as the main interface for user interactions, whether through a graphical user interface (GUI), command line, or programmatically.
 
-To integrate various capabilities with `brad.py`, three features are used:
+The `Agent` class creates a single chatbot instance that can be queried in various ways. 
 
-    1. Semantic Routing: fast routing is used determine which module should process each user query.
-
-    2. Unified chat status: the `state` variable is used to manage language models, memory, debugging, and other configuration settings for different modules.
-
-    3. Standardized file sharing: the `utils.py` module standardizes how all data and new files are managed.
-
+The `brad.chat` method allows users to initiate a command line chat session without needing to create an `Agent` instance.
 """
 # Standard
 import pandas as pd
@@ -73,8 +68,36 @@ from BRAD.writer import summarizeSteps, chatReport
 from BRAD import log
 from BRAD.bradllm import BradLLM
 
-class chatbot():
+class Agent():
+    """
+    This class organizes the agentic capabilities of BRAD. It facilitates interactions with external LLMs, tools, core modules, literature, and other databases while managing the chat state and history.
+    
+    Key functions include:
+    
+    1. **invoke(user_input)**: Responds to a single user input.
+    2. **chat()**: Initiates an interactive session between the user and the BRAD agent.
+    
+    To address user queries, the agent employs semantic routing to select the appropriate tool module, generates responses using code from the chosen module, and tracks its state throughout the interaction.
 
+    :param model_path: The path to the Llama model file, defaults to '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'.
+    :type model_path: str, optional
+    :param persist_directory: The directory where the literature database is stored, defaults to "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/".
+    :type persist_directory: str, optional
+    :param llm: The language model to be used. If None, it will be loaded within the function.
+    :type llm: PreTrainedModel, optional
+    :param ragvectordb: The RAG vector database to be used. If None, it will prompt the user to load it.
+    :type ragvectordb: Chroma, optional
+    :param embeddings_model: The embeddings model to be used. If None, it will be loaded within the function.
+    :type embeddings_model: HuggingFaceEmbeddings, optional
+    :param max_api_calls: The maximum number of api / llm calls BRAD can make
+    :type max_api_calls: int, optional
+
+    :raises FileNotFoundError: If the specified model or database directories do not exist.
+    :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
+    :raises KeyError: If required keys are missing from the configuration or chat status.
+    """
+
+    
     def __init__(self,
         model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
         persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/DigitalLibrary-10-June-2024/",
@@ -88,29 +111,6 @@ class chatbot():
         config=None         # This parameter lets a user specify an additional configuration file that will
                             # overwrite configurations with the same key
     ):
-        """
-        Initializes and runs the chatbot.
-    
-        :param model_path: The path to the Llama model file, defaults to '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf'.
-        :type model_path: str, optional
-        :param persist_directory: The directory where the literature database is stored, defaults to "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/Transcription-Factors-5-10-2024/".
-        :type persist_directory: str, optional
-        :param llm: The language model to be used. If None, it will be loaded within the function.
-        :type llm: PreTrainedModel, optional
-        :param ragvectordb: The RAG vector database to be used. If None, it will prompt the user to load it.
-        :type ragvectordb: Chroma, optional
-        :param embeddings_model: The embeddings model to be used. If None, it will be loaded within the function.
-        :type embeddings_model: HuggingFaceEmbeddings, optional
-        :param max_api_calls: The maximum number of api / llm calls BRAD can make
-        :type max_api_calls: int, optional
-    
-        :raises FileNotFoundError: If the specified model or database directories do not exist.
-        :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
-        :raises KeyError: If required keys are missing from the configuration or chat status.
-    
-        :return: None
-        :rtype: None
-        """
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: June 4, 2024
@@ -198,7 +198,32 @@ class chatbot():
 
     def invoke(self, query):
         """
-        This function executes a single query with the chatbot. It is named so that it is used similar to how we invoke or call llms.
+        Executes a single query using the chatbot, similar to invoking a language model.
+    
+        This method processes the user input, determines the appropriate routing 
+        based on explicit commands or the content of the query, and generates a 
+        response using the selected module. It also manages the state of the 
+        chatbot throughout the execution.
+    
+        :param query: The user input to be processed by the chatbot.
+        :type query: str
+    
+        :return: The output generated by the chatbot in response to the input query.
+        :rtype: str
+    
+        :raises Exception: If an error occurs during the execution of the selected module.
+    
+        :example:
+            >>> response = agent.invoke("What's the weather today?")
+        
+        :note: 
+            Special commands recognized include:
+            - "exit", "quit", "q", "bye": Ends the session.
+            - "help": Displays help information.
+            - "/set": Configures settings.
+            - "/force": Forces the use of a specified routing function.
+    
+        This method logs the process and clears memory based on configuration settings.
         """
         # Auth: Joshua Pickard
         #       jpic@umich.edu
@@ -301,7 +326,31 @@ class chatbot():
         return self.state['output']
 
     def chat(self):
-        """This opens a chat session where a user can execute a series of prompts"""
+        """
+        Opens an interactive chat session where users can execute a series of prompts.
+    
+        This method allows users to engage in a back-and-forth dialogue with the chatbot. 
+        Users can input queries, which the chatbot processes and responds to until 
+        the session is terminated. It supports both direct user input and queued prompts.
+    
+        The chat session maintains a record of the conversation and tracks the number 
+        of API calls made to language models. It ensures that the session can be exited 
+        gracefully and provides feedback about the conversation's context.
+    
+        :example:
+            >>> agent.chat()
+        
+        :note:
+            The session continues until the user explicitly decides to exit by 
+            inputting commands like "exit", "quit", or "bye".
+    
+            If a queue of prompts is available, the chatbot will process 
+            them in sequence rather than waiting for user input.
+    
+            The memory can be temporarily integrated to enrich queries, 
+            but its management is handled with care to avoid unintended 
+            modifications.
+        """
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: June 4, 2024
@@ -390,8 +439,14 @@ class chatbot():
         self.state = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + self.chatname, state=self.state)
 
     def updateMemory(self):
-        """Thils function lets BRAD reset his memory to focus on specific previous interactions. This is useful
-        when BRAD is executing a pipeline and want to manage how input flows from one section to the next."""
+        """
+        Thils function lets BRAD reset his memory to focus on specific previous interactions. This is useful
+        when BRAD is executing a pipeline and want to manage how input flows from one section to the next.
+
+        .. warning::
+            This function may be removed in the near future.
+            
+        """
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: July 28, 2024
@@ -415,7 +470,23 @@ class chatbot():
                 
 
     def resetMemory(self):
-        """Thils function undoes the effects of updateMemory."""
+        """
+        Resets the state of the memory by restoring the main memory from the recent messages.
+    
+        This function undoes the effects of the `updateMemory` method by taking
+        the most recent messages from the stage memory and adding them back 
+        into the main memory. It is designed to help maintain a consistent 
+        memory state throughout the agent's execution.
+    
+        .. warning::
+            This function may be removed in the near future.
+    
+        :return: None
+        :rtype: None
+    
+        :example:
+            >>> agent.resetMemory()
+        """
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: July 28, 2024
@@ -432,6 +503,18 @@ class chatbot():
         return
     
     def getLLMcalls(self, steps):
+        """
+        Counts the number of times the LLM has been called used the agent's execution.
+        
+        :param steps: A list of steps from the agents log that have been executed
+        :type steps: list
+        
+        :return: The total number of LLM calls made by the agent.
+        :rtype: int
+        
+        :example:
+            >>> num_calls = agent.getLLMcalls(steps)
+        """
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: July 2024
@@ -473,7 +556,7 @@ class chatbot():
 
     def load_config(self, configfile=None):
         """
-        Loads the configuration settings from a JSON file.
+        Loads the `Agent` configuration settings from a JSON file.
     
         :param None: This function does not take any parameters.
     
@@ -523,17 +606,13 @@ class chatbot():
     
     def save_config(self):
         """
-        Saves the configuration settings to a JSON file.
+        Saves the agent configuration settings to a JSON file.
     
         :param config: A dictionary containing the configuration settings to be saved.
         :type config: dict
     
         :raises FileNotFoundError: If the directory for the configuration file is not found.
-        :raises TypeError: If the configuration dictionary contains non-serializable values.
-    
-        :return: None
-        :rtype: None
-    
+        :raises TypeError: If the configuration dictionary contains non-serializable values.    
         """
         # Auth: Joshua Pickard
         #       jpic@umich.edu
@@ -584,7 +663,7 @@ class chatbot():
 
     def loadstate(self, config=None):
         """
-        Initializes and loads the chat status with default values and configuration settings from a file.
+        Initializes and loads the agent state with default values and configuration settings.
     
         :param None: This function does not take any parameters.
     
@@ -656,14 +735,7 @@ class chatbot():
 
     def chatbotHelp(self):
         """
-        Displays a help message with information about the RAG chatbot's capabilities and special commands.
-    
-        :param None: This function does not take any parameters.
-    
-        :raises None: This function does not raise any specific errors.
-    
-        :return: None
-        :rtype: None
+        Displays a help message to the user with information about the BRAD agents's capabilities and special commands.
         """
         # Auth: Joshua Pickard
         #       jpic@umich.edu
@@ -694,12 +766,22 @@ class chatbot():
     def to_langchain(self):
         """
         This function constructs an object that may be used as an llm in langchain.
+
+        :return: a LangChain compatible LLM instance
+        :rtype: `BradLLM`
         """
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: July 10, 2024
         llm = BradLLM(bot=self)
         return llm
+
+"""
+Chat Interface
+~~~~~~~~~~~~~~
+
+The below method can be used to open a chat session with BRAD without requiring the user to explicitly creat an `Agent` object.
+"""
 
 def chat(
         model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/llama-2-7b-chat.Q8_0.gguf',
@@ -731,9 +813,6 @@ def chat(
     :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
     :raises KeyError: If required keys are missing from the configuration or chat status.
 
-    :return: None
-    :rtype: None
-
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -756,7 +835,7 @@ def chat(
     #               a user can still fun `brad.chat()` easily and without knowledge
     #               of the class structure
 
-    bot = chatbot(
+    bot = Agent(
         model_path = model_path,
         persist_directory = persist_directory,
         llm=llm,
