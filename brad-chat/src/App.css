@@ -82,9 +82,9 @@ body {
   padding: 1em;
   border-radius: 15px;
   font-size: 1em;
+  margin-right: 0.75em;
   flex: 1;
 }
-
 
 .message-input button {
   padding: 5px 10px;
