@@ -5,19 +5,34 @@ The BRAD code offers two distinct interfaces for interaction: a chatbot and a pr
 
 
 
-BRAD Agents
+Agent Class
 -----------
 
 .. automodule:: BRAD.brad
    :members:
    :undoc-members:
 
-BRAD as an LLM
+Agents as LLMs
 --------------
 
 .. automodule:: BRAD.bradllm
    :members:
    :undoc-members:
+
+Graphical User Interface (GUI)
+------------------------------
+
+.. toctree::
+
+    gui
+
+Configurations
+--------------
+
+.. toctree::
+
+    configs
+
 
 Core Modules
 ============
@@ -108,3 +123,4 @@ Software
 .. automodule:: BRAD.pythonCaller
    :members:
    :undoc-members:
+
