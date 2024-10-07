@@ -1,45 +1,12 @@
 """
-This module provides utilities for loading various language models, including LLaMA, NVIDIA, 
-and OpenAI models, for use within the BRAD framework. The module defines functions that facilitate
-the setup and initialization of these models by specifying key parameters such as model paths, 
-API keys, and optional configurations like token limits and temperature.
+This module provides utilities for loading various language models, including OpenAI models, LLaMAs that
+run locally, or any model hosted on the NVIDIA NIM platform, for use within the BRAD framework. The module
+defines functions that facilitate the setup and initialization of these models by specifying key parameters
+such as model paths,  API keys, and optional configurations like token limits and temperature. By default, a
+BRAD `Agent` will use OpenAI's `gpt-3.5-turbo-0125` model.
 
-Available Functions:
----------------------
-1. load_llama:
-    Loads the LLaMA language model from a specified model path, with configurable parameters 
-    such as context length, maximum tokens, and temperature. This model is primarily loaded
-    using the LangChain framework.
-
-2. load_nvidia:
-    Loads an NVIDIA language model using the provided model name and API key. If no API key 
-    is provided, the function prompts the user to input it interactively. This model is loaded 
-    using NVIDIA's endpoints within the LangChain framework.
-
-3. load_openai:
-    Loads an OpenAI language model using the specified model name and an API key. If the key 
-    is not available in the environment, the user is prompted for it. The OpenAI model is 
-    initialized via LangChain's OpenAI integration.
-
-Usage:
-------
-Each function in this module supports customizable arguments to load the desired model. 
-These functions are designed to integrate with the BRAD framework and provide easy access 
-to large language models through LangChain.
-
-Example Usage:
+Available LLMs
 --------------
-To load a LLaMA model:
-
->>> llama_model = load_llama(model_path='/path/to/llama-model')
-
-To load an NVIDIA model:
-
->>> nvidia_model = load_nvidia(model_name='meta/llama3-70b-instruct')
-
-To load an OpenAI model:
-
->>> openai_model = load_openai(model_name='gpt-3.5-turbo')
 """
 
 import os
@@ -67,7 +34,8 @@ def load_llama(model_path = '/nfs/turbo/umms-indikar/shared/projects/RAG/models/
     :rtype: langchain.llms.LlamaCpp
 
     :example:
-    >>> llama_model = load_llama()
+        >>> llama_model = load_llama()
+    
     """
     from langchain.llms import LlamaCpp
     from langchain.callbacks.manager import CallbackManager
@@ -96,7 +64,8 @@ def load_nvidia(model_name='meta/llama3-70b-instruct', nvidia_api_key=None, temp
     :rtype: langchain_nvidia_ai_endpoints.ChatNVIDIA
 
     :example:
-    >>> nvidia_model = load_nvidia()
+        >>> nvidia_model = load_nvidia()
+    
     """
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
     if not os.environ.get("NVIDIA_API_KEY", "").startswith("nvapi-"):
@@ -131,7 +100,8 @@ def load_openai(model_name='gpt-3.5-turbo-0125', api_key=None):
     :rtype: langchain_nvidia_ai_endpoints.ChatNVIDIA
 
     :example:
-    >>> nvidia_model = load_nvidia()
+        >>> nvidia_model = load_nvidia()
+    
     """
     # Auth: Marc Choi
     #       machoi@umich.edu
