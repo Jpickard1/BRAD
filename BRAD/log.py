@@ -335,12 +335,13 @@ def userOutput(output, state=None):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 20, 2024
-    
+          
     print(output)
     if 'output' not in state.keys() or state['output'] is None:
         state['output'] = output
     else:
         state['output'] += output
+    
     return state
 
 def is_json_serializable(value):
