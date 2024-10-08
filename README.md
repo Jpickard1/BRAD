@@ -8,8 +8,10 @@ after installing either docker desktop or docker engine [docker intsallation](ht
 
 ```
 docker build -t brad:local .
-docker run -it brad:local
+docker compose up -d
 ```
+
+then proceed to http://localhost:3000
 
 
 ### Local Install

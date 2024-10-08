@@ -1,8 +1,6 @@
-
 services:
   brad:
-    image: brad:container
-    command: tail -f /dev/null
+    image: brad:local
     environment:
       - PYDANTIC_SKIP_VALIDATING_CORE_SCHEMAS=True
       - OPENAI_API_KEY=your_open_api_key
