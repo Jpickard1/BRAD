@@ -82,14 +82,14 @@ from BRAD import log
 #  2024-09-22: Changing the chains to return information regarding API usage
 #              such as tokens, time, etc.
 
-def queryDocs(chatstatus):
+def queryDocs(state):
     """
     Queries documents based on the user prompt and updates the chat status with the results.
 
-    :param chatstatus: A dictionary containing the current chat status, including the prompt, LLM, vector database, and memory.
-    :type chatstatus: dict
+    :param state: A dictionary containing the current chat status, including the prompt, LLM, vector database, and memory.
+    :type state: dict
 
-    :raises KeyError: If required keys are not found in the chatstatus dictionary.
+    :raises KeyError: If required keys are not found in the state dictionary.
     :raises AttributeError: If methods on the vector database or LLM objects are called incorrectly.
 
     :return: The updated chat status dictionary with the query results.
@@ -111,23 +111,23 @@ def queryDocs(chatstatus):
 
     # Issues:
 
-    llm      = chatstatus['llm']              # get the llm
-    prompt   = chatstatus['prompt']           # get the user prompt
-    vectordb = chatstatus['databases']['RAG'] # get the vector database
-    memory   = chatstatus['memory']           # get the memory of the model
+    llm      = state['llm']              # get the llm
+    prompt   = state['prompt']           # get the user prompt
+    vectordb = state['databases']['RAG'] # get the vector database
+    memory   = state['memory']           # get the memory of the model
 
     # query to database
     if vectordb is not None:
         # solo, mutliquery, similarity, and mmr retrieval
-        chatstatus, docs = retrieval(chatstatus)
+        state, docs = retrieval(state)
 
         # rerank the documents according to pagerank algorithm
-        if chatstatus['config']['RAG']['rerank']:
-            docs = pagerank_rerank(docs, chatstatus)
+        if state['config']['RAG']['rerank']:
+            docs = pagerank_rerank(docs, state)
 
         # contextual compression of the documents
-        if chatstatus['config']['RAG']['contextual_compression']:
-            docs = contextualCompression(docs, chatstatus)
+        if state['config']['RAG']['contextual_compression']:
+            docs = contextualCompression(docs, state)
 
         for i, doc in enumerate(docs):
             source = doc.metadata.get('source')
@@ -138,7 +138,7 @@ def queryDocs(chatstatus):
             docs[i] = doc
         
         # build chain
-        chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
+        chain = load_qa_chain(llm, chain_type="stuff", verbose = state['config']['debug'])
 
         # invoke the chain
         start_time = time.time()
@@ -156,7 +156,7 @@ def queryDocs(chatstatus):
         }
 
         # display output
-        chatstatus = log.userOutput(response['output_text'], chatstatus=chatstatus)
+        state = log.userOutput(response['output_text'], state=state)
 
         # display sources
         sources = []
@@ -165,20 +165,20 @@ def queryDocs(chatstatus):
             short_source = os.path.basename(str(source))
             sources.append(short_source)
         sources = list(set(sources))
-        chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) 
-        chatstatus = log.userOutput('\n'.join(sources), chatstatus=chatstatus) 
-        chatstatus['process']['sources'] = sources
+        state = log.userOutput("Sources:", state=state) 
+        state = log.userOutput('\n'.join(sources), state=state) 
+        state['process']['sources'] = sources
         
         # format outputs for logging
         response['input_documents'] = getInputDocumentJSONs(response['input_documents'])
-        chatstatus['output'], ragResponse = response['output_text'], response
-        chatstatus['process']['steps'].append(
+        state['output'], ragResponse = response['output_text'], response
+        state['process']['steps'].append(
             log.llmCallLog(
                 llm=llm,
                 prompt=str(chain),
                 input=prompt,
                 output=response,
-                parsedOutput=chatstatus['output'],
+                parsedOutput=state['output'],
                 purpose='RAG'
             )
         )
@@ -187,7 +187,7 @@ def queryDocs(chatstatus):
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
         conversation = ConversationChain(prompt  = PROMPT,
                                          llm     = llm,
-                                         verbose = chatstatus['config']['debug'],
+                                         verbose = state['config']['debug'],
                                          memory  = memory,
                                         )
         prompt = getDefaultContext() + prompt
@@ -207,7 +207,7 @@ def queryDocs(chatstatus):
             }
         }
         # Log the LLM response
-        chatstatus['process']['steps'].append(
+        state['process']['steps'].append(
             log.llmCallLog(
                 llm=llm,
                 prompt=PROMPT,
@@ -219,23 +219,23 @@ def queryDocs(chatstatus):
         )
 
         # Display output to the user
-        chatstatus = log.userOutput(response, chatstatus=chatstatus)
-        chatstatus['output'] = response
-    return chatstatus
+        state = log.userOutput(response, state=state)
+        # state['output'] = response
+    return state
 
 
-def retrieval(chatstatus):
+def retrieval(state):
     """
     Performs retrieval from a vectorized database as the initial stage of the RAG pipeline. 
     This function handles different types of retrieval including multiquery, similarity search, 
     and max marginal relevance search.
 
     Args:
-        chatstatus (dict): A dictionary containing the LLM, user prompt, vector database, 
+        state (dict): A dictionary containing the LLM, user prompt, vector database, 
                            and configuration settings for the RAG pipeline.
 
     Returns:
-        tuple: A tuple containing the updated chatstatus and a list of retrieved documents.
+        tuple: A tuple containing the updated state and a list of retrieved documents.
 
     """
     # Auth: Joshua Pickard
@@ -258,25 +258,25 @@ def retrieval(chatstatus):
     #   prompts or retrieved documents. Also, I don't think it generates great
     #   prompts. We could reimplement this ourselves.
     
-    llm      = chatstatus['llm']              # get the llm
-    prompt   = chatstatus['prompt']           # get the user prompt
-    vectordb = chatstatus['databases']['RAG'] # get the vector database
-    memory   = chatstatus['memory']           # get the memory of the model
+    llm      = state['llm']              # get the llm
+    prompt   = state['prompt']           # get the user prompt
+    vectordb = state['databases']['RAG'] # get the vector database
+    memory   = state['memory']           # get the memory of the model
 
     start_time = time.time()
     
-    if chatstatus['config']['RAG']['cut']:    # Can we remove this code?
-        vectordb = cut(chatstatus, vectordb)
+    if state['config']['RAG']['cut']:    # Can we remove this code?
+        vectordb = cut(state, vectordb)
 
-    if not chatstatus['config']['RAG']['multiquery']:
+    if not state['config']['RAG']['multiquery']:
         # initialize empty lists
         docsSimilaritySearch, docsMMR = [], []
-        if chatstatus['config']['RAG']['similarity']:
-            documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
+        if state['config']['RAG']['similarity']:
+            documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=state['config']['RAG']['num_articles_retrieved'])
             docsSimilaritySearch, scores = getDocumentSimilarity(documentSearch)
 
-        if chatstatus['config']['RAG']['mmr']:
-            docsMMR = vectordb.max_marginal_relevance_search(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
+        if state['config']['RAG']['mmr']:
+            docsMMR = vectordb.max_marginal_relevance_search(prompt, k=state['config']['RAG']['num_articles_retrieved'])
         
         docs = docsSimilaritySearch + docsMMR
     else:
@@ -286,18 +286,18 @@ def retrieval(chatstatus):
                                                  llm=llm
                                                 )
         docs = retriever.get_relevant_documents(query=prompt)
-    chatstatus['process']['steps'].append({
+    state['process']['steps'].append({
         'func' : 'rag.retrieval',
-        'multiquery' : chatstatus['config']['RAG']['multiquery'],
-        'similarity' : chatstatus['config']['RAG']['similarity'],
-        'mmr' : chatstatus['config']['RAG']['mmr'],
+        'multiquery' : state['config']['RAG']['multiquery'],
+        'similarity' : state['config']['RAG']['similarity'],
+        'mmr' : state['config']['RAG']['mmr'],
         'num-docs' : len(docs),
         'docs' : str(docs),
         'time' : time.time() - start_time
     })
-    return chatstatus, docs
+    return state, docs
 
-def contextualCompression(docs, chatstatus):
+def contextualCompression(docs, state):
     """
     Summarizes the content of documents based on a user query, updating the 
     document search results with these summaries.
@@ -305,7 +305,7 @@ def contextualCompression(docs, chatstatus):
     Args:
         docs (list): A list of documents where each document has an attribute 
                      `page_content` containing the text content of the document.
-        chatstatus (dict): BRAD chatstatus used to track debuging
+        state (dict): BRAD state used to track debuging
 
     Returns:
         list: The modified `documentSearch` list with updated `page_content` for each 
@@ -320,12 +320,12 @@ def contextualCompression(docs, chatstatus):
     reducedDocs = []
     for i, doc in enumerate(docs):
         pageContent = doc.page_content
-        prompt = PROMPT.format(text=pageContent, user_query=chatstatus['prompt'])
+        prompt = PROMPT.format(text=pageContent, user_query=state['prompt'])
 
         # Use LLM
         start_time = time.time()
         with get_openai_callback() as cb:
-            res = chatstatus['llm'].invoke(input=prompt)
+            res = state['llm'].invoke(input=prompt)
         res.response_metadata['time'] = time.time() - start_time
         res.response_metadata['call back'] = {
             "Total Tokens": cb.total_tokens,
@@ -337,9 +337,9 @@ def contextualCompression(docs, chatstatus):
         summary = res.content.strip()
 
         # Log LLM
-        chatstatus['process']['steps'].append(
+        state['process']['steps'].append(
             log.llmCallLog(
-                llm             = chatstatus['llm'],       # what LLM?
+                llm             = state['llm'],       # what LLM?
                 prompt          = PROMPT,                  # what prompt template?
                 input           = prompt,                  # what specific input to the llm or template?
                 output          = res,                     # what is the full llm output?
@@ -349,10 +349,10 @@ def contextualCompression(docs, chatstatus):
         )
         
         # Display debug information
-        if chatstatus['config']['debug']:
-            log.debugLog('============', chatstatus=chatstatus) 
-            log.debugLog(pageContent, chatstatus=chatstatus) 
-            log.debugLog('Summary: ' + summary, chatstatus=chatstatus) 
+        if state['config']['debug']:
+            log.debugLog('============', state=state) 
+            log.debugLog(pageContent, state=state) 
+            log.debugLog('Summary: ' + summary, state=state) 
         doc.page_content = summary
         docs[i] = doc
     return docs
@@ -538,7 +538,7 @@ def best_match(prompt, title_list):
         if score > save_score:
             save_score = score
             save_title = title
-    log.debugLog(f"The best match is {save_title} with a score of {save_score}", chatstatus=chatstatus) 
+    log.debugLog(f"The best match is {save_title} with a score of {save_score}", state=state) 
     return save_title, save_score
 
 #Split into two methods?
@@ -585,16 +585,16 @@ def get_all_sources(vectordb, prompt, path):
 
 
 #Given the prompt, find the title and corresponding score that is the best match
-def adj_matrix_builder(docs, chatstatus):
+def adj_matrix_builder(docs, state):
     """
     Build an adjacency matrix based on cosine similarity between a prompt and document content.
     
     :param docs: A list of documents or pages (objects) from which to build the adjacency matrix.
     :type docs: list
     
-    :param chatstatus: A dictionary containing information about the chat status and configuration, 
+    :param state: A dictionary containing information about the chat status and configuration, 
                        including 'prompt', 'config', and 'num_articles_retrieved'.
-    :type chatstatus: dict
+    :type state: dict
     
     :return: A 2D numpy array representing the adjacency matrix, where each element at position (i, j) 
              indicates the similarity score between documents i and j.
@@ -608,13 +608,13 @@ def adj_matrix_builder(docs, chatstatus):
     sentence_model = SentenceTransformer('multi-qa-MiniLM-L6-cos-v1')
     
     # Create a list to store document content (including prompt)
-    doc_list = [chatstatus['prompt']] + [doc.dict()['page_content'] for doc in docs]
+    doc_list = [state['prompt']] + [doc.dict()['page_content'] for doc in docs]
     
     # Encode document content into embeddings
     passage_embedding = sentence_model.encode(doc_list)
     
     # Calculate cosine similarities between embeddings
-    cosine_similarities = cosine_similarity(passage_embedding[:chatstatus['config']['RAG']['num_articles_retrieved'] + 1])
+    cosine_similarities = cosine_similarity(passage_embedding[:state['config']['RAG']['num_articles_retrieved'] + 1])
     
     # Extract similarity scores between prompt and other documents
     prompt_sim = cosine_similarities[0, 1:]
@@ -688,7 +688,7 @@ def pagerank_weighted(A, alpha=0.85, tol=1e-6, max_iter=100):
 
 #reranker
 
-def pagerank_rerank(docs, chatstatus):
+def pagerank_rerank(docs, state):
     """
     Rerank a list of documents based on their PageRank scores computed from an adjacency matrix.
     
@@ -696,16 +696,16 @@ def pagerank_rerank(docs, chatstatus):
                  containing relevant information for scoring.
     :type docs: list
     
-    :param chatstatus: A dictionary containing information about the chat status and configuration, including 
+    :param state: A dictionary containing information about the chat status and configuration, including 
                        parameters for building the adjacency matrix, such as the 'num_articles_retrieved' 
                        and 'config' settings.
-    :type chatstatus: dict
+    :type state: dict
     
     :return: A reranked list of documents based on their PageRank scores, ordered from highest to lowest 
              score, reflecting the importance of each document in the context of the provided adjacency matrix.
     :rtype: list
     """
-    adj_matrix = adj_matrix_builder(docs, chatstatus)  # Build adjacency matrix
+    adj_matrix = adj_matrix_builder(docs, state)  # Build adjacency matrix
     pagerank_scores = pagerank_weighted(A=adj_matrix)  # Compute PageRank scores
     top_rank_scores = sorted(range(len(pagerank_scores)), key=lambda i: pagerank_scores[i], reverse=True)
     reranked_docs = [docs[i] for i in top_rank_scores]  # Rerank documents based on PageRank scores
@@ -769,14 +769,14 @@ def relative_frequency_of_char(input_string):
     relative_frequency = dot_count / total_characters
     return relative_frequency
 
-def cut(chatstatus, vectordb):
+def cut(state, vectordb):
     """
     Remove documents from a vector database based on a relative frequency threshold of a specific character.
     
-    :param chatstatus: A dictionary containing chat status information, including the relative frequency
+    :param state: A dictionary containing chat status information, including the relative frequency
                        threshold for the character and other contextual details related to the ongoing 
                        conversation.
-    :type chatstatus: dict
+    :type state: dict
     
     :param vectordb: An object representing the vector database, which provides methods for fetching 
                       and deleting documents based on certain criteria, including relative frequency.
