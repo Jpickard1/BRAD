@@ -49,6 +49,7 @@ The `Agent` class is organized as follows:
 
 
 """
+
 # Standard
 import pandas as pd
 # from copy import deepcopy
@@ -77,6 +78,7 @@ from typing import Optional, List
 # import matplotlib.pyplot as plt
 # import seaborn as sns
 
+
 # Router
 from semantic_router.layer import RouteLayer
 
@@ -96,7 +98,8 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains.question_answering import load_qa_chain
 from langchain.output_parsers import CommaSeparatedListOutputParser
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationBufferMemory                   # used for Agent memory
+
 
 # LangChain Core
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
