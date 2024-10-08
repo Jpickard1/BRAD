@@ -21,7 +21,7 @@ These docstings found within the python files will be used by the LLM of an `Age
 ... This script executes a series of scanpy commands on an AnnData object loaded from a .h5ad file and saves the resulting AnnData object back to disk. 
 ... 
 ... Arguments (four arguments):
-...     1. output directory: chatstatus['output-directory']
+...     1. output directory: state['output-directory']
 ...     2. output file: <name of output file>
 ...     3. input file: <file created in previous step>
 ...     4. scanpy commands: a list of scanpy commands to be executed on the AnnData object (provided as a single string with commands separated by a delimiter, e.g., ';')
@@ -39,7 +39,7 @@ These docstings found within the python files will be used by the LLM of an `Age
 ... **Usage**
 ... BRAD Line:
 ... ```
-... subprocess.run([sys.executable, "<path/to/script/>/scanpy_brad.py", chatstatus['output-directory'], <output file>, <input file>, "<scanpy commands>"], capture_output=True, text=True)
+... subprocess.run([sys.executable, "<path/to/script/>/scanpy_brad.py", state['output-directory'], <output file>, <input file>, "<scanpy commands>"], capture_output=True, text=True)
 ... ```
 ... 
 ... **Examples**
@@ -49,7 +49,7 @@ These docstings found within the python files will be used by the LLM of an `Age
 ... User Prompt: Run scanpy preprocessing and UMAP visualization on XXX.h5ad and save the UMAP plot
 ... Response Code:
 ... ```
-... response = subprocess.run([sys.executable, "<path/to/script/>/scanpy_brad.py", chatstatus['output-directory'], "XXX-modified.h5ad", "<path/to/data>/XXX.h5ad", "sc.pp.neighbors(adata); sc.tl.umap(adata); sc.pl.umap(adata, save='umap.png')"], capture_output=True, text=True)
+... response = subprocess.run([sys.executable, "<path/to/script/>/scanpy_brad.py", state['output-directory'], "XXX-modified.h5ad", "<path/to/data>/XXX.h5ad", "sc.pp.neighbors(adata); sc.tl.umap(adata); sc.pl.umap(adata, save='umap.png')"], capture_output=True, text=True)
 ... ```
 ... Explination: the adata object will be loaded in memory already. The command "sc.pp.neighbors(adata)" will preprocess the data, then the command "sc.tl.umap(adata)" will perform UMAP, and finally the command "sc.pl.umap(adata, 'umap.png')" will save the UMAP to a well named file.
 ... 
@@ -57,12 +57,12 @@ These docstings found within the python files will be used by the LLM of an `Age
 ... User Prompt: Perform PCA and clustering on the dataset YYY.h5ad and save the PCA plot
 ... Response Code:
 ... ```
-... response = subprocess.run([sys.executable, "<path/to/script/>/scanpy_brad.py", chatstatus['output-directory'], "YYY-modified.h5ad", "<path/to/data>/YYY.h5ad", "sc.pp.pca(adata); sc.tl.leiden(adata); sc.pl.pca(adata, save='pca.png')"], capture_output=True, text=True)
+... response = subprocess.run([sys.executable, "<path/to/script/>/scanpy_brad.py", state['output-directory'], "YYY-modified.h5ad", "<path/to/data>/YYY.h5ad", "sc.pp.pca(adata); sc.tl.leiden(adata); sc.pl.pca(adata, save='pca.png')"], capture_output=True, text=True)
 ... ```
 ... Explination: the adata object will be loaded in memory already. The command "sc.pp.pca(adata)" will preprocess the data, then the command "sc.tl.leiden(adata)" will perform the leiden algorithm, and finally the command "sc.pl.pca(adata, save='pca.png')" will save the PCA to a well named file.
 ... 
 ... **OUTPUT FILE NAME INSTRUCTIONS**
-... 1. Output path should be chatstatus['output-directory']
+... 1. Output path should be state['output-directory']
 ... 2. Output file name should be `<descriptive name>.h5ad`
 <<< \"\"\"
 
@@ -85,7 +85,7 @@ This documentation is used by BRAD to run the following script:
 ... 
 ... def main(output_directory, output_file, input_file, scanpy_commands):
 ... 
-...     chatstatus = {
+...     state = {
 ...         'output-directory': output_directory
 ...     }
 ...     sc.settings.figdir = output_directory
@@ -146,7 +146,7 @@ import subprocess
 from BRAD.promptTemplates import pythonPromptTemplate, getPythonEditingTemplate
 from BRAD import log
 
-def callPython(chatstatus):
+def callPython(state):
     """
     Executes a Python script based on the user's prompt and chat status configuration.
 
@@ -155,9 +155,9 @@ def callPython(chatstatus):
     2. Uses an llm to select the python function that best matches the user's prompt and format code to execute the script based upon the users input.
     3. Executes the selected python function and updates the chat status.
 
-    :param chatstatus: A dictionary containing the chat status, including user prompt, language model (LLM),
+    :param state: A dictionary containing the chat status, including user prompt, language model (LLM),
                        memory, and configuration settings.
-    :type chatstatus: dict
+    :type state: dict
     
     :returns: Updated chat status after executing the selected Python script.
     :rtype: dict
@@ -184,54 +184,54 @@ def callPython(chatstatus):
     #   similar to the coder.codeCaller() method that uses an llm to read the docstrings
     #   and identify the best file. Note - the same approach is used by matlabCaller
     
-    log.debugLog("Python Caller Start", chatstatus=chatstatus) 
-    prompt = chatstatus['prompt']                                        # Get the user prompt
-    llm = chatstatus['llm']                                              # Get the llm
-    memory = chatstatus['memory']
-    chatstatus['process'] = {}                                           # Begin saving plotting arguments
-    chatstatus['process']['name'] = 'Python'
+    log.debugLog("Python Caller Start", state=state) 
+    prompt = state['prompt']                                        # Get the user prompt
+    llm = state['llm']                                              # Get the llm
+    memory = state['memory']
+    state['process'] = {}                                           # Begin saving plotting arguments
+    state['process']['name'] = 'Python'
 
     # Add matlab files to the path
-    if chatstatus['config']['py-path'] == 'py-tutorial/': # Admittedly, I'm not sure what's going on here - JP
-        pyPath = chatstatus['config']['py-path']
+    if state['config']['py-path'] == 'py-tutorial/': # Admittedly, I'm not sure what's going on here - JP
+        pyPath = state['config']['py-path']
     else:
         base_dir = os.path.expanduser('~')
-        pyPath = os.path.join(base_dir, chatstatus['config']['py-path'])
-    log.debugLog('Python scripts added to PATH', chatstatus=chatstatus) 
+        pyPath = os.path.join(base_dir, state['config']['py-path'])
+    log.debugLog('Python scripts added to PATH', state=state) 
 
     # Identify python scripts files we are adding to the path of BRAD
     pyScripts = find_py_files(pyPath)
-    log.debugLog(pyScripts, chatstatus=chatstatus) 
+    log.debugLog(pyScripts, state=state) 
     # Identify which file we should use
     pyScript = find_closest_function(prompt, pyScripts)
-    log.debugLog(pyScript, chatstatus=chatstatus) 
+    log.debugLog(pyScript, state=state) 
     # Identify pyton script arguments
     pyScriptPath = os.path.join(pyPath, pyScript + '.py')
-    log.debugLog(pyScriptPath, chatstatus=chatstatus) 
+    log.debugLog(pyScriptPath, state=state) 
     # Get matlab docstrings
     pyScriptDocStrings = read_python_docstrings(pyScriptPath)
-    log.debugLog(pyScriptDocStrings, chatstatus=chatstatus) 
+    log.debugLog(pyScriptDocStrings, state=state) 
     template = pythonPromptTemplate()
-    log.debugLog(template, chatstatus=chatstatus) 
-    # matlabDocStrings = callMatlab(chatstatus)
+    log.debugLog(template, state=state) 
+    # matlabDocStrings = callMatlab(state)
     filled_template = template.format(scriptName=pyScriptPath, scriptDocumentation=pyScriptDocStrings)
-    chatstatus = log.userOutput(filled_template, chatstatus=chatstatus)
+    state = log.userOutput(filled_template, state=state)
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
-    log.debugLog(PROMPT, chatstatus=chatstatus) 
+    log.debugLog(PROMPT, state=state) 
     conversation = ConversationChain(prompt  = PROMPT,
                                      llm     = llm,
-                                     verbose = chatstatus['config']['debug'],
+                                     verbose = state['config']['debug'],
                                      memory  = memory,
                                     )
-    response = conversation.predict(input=chatstatus['prompt'] )
-    log.debugLog('START RESPONSE', chatstatus=chatstatus) 
-    log.debugLog(response, chatstatus=chatstatus) 
-    log.debugLog("END RESPONSE", chatstatus=chatstatus) 
-    pythonCode = extract_python_code(response, chatstatus['config']['py-path'], chatstatus)
-    log.debugLog(matlabCode, chatstatus=chatstatus)
-    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+    response = conversation.predict(input=state['prompt'] )
+    log.debugLog('START RESPONSE', state=state) 
+    log.debugLog(response, state=state) 
+    log.debugLog("END RESPONSE", state=state) 
+    pythonCode = extract_python_code(response, state['config']['py-path'], state)
+    log.debugLog(matlabCode, state=state)
+    state['process']['steps'].append(log.llmCallLog(llm             = llm,
                                                          prompt          = PROMPT,
-                                                         input           = chatstatus['prompt'],
+                                                         input           = state['prompt'],
                                                          output          = response,
                                                          parsedOutput    = {
                                                              'pythonCode': pythonCode,
@@ -239,22 +239,22 @@ def callPython(chatstatus):
                                                          purpose         = 'formulate python function call'
                                                         )
                                          )
-    execute_python_code(pythonCode, chatstatus)
-    return chatstatus
+    execute_python_code(pythonCode, state)
+    return state
 
-def execute_python_code(python_code, chatstatus):
+def execute_python_code(python_code, state):
     """
     Executes the provided Python code and handles debug printing based on the chat status configuration.
 
     This function performs the following steps:
-    1. Checks if `chatstatus['output-directory']` is referenced in the provided Python code; if not, replaces a specific
-       part of the code with `chatstatus['output-directory']`.
+    1. Checks if `state['output-directory']` is referenced in the provided Python code; if not, replaces a specific
+       part of the code with `state['output-directory']`.
     2. Attempts to evaluate the Python code using `eval()`.
     
     :param python_code: The Python code to be executed.
     :type python_code: str
-    :param chatstatus: A dictionary containing the chat status, including configuration settings and possibly `chatstatus['output-directory']`.
-    :type chatstatus: dict
+    :param state: A dictionary containing the chat status, including configuration settings and possibly `state['output-directory']`.
+    :type state: dict
 
     :notes:
         - This function is typically called after extracting Python code from a response in a conversational context but it can be called from the `coder.codeCaller()` as well.
@@ -263,15 +263,15 @@ def execute_python_code(python_code, chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
-    log.debugLog('EVAL', chatstatus=chatstatus) 
-    log.debugLog(python_code, chatstatus=chatstatus) 
-    log.debugLog('END EVAL CHECK', chatstatus=chatstatus) 
+    log.debugLog('EVAL', state=state) 
+    log.debugLog(python_code, state=state) 
+    log.debugLog('END EVAL CHECK', state=state) 
 
-    # Ensure that chatstatus['output-directory'] is passed as an argument to the code:
-    if "chatstatus['output-directory']" not in python_code:
-        log.debugLog('PYTHON CODE OUTPUT DIRECTORY CHANGED', chatstatus=chatstatus) 
-        python_code = python_code.replace(get_arguments_from_code(python_code)[2].strip(), "chatstatus['output-directory']")
-        log.debugLog(python_code, chatstatus=chatstatus) 
+    # Ensure that state['output-directory'] is passed as an argument to the code:
+    if "state['output-directory']" not in python_code:
+        log.debugLog('PYTHON CODE OUTPUT DIRECTORY CHANGED', state=state) 
+        python_code = python_code.replace(get_arguments_from_code(python_code)[2].strip(), "state['output-directory']")
+        log.debugLog(python_code, state=state) 
 
     # Ensure that we get the output from the script
     response = None
@@ -279,37 +279,37 @@ def execute_python_code(python_code, chatstatus):
     
     try:
         # Attempt to evaluate the MATLAB code
-        log.debugLog("Finalized PYTHON Call:", chatstatus=chatstatus)
-        log.debugLog("   ", chatstatus=chatstatus)
-        log.debugLog(python_code, chatstatus=chatstatus)
-        log.debugLog("   ", chatstatus=chatstatus)
+        log.debugLog("Finalized PYTHON Call:", state=state)
+        log.debugLog("   ", state=state)
+        log.debugLog(python_code, state=state)
+        log.debugLog("   ", state=state)
 
         # execute the code and get the response variable
-        local_scope = {'chatstatus': chatstatus, 'sys': sys, 'subprocess': subprocess}
+        local_scope = {'state': state, 'sys': sys, 'subprocess': subprocess}
         exec(python_code, globals(), local_scope)
-        log.debugLog("Debug: PYTHON code executed successfully.", chatstatus=chatstatus)
+        log.debugLog("Debug: PYTHON code executed successfully.", state=state)
         response = local_scope.get('response', None)
-        log.debugLog("Code Execution Output:", chatstatus=chatstatus)
-        log.debugLog(response, chatstatus=chatstatus)
-        chatstatus['process']['steps'].append(
+        log.debugLog("Code Execution Output:", state=state)
+        log.debugLog(response, state=state)
+        state['process']['steps'].append(
             {
                 'func'   : 'pythonCaller.execute_python_code',
                 'code'   : python_code,
                 'purpose': 'execute python code',
             }
         )
-        chatstatus['output'] = response.stdout.strip()
-        log.debugLog("Debug: PYTHON code output saved to output.", chatstatus=chatstatus)
+        state['output'] = response.stdout.strip()
+        log.debugLog("Debug: PYTHON code output saved to output.", state=state)
 
         # TODO: If the response contains a stderr then we should allow it the system to
         # debug and reexecute the code
     
     except SyntaxError as se:
-        log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", chatstatus=chatstatus)
+        log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", state=state)
     except NameError as ne:
-        log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", chatstatus=chatstatus)
+        log.debugLog(f"Debug: Name error, possibly undefined function or variable: {ne}", state=state)
     except Exception as e:
-        log.debugLog(f"Debug: An error occurred during PYTHON code execution: {e}", chatstatus=chatstatus)
+        log.debugLog(f"Debug: An error occurred during PYTHON code execution: {e}", state=state)
 
 
 # Extract the arguments from the string
@@ -547,7 +547,7 @@ def get_py_description(file_path):
     oneliner = docstrings.split('\n')[1]
     return oneliner
 
-def extract_python_code(llm_output, scriptPath, chatstatus, memory=None):
+def extract_python_code(llm_output, scriptPath, state, memory=None):
     """
     Parses the LLM output and extracts the Python code to execute.
 
@@ -572,7 +572,7 @@ def extract_python_code(llm_output, scriptPath, chatstatus, memory=None):
         Some generated code...
         Execute: subprocess.call([sys.executable, 'script.py'])
         ```
-        Calling `extract_python_code(llm_output, chatstatus)` would return:
+        Calling `extract_python_code(llm_output, state)` would return:
         ```
         subprocess.run([sys.executable, 'script.py'])
         ```
@@ -600,11 +600,11 @@ def extract_python_code(llm_output, scriptPath, chatstatus, memory=None):
     # - This is very sensitive to the particular model, prompt, and patterns in
     #   the llm response.
     
-    log.debugLog("LLM OUTPUT PARSER", chatstatus=chatstatus) 
-    log.debugLog(llm_output, chatstatus=chatstatus) 
+    log.debugLog("LLM OUTPUT PARSER", state=state) 
+    log.debugLog(llm_output, state=state) 
 
     funcCall = llm_output.split('Execute:')
-    log.debugLog(funcCall, chatstatus=chatstatus)
+    log.debugLog(funcCall, state=state)
     funcCall = funcCall[len(funcCall)-1].strip()
     if funcCall.startswith('```python'):
         funcCall = funcCall.split('\n')[1]
@@ -614,23 +614,23 @@ def extract_python_code(llm_output, scriptPath, chatstatus, memory=None):
     funcCall = funcCall.replace('<path/to/script>/', scriptPath)
     funcCall = funcCall.replace('<path/to/script>',  scriptPath)
     
-    log.debugLog('Stripped funciton call', chatstatus=chatstatus)
-    log.debugLog(funcCall, chatstatus=chatstatus)
+    log.debugLog('Stripped funciton call', state=state)
+    log.debugLog(funcCall, state=state)
     
     if not funcCall.startswith('subprocess.run([sys.executable,'):
         funcCall = 'subprocess.run([sys.executable' + funcCall[funcCall.find(','):]
 
-    log.debugLog('Cleaned up function call:\n', chatstatus=chatstatus)
-    log.debugLog(funcCall, chatstatus=chatstatus)
-    log.debugLog('\n', chatstatus=chatstatus)
+    log.debugLog('Cleaned up function call:\n', state=state)
+    log.debugLog(funcCall, state=state)
+    log.debugLog('\n', state=state)
     try:
         compile(funcCall, '<string>', 'exec')
     except Exception as e:
-        return editPythonCode(funcCall, str(e), memory, chatstatus)
+        return editPythonCode(funcCall, str(e), memory, state)
     
     return funcCall
 
-def editPythonCode(funcCall, errorMessage, memory, chatstatus):
+def editPythonCode(funcCall, errorMessage, memory, state):
     """
     Edit the Python code based on the error message and chat status, with recursion depth limit.
 
@@ -640,8 +640,8 @@ def editPythonCode(funcCall, errorMessage, memory, chatstatus):
     :param errorMessage: The error message related to the code.
     :type errorMessage: str
     
-    :param chatstatus: Dictionary containing chat status and configuration.
-    :type chatstatus: dict
+    :param state: Dictionary containing chat status and configuration.
+    :type state: dict
     
     :returns: The edited Python code ready for execution, or an error message if recursion limit is reached.
     :rtype: str
@@ -652,13 +652,13 @@ def editPythonCode(funcCall, errorMessage, memory, chatstatus):
     # Date: July 8, 2024
 
     # Bound the recursion depth of this function
-    if chatstatus['recursion_depth'] > 5:
-        log.errorLog('Recursion depth limit reached. Please check the code and error message', chatstatus=chatstatus)
+    if state['recursion_depth'] > 5:
+        log.errorLog('Recursion depth limit reached. Please check the code and error message', state=state)
         return "Recursion depth limit reached. Please check the code and error message."
-    chatstatus['recursion_depth'] += 1
+    state['recursion_depth'] += 1
 
     # Extract the llm
-    llm = chatstatus['llm']
+    llm = state['llm']
 
     # Fill in the python editting template
     template = getPythonEditingTemplate()
@@ -667,27 +667,27 @@ def editPythonCode(funcCall, errorMessage, memory, chatstatus):
         code2 = funcCall,
         error = errorMessage
     )
-    log.debugLog("Memory", chatstatus=chatstatus)
-    log.debugLog(memory,   chatstatus=chatstatus)
+    log.debugLog("Memory", state=state)
+    log.debugLog(memory,   state=state)
     # Build the langchain
     PROMPT          = PromptTemplate(input_variables=["history", "input"], template=filled_template)
-    log.debugLog(PROMPT, chatstatus=chatstatus)
+    log.debugLog(PROMPT, state=state)
     conversation    = ConversationChain(prompt  = PROMPT,
                                         llm     =    llm,
-                                        verbose = chatstatus['config']['debug'],
+                                        verbose = state['config']['debug'],
                                         memory  = memory,
                                        )
 
     # Call the llm/langchain
-    response = conversation.predict(input=chatstatus['prompt'])
+    response = conversation.predict(input=state['prompt'])
 
     # Parse the code (recursion begins here)
-    code2execute = extract_python_code(response, chatstatus['config']['CODE']['path'][0], chatstatus, memory=memory)
+    code2execute = extract_python_code(response, state['config']['CODE']['path'][0], state, memory=memory)
 
     # log the llm output
-    chatstatus['process']['steps'].append(log.llmCallLog(llm             = llm,
+    state['process']['steps'].append(log.llmCallLog(llm             = llm,
                                                          prompt          = PROMPT,
-                                                         input           = chatstatus['prompt'],
+                                                         input           = state['prompt'],
                                                          output          = response,
                                                          parsedOutput    = {
                                                              'code': code2execute
@@ -696,7 +696,7 @@ def editPythonCode(funcCall, errorMessage, memory, chatstatus):
                                                         )
                                          )
     # Decrement recursion depth after use
-    chatstatus['recursion_depth'] -= 1
+    state['recursion_depth'] -= 1
     return code2execute
 
 def has_unclosed_symbols(s):

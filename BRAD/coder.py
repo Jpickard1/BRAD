@@ -43,7 +43,7 @@ from BRAD import utils
 # History:
 #  2024-10-01: This file was modified to remove support for running MATLAB codes
 
-def codeCaller(chatstatus):
+def codeCaller(state):
     """
     Executes a Python script based on the user's prompt and chat status settings.
     
@@ -60,13 +60,13 @@ def codeCaller(chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
-    log.debugLog("CODER", chatstatus=chatstatus)
-    prompt = chatstatus['prompt']                                        # Get the user prompt
-    llm = chatstatus['llm']                                              # Get the llm
-    memory = ConversationBufferMemory(ai_prefix="BRAD")                  # chatstatus['memory']
+    log.debugLog("CODER", state=state)
+    prompt = state['prompt']                                        # Get the user prompt
+    llm = state['llm']                                              # Get the llm
+    memory = ConversationBufferMemory(ai_prefix="BRAD")                  # state['memory']
 
     # Get available matlab and python scripts
-    path = chatstatus['config']['CODE']['path']
+    path = state['config']['CODE']['path']
 
     scripts = {}
     for fdir in path:
@@ -88,9 +88,9 @@ def codeCaller(chatstatus):
     template = scriptSelectorTemplate()
     template = template.format(script_list=script_list)
     PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
-    log.debugLog(PROMPT, chatstatus=chatstatus)
+    log.debugLog(PROMPT, state=state)
     chain = PROMPT | llm # LCEL chain creation
-    log.debugLog("FIRST LLM CALL", chatstatus=chatstatus)
+    log.debugLog("FIRST LLM CALL", state=state)
 
     # Call LLM
     start_time = time.time()
@@ -105,7 +105,7 @@ def codeCaller(chatstatus):
         "Total Cost (USD)": cb.total_cost
     }
     
-    log.debugLog(res.content, chatstatus=chatstatus)
+    log.debugLog(res.content, state=state)
     scriptName   = res.content.strip().split('\n')[0].split(':')[1].strip()
     scriptType   = scriptPurpose[scriptName]['type']
     scriptPath = None
@@ -114,23 +114,23 @@ def codeCaller(chatstatus):
             scriptPath = fdir
             break
     if scriptPath is None:
-        log.debugLog('the scriptPath was not found', chatstatus=chatstatus)
-        log.debugLog(f'scripts={scripts}', chatstatus=chatstatus)
-        log.debugLog(f'scriptName={scriptName}', chatstatus=chatstatus)
-        log.debugLog(f'scriptType={scriptType}', chatstatus=chatstatus)
+        log.debugLog('the scriptPath was not found', state=state)
+        log.debugLog(f'scripts={scripts}', state=state)
+        log.debugLog(f'scriptName={scriptName}', state=state)
+        log.debugLog(f'scriptType={scriptType}', state=state)
 
     # NOTE: MATLAB is in an experimental stage and not fully integrated yet
     if scriptType == 'MATLAB':
-        chatstatus, _ = activateMatlabEngine(chatstatus) # turn on and add matlab files to path
+        state, _ = activateMatlabEngine(state) # turn on and add matlab files to path
         scriptName = os.path.join(scriptPath, scriptName)
     else:
-        log.debugLog('scriptPath=' + str(scriptPath), chatstatus=chatstatus)
+        log.debugLog('scriptPath=' + str(scriptPath), state=state)
         scriptName = os.path.join(scriptPath, scriptName)
 
     scriptSuffix = {'python': '.py', 'MATLAB': '.m'}.get(scriptType)
     scriptName  += scriptSuffix
 
-    chatstatus['process']['steps'].append(
+    state['process']['steps'].append(
         log.llmCallLog(
             llm             = llm,
             prompt          = PROMPT,
@@ -146,30 +146,30 @@ def codeCaller(chatstatus):
     )
     
     # Format code to execute: read the doc strings, format function call (second llm call), parse the llm output
-    log.debugLog("ALL SCRIPTS FOUND. BUILDING TEMPLATE", chatstatus=chatstatus)
+    log.debugLog("ALL SCRIPTS FOUND. BUILDING TEMPLATE", state=state)
     
     docstringReader = {'python': read_python_docstrings}.get(scriptType)
     docstrings      = docstringReader(os.path.join(scriptPath, scriptName))
     scriptCallingTemplate = {'python': pythonPromptTemplateWithFiles}.get(scriptType)
     template        = scriptCallingTemplate()
     if scriptType == 'python':
-        createdFiles = "\n".join(utils.outputFiles(chatstatus)) # A string of previously created files
+        createdFiles = "\n".join(utils.outputFiles(state)) # A string of previously created files
         filled_template = template.format(
             scriptName=scriptName,
             scriptDocumentation=docstrings,
-            output_path=chatstatus['output-directory'],
+            output_path=state['output-directory'],
             files=createdFiles
         )
     else:
         filled_template = template.format(
             scriptName=scriptName,
             scriptDocumentation=docstrings,
-            output_path=chatstatus['output-directory']
+            output_path=state['output-directory']
         )
 
     # Create the prompt template
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
-    log.debugLog(PROMPT, chatstatus=chatstatus)
+    log.debugLog(PROMPT, state=state)
     
     # this will allow better logging of the response from the query API
     try:
@@ -179,7 +179,7 @@ def codeCaller(chatstatus):
         # Execute the chain with input prompt
         start_time = time.time()
         with get_openai_callback() as cb:
-            response = chain.invoke({"history": memory.abuffer(), "input": chatstatus['prompt']})
+            response = chain.invoke({"history": memory.abuffer(), "input": state['prompt']})
         responseOriginal = response
         responseOriginal['time'] = time.time() - start_time
         responseOriginal['call back'] = {
@@ -195,12 +195,12 @@ def codeCaller(chatstatus):
         conversation = ConversationChain(
             prompt  = PROMPT,
             llm     =    llm,
-            verbose = chatstatus['config']['debug'],
+            verbose = state['config']['debug'],
             memory  = memory,
         )
         start_time = time.time()
         with get_openai_callback() as cb:
-            response = conversation.predict(input=chatstatus['prompt'])
+            response = conversation.predict(input=state['prompt'])
         responseOriginal = response
         responseOriginal = {
             'content' : response,
@@ -214,13 +214,13 @@ def codeCaller(chatstatus):
         }
     
     responseParser = {'python': extract_python_code, 'MATLAB': extract_matlab_code}.get(scriptType)
-    code2execute = responseParser(response, scriptPath, chatstatus, memory=memory)
+    code2execute = responseParser(response, scriptPath, state, memory=memory)
 
-    chatstatus['process']['steps'].append(
+    state['process']['steps'].append(
         log.llmCallLog(
             llm             = llm,
             prompt          = PROMPT,
-            input           = chatstatus['prompt'],
+            input           = state['prompt'],
             output          = responseOriginal,
             parsedOutput    = {
                 'code': code2execute
@@ -230,21 +230,21 @@ def codeCaller(chatstatus):
     )
 
     # Check if it requires previous inputs
-    code2execute = utils.add_output_file_path_to_string(code2execute, chatstatus)
+    code2execute = utils.add_output_file_path_to_string(code2execute, state)
     
     # Execute code
-    executeCode(chatstatus, code2execute, scriptType)
+    executeCode(state, code2execute, scriptType)
 
-    return chatstatus
+    return state
 
-def executeCode(chatstatus, code2execute, scriptType):
+def executeCode(state, code2execute, scriptType):
     """
     Executes the provided code based on the specified script type.
     
     This function determines the appropriate execution environment (Python or MATLAB) based on the script type and runs the corresponding code.
     
-    :param chatstatus: A dictionary containing the chat status, including configuration settings and other relevant data.
-    :type chatstatus: dict
+    :param state: A dictionary containing the chat status, including configuration settings and other relevant data.
+    :type state: dict
     :param code2execute: The code to be executed.
     :type code2execute: str
     :param scriptType: The type of the script to be executed. Must be either 'python' or 'MATLAB'.
@@ -254,5 +254,5 @@ def executeCode(chatstatus, code2execute, scriptType):
     #       jpic@umich.edu
     # Date: June 22, 2024
     executor = {'python': execute_python_code}.get(scriptType)
-    executor(code2execute, chatstatus)
+    executor(code2execute, state)
 

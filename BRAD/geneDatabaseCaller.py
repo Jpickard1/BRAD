@@ -34,17 +34,17 @@ from BRAD import utils
 from BRAD.promptTemplates import geneDatabaseCallerTemplate
 from BRAD import log
 
-def geneDBRetriever(chatstatus):
+def geneDBRetriever(state):
     """
     Retrieves gene information from a specified database based on the user query. 
     It uses a language model to determine the appropriate database and performs 
     the search, handling various configurations and logging the process.
     
-    :param chatstatus: A dictionary containing the user query, language model, 
+    :param state: A dictionary containing the user query, language model, 
                        configurations, and other necessary data for the retrieval process.
-    :type chatstatus: dict
+    :type state: dict
     
-    :returns: The updated chatstatus containing the results of the database search 
+    :returns: The updated state containing the results of the database search 
               and any modifications made during the process.
     :rtype: dict
     """
@@ -52,9 +52,9 @@ def geneDBRetriever(chatstatus):
     #       jpic@umich.edu
     # Date: June 6, 2024
     
-    query    = chatstatus['prompt']
-    llm      = chatstatus['llm']              # get the llm
-    # memory   = chatstatus['memory']           # get the memory of the model
+    query    = state['prompt']
+    llm      = state['llm']              # get the llm
+    # memory   = state['memory']           # get the memory of the model
     memory = ConversationBufferMemory(ai_prefix="BRAD")
     
     # Define the mapping of keywords to functions
@@ -66,13 +66,13 @@ def geneDBRetriever(chatstatus):
     # Identify the database and the search terms
     template = geneDatabaseCallerTemplate()
 
-    tablesInfo = getTablesFormatting(chatstatus['tables'])
+    tablesInfo = getTablesFormatting(state['tables'])
     filled_template = template.format(tables=tablesInfo)
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     
     conversation = ConversationChain(prompt  = PROMPT,
                                      llm     = llm,
-                                     verbose = chatstatus['config']['debug'],
+                                     verbose = state['config']['debug'],
                                      memory  = memory,
                                     )
     # Invoke LLM tracking its usage
@@ -90,10 +90,10 @@ def geneDBRetriever(chatstatus):
         }
     }
     
-    log.debugLog(chainResponse, chatstatus=chatstatus)    # Print gene list if debugging
-    response = parse_llm_response(chainResponse, chatstatus)
+    log.debugLog(chainResponse, state=state)    # Print gene list if debugging
+    response = parse_llm_response(chainResponse, state)
 
-    chatstatus['process']['steps'].append(
+    state['process']['steps'].append(
         log.llmCallLog(
             llm          = llm,
             prompt       = PROMPT,
@@ -104,7 +104,7 @@ def geneDBRetriever(chatstatus):
         )
     )
 
-    log.debugLog(response, chatstatus=chatstatus)    # Print gene list if debugging
+    log.debugLog(response, state=state)    # Print gene list if debugging
 
     similarity_to_enrichr      = utils.word_similarity(response['database'], "ENRICHR")
     similarity_to_geneontology = utils.word_similarity(response['database'], "GENEONTOLOGY")
@@ -114,28 +114,28 @@ def geneDBRetriever(chatstatus):
         database = "GENEONTOLOGY"
 
     dbCaller = database_functions[database]
-    chatstatus['process']['database-function'] =  dbCaller
+    state['process']['database-function'] =  dbCaller
     
     geneList = []
     if response['load'] == 'True':
-        chatstatus, geneList = utils.loadFromFile(chatstatus)
+        state, geneList = utils.loadFromFile(state)
     else:
         geneList = response['genes']
 
-    if len(geneList) > chatstatus['config']['DATABASE']['max_search_terms']:
-        geneList = geneList[:chatstatus['config']['DATABASE']['max_search_terms']]
+    if len(geneList) > state['config']['DATABASE']['max_search_terms']:
+        geneList = geneList[:state['config']['DATABASE']['max_search_terms']]
 
     # Print gene list if debugging
-    log.debugLog(geneList, chatstatus=chatstatus)
+    log.debugLog(geneList, state=state)
 
     try:
-        chatstatus = dbCaller(chatstatus, geneList)
+        state = dbCaller(state, geneList)
     except Exception as e:
         output = f'Error occurred while searching database: {e}'
-        log.errorLog(output, info='geneDatabaseCaller.geneDBRetriever', chatstatus=chatstatus)
-    return chatstatus
+        log.errorLog(output, info='geneDatabaseCaller.geneDBRetriever', state=state)
+    return state
 
-def parse_llm_response(response, chatstatus):
+def parse_llm_response(response, state):
     """
     Parses the LLM response to extract the database name and search terms.
     
@@ -155,7 +155,7 @@ def parse_llm_response(response, chatstatus):
     # Split the response into lines
     response = response.replace("'", "")
     response = response.replace('"', "")
-    log.debugLog(response, chatstatus=chatstatus)
+    log.debugLog(response, state=state)
     lines = response.strip().split('\n')
 
     # Extract the database name

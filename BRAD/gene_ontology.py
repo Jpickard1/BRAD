@@ -23,14 +23,14 @@ from io import StringIO
 
 from BRAD import log
 
-def geneOntology(chatstatus, goQuery):
+def geneOntology(state, goQuery):
     """
     Performs Gene Ontology (GO) search for specified genes and updates the chat status with the results.
 
     :param goQuery: The query string containing gene names or terms for GO search.
     :type goQuery: str
-    :param chatstatus: The current status of the chat, including the prompt, configuration, and process details.
-    :type chatstatus: dict
+    :param state: The current status of the chat, including the prompt, configuration, and process details.
+    :type state: dict
 
     :raises FileNotFoundError: If the gene list file is not found.
 
@@ -47,11 +47,11 @@ def geneOntology(chatstatus, goQuery):
         contents = file.read()
     gene_list = contents.split('\n')
     if len(goQuery) > 0:
-        go_process = goSearch(goQuery, chatstatus)
-        chatstatus['process']['GO'] = go_process
-    return chatstatus
+        go_process = goSearch(goQuery, state)
+        state['process']['GO'] = go_process
+    return state
             
-def goSearch(query, chatstatus):
+def goSearch(query, state):
     """
     Performs a search on Gene Ontology (GO) based on the provided query and allows downloading associated charts and papers.
 
@@ -67,29 +67,29 @@ def goSearch(query, chatstatus):
     process = {}
     output = {}
     for terms in query:
-        output, geneStatus = textGO(terms, chatstatus)
+        output, geneStatus = textGO(terms, state)
         process['output'] = output
         if geneStatus == True:
-            chatstatus = log.userOutput('\n would you like to download charts associated with these genes [Y/N]?', chatstatus=chatstatus)
+            state = log.userOutput('\n would you like to download charts associated with these genes [Y/N]?', state=state)
             for term in output:
                 go_id = str(term[0])
-                chartGO(go_id, chatstatus)
-                chatstatus = log.userOutput('\n would you like to download the paper associated with these genes [Y/N]?', chatstatus=chatstatus)
+                chartGO(go_id, state)
+                state = log.userOutput('\n would you like to download the paper associated with these genes [Y/N]?', state=state)
                 # download2 = input().strip().upper()
                 # process['paper_download'] = (download2 == 'Y')
                 # if download2 == 'Y':
-                pubmedPaper(go_id, chatstatus)
+                pubmedPaper(go_id, state)
 
                     
         else:
-            chatstatus = log.userOutput('\n would you like to download the gene product annotation [Y/N]?', chatstatus=chatstatus)
+            state = log.userOutput('\n would you like to download the gene product annotation [Y/N]?', state=state)
             for term in query:
-                chatstatus = log.userOutput(term, chatstatus=chatstatus)
-                annotations(term, chatstatus)
+                state = log.userOutput(term, state=state)
+                annotations(term, state)
     return process
 
 
-def textGO(query, chatstatus):
+def textGO(query, state):
     """
     Performs a text-based Gene Ontology (GO) search for a specified query and returns the extracted data and gene status.
 
@@ -117,7 +117,7 @@ def textGO(query, chatstatus):
     data = json.loads(responseBody)
     if data['numberOfHits'] == 0:
         gene=False
-        chatstatus = log.userOutput("No Gene Ontology Available - Searching Gene Products", chatstatus=chatstatus)
+        state = log.userOutput("No Gene Ontology Available - Searching Gene Products", state=state)
         requestURL = requestURL = "https://www.ebi.ac.uk/QuickGO/services/geneproduct/search?query="+query
         r = requests.get(requestURL, headers={ "Accept" : "application/json"})
 
@@ -131,7 +131,7 @@ def textGO(query, chatstatus):
             id = result['id']
             extracted_data.append(id)
         for id in extracted_data:
-            chatstatus = log.userOutput(f"ID: {id}", chatstatus=chatstatus)
+            state = log.userOutput(f"ID: {id}", state=state)
     else:
         for result in data['results']:
             id = result['id']
@@ -139,14 +139,14 @@ def textGO(query, chatstatus):
             extracted_data.append((id, text))
             # Print the extracted data
         for id, text in extracted_data:
-            chatstatus = log.userOutput(f"ID: {id}", chatstatus=chatstatus)
-            chatstatus = log.userOutput(f"Text: {text}", chatstatus=chatstatus)
+            state = log.userOutput(f"ID: {id}", state=state)
+            state = log.userOutput(f"Text: {text}", state=state)
     return extracted_data, gene
 
     
 
 #Input is a GO:----- identification for a gene        
-def chartGO(identifier, chatstatus):
+def chartGO(identifier, state):
 
     """
     Downloads a chart for a specified Gene Ontology (GO) identifier.
@@ -162,9 +162,9 @@ def chartGO(identifier, chatstatus):
     try: 
         path = os.path.abspath(os.getcwd()) + '/go_charts'
         os.makedirs(path, exist_ok = True)
-        chatstatus = log.userOutput("Directory '%s' created successfully" % path, chatstatus=chatstatus)
+        state = log.userOutput("Directory '%s' created successfully" % path, state=state)
     except OSError as error:
-        chatstatus = log.userOutput("Directory '%s' can not be created" % path, chatstatus=chatstatus)
+        state = log.userOutput("Directory '%s' can not be created" % path, state=state)
     requestURL = "https://www.ebi.ac.uk/QuickGO/services/ontology/go/terms/{ids}/chart?ids=GO%3A"+identifier[3:]
     img_data = requests.get(requestURL).content
 
@@ -173,7 +173,7 @@ def chartGO(identifier, chatstatus):
         handler.write(img_data)
 
 #Input is a GO:----- identification for a gene     
-def pubmedPaper(identifier, chatstatus):
+def pubmedPaper(identifier, state):
     """
     Downloads PubMed papers associated with a specified Gene Ontology (GO) identifier.
 
@@ -196,7 +196,7 @@ def pubmedPaper(identifier, chatstatus):
     # Extract the dbId from the first result
     dbId = []
     
-    #chatstatus = log.userOutput(data, chatstatus=chatstatus)
+    #state = log.userOutput(data, state=state)
     if data['numberOfHits'] > 0:
         xrefs = data['results'][0].get('definition', {}).get('xrefs', [])
         if xrefs:
@@ -208,23 +208,23 @@ def pubmedPaper(identifier, chatstatus):
             try: 
                 path = os.path.abspath(os.getcwd()) + '/specialized_docs'
                 os.makedirs(path, exist_ok = True) 
-                chatstatus = log.userOutput("Directory '%s' created successfully" % path, chatstatus=chatstatus)
+                state = log.userOutput("Directory '%s' created successfully" % path, state=state)
             except OSError as error: 
-                chatstatus = log.userOutput("Directory '%s' can not be created" % path, chatstatus=chatstatus)
+                state = log.userOutput("Directory '%s' can not be created" % path, state=state)
             for idname in dbId:
-                chatstatus = log.userOutput(idname, chatstatus=chatstatus)
+                state = log.userOutput(idname, state=state)
                 try:
                     base_url = 'https://pubmed.ncbi.nlm.nih.gov/'
                     r = s.get(base_url + idname + '/', headers = headers, timeout = 5)
                     try:
                         pdf_url = r.html.find('a.id-link', first=True).attrs['href']
-                        chatstatus = log.userOutput(pdf_url, chatstatus=chatstatus)
+                        state = log.userOutput(pdf_url, state=state)
                         if "doi" in pdf_url:
-                            chatstatus = log.userOutput("Not public", chatstatus=chatstatus)
+                            state = log.userOutput("Not public", state=state)
                             continue
                         r = s.get(pdf_url, headers = headers, timeout = 5)
                         pdf_real = 'https://ncbi.nlm.nih.gov'+r.html.find('a.int-view', first=True).attrs['href']
-                        chatstatus = log.userOutput(pdf_real, chatstatus=chatstatus)
+                        state = log.userOutput(pdf_real, state=state)
                         r = s.get(pdf_real, stream=True)
                         with open(os.path.join(path, idname + '.pdf'), 'wb') as f:
                             for chunk in r.iter_content(chunk_size = 1024):
@@ -232,17 +232,17 @@ def pubmedPaper(identifier, chatstatus):
                                     f.write(chunk)
                     except AttributeError:
                         pass
-                        chatstatus = log.userOutput(f"{idname} could not be gathered.", chatstatus=chatstatus)
+                        state = log.userOutput(f"{idname} could not be gathered.", state=state)
 
                 except ConnectionError as e:
                     pass
-                    chatstatus = log.userOutput(f"{idname} could not be gathered.", chatstatus=chatstatus)
+                    state = log.userOutput(f"{idname} could not be gathered.", state=state)
         else:
-            chatstatus = log.userOutput(f"No paper associated with {identifier} found on PubMed", chatstatus=chatstatus)
+            state = log.userOutput(f"No paper associated with {identifier} found on PubMed", state=state)
 
 
 #THIS ONE WORKS BETTER
-def annotations(ids, chatstatus):
+def annotations(ids, state):
     """
     Downloads annotations for a specified gene product.
 
@@ -257,9 +257,9 @@ def annotations(ids, chatstatus):
     try: 
         path = os.path.abspath(os.getcwd()) + '/go_annotations'
         os.makedirs(path, exist_ok = True) 
-        chatstatus = log.userOutput("Directory '%s' created successfully" % path, chatstatus=chatstatus)
+        state = log.userOutput("Directory '%s' created successfully" % path, state=state)
     except OSError as error: 
-        chatstatus = log.userOutput("Directory '%s' can not be created" % path, chatstatus=chatstatus)
+        state = log.userOutput("Directory '%s' can not be created" % path, state=state)
         
         
     requestURL = "https://amigo.geneontology.org/amigo/search/annotation?q="+ids

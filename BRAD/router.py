@@ -39,60 +39,60 @@ from BRAD.promptTemplates import rerouteTemplate
 from BRAD import log
 from BRAD import utils
 
-def reroute(chatstatus):
+def reroute(state):
     """
     Reroutes the conversation flow for agentic workflows based on the current queue pointer and the user prompt.
     
     This method uses the agent history and ongoing conversation, along with an LLM, 
     to determine the subsequent step in the agentic workflow designed by the planner.
     
-    :param chatstatus: A dictionary that holds the current state of the conversation, including the language model, 
+    :param state: A dictionary that holds the current state of the conversation, including the language model, 
                        the user prompt, the process queue, and any other relevant information necessary for 
                        effectively rerouting the conversation.
     
-    :returns: An updated chatstatus dictionary reflecting changes made during the rerouting process.
+    :returns: An updated state dictionary reflecting changes made during the rerouting process.
     :rtype: dict
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 24, 2024
-    log.debugLog('Call to REROUTER', chatstatus=chatstatus)
-    llm = chatstatus['llm']
-    prompt = chatstatus['prompt']
-    queue  = chatstatus['queue']
+    log.debugLog('Call to REROUTER', state=state)
+    llm = state['llm']
+    prompt = state['prompt']
+    queue  = state['queue']
 
     # Build chat history
-    chatlog = json.load(open(os.path.join(chatstatus['output-directory'], 'log.json')))
+    chatlog = json.load(open(os.path.join(state['output-directory'], 'log.json')))
     history = ""
     for i in chatlog.keys():
         history += "========================================"
         history += '\n'
         history += "Input: "  + chatlog[i]['prompt']  + r'\n\n'
         history += "Output: " + chatlog[i]['output'] + r'\n\n'
-    log.debugLog(history, chatstatus=chatstatus)
+    log.debugLog(history, state=state)
     
     # Put history into the conversation
     template = rerouteTemplate()
     template = template.format(chathistory=history,
-                               step_number=chatstatus['queue pointer'])
+                               step_number=state['queue pointer'])
     PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
-    chain = PROMPT | chatstatus['llm']
+    chain = PROMPT | state['llm']
     res = chain.invoke(prompt)
     
     # Extract output
-    log.debugLog(res, chatstatus=chatstatus)
-    log.debugLog(res.content, chatstatus=chatstatus)
+    log.debugLog(res, state=state)
+    log.debugLog(res.content, state=state)
     # nextStep = int(res.content.split('=')[1].split('\n')[0].strip())
     nextStep = utils.find_integer_in_string(res.content.split('\n')[0])
-    log.debugLog('EXTRACTED NEXT STEP', chatstatus=chatstatus)
-    log.debugLog('Next Step=' + str(nextStep), chatstatus=chatstatus)
-    log.debugLog(f'(nextStep is None)={(nextStep is None)}', chatstatus=chatstatus)
+    log.debugLog('EXTRACTED NEXT STEP', state=state)
+    log.debugLog('Next Step=' + str(nextStep), state=state)
+    log.debugLog(f'(nextStep is None)={(nextStep is None)}', state=state)
     if nextStep is None:
-        nextStep = chatstatus['queue pointer'] + 1
+        nextStep = state['queue pointer'] + 1
     if str(nextStep) not in prompt:
-        log.debugLog(f'the next step identified was not valid according to the rerouting instructions. As a result, chatstatus["queue pointer"]={chatstatus["queue pointer"]+1}', chatstatus=chatstatus)
-        nextStep = chatstatus['queue pointer'] + 1
-    chatstatus['process']['steps'].append(log.llmCallLog(
+        log.debugLog(f'the next step identified was not valid according to the rerouting instructions. As a result, state["queue pointer"]={state["queue pointer"]+1}', state=state)
+        nextStep = state['queue pointer'] + 1
+    state['process']['steps'].append(log.llmCallLog(
         llm     = llm,
         prompt  = template,
         input   = prompt,
@@ -102,8 +102,8 @@ def reroute(chatstatus):
     ))
     
     # Modify the queued prompts
-    chatstatus['queue pointer'] = nextStep
-    return chatstatus
+    state['queue pointer'] = nextStep
+    return state
 
 def read_prompts(file_path):
     """

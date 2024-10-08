@@ -19,17 +19,17 @@ from langchain_core.prompts.prompt import PromptTemplate
 from BRAD.promptTemplates import plannerTemplate, plannerEditingTemplate, plannerTemplateForLibrarySelection
 from BRAD import log
 
-def planner(chatstatus):
+def planner(state):
     """
     Generates a plan based on the user prompt using a language model, allows the user 
-    to review and edit the plan, and then updates the chatstatus with the finalized plan.
+    to review and edit the plan, and then updates the state with the finalized plan.
 
     Args:
-        chatstatus (dict): A dictionary containing the LLM, user prompt, vector database, 
+        state (dict): A dictionary containing the LLM, user prompt, vector database, 
                            memory, and configuration settings for the planning process.
 
     Returns:
-        dict: The updated chatstatus containing the finalized plan and any modifications 
+        dict: The updated state containing the finalized plan and any modifications 
               made during the process.
 
     """
@@ -39,7 +39,7 @@ def planner(chatstatus):
 
     # Dev. Comments:
     # -------------------
-    # This function initializes a chat session and the chatstatus variable
+    # This function initializes a chat session and the state variable
     #
     # History:
     # - 2024-06-16: 1st draft of this method
@@ -56,24 +56,24 @@ def planner(chatstatus):
     # - add code to let BRAD fill in the template of a prebuilt pipeline
     # - add code to save new pipelines
 
-    llm      = chatstatus['llm']              # get the llm
-    prompt   = chatstatus['prompt']           # get the user prompt
-    vectordb = chatstatus['databases']['RAG'] # get the vector database
-    memory   = chatstatus['memory']           # get the memory of the model
+    llm      = state['llm']              # get the llm
+    prompt   = state['prompt']           # get the user prompt
+    vectordb = state['databases']['RAG'] # get the vector database
+    memory   = state['memory']           # get the memory of the model
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # Select to use a prebuilt tempalte or design out own
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     template = plannerTemplateForLibrarySelection()
-    pipelines, pipelineSummary = getKnownPipelines(chatstatus)
+    pipelines, pipelineSummary = getKnownPipelines(state)
     template = template.format(pipeline_list=pipelineSummary)
     PROMPT = PromptTemplate(input_variables=["input"], template=template)
     conversation = LLMChain(prompt  = PROMPT,
                             llm     = llm,
-                            verbose = chatstatus['config']['debug'],
+                            verbose = state['config']['debug'],
                             )
     response = conversation.predict(input=prompt)
-    log.debugLog(response, chatstatus=chatstatus)
+    log.debugLog(response, state=state)
     pipelineSelection = response.split('\n')[0].split(':')[1]
     pipeline_names = [name.upper() for name in pipelines.keys()]
     pipeline_names.append('CUSTOM')
@@ -82,8 +82,8 @@ def planner(chatstatus):
         selected_pipeline = "CUSTOM"
     else:
         selected_pipeline = selected_pipeline[0]
-    log.debugLog(f'selected_pipeline={selected_pipeline}', chatstatus=chatstatus)
-    chatstatus['process']['steps'].append(
+    log.debugLog(f'selected_pipeline={selected_pipeline}', state=state)
+    state['process']['steps'].append(
         log.llmCallLog(
             llm          = llm,
             prompt       = PROMPT,
@@ -104,13 +104,13 @@ def planner(chatstatus):
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
         conversation = ConversationChain(prompt  = PROMPT,
                                          llm     = llm,
-                                         verbose = chatstatus['config']['debug'],
+                                         verbose = state['config']['debug'],
                                          memory  = memory,
                                         )
         response = conversation.predict(input=prompt)
         response += '\n\n'
-        chatstatus = log.userOutput(response, chatstatus=chatstatus)
-        chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
+        state = log.userOutput(response, state=state)
+        state['process']['steps'].append(log.llmCallLog(llm          = llm,
                                                              prompt       = PROMPT,
                                                              memory       = memory,
                                                              input        = prompt,
@@ -122,9 +122,9 @@ def planner(chatstatus):
                                                             )
                                              )
         while True:
-            chatstatus = log.userOutput('Do you want to proceed with this plan? [Y/N/edit]', chatstatus=chatstatus)
+            state = log.userOutput('Do you want to proceed with this plan? [Y/N/edit]', state=state)
             prompt2 = input('Input >> ')
-            chatstatus['process']['steps'].append(
+            state['process']['steps'].append(
                 {
                     'func'           : 'planner.planner',
                     'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
@@ -135,17 +135,17 @@ def planner(chatstatus):
             if prompt2 == 'Y':
                 break
             elif prompt2 == 'N':
-                return chatstatus
+                return state
             else:
                 template = plannerEditingTemplate()
                 template = template.format(plan=response)
-                log.debugLog(template, chatstatus=chatstatus)
+                log.debugLog(template, state=state)
                 PROMPT   = PromptTemplate(input_variables=["user_query"], template=template)
                 chain    = PROMPT | llm
                 
                 # Call chain
                 response = chain.invoke(prompt2).content.strip() + '\n\n'
-                chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
+                state['process']['steps'].append(log.llmCallLog(llm          = llm,
                                                                      prompt       = PROMPT,
                                                                      # memory should be included in this chain
                                                                      # memory       = memory,
@@ -157,11 +157,11 @@ def planner(chatstatus):
                                                                      purpose      = 'update the proposed set of prompts'
                                                                     )
                                                      )
-                chatstatus = log.userOutput(response, chatstatus=chatstatus)
+                state = log.userOutput(response, state=state)
 
         processes = response2processes(response)
-        log.debugLog(processes, chatstatus=chatstatus)
-        chatstatus['process']['steps'].append(
+        log.debugLog(processes, state=state)
+        state['process']['steps'].append(
             {
                 'func' : 'planner.planner',
                 'what' : 'designed a new pipeline'
@@ -169,19 +169,19 @@ def planner(chatstatus):
         )
 
         # Check if the chat is interactive
-        if chatstatus['interactive']:
+        if state['interactive']:
             # Prompt the user to decide if they want to save the pipeline to a file
-            chatstatus = log.userOutput('Would you like to save this pipeline to a file? [Y/N]', chatstatus=chatstatus)
+            state = log.userOutput('Would you like to save this pipeline to a file? [Y/N]', state=state)
             saveNewPipeline = input(">>>")
         
             # If the user chooses to save the pipeline
             if saveNewPipeline.upper() == "Y":
                 # Prompt the user to enter a name for the pipeline
-                chatstatus = log.userOutput('Enter a name for your pipeline', chatstatus=chatstatus)
+                state = log.userOutput('Enter a name for your pipeline', state=state)
                 fname = input(">>>")
         
                 # Prompt the user to enter a description for the pipeline
-                chatstatus = log.userOutput('Enter a description of your pipeline', chatstatus=chatstatus)
+                state = log.userOutput('Enter a description of your pipeline', state=state)
                 description = input(">>>")
         
                 # Create a dictionary to store the pipeline information
@@ -194,7 +194,7 @@ def planner(chatstatus):
                     pipelineJSONdict['queue'][k]['output'] = []
         
                 # Get the directory path to save the pipeline file
-                pipelines_dir = chatstatus['config']['PLANNER']['path']
+                pipelines_dir = state['config']['PLANNER']['path']
         
                 # Construct the full file path
                 filepath = os.path.join(pipelines_dir, f"{fname}.json")
@@ -203,9 +203,9 @@ def planner(chatstatus):
                 try:
                     with open(filepath, 'w') as f:
                         json.dump(pipelineJSONdict, f, indent=4)
-                    chatstatus = log.userOutput(f"Pipeline saved successfully to {filepath}", chatstatus=chatstatus)
+                    state = log.userOutput(f"Pipeline saved successfully to {filepath}", state=state)
                 except Exception as e:
-                    chatstatus = log.userOutput(f"Error saving pipeline: {e}", chatstatus=chatstatus)
+                    state = log.userOutput(f"Error saving pipeline: {e}", state=state)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # Parameterize a predesigned pipeline
@@ -231,10 +231,10 @@ def planner(chatstatus):
                 
         # If loadedProcesses is neither a dictionary nor a list, issue a warning
         else:
-            log.debugLog("Warning: loadedProcesses is neither a dictionary nor a list", chatstatus=chatstatus)
+            log.debugLog("Warning: loadedProcesses is neither a dictionary nor a list", state=state)
 
-        chatstatus = displayPipeline2User(processes, chatstatus=chatstatus)
-        chatstatus['process']['steps'].append(
+        state = displayPipeline2User(processes, state=state)
+        state['process']['steps'].append(
             {
                 'func' : 'planner.planner',
                 'what' : 'loaded an older pipeline'
@@ -243,18 +243,18 @@ def planner(chatstatus):
 
         # TODO: Add code that allows BRAD to fill in missing pieces of a pipeline / use templated pipelines
 
-    chatstatus['interactive'] = False
-    chatstatus['queue'] = processes
-    chatstatus['queue pointer'] = 1 # the 0 object is a place holder
-    chatstatus['process']['steps'].append(
+    state['interactive'] = False
+    state['queue'] = processes
+    state['queue pointer'] = 1 # the 0 object is a place holder
+    state['process']['steps'].append(
         {
             'func' : 'planner.planner',
             'what' : 'set the queue and set the queue pointer to 1'
         }
     )
-    return chatstatus
+    return state
 
-def displayPipeline2User(process, chatstatus=None):
+def displayPipeline2User(process, state=None):
     """
     Displays the steps of the process pipeline to the user, logging each step.
     
@@ -266,19 +266,19 @@ def displayPipeline2User(process, chatstatus=None):
                     to a step in the process, where the key is the step number or name, and the value 
                     is the step's description or details.
     :type process: dict
-    :param chatstatus: The current chat status dictionary to which the output will be appended. If not 
+    :param state: The current chat status dictionary to which the output will be appended. If not 
                        provided, a default value of `None` is used.
-    :type chatstatus: dict, optional
+    :type state: dict, optional
     
     :return: The updated chat status after logging all process steps.
     :rtype: dict
     
     """
     for key, value in process.items():
-        chatstatus=log.userOutput("** Step " + str(key) + "**", chatstatus=chatstatus)
-        chatstatus=log.userOutput(str(value), chatstatus=chatstatus)
-        chatstatus=log.userOutput("\n", chatstatus=chatstatus)
-    return chatstatus
+        state=log.userOutput("** Step " + str(key) + "**", state=state)
+        state=log.userOutput(str(value), state=state)
+        state=log.userOutput("\n", state=state)
+    return state
 
 def response2processes(response):
     """
@@ -365,7 +365,7 @@ def response2processes(response):
             })
     return processes
 
-def getKnownPipelines(chatstatus):
+def getKnownPipelines(state):
     """
     This function reads all available pipeline JSON files in the 'pipelines' directory
     and extracts their 'name' and 'description' fields. It formulates a summary string
@@ -387,7 +387,7 @@ def getKnownPipelines(chatstatus):
     # current_script_path = os.path.abspath(__file__)
     # current_script_dir = os.path.dirname(current_script_path)
     # pipelines_dir = os.path.join(current_script_dir, 'pipelines')
-    pipelines_dir = chatstatus['config']['PLANNER']['path']
+    pipelines_dir = state['config']['PLANNER']['path']
 
     # Initialize an empty list to store pipeline dictionaries
     pipelines = {}
