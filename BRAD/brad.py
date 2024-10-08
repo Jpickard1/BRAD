@@ -51,34 +51,39 @@ The `Agent` class is organized as follows:
 """
 # Standard
 import pandas as pd
-from copy import deepcopy
+# from copy import deepcopy
 import os
-import sys
-from importlib import reload
-import textwrap
-from scipy import sparse
-import importlib
-from itertools import product
+# import sys
+# from importlib import reload
+# import textwrap
+# from scipy import sparse
+# import importlib
+# from itertools import product
 from datetime import datetime as dt
-from IPython.display import display # displaying dataframes
-import string
+# from IPython.display import display # displaying dataframes
+# import string
 import warnings
-import re
+# import re
 import json
 import logging
 import time
 from typing import Optional, List
 
 # Bioinformatics
-import gget
+# import gget
 
 # Plotting
-import matplotlib
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import matplotlib
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+
+# Router
+from semantic_router.layer import RouteLayer
 
 # RAG
 import chromadb
+
+# LangChain
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
@@ -90,13 +95,14 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains.question_answering import load_qa_chain
 from langchain.output_parsers import CommaSeparatedListOutputParser
-from semantic_router.layer import RouteLayer
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
 from langchain.memory import ConversationBufferMemory
+
+# LangChain Core
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.llms import LLM
 
-# Put your modules here:
+# Library
 from BRAD.planner import *
 from BRAD.enrichr import *
 from BRAD.scraper import *
@@ -114,7 +120,9 @@ from BRAD.bradllm import BradLLM
 
 class Agent():
     """
-    This class organizes the agentic capabilities of BRAD. It facilitates interactions with external LLMs, tools, core modules, literature, and other databases while managing the chat state and history.
+    This class organizes the agentic capabilities of BRAD. It facilitates interactions 
+    with external LLMs, tools, core modules, literature, and other databases while
+    managing the chat state and history.
     
     Key functions include:
     
