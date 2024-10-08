@@ -6,14 +6,15 @@ This module provides functionality to retrieve structured data from bioinformati
 such as Enrichr and Gene Ontology. User queries are processed by an LLM to select and query an
 appropriate database.
 
-Main method:
+Main Methods
+~~~~~~~~~~~~
 
 1. geneDBRetriever:
     This method selects which database and search terms or files to use. After formualting the query terms
     or loading data from a file, the method corresponding to each database is used for the corresponding query.
 
-Methods
-~~~~~~~
+Available Methods
+~~~~~~~~~~~~~~~~~
 
 This module has the following methods:
 

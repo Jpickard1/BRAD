@@ -12,8 +12,8 @@ Key Functions
 
 There are several supporting methods as well.
 
-Methods
-=======
+Available Methods
+=================
 
 This module contains the following methods:
 
@@ -311,10 +311,6 @@ def contextualCompression(docs, chatstatus):
         list: The modified `documentSearch` list with updated `page_content` for each 
               document, replaced by their summaries.
 
-    Example:
-        documentSearch = [Document(page_content="..."), ...]
-        chatstatus = {'config': {'debug': True}}
-        updatedDocs = contextualCompression(documentSearch, chatstatus)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu

@@ -3,8 +3,8 @@ Gene Ontology (GO)
 ------------------
 This module provides functions to perform `Gene Ontology (GO)`<https://geneontology.org/>_ searches, download charts, and retrieve associated publications and annotations based on gene terms. The module interacts with external APIs, such as QuickGO and PubMed, to gather the relevant information.
 
-Methods
-~~~~~~~
+Available Methods
+~~~~~~~~~~~~~~~~~
 
 This module has the following methods:
 

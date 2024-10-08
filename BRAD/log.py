@@ -16,11 +16,12 @@ items are recorded:
 1. time: the time when the `Agent` responds to this query
 2. prompt: the input prompt from the user
 3. output: the message displayed to the user
-4. status: the `Agent` state after responding to the user. :ref:`state-schema-section`
+4. status: the `Agent` state after responding to the user (See :ref:`state-schema-section`)
 5. process: this records the tool module and the set of particular steps the `Agent` takes using the tool
 6. planned: a list of any steps that `Agent` plans to take
 
 These items are saved in the following schema:
+
 >>> [
 ...     0: {
 ...         'TIME'   : <time stamp>,
@@ -256,8 +257,6 @@ def debugLog(output, state=None, display=None):
 
     :raises KeyError: If `state['config']['debug']` is not found when `display` is `None`.
     
-    :return: None
-
     :note: Debug logs are saved using Python's logging library, and the output format includes timestamps and 
            logging levels. If `display` is enabled or debug mode is active, the output will be shown to the user.
            Otherwise, it will be silently logged to the configured log file.

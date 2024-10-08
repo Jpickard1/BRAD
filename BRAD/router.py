@@ -1,6 +1,11 @@
 """
 This module manages routing decisions for both individual user inputs and agentic workflows using the semantic_router 
-library. It serves two key purposes within the BRAD framework: determining which tool or module to use for a specific 
+library.
+
+Scope
+-----
+
+It serves two key purposes within the BRAD framework: determining which tool or module to use for a specific 
 input, and orchestrating multi-step workflows by selecting the next stage in the process.
 
 1. **Tool Selection for Single Inputs**:  
@@ -14,8 +19,11 @@ input, and orchestrating multi-step workflows by selecting the next stage in the
    step based on the current state and the broader workflow plan, ensuring smooth transitions between stages. This feature is organized by the LLM and
    is essential for workflows that involve multiple steps, tools, or decision points.
 
-Methods
--------
+Available Methods
+-----------------
+
+This module contains the following methods:
+
 """
 
 import os

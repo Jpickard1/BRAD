@@ -1,17 +1,24 @@
 """
 This module provides a set of utility functions designed to streamline common tasks related to file management, 
-data handling, directory operations, and more across the core and tool modules. The goal of this module is to offer
-a reusable, general-purpose utilities that simplify routine tasks that interface the LLM with other aspects of the
+data handling, directory operations, and more across the core and tool modules.
+
+Scope
+=====
+
+The goal of this module is to offer a reusable, general-purpose utilities that simplify routine tasks that interface the LLM with other aspects of the
 code. These tasks include saving and loading files, ensuring directories  exist, generating standardized file paths,
 and more. Each function is designed to abstract repetitive operations and enhance code clarity, maintainability,
-and reliability. The functions in this module can be imported as needed when building different aspects of the
-BRAD framework. 
+and reliability. The functions in this module can be imported as needed when building different aspects of the BRAD framework.
 
 
-Methods
--------
+
+
+Available Methods
+=================
+
 
 This module contains the following methods:
+
 """
 
 import re
@@ -407,13 +414,15 @@ def word_similarity(word1, word2):
     based on the longest contiguous matching subsequence between the two words using the
     `difflib.SequenceMatcher` from the Python standard library.
 
-    Args:
-        word1 (str): The first word to compare.
-        word2 (str): The second word to compare.
 
-    Returns:
-        float: A float value between 0 and 1 representing the similarity ratio. A value of 1.0 means the words
-               are identical, while 0.0 means they are completely different.
+    :param word1: The first word to compare.
+    :type word1: str
+    :param word2: The second word to compare.
+    :type word2: str
+    
+    :return: A float value between 0 and 1 representing the similarity ratio. A value of 1.0 means the words
+             are identical, while 0.0 means they are completely different.
+    :rtype: (float)
 
     """
     # Auth: Joshua Pickard

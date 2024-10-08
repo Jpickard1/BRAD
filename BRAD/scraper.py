@@ -7,7 +7,9 @@ This module provides functionality for performing web scraping on various litera
 The system scrapes these databases to find relevant literature, which can then be downloaded and included in the RAG 
 (Retrieval-Augmented Generation) database.
 
-**Main Functions**
+
+Main Methods
+~~~~~~~~~~~~
 
 1. **webScraping**:  
    Selects the correct literature repository based on user input and directs the scraping process to the appropriate database.
@@ -24,8 +26,8 @@ The system scrapes these databases to find relevant literature, which can then b
    maintained by the National Library of Medicine (NLM).
 
 
-Methods
--------
+Available Methods
+~~~~~~~~~~~~~~~~~
 
 This module has the following methods:
 

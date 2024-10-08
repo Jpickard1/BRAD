@@ -5,7 +5,8 @@ Code Caller
 This module facilitates the discovery, selection, and execution of Python and MATLAB scripts 
 based on user prompts and predefined configuration settings.
 
-Key Features:
+Key Features
+~~~~~~~~~~~~
 
 1. Python scripts must reside in the directories specified within the configuration settings.
 
@@ -19,8 +20,8 @@ Key Features:
    - Comprehensive descriptions detailing the script’s arguments, inputs, purpose, and usage 
      examples (utilized by the LLM for accurate execution).
 
-Methods
-~~~~~~~
+Available Methods
+~~~~~~~~~~~~~~~~~
 
 This module has the following methods:
 
