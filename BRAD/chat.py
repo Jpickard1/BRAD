@@ -1,10 +1,34 @@
-
-
 """
-Chat Interface
-~~~~~~~~~~~~~~
+The quickest route to turning on BRAD is to open a command line interface (CLI) chat session. This creates a
+chatbot instance and lets the user message back and forth from the terminal.
 
-The below method can be used to open a chat session with BRAD without requiring the user to explicitly creat an `Agent` object.
+Running BRAD from the CLI
+-------------------------
+
+From the root of the project, the code required to open this chat session is minimal:
+
+>>> python BRAD/chat.py // Minimal required command
+
+This command creates an interactive `Agent` and puts the `Agent` in the `chat` mode.
+Running this command will use all of the default settings to open a chat session
+from the command line. This will prompt you to enter an OpenAI key, and display the
+following messages:
+
+>>> Enter your Open AI API key: █████
+... Would you like to use a database with BRAD [Y/N]?
+... █████
+... Welcome to RAG! The chat log from this conversation will be saved to /home/jpic/BRAD/2024-10-08_15-48-38/log.json. How can I help?
+... ==================================================
+>>> Input >> █████
+
+In the sections that follow, we will show:
+
+1. How the `Agent` class is organized and works
+2. The GUI and other programatic interfaces to use the BRAD system
+
+Available Methods
+-----------------
+
 """
 
 import os
@@ -81,4 +105,7 @@ def chat(
     )
     bot.chat()
 
-chat()
+
+if __name__ == "__main__":
+    chat()
+
