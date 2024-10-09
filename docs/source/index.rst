@@ -12,11 +12,11 @@ Welcome to BRAD: Bioinformatics Retrieval Augmented Data's documentation!
 
    about
    devGuide
+   distribution
 
 
 Indices and tables
 ==================
 
-* :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

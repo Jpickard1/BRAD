@@ -1,7 +1,17 @@
 Software Installation and Requirements
 ======================================
 
-This section outlines the steps required to install and configure the software, providing options for installation via `pip`, `conda`, and `Docker`. Below are the software dependencies and corresponding installation instructions for different environments.
+This section outlines the requirements and steps required to install the software.
+Multiple method of instilation, including `pip`, `conda`, `Docker` and manual instillation
+are available, and should be selected according to the users requirements (pip and conda installs are recommended
+for development and Docker is recomended for using the tool).
+Below are the software dependencies and corresponding installation instructions for different environments.
+
+
+.. note::
+
+   We are developing a desktop application for BRAD that can be installed without requiring the
+   any environment or package management by the user.
 
 Software Requirements
 ----------------------
@@ -13,12 +23,13 @@ The software relies on the following packages and libraries:
 - `pip` or `conda` for package management
 - `Docker` (optional, for containerized deployment)
 
-Python Dependencies
-~~~~~~~~~~~~~~~~~~~
+Dependencies
+~~~~~~~~~~~~
 
 The following libraries are required and can be installed using `pip` or `conda`. These are listed in the `requirements.txt` and `environment.yml` files.
 
 **Key Libraries:**
+
 - `transformers`
 - `torch>=2.0.1`
 - `sentence-transformers`

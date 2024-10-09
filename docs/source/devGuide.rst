@@ -4,13 +4,21 @@ Interface
 The BRAD code offers two distinct interfaces for interaction: a chatbot and a programmatic API. The chatbot provides an interactive experience, accessible via both command line and graphical user interface (GUI). Additionally, the code can be utilized programmatically, similar to other large language model (LLM) tools, and can be integrated with LangChain or similar frameworks. The `Agent` class serves as a cohesive organization for both interaction methods.
 
 
+Quickstart
+----------
+
+.. automodule:: BRAD.chat
+   :members:
+   :undoc-members:
+
 
 Agent Class
 -----------
 
-.. automodule:: BRAD.brad
+.. automodule:: BRAD.agent
    :members:
    :undoc-members:
+
 
 Agents as LLMs
 --------------
@@ -19,12 +27,14 @@ Agents as LLMs
    :members:
    :undoc-members:
 
+
 Graphical User Interface (GUI)
 ------------------------------
 
 .. toctree::
 
     gui
+
 
 Configurations
 --------------
