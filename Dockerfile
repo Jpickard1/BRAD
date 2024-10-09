@@ -45,7 +45,7 @@ RUN pip install langchain==0.3.1
 RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash \
     && source ~/.nvm/nvm.sh \
     && nvm install 20.18.0 \
-    && nvm use 20.18.0 
+    && nvm use 20.18.0 && npm install --prefix /usr/src/brad/brad-chat
 
 RUN mkdir /logs
 
