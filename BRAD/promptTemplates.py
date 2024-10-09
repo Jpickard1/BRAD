@@ -1,3 +1,8 @@
+"""
+This module organizes all templates for inputing the conversation, user inputs, documents, file selection, or other information into an LLM throughout BRAD. Each method returns a single template, in the form of a string, that contains spaces for designed keywords to be filled in with the appropriate information.
+"""
+
+
 from pydantic import BaseModel
 
 # Based on the user's query, create a detailed plan outlining the steps of the analysis. Ensure that each step is clearly defined and makes use of an appropriate method. Clarify which steps are dependent on one another, such as if information from a CODE step is used by DATABASE step, if information from a RAG step is used by a SCRAPE step, or if all previous steps are needed in a WRITE step, or any other dependencies.
@@ -483,16 +488,6 @@ def historyChatTemplate():
     return template
 
 def getDefaultContext():
-    """
-    Returns the default context string for the chatbot, which provides background information and capabilities.
-
-    :param None: This function does not take any parameters.
-
-    :raises None: This function does not raise any specific errors.
-
-    :return: A string containing the default context for the chatbot.
-    :rtype: str
-    """
     llmContext = """Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,
 bioinformatics, genetics, and data science. You can be connected to a text database to augment your answers
 based on the literature with Retrieval Augmented Generation, or you can use several additional modules including

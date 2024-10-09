@@ -1,3 +1,16 @@
+"""
+Module: writer
+
+This module is responsible for compiling chat reports, histories, and logs from various interactions with the 
+large language model (LLM) and generating a comprehensive PDF document. The module streamlines the process of 
+documenting interactions, making it easier for users to review and analyze conversations.
+
+Usage:
+------
+This module is intended to be used in scenarios where there is a need to document interactions with the LLM. 
+By converting chat histories and logs into a well-organized PDF file, users can maintain a clear record of 
+conversations, facilitating further analysis and reflection on the interactions.
+"""
 import pandas as pd
 import os
 import re
@@ -9,42 +22,45 @@ from langchain import PromptTemplate, LLMChain
 from langchain.output_parsers.json import SimpleJsonOutputParser
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+# from langchain_core.pydantic_v1 import BaseModel, Field
+
+from pydantic import BaseModel, Field
+
 
 from BRAD import log
 from BRAD import utils
 from BRAD.promptTemplates import setReportTitleTemplate, summarizeAnalysisPipelineTemplate, summarizeDatabaseCallerTemplate, summarizeRAGTemplate
 from BRAD.pythonCaller import find_py_files, get_py_description, read_python_docstrings, pythonPromptTemplate, extract_python_code, execute_python_code
 
-def chatReport(chatstatus):
+def chatReport(state):
     """
     Generates a report of the chat conversation based on the logged interactions 
     and writes it to a PDF file using a LaTeX template.
 
     Args:
-        chatstatus (dict): A dictionary containing the language model, user prompt, 
+        state (dict): A dictionary containing the language model, user prompt, 
                            output directory, and other relevant information for generating 
                            the chat report.
 
     Returns:
-        dict: The updated chatstatus containing the path to the generated PDF report and 
+        dict: The updated state containing the path to the generated PDF report and 
               any updates made during the report generation process.
 
     Example
     -------
-    >>> chatstatus = {
+    >>> state = {
     ...     'llm': llm_instance,
     ...     'prompt': "Generate chat report",
     ...     'output-directory': '/path/to/output',
     ... }
-    >>> updated_chatstatus = chatReport(chatstatus)
+    >>> updated_state = chatReport(state)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: July 2, 2024
-    log.debugLog("Chat Report Called", chatstatus=chatstatus)
-    query    = chatstatus['prompt']
-    llm      = chatstatus['llm']
+    log.debugLog("Chat Report Called", state=state)
+    query    = state['prompt']
+    llm      = state['llm']
 
     # TODO: this should be path dependent in the configurations
     # Select the latex template. The specific latex template is hardcoded for now, but a latex-template-path
@@ -53,15 +69,15 @@ def chatReport(chatstatus):
     latexTemplate = getLatexTemplate('/home/jpic/latex-test/templates/dmdBiomarkerEnrichment.tex')
     
     # Read the full chat history
-    chatlog = json.load(open(os.path.join(chatstatus['output-directory'], 'log.json')))
-    chathistory = getChatInputOutputs(chatstatus, chatlog)
-    log.debugLog(chathistory, chatstatus=chatstatus)
+    chatlog = json.load(open(os.path.join(state['output-directory'], 'log.json')))
+    chathistory = getChatInputOutputs(state, chatlog)
+    log.debugLog(chathistory, state=state)
 
     # Get fields that are always set
-    title = getReportTitle(chathistory, chatstatus=chatstatus)
-    log.debugLog("title= " + str(title), chatstatus = chatstatus)
+    title = getReportTitle(chathistory, state=state)
+    log.debugLog("title= " + str(title), state = state)
     date  = getReportDate()
-    log.debugLog("date = " + str(date) , chatstatus = chatstatus)
+    log.debugLog("date = " + str(date) , state = state)
 
     # Fill in the latex template
     latexTemplate = latexTemplate.replace("BRAD-TITLE", title)
@@ -73,16 +89,16 @@ def chatReport(chatstatus):
         key = 'BRAD-' + part
         if key in latexTemplate:
             if key == 'BRAD-SUMMARY':
-                section = getReportSummary(chathistory, chatstatus=chatstatus)
+                section = getReportSummary(chathistory, state=state)
             if key == 'BRAD-BODY':
-                section = getReportBody(chatstatus, chatlog)
+                section = getReportBody(state, chatlog)
             latexTemplate = latexTemplate.replace(key, section)
 
     # After filling in the report template write it to a pdf file
-    chatstatus, report_file = reportToPdf(chatstatus, latexTemplate)
-    chatstatus = utils.compile_latex_to_pdf(chatstatus, report_file)
+    state, report_file = reportToPdf(state, latexTemplate)
+    state = utils.compile_latex_to_pdf(state, report_file)
     
-    return chatstatus
+    return state
 
 def getReportDate():
     """
@@ -98,13 +114,13 @@ def getReportDate():
     formatted_date = today.strftime("%A, %B %d, %Y")
     return formatted_date
 
-def getReportTitle(chathistory, chatstatus):
+def getReportTitle(chathistory, state):
     """
     Uses a language model to generate a descriptive title for a report summarizing the work done in the chatlog.
 
     Args:
         chathistory (dict): A dictionary containing the chat history with user inputs and model outputs.
-        chatstatus (dict): A dictionary containing the current chat status, including the language model instance 
+        state (dict): A dictionary containing the current chat status, including the language model instance 
                            and user prompt.
 
     Returns:
@@ -113,15 +129,15 @@ def getReportTitle(chathistory, chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: July 2, 2024
-    llm      = chatstatus['llm']
+    llm      = state['llm']
     template = """Given the following chatlog, generate a descriptive title for a report summarizing the work done. Please keep the title concise. This report is in reposnse to the following user request:
 {userinput}
 
 **Chatlog Overview:**
 {chatlog}
 """
-    template = template.format(userinput=chatstatus['prompt'], chatlog=chathistory)
-    log.debugLog(f"{template=}", chatstatus=chatstatus)
+    template = template.format(userinput=state['prompt'], chatlog=chathistory)
+    log.debugLog(f"{template=}", state=state)
     prompt = PromptTemplate(template=template, input_variables=["chatlog"])
     json_prompt = PromptTemplate.from_template(
         "Return a JSON object with an `title` and `abstract` keys in response to the following: {question}"
@@ -131,11 +147,11 @@ def getReportTitle(chathistory, chatstatus):
     response = json_chain.invoke({"question": template})
     report_title = response['title']
 #    chain = prompt | llm
-#    log.debugLog('Calling getReportTitle', chatstatus=chatstatus)
+#    log.debugLog('Calling getReportTitle', state=state)
 #    response = chain.invoke(chathistory)
-#    log.debugLog(response, chatstatus=chatstatus)
+#    log.debugLog(response, state=state)
 #    report_title = response.content.split('=')[1]
-    chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
+    state['process']['steps'].append(log.llmCallLog(llm          = llm,
                                                          prompt       = template,
                                                          input        = chathistory,
                                                          output       = response,
@@ -145,16 +161,16 @@ def getReportTitle(chathistory, chatstatus):
                                                          purpose      = 'generate a title for a pdf (note: using pydantic parser)'
                                                         )
                                          )
-    log.debugLog(report_title, chatstatus=chatstatus)
+    log.debugLog(report_title, state=state)
     return report_title
 
-def getReportSummary(chathistory, chatstatus):
+def getReportSummary(chathistory, state):
     """
     Uses a language model to generate a summary section for a report based on the chat session with BRAD.
 
     Args:
         chathistory (dict): A dictionary containing the chat history with user inputs and model outputs.
-        chatstatus (dict): A dictionary containing the current chat status, including the language model instance 
+        state (dict): A dictionary containing the current chat status, including the language model instance 
                            and user prompt.
 
     Returns:
@@ -163,7 +179,7 @@ def getReportSummary(chathistory, chatstatus):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: July 2, 2024
-    llm      = chatstatus['llm']
+    llm      = state['llm']
     template = """You are in charge of writing a report to summarize a chatbot session that performed a series of steps in a bioinformatics workflow. Given the following chatlog, write a section of to summarize this. Your summary section should be at least three sentences long (minimum) and no longer than twelve sentences.
     
 This report is in reposnse to the following user request:
@@ -176,16 +192,16 @@ Format your output exactly as follows. Do not include additional text/characters
 **Output:**
 Summary=<put the title title here>
 """
-    template = template.format(userinput=chatstatus['prompt'])
+    template = template.format(userinput=state['prompt'])
     print(template)
     print(f"{chathistory=}")
     prompt = PromptTemplate(template=template, input_variables=["chatlog"])
     chain = prompt | llm
-    log.debugLog('Calling getReportSummary', chatstatus=chatstatus)
+    log.debugLog('Calling getReportSummary', state=state)
     response = chain.invoke(chathistory)
-    log.debugLog(response, chatstatus=chatstatus)
+    log.debugLog(response, state=state)
     report_summary = response.content.split('=')[1]
-    chatstatus['process']['steps'].append(log.llmCallLog(llm          = llm,
+    state['process']['steps'].append(log.llmCallLog(llm          = llm,
                                                          prompt       = prompt,
                                                          input        = chathistory,
                                                          output       = response,
@@ -195,16 +211,16 @@ Summary=<put the title title here>
                                                          purpose      = 'generate a summayr of the chat history'
                                                         )
                                          )
-    log.debugLog(report_summary, chatstatus=chatstatus)
+    log.debugLog(report_summary, state=state)
     return report_summary
 
 
-def getChatInputOutputs(chatstatus, chatlog):
+def getChatInputOutputs(state, chatlog):
     """
     Creates a single string to summarize the chat history between a user and BRAD.
 
     Args:
-        chatstatus (dict): A dictionary containing the current chat status, not directly used in this function.
+        state (dict): A dictionary containing the current chat status, not directly used in this function.
         chatlog (dict): A dictionary representing the chat history with keys as indices and values as dictionaries
                         containing 'prompt' and 'output' keys.
 
@@ -245,32 +261,32 @@ def getLatexTemplate(path2latexTemplate):
         return f"Error: An error occurred while reading the file at {path2latexTemplate}."
 
 
-def summarizeSteps(chatstatus):
+def summarizeSteps(state):
     """
     .. warning: we will remove this soon
     
     This function should write a report about what happened in a pipeline
     """
-    query    = chatstatus['prompt']
-    llm      = chatstatus['llm']              # get the llm
+    query    = state['prompt']
+    llm      = state['llm']              # get the llm
 
-    chatlog = json.load(open(os.path.join(chatstatus['output-directory'], 'log.json')))
+    chatlog = json.load(open(os.path.join(state['output-directory'], 'log.json')))
 
     # Write the report in this outline
     #  - Title
-    title = setTitle(chatstatus, chatlog)
+    title = setTitle(state, chatlog)
     
     #  - Driving prompt
-    prompt = getPrompt(chatstatus, chatlog)
+    prompt = getPrompt(state, chatlog)
 
     #  - Summary of process
-    processSummary = getProcessSummary(chatstatus, chatlog)
+    processSummary = getProcessSummary(state, chatlog)
     
     #  - Summary of outputs
-    reportBody = getReportBody(chatstatus, chatlog)
+    reportBody = getReportBody(state, chatlog)
     
     #  - References
-    references = getReferences(chatstatus, chatlog)
+    references = getReferences(state, chatlog)
 
     # Fill in the report
     report = getFirstLatexReportOutline(title=title)
@@ -281,17 +297,17 @@ def summarizeSteps(chatstatus):
                            references=references)
 
     # Report to pdf
-    chatstatus, report_file = reportToPdf(chatstatus, report)
-    chatstatus = utils.compile_latex_to_pdf(chatstatus, report_file)
+    state, report_file = reportToPdf(state, report)
+    state = utils.compile_latex_to_pdf(state, report_file)
     
-    return chatstatus #, report
+    return state #, report
 
-def reportToPdf(chatstatus, report):
+def reportToPdf(state, report):
     """
     Writes the formatted report to a PDF file.
 
     Args:
-        chatstatus (dict): A dictionary containing the current chat status, used to track process steps and file paths.
+        state (dict): A dictionary containing the current chat status, used to track process steps and file paths.
         report (str): The formatted report content in LaTeX format.
 
     Returns:
@@ -299,9 +315,9 @@ def reportToPdf(chatstatus, report):
     """
     report = ensureLatexFormatting(report)
     report_file = 'REPORT.tex'
-    chatstatus = utils.save(chatstatus, report, report_file)
-    report_file = chatstatus['process']['steps'][-1]['new file']
-    return chatstatus, report_file
+    state = utils.save(state, report, report_file)
+    report_file = state['process']['steps'][-1]['new file']
+    return state, report_file
 
 def ensureLatexFormatting(report):
     """
@@ -347,7 +363,7 @@ def ensureLatexFormatting(report):
 
     
 
-def setTitle(chatstatus, chatlog):
+def setTitle(state, chatlog):
     """
     .. warning: we will remove this soon
     
@@ -356,7 +372,7 @@ def setTitle(chatstatus, chatlog):
 
     # Get the pro
     for promptNumber in chatlog.keys():
-        log.debugLog(promptNumber, chatstatus=chatstatus) 
+        log.debugLog(promptNumber, state=state) 
         if promptNumber == 'llm':
             continue
         if chatlog[promptNumber]['process']['module'] == 'PLANNER':
@@ -366,14 +382,14 @@ def setTitle(chatstatus, chatlog):
     # Set the title
     template = setReportTitleTemplate()
     PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
-    chain = PROMPT | chatstatus['llm']
+    chain = PROMPT | state['llm']
     res = chain.invoke(prompt)
-    log.debugLog('Title Setter Output: \n\n' + str(res.content), chatstatus)
+    log.debugLog('Title Setter Output: \n\n' + str(res.content), state)
     title   = res.content.split('=')[1].strip()
-    log.debugLog('Title=' + str(title), chatstatus)
+    log.debugLog('Title=' + str(title), state)
     return title
 
-def getPrompt(chatstatus, chatlog):
+def getPrompt(state, chatlog):
     """
     .. warning: we will remove this soon
     
@@ -387,24 +403,24 @@ def getPrompt(chatstatus, chatlog):
             return prompt
     return ""
 
-def getProcessSummary(chatstatus, chatlog):
+def getProcessSummary(state, chatlog):
     """Summarizes each stage of the process"""
     for promptNumber in chatlog.keys():
         if promptNumber == 'llm':
             continue
         if chatlog[promptNumber]['process']['module'] == 'PLANNER':
             fullPlanner = str(chatlog[promptNumber]['status']['queue'])
-    log.debugLog(fullPlanner, chatstatus=chatstatus) 
+    log.debugLog(fullPlanner, state=state) 
     template = summarizeAnalysisPipelineTemplate()
     PROMPT = PromptTemplate(input_variables=["pipeline"], template=template)
-    chain = PROMPT | chatstatus['llm']
+    chain = PROMPT | state['llm']
     res = chain.invoke(fullPlanner)
-    log.debugLog('Process Summary Output: \n\n' + str(res.content), chatstatus)
+    log.debugLog('Process Summary Output: \n\n' + str(res.content), state)
     processSummary   = res.content.split('=')[1].strip()
-    log.debugLog('Process Summary=' + str(processSummary), chatstatus)
+    log.debugLog('Process Summary=' + str(processSummary), state)
     return processSummary
 
-def getReportBody(chatstatus, chatlog):
+def getReportBody(state, chatlog):
     """Summarizes individual steps"""
     reportBody = ""
     for promptNumber in chatlog.keys():
@@ -413,17 +429,17 @@ def getReportBody(chatstatus, chatlog):
         # Add to the report body based on the module
         module = chatlog[promptNumber]['process']['module']
         if module == 'RAG':
-            reportBody += ragReporter(chatlog[promptNumber], chatstatus)
+            reportBody += ragReporter(chatlog[promptNumber], state)
         elif module == 'CODE':
-            reportBody += codeReporter(chatlog[promptNumber], chatstatus=chatstatus)
+            reportBody += codeReporter(chatlog[promptNumber], state=state)
         elif module == 'DATABASE':
-            reportBody += databaseReporter(chatlog[promptNumber], chatstatus)
+            reportBody += databaseReporter(chatlog[promptNumber], state)
         # Add to the report body based on the elements
         # reportBody += addFigures(chatlog[promptNumber])
         # reportBody += databaseReporter(chatlog[promptNumber])
     return reportBody
 
-def codeReporter(chatlogStep, currentreport='', chatstatus=None):
+def codeReporter(chatlogStep, currentreport='', state=None):
     """Summarizes running of some code"""
     scriptRun = chatlogStep['process']['steps'][0]['parsedOutput']['scriptName']
     docstring = read_python_docstrings(scriptRun)
@@ -458,24 +474,24 @@ Summary: <put summary here>
     )
     print(template)
     PROMPT = PromptTemplate(input_variables=["userprompt"], template=template)
-    chain = PROMPT | chatstatus['llm']
+    chain = PROMPT | state['llm']
     response = chain.invoke(chatlogStep['prompt'])
     print(response)
     return response.content # response.content.split('=')[1]
 
-def ragReporter(chatlogStep, chatstatus):
+def ragReporter(chatlogStep, state):
     """Summarize the output of the RAG stage"""
     output = chatlogStep['output']
     template = summarizeRAGTemplate()
     log.debugLog(template, display=True)
     # template = template.format(output=output)
     PROMPT = PromptTemplate(input_variables=["output"], template=template)
-    chain = PROMPT | chatstatus['llm']
+    chain = PROMPT | state['llm']
     res = chain.invoke(output)
     processSummary   = res.content.split('=')[1].strip().replace('_', '\_')
     return processSummary
     
-def databaseReporter(chatlogStep, chatstatus):
+def databaseReporter(chatlogStep, state):
     """Summarize the output of the DATABASE lookup stage"""
     databaseTex = ""
     prompt = chatlogStep['prompt']
@@ -485,7 +501,7 @@ def databaseReporter(chatlogStep, chatstatus):
         # Check if the step saved a figure
         if 'func' in step.keys() and step['func'] == 'utils.save':
             filename = step['new file']
-            chatstatus = log.userOutput(filename, chatstatus=chatstatus) # 
+            state = log.userOutput(filename, state=state) # 
             df = utils.load_file_to_dataframe(filename)
     if df is not None:
         numrows = df.shape[0]
@@ -496,16 +512,16 @@ def databaseReporter(chatlogStep, chatstatus):
     log.debugLog(template, display=True)
     template = template.format(output=output, numrows=numrows)
     PROMPT = PromptTemplate(input_variables=["input"], template=template)
-    chain = PROMPT | chatstatus['llm']
+    chain = PROMPT | state['llm']
     res = chain.invoke(prompt)
     processSummary   = res.content.split('=')[1].strip().replace('_', '\_')
     databaseTex += processSummary
-    databaseTex += addFigures(chatlogStep, chatstatus)
-    databaseTex += addTables(chatlogStep, chatstatus)
+    databaseTex += addFigures(chatlogStep, state)
+    databaseTex += addTables(chatlogStep, state)
     
     return databaseTex
 
-def addFigures(chatlogStep, chatstatus):
+def addFigures(chatlogStep, state):
     """Add figures to the latex output file"""
     figureTex = ""
     for step in chatlogStep['process']['steps']:
@@ -520,7 +536,7 @@ def addFigures(chatlogStep, chatstatus):
 # \\caption{\\textbf{""" +step['new file'] + """}}
 # \\label{fig:enter-label}
 
-def addTables(chatlogStep, chatstatus):
+def addTables(chatlogStep, state):
     """Add tables to the latex output file"""
     tableTex = ""
     df = None
@@ -529,19 +545,19 @@ def addTables(chatlogStep, chatstatus):
         # Check if the step saved a figure
         if 'func' in step.keys() and step['func'] == 'utils.save':
             filename = step['new file']
-            chatstatus = log.userOutput(filename, chatstatus=chatstatus) 
+            state = log.userOutput(filename, state=state) 
             df = utils.load_file_to_dataframe(filename)
             break
     if df is None:
         return ""
-    log.debugLog(type(df), chatstatus=chatstatus) 
-    log.debugLog(df.head(3), chatstatus=chatstatus) 
+    log.debugLog(type(df), state=state) 
+    log.debugLog(df.head(3), state=state) 
     # df = pd.read_csv(filename)
     # Build latex
     tableTex += ('\n\n' + dataframe_to_latex(df) + '\n\n')
     return tableTex
 
-def getReferences(chatstatus, chatlog):
+def getReferences(state, chatlog):
     """Finds all documents used in the chat"""
     referenceList = []
     for promptNumber in chatlog.keys():

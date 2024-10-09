@@ -1,3 +1,25 @@
+"""
+This module implements functions to facilitate Retrieval Augmented Generation (RAG), which combines the strengths of document retrieval and language model generation to enhance the user's experience with rich, contextually relevant responses.
+
+Key Functions
+=============
+
+1. queryDocs:
+    Queries documents based on a user prompt and updates the chat status with the results. This function handles the retrieval of relevant documents from a vector database, applies contextual compression, reranks the documents if required, and invokes the language model to generate a response based on the retrieved documents. It also logs the interaction and displays the sources of the information.
+
+2. create_database:
+    Constructs a database of papers that can be used by the RAG pipeline in BRAD. This method requires a single directory of papers, books, or other pdf documents. This method should be used directly, outside of and prior to constructing an instance of the `Agent` class. Once a database is constructed, documents can be added or removed, and the database will persist on the local disk so that it only needs to be constructed once.
+
+There are several supporting methods as well.
+
+Available Methods
+=================
+
+This module contains the following methods:
+
+"""
+
+
 import pandas as pd
 import numpy as np
 import chromadb
@@ -32,25 +54,24 @@ from langchain_text_splitters import CharacterTextSplitter
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain_community.callbacks import get_openai_callback
 
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 from sentence_transformers import SentenceTransformer, util
 
 #BERTscore
 import logging
-import transformers
-transformers.tokenization_utils.logger.setLevel(logging.ERROR)
-transformers.configuration_utils.logger.setLevel(logging.ERROR)
-transformers.modeling_utils.logger.setLevel(logging.ERROR)
+# import transformers
+# transformers.tokenization_utils.logger.setLevel(logging.ERROR)
+# transformers.configuration_utils.logger.setLevel(logging.ERROR)
+# transformers.modeling_utils.logger.setLevel(logging.ERROR)
 
 from BRAD.promptTemplates import historyChatTemplate, summarizeDocumentTemplate, getDefaultContext
 
 
 #Extraction
 import re
-#from nltk.corpus import words
-#from unidecode import unidecode
-#import nltk
-#from nltk.stem import WordNetLemmatizer
-#from nltk.corpus import wordnet
+
+
 
 import BRAD.gene_ontology as gonto
 from BRAD.gene_ontology import geneOntology
@@ -61,14 +82,14 @@ from BRAD import log
 #  2024-09-22: Changing the chains to return information regarding API usage
 #              such as tokens, time, etc.
 
-def queryDocs(chatstatus):
+def queryDocs(state):
     """
     Queries documents based on the user prompt and updates the chat status with the results.
 
-    :param chatstatus: A dictionary containing the current chat status, including the prompt, LLM, vector database, and memory.
-    :type chatstatus: dict
+    :param state: A dictionary containing the current chat status, including the prompt, LLM, vector database, and memory.
+    :type state: dict
 
-    :raises KeyError: If required keys are not found in the chatstatus dictionary.
+    :raises KeyError: If required keys are not found in the state dictionary.
     :raises AttributeError: If methods on the vector database or LLM objects are called incorrectly.
 
     :return: The updated chat status dictionary with the query results.
@@ -90,23 +111,23 @@ def queryDocs(chatstatus):
 
     # Issues:
 
-    llm      = chatstatus['llm']              # get the llm
-    prompt   = chatstatus['prompt']           # get the user prompt
-    vectordb = chatstatus['databases']['RAG'] # get the vector database
-    memory   = chatstatus['memory']           # get the memory of the model
+    llm      = state['llm']              # get the llm
+    prompt   = state['prompt']           # get the user prompt
+    vectordb = state['databases']['RAG'] # get the vector database
+    memory   = state['memory']           # get the memory of the model
 
     # query to database
     if vectordb is not None:
         # solo, mutliquery, similarity, and mmr retrieval
-        chatstatus, docs = retrieval(chatstatus)
+        state, docs = retrieval(state)
 
         # rerank the documents according to pagerank algorithm
-        if chatstatus['config']['RAG']['rerank']:
-            docs = pagerank_rerank(docs, chatstatus)
+        if state['config']['RAG']['rerank']:
+            docs = pagerank_rerank(docs, state)
 
         # contextual compression of the documents
-        if chatstatus['config']['RAG']['contextual_compression']:
-            docs = contextualCompression(docs, chatstatus)
+        if state['config']['RAG']['contextual_compression']:
+            docs = contextualCompression(docs, state)
 
         for i, doc in enumerate(docs):
             source = doc.metadata.get('source')
@@ -117,7 +138,7 @@ def queryDocs(chatstatus):
             docs[i] = doc
         
         # build chain
-        chain = load_qa_chain(llm, chain_type="stuff", verbose = chatstatus['config']['debug'])
+        chain = load_qa_chain(llm, chain_type="stuff", verbose = state['config']['debug'])
 
         # invoke the chain
         start_time = time.time()
@@ -135,7 +156,7 @@ def queryDocs(chatstatus):
         }
 
         # display output
-        chatstatus = log.userOutput(response['output_text'], chatstatus=chatstatus)
+        state = log.userOutput(response['output_text'], state=state)
 
         # display sources
         sources = []
@@ -144,20 +165,20 @@ def queryDocs(chatstatus):
             short_source = os.path.basename(str(source))
             sources.append(short_source)
         sources = list(set(sources))
-        chatstatus = log.userOutput("Sources:", chatstatus=chatstatus) 
-        chatstatus = log.userOutput('\n'.join(sources), chatstatus=chatstatus) 
-        chatstatus['process']['sources'] = sources
+        state = log.userOutput("Sources:", state=state) 
+        state = log.userOutput('\n'.join(sources), state=state) 
+        state['process']['sources'] = sources
         
         # format outputs for logging
         response['input_documents'] = getInputDocumentJSONs(response['input_documents'])
-        chatstatus['output'], ragResponse = response['output_text'], response
-        chatstatus['process']['steps'].append(
+        state['output'], ragResponse = response['output_text'], response
+        state['process']['steps'].append(
             log.llmCallLog(
                 llm=llm,
                 prompt=str(chain),
                 input=prompt,
                 output=response,
-                parsedOutput=chatstatus['output'],
+                parsedOutput=state['output'],
                 purpose='RAG'
             )
         )
@@ -166,7 +187,7 @@ def queryDocs(chatstatus):
         PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
         conversation = ConversationChain(prompt  = PROMPT,
                                          llm     = llm,
-                                         verbose = chatstatus['config']['debug'],
+                                         verbose = state['config']['debug'],
                                          memory  = memory,
                                         )
         prompt = getDefaultContext() + prompt
@@ -186,7 +207,7 @@ def queryDocs(chatstatus):
             }
         }
         # Log the LLM response
-        chatstatus['process']['steps'].append(
+        state['process']['steps'].append(
             log.llmCallLog(
                 llm=llm,
                 prompt=PROMPT,
@@ -198,43 +219,24 @@ def queryDocs(chatstatus):
         )
 
         # Display output to the user
-        chatstatus = log.userOutput(response, chatstatus=chatstatus)
-        chatstatus['output'] = response
-    return chatstatus
+        state = log.userOutput(response, state=state)
+        # state['output'] = response
+    return state
 
 
-def retrieval(chatstatus):
+def retrieval(state):
     """
     Performs retrieval from a vectorized database as the initial stage of the RAG pipeline. 
     This function handles different types of retrieval including multiquery, similarity search, 
     and max marginal relevance search.
 
     Args:
-        chatstatus (dict): A dictionary containing the LLM, user prompt, vector database, 
+        state (dict): A dictionary containing the LLM, user prompt, vector database, 
                            and configuration settings for the RAG pipeline.
 
     Returns:
-        tuple: A tuple containing the updated chatstatus and a list of retrieved documents.
+        tuple: A tuple containing the updated state and a list of retrieved documents.
 
-    Example
-    -------
-    >>> chatstatus = {
-    ...     'llm': llm_instance,
-    ...     'prompt': "What is the capital of France?",
-    ...     'databases': {'RAG': vectordb_instance},
-    ...     'memory': memory_instance,
-    ...     'config': {
-    ...         'RAG': {
-    ...             'cut': True,
-    ...             'multiquery': False,
-    ...             'similarity': True,
-    ...             'mmr': True,
-    ...             'num_articles_retrieved': 5
-    ...         }
-    ...     },
-    ...     'process': {'steps': []}
-    ... }
-    >>> chatstatus, docs = retrieval(chatstatus)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -256,25 +258,25 @@ def retrieval(chatstatus):
     #   prompts or retrieved documents. Also, I don't think it generates great
     #   prompts. We could reimplement this ourselves.
     
-    llm      = chatstatus['llm']              # get the llm
-    prompt   = chatstatus['prompt']           # get the user prompt
-    vectordb = chatstatus['databases']['RAG'] # get the vector database
-    memory   = chatstatus['memory']           # get the memory of the model
+    llm      = state['llm']              # get the llm
+    prompt   = state['prompt']           # get the user prompt
+    vectordb = state['databases']['RAG'] # get the vector database
+    memory   = state['memory']           # get the memory of the model
 
     start_time = time.time()
     
-    if chatstatus['config']['RAG']['cut']:    # Can we remove this code?
-        vectordb = cut(chatstatus, vectordb)
+    if state['config']['RAG']['cut']:    # Can we remove this code?
+        vectordb = cut(state, vectordb)
 
-    if not chatstatus['config']['RAG']['multiquery']:
+    if not state['config']['RAG']['multiquery']:
         # initialize empty lists
         docsSimilaritySearch, docsMMR = [], []
-        if chatstatus['config']['RAG']['similarity']:
-            documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
+        if state['config']['RAG']['similarity']:
+            documentSearch = vectordb.similarity_search_with_relevance_scores(prompt, k=state['config']['RAG']['num_articles_retrieved'])
             docsSimilaritySearch, scores = getDocumentSimilarity(documentSearch)
 
-        if chatstatus['config']['RAG']['mmr']:
-            docsMMR = vectordb.max_marginal_relevance_search(prompt, k=chatstatus['config']['RAG']['num_articles_retrieved'])
+        if state['config']['RAG']['mmr']:
+            docsMMR = vectordb.max_marginal_relevance_search(prompt, k=state['config']['RAG']['num_articles_retrieved'])
         
         docs = docsSimilaritySearch + docsMMR
     else:
@@ -284,18 +286,18 @@ def retrieval(chatstatus):
                                                  llm=llm
                                                 )
         docs = retriever.get_relevant_documents(query=prompt)
-    chatstatus['process']['steps'].append({
+    state['process']['steps'].append({
         'func' : 'rag.retrieval',
-        'multiquery' : chatstatus['config']['RAG']['multiquery'],
-        'similarity' : chatstatus['config']['RAG']['similarity'],
-        'mmr' : chatstatus['config']['RAG']['mmr'],
+        'multiquery' : state['config']['RAG']['multiquery'],
+        'similarity' : state['config']['RAG']['similarity'],
+        'mmr' : state['config']['RAG']['mmr'],
         'num-docs' : len(docs),
         'docs' : str(docs),
         'time' : time.time() - start_time
     })
-    return chatstatus, docs
+    return state, docs
 
-def contextualCompression(docs, chatstatus):
+def contextualCompression(docs, state):
     """
     Summarizes the content of documents based on a user query, updating the 
     document search results with these summaries.
@@ -303,16 +305,12 @@ def contextualCompression(docs, chatstatus):
     Args:
         docs (list): A list of documents where each document has an attribute 
                      `page_content` containing the text content of the document.
-        chatstatus (dict): BRAD chatstatus used to track debuging
+        state (dict): BRAD state used to track debuging
 
     Returns:
         list: The modified `documentSearch` list with updated `page_content` for each 
               document, replaced by their summaries.
 
-    Example:
-        documentSearch = [Document(page_content="..."), ...]
-        chatstatus = {'config': {'debug': True}}
-        updatedDocs = contextualCompression(documentSearch, chatstatus)
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -322,12 +320,12 @@ def contextualCompression(docs, chatstatus):
     reducedDocs = []
     for i, doc in enumerate(docs):
         pageContent = doc.page_content
-        prompt = PROMPT.format(text=pageContent, user_query=chatstatus['prompt'])
+        prompt = PROMPT.format(text=pageContent, user_query=state['prompt'])
 
         # Use LLM
         start_time = time.time()
         with get_openai_callback() as cb:
-            res = chatstatus['llm'].invoke(input=prompt)
+            res = state['llm'].invoke(input=prompt)
         res.response_metadata['time'] = time.time() - start_time
         res.response_metadata['call back'] = {
             "Total Tokens": cb.total_tokens,
@@ -339,9 +337,9 @@ def contextualCompression(docs, chatstatus):
         summary = res.content.strip()
 
         # Log LLM
-        chatstatus['process']['steps'].append(
+        state['process']['steps'].append(
             log.llmCallLog(
-                llm             = chatstatus['llm'],       # what LLM?
+                llm             = state['llm'],       # what LLM?
                 prompt          = PROMPT,                  # what prompt template?
                 input           = prompt,                  # what specific input to the llm or template?
                 output          = res,                     # what is the full llm output?
@@ -351,10 +349,10 @@ def contextualCompression(docs, chatstatus):
         )
         
         # Display debug information
-        if chatstatus['config']['debug']:
-            log.debugLog('============', chatstatus=chatstatus) 
-            log.debugLog(pageContent, chatstatus=chatstatus) 
-            log.debugLog('Summary: ' + summary, chatstatus=chatstatus) 
+        if state['config']['debug']:
+            log.debugLog('============', state=state) 
+            log.debugLog(pageContent, state=state) 
+            log.debugLog('Summary: ' + summary, state=state) 
         doc.page_content = summary
         docs[i] = doc
     return docs
@@ -427,7 +425,7 @@ def getDocumentSimilarity(documents):
 # Define a function to get the wordnet POS tag
 def get_wordnet_pos(word):
     """
-    .. warning:: Marc do we need/use this function?
+    .. warning:: This function may be removed in the near future.
     
     Gets the WordNet part of speech (POS) tag for a given word.
 
@@ -446,7 +444,7 @@ def get_wordnet_pos(word):
     return tag_dict.get(tag, wordnet.NOUN)
 
 
-def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunck_overlap=[200], v=False):
+def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunk_overlap=[200], v=False):
     """
     .. note: This funciton is not called by the chatbot. Instead, it is required that the user build the database prior to using the chat.
     
@@ -475,7 +473,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
     loader = DirectoryLoader(docsPath,
                              glob="**/*.pdf",
                              loader_cls=PyPDFLoader, 
-                             loader_kwargs=text_loader_kwargs,
+                             # loader_kwargs=text_loader_kwargs,
                              show_progress=True,
                              use_multithreading=True)
     docs_data = loader.load()
@@ -500,124 +498,9 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
                                              client              = _client_settings,
                                              collection_name     = dbName,
                                              collection_metadata = {"hnsw:space": "cosine"})
-            log.debugLog("Completed Chroma Database: ", chatstatus=chatstatus) if v else None 
-            del vectordb, text_splitter, data_splits
-
-def crossValidationOfDocumentsExperiment(chain, docs, scores, prompt, chatstatus):
-    scores = list(scores)
-    outputs = {
-        'prompt':[],
-        'response':[],
-        'hidden':[],
-        'hiddenRef':[],
-        'hiddenScore':[]
-    }
-    for i in range(len(docs) - 1):
-        outputs['known' + str(i)] = []
-        outputs['knownRef' + str(i)] = []
-        outputs['knownScore' + str(i)] = []
-    for i in range(len(docs)):
-        # query the model
-        usedDocs = docs[:i] + docs[i + 1:]
-        usedScores = scores[:i] + scores[i + 1:]
-        hiddenDoc = docs[i]
-        hiddenScore = scores[i]
-        response   = chain({"input_documents": usedDocs, "question": prompt})
-        # save the info
-        outputs['prompt'].append(prompt)
-        outputs['response'].append(response['output_text'])
-        outputs['hidden'].append(hiddenDoc.page_content)
-        outputs['hiddenRef'].append(hiddenDoc.metadata)
-        outputs['hiddenScore'].append(scores[i])
-        for j in range(len(docs) - 1):
-            outputs['known' + str(j)].append(usedDocs[j].page_content)
-            outputs['knownRef' + str(j)].append(usedDocs[j].metadata)
-            outputs['knownScore' + str(j)].append(scores[j])
-
-    df = pd.DataFrame(outputs)
-    # Check if the file exists
-    if os.path.isfile(chatstatus['experiment-output']):
-        # File exists, append to it
-        df.to_csv(chatstatus['experiment-output'], mode='a', header=False, index=False)
-    else:
-        # File does not exist, create a new file
-        df.to_csv(chatstatus['experiment-output'], mode='w', header=True, index=False)
-
-
-def scoring_experiment(chain, docs, scores, prompt):
-    log.debugLog(f"output of similarity search: {scores}", chatstatus=chatstatus) 
-    candidates = []    # also llm respons (maybe remove this)
-    reference = []     # hidden dodument
-    document_list = [] # LLM RESPONSES
-    # Iterate through the indices of the original list
-    for i in range(len(docs)):
-        # removes one of the documents
-        new_list = docs[:i] + docs[i + 1:]
-        reference.append(docs[i].dict()['page_content'])
-        chatstatus = log.userOutput(f"Masked Document: {docs[i].dict()['page_content']}\n", chatstatus=chatstatus) 
-        res = chain({"input_documents": new_list, "question": prompt})
-        chatstatus = log.userOutput(f"RAG response: {res['output_text']}", chatstatus=chatstatus) 
-        # Add the new list to the combinations list
-        candidates.append(res['output_text'])
-        document_list.append(Document(page_content = res['output_text']))
-    text_splitter = CharacterTextSplitter(chunk_size=700, chunk_overlap=200)
-    embedding_docs= text_splitter.split_documents(document_list)
-    # create the open-source embedding function
-    embedding_function = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-
-    # load it into Chroma
-    db = Chroma.from_documents(embedding_docs, embedding_function)
-    new_docs, new_scores = getDocumentSimilarity(db.similarity_search_with_relevance_scores(prompt))
-    
-    # print results
-    chatstatus = log.userOutput(new_scores, chatstatus=chatstatus) 
-    #scorer = BERTScorer(lang="en", rescale_with_baseline=True)
-    #P, R, F1 = scorer.score(candidates, reference)
-    #log.debugLog(F1, chatstatus=chatstatus) 
-    
-    
-
-
-#To get a single document
-def restrictedDB(chatstatus, vectordb, path):
-    """
-    Create a restricted database (newdb) based on a given prompt from chatstatus.
-
-    Parameters:
-    - chatstatus (dict): A dictionary containing information about the chat status,
-      including 'prompt' and 'output-directory'.
-    - vectordb: The vector database from which documents are retrieved.
-    - path (str): The path to the directory containing source documents.
-
-    Returns:
-    - best_score (float): The cosine similarity score of the best matching document.
-    - newdb (Chroma): A Chroma database object initialized with documents retrieved
-      based on the best matching document's title.
-    """
-    prompt = chatstatus['prompt']
-    embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')
-    db_name = "new_DB_cosine_cSize_%d_cOver_%d" % (700, 200)
-    
-    # Retrieve all source document titles and corresponding IDs
-    title_list, real_id_list = get_all_sources(vectordb, prompt, path)
-    
-    # Find the best matching document based on the prompt
-    best_title, best_score = best_match(prompt, title_list)
-    
-    # Retrieve titles and IDs based on the best matching document
-    title_list, real_id_list = get_all_sources(vectordb, best_title, path)
-    
-    # Retrieve texts of the best matching documents from vectordb
-    text = vectordb.get(ids=real_id_list)['documents']
-    
-    # Define the directory path for the new restricted database
-    new_path = chatstatus['output-directory'] + '/restricted'
-    
-    # Create a new Chroma database (newdb) and add texts to it
-    newdb = Chroma(persist_directory=new_path, embedding_function=embeddings_model, collection_name=db_name)
-    newdb.add_texts(text)
-    
-    return best_score, newdb
+            log.debugLog("Completed Chroma Database: ", display=v)
+            del text_splitter, data_splits
+    return vectordb
 
 
 
@@ -655,22 +538,27 @@ def best_match(prompt, title_list):
         if score > save_score:
             save_score = score
             save_title = title
-    log.debugLog(f"The best match is {save_title} with a score of {save_score}", chatstatus=chatstatus) 
+    log.debugLog(f"The best match is {save_title} with a score of {save_score}", state=state) 
     return save_title, save_score
 
 #Split into two methods?
 def get_all_sources(vectordb, prompt, path):
     """
-    Retrieve sources from vectordb based on a prompt and path, and filter based on the prompt.
-
-    Parameters:
-    - vectordb: The vector database object containing metadata and sources.
-    - prompt (str): The prompt or query to filter sources.
-    - path (str): The path to filter and clean source file paths.
-
-    Returns:
-    - real_source_list (list): A list of cleaned and filtered source names.
-    - filtered_ids (list): A list of IDs corresponding to filtered sources based on the prompt.
+    Retrieve sources from the vector database based on a prompt and path, and filter the results according to the prompt.
+    
+    :param vectordb: The vector database object containing metadata and sources for retrieval.
+    :type vectordb: object
+    
+    :param prompt: The prompt or query used to filter the sources retrieved from the vector database.
+    :type prompt: str
+    
+    :param path: The path used to filter and clean source file paths, ensuring consistency and relevance in the results.
+    :type path: str
+    
+    :return: A tuple containing:
+        - real_source_list: A list of cleaned and filtered source names that match the given prompt.
+        - filtered_ids: A list of IDs corresponding to the filtered sources based on the prompt.
+    :rtype: tuple
     """
     prompt = prompt.lower()
     
@@ -697,18 +585,20 @@ def get_all_sources(vectordb, prompt, path):
 
 
 #Given the prompt, find the title and corresponding score that is the best match
-def adj_matrix_builder(docs, chatstatus):
+def adj_matrix_builder(docs, state):
     """
     Build an adjacency matrix based on cosine similarity between a prompt and document content.
-
-    Parameters:
-    - docs (list): A list of documents or pages (objects) from which to build the adjacency matrix.
-    - chatstatus (dict): A dictionary containing information about the chat status and configuration,
-      including 'prompt', 'config', and 'num_articles_retrieved'.
-
-    Returns:
-    - real_cosine_sim (np.ndarray): A 2D numpy array representing the adjacency matrix,
-      where each element at position (i, j) indicates the similarity score between documents i and j.
+    
+    :param docs: A list of documents or pages (objects) from which to build the adjacency matrix.
+    :type docs: list
+    
+    :param state: A dictionary containing information about the chat status and configuration, 
+                       including 'prompt', 'config', and 'num_articles_retrieved'.
+    :type state: dict
+    
+    :return: A 2D numpy array representing the adjacency matrix, where each element at position (i, j) 
+             indicates the similarity score between documents i and j.
+    :rtype: np.ndarray
     """
     prompt_scale = 0.5  # Weighting scale for prompt similarity
     dimension = len(docs)
@@ -718,13 +608,13 @@ def adj_matrix_builder(docs, chatstatus):
     sentence_model = SentenceTransformer('multi-qa-MiniLM-L6-cos-v1')
     
     # Create a list to store document content (including prompt)
-    doc_list = [chatstatus['prompt']] + [doc.dict()['page_content'] for doc in docs]
+    doc_list = [state['prompt']] + [doc.dict()['page_content'] for doc in docs]
     
     # Encode document content into embeddings
     passage_embedding = sentence_model.encode(doc_list)
     
     # Calculate cosine similarities between embeddings
-    cosine_similarities = cosine_similarity(passage_embedding[:chatstatus['config']['RAG']['num_articles_retrieved'] + 1])
+    cosine_similarities = cosine_similarity(passage_embedding[:state['config']['RAG']['num_articles_retrieved'] + 1])
     
     # Extract similarity scores between prompt and other documents
     prompt_sim = cosine_similarities[0, 1:]
@@ -742,13 +632,15 @@ def adj_matrix_builder(docs, chatstatus):
 def normalize_adjacency_matrix(A):
     """
     Normalize an adjacency matrix by dividing each element by the sum of its column.
-
-    Parameters:
-    - A (np.ndarray): Input adjacency matrix to be normalized.
-
-    Returns:
-    - normalized_A (np.ndarray): Normalized adjacency matrix where each element at position (i, j)
-      is divided by the sum of the j-th column of the original matrix A.
+    
+    :param A: Input adjacency matrix to be normalized, where each element (i, j) represents the weight of 
+              the edge from node i to node j.
+    :type A: np.ndarray
+    
+    :return: Normalized adjacency matrix where each element at position (i, j) is divided by the sum of 
+             the j-th column of the original matrix A. This normalization ensures that the columns of the 
+             resulting matrix sum to 1, facilitating interpretation as probabilities or relative weights.
+    :rtype: np.ndarray
     """
     col_sums = A.sum(axis=0)  # Calculate sum of each column
     normalized_A = A / col_sums[np.newaxis, :]  # Normalize each element by its column sum
@@ -759,16 +651,27 @@ def normalize_adjacency_matrix(A):
 #weighted pagerank algorithm
 def pagerank_weighted(A, alpha=0.85, tol=1e-6, max_iter=100):
     """
-    Calculate PageRank vector for a weighted adjacency matrix A using the power iteration method.
-
-    Parameters:
-    - A (np.ndarray): Weighted adjacency matrix representing the graph structure.
-    - alpha (float, optional): Damping factor for the PageRank calculation (default is 0.85).
-    - tol (float, optional): Tolerance threshold for convergence (default is 1e-6).
-    - max_iter (int, optional): Maximum number of iterations for the power method (default is 100).
-
-    Returns:
-    - v (np.ndarray): PageRank vector representing the importance score of each node in the graph.
+    Calculate the PageRank vector for a weighted adjacency matrix A using the power iteration method.
+    
+    :param A: Weighted adjacency matrix representing the graph structure, where each element (i, j) indicates 
+              the weight of the edge from node i to node j.
+    :type A: np.ndarray
+    
+    :param alpha: Damping factor for the PageRank calculation, which controls the probability of following 
+                  an outgoing link versus randomly jumping to any node (default is 0.85).
+    :type alpha: float, optional
+    
+    :param tol: Tolerance threshold for convergence, determining the acceptable difference between successive 
+                PageRank vectors (default is 1e-6).
+    :type tol: float, optional
+    
+    :param max_iter: Maximum number of iterations for the power method, limiting the computation to ensure 
+                      it does not run indefinitely (default is 100).
+    :type max_iter: int, optional
+    
+    :return: PageRank vector representing the importance score of each node in the graph, where higher scores 
+             indicate greater importance or influence within the network.
+    :rtype: np.ndarray
     """
     n = A.shape[0]  # Number of nodes in the graph
     A_normalized = normalize_adjacency_matrix(A)  # Normalize the adjacency matrix
@@ -785,19 +688,24 @@ def pagerank_weighted(A, alpha=0.85, tol=1e-6, max_iter=100):
 
 #reranker
 
-def pagerank_rerank(docs, chatstatus):
+def pagerank_rerank(docs, state):
     """
     Rerank a list of documents based on their PageRank scores computed from an adjacency matrix.
-
-    Parameters:
-    - docs (list): List of documents or pages to be reranked.
-    - chatstatus (dict): A dictionary containing information about the chat status and configuration,
-      including parameters for building the adjacency matrix.
-
-    Returns:
-    - reranked_docs (list): Reranked list of documents based on their PageRank scores.
+    
+    :param docs: List of documents or pages to be reranked, where each document is represented as an object 
+                 containing relevant information for scoring.
+    :type docs: list
+    
+    :param state: A dictionary containing information about the chat status and configuration, including 
+                       parameters for building the adjacency matrix, such as the 'num_articles_retrieved' 
+                       and 'config' settings.
+    :type state: dict
+    
+    :return: A reranked list of documents based on their PageRank scores, ordered from highest to lowest 
+             score, reflecting the importance of each document in the context of the provided adjacency matrix.
+    :rtype: list
     """
-    adj_matrix = adj_matrix_builder(docs, chatstatus)  # Build adjacency matrix
+    adj_matrix = adj_matrix_builder(docs, state)  # Build adjacency matrix
     pagerank_scores = pagerank_weighted(A=adj_matrix)  # Compute PageRank scores
     top_rank_scores = sorted(range(len(pagerank_scores)), key=lambda i: pagerank_scores[i], reverse=True)
     reranked_docs = [docs[i] for i in top_rank_scores]  # Rerank documents based on PageRank scores
@@ -843,14 +751,14 @@ def remove_repeats(vectordb):
 def relative_frequency_of_char(input_string):
     """
     Calculate the relative frequency of the dot character ('.') in a given input string.
-
-    Parameters:
-    - input_string (str): The input string in which to calculate the relative frequency.
-
-    Returns:
-    - relative_frequency (float): The relative frequency of the dot character ('.') in the input string,
-      expressed as the ratio of dot occurrences to the total number of characters. Returns 0.0 if the input
-      string is empty.
+    
+    :param input_string: The input string in which to calculate the relative frequency of the dot character.
+    :type input_string: str
+    
+    :return: The relative frequency of the dot character ('.') in the input string, expressed as the ratio 
+             of dot occurrences to the total number of characters. If the input string is empty, it returns 
+             0.0 to indicate no occurrences.
+    :rtype: float
     """
     if not input_string:
         return 0.0  # Return 0 if the string is empty
@@ -861,19 +769,21 @@ def relative_frequency_of_char(input_string):
     relative_frequency = dot_count / total_characters
     return relative_frequency
 
-def cut(chatstatus, vectordb):
+def cut(state, vectordb):
     """
     Remove documents from a vector database based on a relative frequency threshold of a specific character.
-
-    Parameters:
-    - chatstatus (dict): A dictionary containing chat status information.
-    - vectordb (object): Object representing the vector database, capable of fetching and deleting documents.
-
-    Returns:
-    - vectordb (object): Updated vector database object after removing documents with a relative frequency
-      of a specific character above the determined cutoff.
-    """
     
+    :param state: A dictionary containing chat status information, including the relative frequency
+                       threshold for the character and other contextual details related to the ongoing 
+                       conversation.
+    :type state: dict
+    
+    :param vectordb: An object representing the vector database, which provides methods for fetching 
+                      and deleting documents based on certain criteria, including relative frequency.
+    
+    :return: The updated vector database object after removing documents that exceed the specified 
+             relative frequency threshold for the character.
+    """    
     # Fetch document IDs and contents from vector database
     df = pd.DataFrame({'id': vectordb.get()['ids'], 'documents': vectordb.get()['documents']})
     

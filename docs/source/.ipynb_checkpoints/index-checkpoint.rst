@@ -7,7 +7,7 @@ Welcome to BRAD: Bioinformatics Retrieval Augmented Data's documentation!
 =========================================================================
 
 .. toctree::
-   :maxdepth: 10
+   :maxdepth: 3
    :caption: Contents:
 
    about

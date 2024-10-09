@@ -1,3 +1,26 @@
+"""
+Bioinformatics Database
+-----------------------
+
+This module provides functionality to retrieve structured data from bioinformatics databases 
+such as Enrichr and Gene Ontology. User queries are processed by an LLM to select and query an
+appropriate database.
+
+Main Methods
+~~~~~~~~~~~~
+
+1. geneDBRetriever:
+    This method selects which database and search terms or files to use. After formualting the query terms
+    or loading data from a file, the method corresponding to each database is used for the corresponding query.
+
+Available Methods
+~~~~~~~~~~~~~~~~~
+
+This module has the following methods:
+
+"""
+
+
 import time
 
 from langchain import PromptTemplate, LLMChain
@@ -11,41 +34,27 @@ from BRAD import utils
 from BRAD.promptTemplates import geneDatabaseCallerTemplate
 from BRAD import log
 
-def geneDBRetriever(chatstatus):
+def geneDBRetriever(state):
     """
     Retrieves gene information from a specified database based on the user query. 
     It uses a language model to determine the appropriate database and performs 
     the search, handling various configurations and logging the process.
-
-    Args:
-        chatstatus (dict): A dictionary containing the user query, language model, 
-                           configurations, and other necessary data for the retrieval process.
-
-    Returns:
-        dict: The updated chatstatus containing the results of the database search 
+    
+    :param state: A dictionary containing the user query, language model, 
+                       configurations, and other necessary data for the retrieval process.
+    :type state: dict
+    
+    :returns: The updated state containing the results of the database search 
               and any modifications made during the process.
-
-    Example
-    -------
-    >>> chatstatus = {
-    ...     'llm': llm_instance,
-    ...     'prompt': "Retrieve gene information",
-    ...     'config': {
-    ...         'debug': True,
-    ...         'DATABASE': {'max_search_terms': 50}
-    ...     },
-    ...     'tables': [],
-    ...     'process': {'steps': []}
-    ... }
-    >>> chatstatus = geneDBRetriever(chatstatus)
+    :rtype: dict
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 6, 2024
     
-    query    = chatstatus['prompt']
-    llm      = chatstatus['llm']              # get the llm
-    # memory   = chatstatus['memory']           # get the memory of the model
+    query    = state['prompt']
+    llm      = state['llm']              # get the llm
+    # memory   = state['memory']           # get the memory of the model
     memory = ConversationBufferMemory(ai_prefix="BRAD")
     
     # Define the mapping of keywords to functions
@@ -57,13 +66,13 @@ def geneDBRetriever(chatstatus):
     # Identify the database and the search terms
     template = geneDatabaseCallerTemplate()
 
-    tablesInfo = getTablesFormatting(chatstatus['tables'])
+    tablesInfo = getTablesFormatting(state['tables'])
     filled_template = template.format(tables=tablesInfo)
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     
     conversation = ConversationChain(prompt  = PROMPT,
                                      llm     = llm,
-                                     verbose = chatstatus['config']['debug'],
+                                     verbose = state['config']['debug'],
                                      memory  = memory,
                                     )
     # Invoke LLM tracking its usage
@@ -81,10 +90,10 @@ def geneDBRetriever(chatstatus):
         }
     }
     
-    log.debugLog(chainResponse, chatstatus=chatstatus)    # Print gene list if debugging
-    response = parse_llm_response(chainResponse, chatstatus)
+    log.debugLog(chainResponse, state=state)    # Print gene list if debugging
+    response = parse_llm_response(chainResponse, state)
 
-    chatstatus['process']['steps'].append(
+    state['process']['steps'].append(
         log.llmCallLog(
             llm          = llm,
             prompt       = PROMPT,
@@ -95,7 +104,7 @@ def geneDBRetriever(chatstatus):
         )
     )
 
-    log.debugLog(response, chatstatus=chatstatus)    # Print gene list if debugging
+    log.debugLog(response, state=state)    # Print gene list if debugging
 
     similarity_to_enrichr      = utils.word_similarity(response['database'], "ENRICHR")
     similarity_to_geneontology = utils.word_similarity(response['database'], "GENEONTOLOGY")
@@ -105,36 +114,36 @@ def geneDBRetriever(chatstatus):
         database = "GENEONTOLOGY"
 
     dbCaller = database_functions[database]
-    chatstatus['process']['database-function'] =  dbCaller
+    state['process']['database-function'] =  dbCaller
     
     geneList = []
     if response['load'] == 'True':
-        chatstatus, geneList = utils.loadFromFile(chatstatus)
+        state, geneList = utils.loadFromFile(state)
     else:
         geneList = response['genes']
 
-    if len(geneList) > chatstatus['config']['DATABASE']['max_search_terms']:
-        geneList = geneList[:chatstatus['config']['DATABASE']['max_search_terms']]
+    if len(geneList) > state['config']['DATABASE']['max_search_terms']:
+        geneList = geneList[:state['config']['DATABASE']['max_search_terms']]
 
     # Print gene list if debugging
-    log.debugLog(geneList, chatstatus=chatstatus)
+    log.debugLog(geneList, state=state)
 
     try:
-        chatstatus = dbCaller(chatstatus, geneList)
+        state = dbCaller(state, geneList)
     except Exception as e:
         output = f'Error occurred while searching database: {e}'
-        log.errorLog(output, info='geneDatabaseCaller.geneDBRetriever', chatstatus=chatstatus)
-    return chatstatus
+        log.errorLog(output, info='geneDatabaseCaller.geneDBRetriever', state=state)
+    return state
 
-def parse_llm_response(response, chatstatus):
+def parse_llm_response(response, state):
     """
     Parses the LLM response to extract the database name and search terms.
     
-    Parameters:
-    response (str): The response from the LLM.
+    :param response: The response from the LLM.
+    :type response: str
     
-    Returns:
-    dict: A dictionary with the database name and a list of search terms.
+    :returns: A dictionary with the database name and a list of search terms.
+    :rtype: dict
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -146,7 +155,7 @@ def parse_llm_response(response, chatstatus):
     # Split the response into lines
     response = response.replace("'", "")
     response = response.replace('"', "")
-    log.debugLog(response, chatstatus=chatstatus)
+    log.debugLog(response, state=state)
     lines = response.strip().split('\n')
 
     # Extract the database name
@@ -166,23 +175,12 @@ def getTablesFormatting(tables):
     Formats the columns of each table in the given dictionary into a readable string. 
     For each table, it lists the first 10 column names, appending '...' if there are more 
     than 10 columns.
-
-    Args:
-        tables (dict): A dictionary where keys are table names and values are pandas DataFrame objects.
-
-    Returns:
-        str: A formatted string listing the first 10 column names of each table.
-
-    Example
-    -------
-    >>> tables = {
-    ...     'table1': pd.DataFrame(columns=['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8', 'col9', 'col10', 'col11']),
-    ...     'table2': pd.DataFrame(columns=['a', 'b', 'c'])
-    ... }
-    >>> result = getTablesFormatting(tables)
-    >>> print(result)
-    table1.columns = ['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8', 'col9', 'col10', '...']
-    table2.columns = ['a', 'b', 'c']
+    
+    :param tables: A dictionary where keys are table names and values are pandas DataFrame objects.
+    :type tables: dict
+    
+    :returns: A formatted string listing the first 10 column names of each table.
+    :rtype: str
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -197,64 +195,3 @@ def getTablesFormatting(tables):
     return tablesString
 
 
-def geneDatabaseRetriever(chatstatus):
-    '''
-    :raises Warning: This function may be removed (I don't think it is used at all).
-    '''
-    query    = chatstatus['prompt']
-    llm      = chatstatus['llm']              # get the llm
-    memory   = chatstatus['memory']           # get the memory of the model
-    
-    # Define the mapping of keywords to functions
-    database_functions = {
-        'ENRICHR'   : queryEnrichr,
-        'GENEONTOLOGY' : geneOntology,
-    }
-    
-    # Identify the database and the search terms
-    template = """Current conversation:\n{history}
-
-    GENEONTOLOGY: The Gene Ontology (GO) is an initiative to unify the representation of gene and gene product attributes across all species via the aims: 1) maintain and develop its controlled vocabulary of gene and gene product attributes; 2) annotate genes and gene products, and assimilate and disseminate annotation data; and 3) provide tools for easy access to all aspects of the data provided by the project, and to enable functional interpretation of experimental data using the GO.
-
-    ENRICHR: is a tool used to lookup sets of genes and their functional association. ENRICHR has access to many gene-set libraries including Allen_Brain_Atlas_up, ENCODE_Histone_Modifications_2015, Enrichr_Libraries_Most_Popular_Genes, FANTOM6_lncRNA_KD_DEGs, GO_Biological_Process_2023, GTEx, Human_Gene_Atlas, KEGG, REACTOME, Transcription_Factor_PPIs, WikiPathways and many others databases.
-    
-    Query:{input}
-    
-    From the query, decide if GENEONTOLOGY or ENRICHR should be searched, and propose no more than 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Format your output as follows with no additions:
-    
-    Database: <ENRICHR or GENEONTOLOGY>
-    Search Terms: <improved search terms>
-    Code to get genes: <provide code to extract genes from dataframes>
-    """
-    PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
-    conversation = ConversationChain(prompt  = PROMPT,
-                                     llm     = llm,
-                                     verbose = chatstatus['config']['debug'],
-                                     memory  = memory,
-                                    )
-    response = conversation.predict(input=query)
-    llmResponse = parse_llm_response(response)
-    llmKey, searchTerms = llmResponse['database'], llmResponse['search_terms']
-
-    # Determine the target source
-    source = next((key for key in scraping_functions if key == llmKey), 'PUBMED')
-    process = {'searched': source}
-    scrape_function = scraping_functions[source]
-    
-    # Execute the scraping function and handle errors
-    try:
-        output = f'searching on {source}...'
-        log.debugLog(output, chatstatus=chatstatus)
-        log.debugLog('Search Terms: ' + str(searchTerms), chatstatus=chatstatus)
-        for st in searchTerms:
-            scrape_function(st)
-        searchTerms = ' '.join(searchTerms)
-        scrape_function(searchTerms)
-    except Exception as e:
-        output = f'Error occurred while searching on {source}: {e}'
-        log.debugLog(output, chatstatus=chatstatus)
-        process = {'searched': 'ERROR'}
-
-    chatstatus['process'] = process
-    chatstatus['output']  = output
-    return chatstatus

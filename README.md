@@ -6,11 +6,16 @@
 
 ### Install with PIP
 
+### Reuirements and conda
+
 ## Usage
+See `BRAD/llms.py`
 
-### Locall LLMs
+### OpenAI's GPT
 
-### NVIDIA Hosted LLMs
+### NVIDIA's LLMs
+
+### Local LLM's
 
 ## Development
 
@@ -21,6 +26,4 @@ To build the projects documentation in the ReadTheDocs html formatting, in the `
 During the build, the `tutorials/` directory is automatically pulled in to the source by copying all jupyter notebooks. These are included in the user guide section of the documentation.
 
 To remove the documentation from `docs/build/` run `make clean` from the same directory where you built it.
-
-### Coding
 

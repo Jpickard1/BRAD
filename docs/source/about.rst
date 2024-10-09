@@ -7,6 +7,7 @@ The focus of this project is on developing a system that leverages large languag
 
 The primary aim of the project is to create a tool that can automate and streamline standard bioinformatics workflows. By integrating multiple modules, this tool seeks to facilitate tasks such as constructing and querying databases, executing software pipelines, and generating responses to user queries based on curated information.
 
+
 Key Features
 ------------
 
@@ -15,7 +16,14 @@ Key Features
 - **Information Retrieval**: It incorporates mechanisms for retrieving and processing information from various sources, including literature databases and online repositories.
 - **Custom Code Execution**: The system supports the execution of custom code in Python, MATLAB, and Bash, enhancing its capability to perform specialized tasks as needed.
 
-Future Work
------------
+Future Work and Contributing
+----------------------------
 
 Ongoing efforts aim to improve the coordination between different modules and enhance the overall system’s ability to manage complex workflows. Further development will focus on refining the planning and execution processes to better support the goal of creating a more autonomous digital laboratory environment.
+
+
+
+.. image:: images/brad-dl-vision.png
+  :scale: 100%
+  :alt: Digital Laboratory Vision
+  :align: center
