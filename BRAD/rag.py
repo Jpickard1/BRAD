@@ -125,6 +125,10 @@ def queryDocs(state):
         if state['config']['RAG']['rerank']:
             docs = pagerank_rerank(docs, state)
 
+        # document enrichment
+        if state['config']['RAG']['documentEnrichment']:
+            docs = documentEnrichment(docs, state)
+        
         # contextual compression of the documents
         if state['config']['RAG']['contextual_compression']:
             docs = contextualCompression(docs, state)
@@ -357,6 +361,94 @@ def contextualCompression(docs, state):
         docs[i] = doc
     return docs
 
+def documentEnrichment(docs, state):
+    """
+    Enhances the input list of documents by retrieving additional text chunks 
+    from the same source and page, ensuring no duplicate entries are added.
+
+    This function searches through a vector database (vectordb) to find more text 
+    that is related to the documents in the input `docs` list. It retrieves all 
+    document chunks from the same file and page that were found during the first retrieval.
+    Duplicate text chunks are avoided by maintaining a set of already seen texts.
+
+    Args:
+        docs (list): A list of `langchain_core.documents.base.Document` objects. 
+                     Each `Document` contains metadata, including 'source' and 'page',
+                     and `page_content`, which holds the text content.
+        state (dict): The `Agent.state` containing the RAG database
+
+    Returns:
+        list: A list of enriched `Document` objects. These are constructed from 
+              the additional text chunks found on the same page and source 
+              as the originally retrieved documents. The list will only contain
+              unique documents to avoid duplication.
+
+    Notes:
+        - This function assumes that the `vectordb` object has a method `get()` 
+          that returns a dictionary with keys: 'metadatas' and 'documents'. 
+          The 'metadatas' key contains metadata for each document chunk, 
+          including its source and page. The 'documents' key contains the text content.
+        - The function prevents duplication of text chunks by using a `set` to track 
+          previously added texts.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 9, 2024
+    
+    # Extract the vectordb from the state
+    vectordb = state['databases']['RAG']
+
+    # A list to hold all documents or text chunks found in the same file and page
+    page_enriched_documents = []
+    
+    # A set of all text chunks that have been added to page_enriched_documents
+    # This prevents adding duplicate entries
+    unique_texts = set()
+    
+    # Retrieve index dictionary from vectordb containing document metadata and text
+    # Example structure of indexDictionary:
+    # dict_keys(['ids', 'embeddings', 'metadatas', 'documents', 'uris', 'data'])
+    # The keys: 'metadatas' and 'documents' must be present
+    index_dictionary = vectordb.get()
+    
+    # Iterate over retrieved documents
+    for retrieved_doc in docs:
+        # Extract metadata for the current document
+        source = retrieved_doc.metadata.get('source')
+        page = retrieved_doc.metadata.get('page')
+        
+        # Initialize a list to store indices of related documents from the same source and page
+        related_document_idxs = [
+            idx for idx, metadata in enumerate(index_dictionary['metadatas'])
+            if metadata.get('source') == source and metadata.get('page') == page
+        ]
+    
+        # Extract text chunks from documents found on the same page
+        doc_text_chunks = [index_dictionary['documents'][i] for i in related_document_idxs]
+    
+        # Save each text chunk as a new document if it's not already added
+        for text_chunk in doc_text_chunks:
+            if text_chunk in unique_texts:
+                continue
+            
+            # Add the text chunk to the set of unique texts
+            unique_texts.add(text_chunk)
+    
+            # Create a new document with the text chunk and its metadata
+            new_doc = Document(
+                page_content=text_chunk,
+                metadata={
+                    'source': source,
+                    'page': page
+                }
+            )
+    
+            # Append the newly created document to the list
+            page_enriched_documents.append(new_doc)
+    
+    return page_enriched_documents
+
+
 def getPreviousInput(log, key):
     """
     .. warning:: This method will be removed soon.
@@ -411,8 +503,8 @@ def getDocumentSimilarity(documents):
     :type documents: list
 
     :return: A tuple containing two elements: 
-        - A list of document objects.
-        - A numpy array of similarity scores.
+        - A list of `langchain_core.documents.base.Document` document objects.
+        - A `numpy` array of similarity scores.
     :rtype: tuple
     """
     scores = []
