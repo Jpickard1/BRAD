@@ -1,7 +1,9 @@
 """
+
 Gene Ontology (GO)
 ------------------
-This module provides functions to perform `Gene Ontology (GO)`<https://geneontology.org/>_ searches, download charts, and retrieve associated publications and annotations based on gene terms. The module interacts with external APIs, such as QuickGO and PubMed, to gather the relevant information.
+
+This module provides functions to perform `Gene Ontology (GO) <https://geneontology.org/>`_ searches, download charts, and retrieve associated publications and annotations based on gene terms. The module interacts with external APIs, such as QuickGO and PubMed, to gather the relevant information.
 
 Available Methods
 ~~~~~~~~~~~~~~~~~
@@ -29,6 +31,7 @@ def geneOntology(state, goQuery):
 
     :param goQuery: The query string containing gene names or terms for GO search.
     :type goQuery: str
+    
     :param state: The current status of the chat, including the prompt, configuration, and process details.
     :type state: dict
 
