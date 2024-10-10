@@ -70,6 +70,7 @@ body {
 .message.bot {
   background-color: #e6f2ff;
   align-self: flex-start;
+  text-align: left;
 }
 
 .message-input {
@@ -90,4 +91,23 @@ body {
   padding: 5px 10px;
   font-size: 1.5em;
   border-radius: 30%;
+}
+
+/* .message-list code {
+  overflow-y: auto;
+  text-wrap: ;
+} */
+
+
+/* Code Block styling with highlightjs */
+pre {
+  white-space: pre-wrap;      
+  white-space: -moz-pre-wrap; 
+  white-space: -pre-wrap;     
+  white-space: -o-pre-wrap;   
+  word-wrap: break-word;      
+}
+
+pre > code {
+  text-align: left;
 }

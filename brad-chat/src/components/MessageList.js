@@ -1,11 +1,14 @@
 import React from 'react';
+import "highlight.js/styles/github.css";
+import Markdown from "marked-react";
 
 function MessageList({ messages }) {
+
   return (
     <div className="message-list">
       {messages.map((message) => (
         <div key={message.id} className={`message ${message.sender}`}>
-          {message.text}
+          <Markdown>{message.text}</Markdown>
         </div>
       ))}
     </div>

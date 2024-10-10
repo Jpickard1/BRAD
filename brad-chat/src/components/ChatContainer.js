@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 
+import "highlight.js/styles/github.css";
+import hljs from "highlight.js";
+
 function ChatContainer() {
   const [messages, setMessages] = useState([]);
 
-//   const handleBotResponse = (response) => {
-//     setMessages([...messages, { id: Date.now(), text: response, sender: 'bot' }]);
-//   }
+  useEffect(() => {
+    hljs.highlightAll();
+  }, [messages]);
 
   const handleSendMessage = async (message) => {
     setMessages([...messages, { id: Date.now(), text: message, sender: 'user' }]);
