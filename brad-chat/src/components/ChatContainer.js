@@ -4,6 +4,7 @@ import MessageInput from './MessageInput';
 
 import "highlight.js/styles/github.css";
 import hljs from "highlight.js";
+import RagFileInput from './RagFileInput';
 
 function ChatContainer() {
   const [messages, setMessages] = useState([]);
@@ -31,13 +32,11 @@ function ChatContainer() {
   
         // Parse the JSON response
         const result = await response.json();
-        console.log("printing the result from brad", result)
         let bot_response = result['response']
   
         // Handle the response
          // Set the API response to the state
         setMessages((messages) => [...messages, { id: Date.now(), text: bot_response, sender: 'bot' }]);
-        console.log("3. set messages", bot_response)
     } catch (error) {
         console.error('Error:', error);
     }
@@ -46,6 +45,7 @@ function ChatContainer() {
 
   return (
     <div className="chat-container">
+      <RagFileInput />
       <MessageList messages={messages} />
       <MessageInput onSendMessage={handleSendMessage}/>
     </div>
