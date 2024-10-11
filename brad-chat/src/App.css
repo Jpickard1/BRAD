@@ -3,7 +3,7 @@ body {
   width: 100%;
   height: 100%;
   position: absolute;
-  background-color: #1b1c29;
+  background-color: #1e1f26;
   font-family: 'Helvetica';
 }
 
@@ -62,13 +62,13 @@ body {
 }
 
 .message.user {
-  background-color: #e6f2ff;
+  background-color: #baa896;
   opacity: 0.8;
   align-self: flex-end;
 }
 
 .message.bot {
-  background-color: #e6f2ff;
+  background-color: #e6ccb5;
   align-self: flex-start;
   text-align: left;
 }
@@ -80,6 +80,7 @@ body {
 }
 
 .message-input input {
+  background-color: #f4ebdb;
   padding: 1em;
   border-radius: 15px;
   font-size: 1em;
@@ -88,6 +89,7 @@ body {
 }
 
 .message-input button {
+  background-color: #f4ebdb;
   padding: 5px 10px;
   font-size: 1.5em;
   border-radius: 30%;
@@ -110,4 +112,9 @@ pre {
 
 pre > code {
   text-align: left;
+}
+
+.rag-file-upload {
+  border: 10px #f4ebdb;
+  background-color: #f4ebdb;
 }
