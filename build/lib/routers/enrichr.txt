@@ -1,0 +1,38 @@
+ENRICHR
+Look this up for me: TP53, RB1, MDM2, CCNE1, CDK7, CDKN1A, CDKN1B, CDKN2A, CCNH, PLK1 using the ENRICHR database.
+Check out the properties of these genes with the ENRICHR database: MYC, E2F1, CDK4, CCND2, RBL2, GADD45A, ATM, CHEK1, HIF1A, AURKB.
+Perform enrichment for me with the ENRICHR database for: CDK6, CCNA2, CCNB1, RAD51, BAX, CDKN2B, IGF1R, RPA1, HUS1, FEN1.
+Investigate these genes using the ENRICHR database: AKT1, CCND1, CCNE2, CHEK2, E2F3, RRM2, SMC1A, MCM2, MCM6, TP63.
+Check the enrichment of these genes with ENRICHR: APC, CCNB2, CDK1, CDK2, PLK1, TERT, RPS6KB1, BCL2, BRCA1, BRCA2.
+Look up the following genes using the ENRICHR database: CDK5, CCNA1, E2F2, GSK3B, RBBP8, PIK3CA, RAD54L, TGFBR1, MYB, MCM3.
+Explore these genes with the ENRICHR database: ERBB2, CCND3, CDKN1C, CHEK1, FAS, RPA2, SRC, TCF3, ZEB1, SIRT1.
+Check out the properties of these genes using ENRICHR: FGFR1, CCNE1, BCL2L1, LKB1, MYCN, RBL1, RRM1, TERT, TGFBR2, WEE1.
+Perform enrichment analysis for these genes with ENRICHR: CASP3, CDK8, CCNA2, MDM4, MYB, RPS6, SYK, TGFBR1, TP73, UBC.
+Investigate the following genes using the ENRICHR database: CDK4, CDKN1A, CCND2, CCNE1, E2F1, GADD45B, IL6, MYC, NPM1, PLK3.
+Look this up for me in the ENRICHR database: RBL1, CDK2, CCNB1, BAX, CCND1, CHEK1, CUL3, IGF1R, RRM2, TCF7.
+Check out the properties of these genes with the ENRICHR database: AKT2, CCNE2, E2F2, RBPJ, SKP2, TCF4, WNT1, CDK7, PLK4, HSF1.
+Perform enrichment for the following genes with ENRICHR: MDM2, CCND3, E2F3, RRM1, SMC3, TGFBR2, XRCC1, ZEB2, FEN1, RAD51.
+Investigate these genes using the ENRICHR database: BCL2, CDK6, CCNB2, E2F1, GSK3A, MCM4, PIK3R1, RAD54, RPA1, TP53.
+Check the enrichment of these genes with ENRICHR: BRCA1, CCNA1, CCNE1, CUL1, HIF1A, MYC, RBL2, RRM2, SIRT2, TERT.
+Look this up for me: MCM7, CCND1, E2F4, IGF2R, P53, PLK1, TGFBR1, TSC1, WEE1, XPA using the ENRICHR database.
+Check out the properties of these genes: CASP8, CDKN2A, CCNE2, FASLG, RBP1, RPS6KB1, SMC2, TCF3, UHRF1, VHL.
+Conduct a search in the ENRICHR database using the 'Gene Name' column from the geneIndexTable.csv file.
+Utilize the 'Gene Name' column in geneIndexTable.csv to perform a search in the ENRICHR database.
+Please search the ENRICHR database with the 'Gene Name' data extracted from geneIndexTable.csv.
+Initiate a search in the ENRICHR database using gene names from the 'Gene Name' column of geneIndexTable.csv.
+Leverage the 'Gene Name' entries in geneIndexTable.csv to query the ENRICHR database.
+Perform a search in the ENRICHR database utilizing the 'Gene Name' information from geneIndexTable.csv.
+Access the ENRICHR database and search using the 'Gene Name' column from the geneIndexTable.csv dataset.
+Use the 'Gene Name' data in geneIndexTable.csv to carry out a search in the ENRICHR database.
+Execute a search on the ENRICHR database with gene names listed in the 'Gene Name' column of geneIndexTable.csv.
+Search the ENRICHR database by referencing the 'Gene Name' column from the geneIndexTable.csv.
+Please perform a database search in ENRICHR using the 'Gene Name' entries from geneIndexTable.csv.
+Query the ENRICHR database with the 'Gene Name' data derived from the geneIndexTable.csv file.
+Run a search on the ENRICHR database using the 'Gene Name' column from the geneIndexTable.csv.
+Engage the ENRICHR database to search for gene names from the 'Gene Name' section of geneIndexTable.csv.
+Input the 'Gene Name' values from geneIndexTable.csv to execute a search in the ENRICHR database.
+Utilize gene names from the 'Gene Name' column in geneIndexTable.csv to conduct a search in ENRICHR.
+Perform an ENRICHR database search with gene names sourced from the 'Gene Name' column of geneIndexTable.csv.
+Tap into the ENRICHR database to search using gene names taken from the geneIndexTable.csv file.
+Utilize the 'Gene Name' information from geneIndexTable.csv for a search in the ENRICHR database.
+Carry out a search in the ENRICHR database by using the 'Gene Name' column found in geneIndexTable.csv.

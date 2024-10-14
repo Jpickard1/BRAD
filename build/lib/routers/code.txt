@@ -1,0 +1,14 @@
+CODE
+Generate a random dataset and create a PCA plot using Scanpy.
+Use Scanpy to cluster a randomly generated single-cell dataset and visualize the results with UMAP.
+Create a random gene expression matrix and perform differential expression analysis with Scanpy.
+Simulate a random single-cell RNA-seq dataset and preprocess it using Scanpy.
+Generate random metadata for a dataset and integrate it into an AnnData object using Scanpy.
+Visualize the random dataset's gene expression levels across different clusters with Scanpy.
+Apply normalization and log transformation to a random dataset using Scanpy.
+Perform batch correction on a randomly generated dataset using Scanpy's combat function.
+Create a random dataset and plot the results of hierarchical clustering with Scanpy.
+Simulate a random time-series single-cell dataset and analyze it with Scanpy.
+Generate random data and use Scanpy to identify highly variable genes.
+Create a random single-cell dataset and perform spatial analysis using Scanpy.
+Use Scanpy to create a heatmap of a randomly generated dataset's gene expression.

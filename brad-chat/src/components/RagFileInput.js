@@ -2,18 +2,20 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 function RagFileInput() {
-    const [file, setFile] = useState();
+    const [files, setFiles] = useState();
     const [uploadProgress, setUploadProgress] = useState(0);
 
     function handleChange(event) {
-        setFile(event.target.files[0]);
+        setFiles(event.target.files);
     }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const url = '/rag_upload';
+    const url = '/api/rag_upload';
     const formData = new FormData();
-    formData.append('file', file);
+    for (let i = 0; i < files.length; i++) {
+        formData.append('rag_files', files[i]);
+    }
 
     const config = {
       headers: {
@@ -37,7 +39,7 @@ function RagFileInput() {
   return (
     <div className='rag-file-upload'>
         <form onSubmit={handleSubmit} className="rag-file-input">
-        <input type="file" onChange={handleChange} />
+        <input type="file" name="rag_files" onChange={handleChange} multiple/>
         <button type="submit">Upload File</button>
         <progress value={uploadProgress} max="100"></progress>
         </form>

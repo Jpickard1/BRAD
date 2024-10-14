@@ -4,7 +4,8 @@ body {
   height: 100%;
   position: absolute;
   background-color: #1e1f26;
-  font-family: 'Helvetica';
+  /* font-family: 'Trebuchet MS', sans-serif; */
+  font-family: 'AR One Sans';
 }
 
 #root {

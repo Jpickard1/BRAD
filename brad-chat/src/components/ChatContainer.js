@@ -21,7 +21,7 @@ function ChatContainer() {
     let data = {"message": message}
     try {
         // Call the backend API using fetch
-        const response = await fetch('/invoke', {
+        const response = await fetch('/api/invoke', {
           method: 'POST', // or 'GET' depending on your API
           headers: {
             'Content-Type': 'application/json',

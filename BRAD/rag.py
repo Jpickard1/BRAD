@@ -31,6 +31,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from langchain_text_splitters import CharacterTextSplitter
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain_community.callbacks import get_openai_callback
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from sentence_transformers import SentenceTransformer, util
 
@@ -446,7 +447,7 @@ def get_wordnet_pos(word):
     return tag_dict.get(tag, wordnet.NOUN)
 
 
-def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunck_overlap=[200], v=False):
+def create_database(docsPath='papers/', dbName='database', dbPath='databases/', HuggingFaceEmbeddingsModel = 'BAAI/bge-base-en-v1.5', chunk_size=[700], chunk_overlap=[200], v=False):
     """
     .. note: This funciton is not called by the chatbot. Instead, it is required that the user build the database prior to using the chat.
     
@@ -471,7 +472,8 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
     #%% Phase 1 - Load DB
     embeddings_model = HuggingFaceEmbeddings(model_name=HuggingFaceEmbeddingsModel)
     print("\nDocuments loading from: 'str(docsPath)") if v else None
-    text_loader_kwargs={'autodetect_encoding': True}
+    # text_loader_kwargs={'autodetect_encoding': True}
+    text_loader_kwargs={}
     loader = DirectoryLoader(docsPath,
                              glob="**/*.pdf",
                              loader_cls=PyPDFLoader, 
