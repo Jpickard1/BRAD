@@ -8,7 +8,7 @@ from flask import flash, redirect, url_for
 from werkzeug.utils import secure_filename
 
 # Imports for BRAD library
-from BRAD.brad import chatbot
+from BRAD.agent import Agent
 from BRAD.rag import create_database
 
 # HARDCODED VALUES
@@ -17,7 +17,7 @@ DATABASE_FOLDER = '/usr/src/RAG_Database/'
 SOURCE_FOLDER = '/usr/src/brad'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
-brad = chatbot(interactive=False)
+brad = Agent(interactive=False)
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
