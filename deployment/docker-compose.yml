@@ -1,0 +1,9 @@
+services:
+  brad:
+    image: brad:local
+    environment:
+      - PYDANTIC_SKIP_VALIDATING_CORE_SCHEMAS=True
+      - OPENAI_API_KEY=your_open_api_key
+    ports:
+      - 5001:5000
+      - 3000:3000
