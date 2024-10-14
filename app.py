@@ -1,10 +1,18 @@
+# STANDARD python imports
+import os
+import json
+
+# Imports for building RESTful API
 from flask import Flask, request, jsonify
 from flask import flash, redirect, url_for
 from werkzeug.utils import secure_filename
-import os
+
+# Imports for BRAD library
 from BRAD.brad import chatbot
 
+# HARDCODED VALUES
 UPLOAD_FOLDER = '/usr/src/uploads'
+SOURCE_FOLDER = '/usr/src/brad'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 brad = chatbot(interactive=False)
@@ -39,3 +47,30 @@ def upload_file():
             response = {"message": "File uploaded successfully"}
         return jsonify(response)
     print("Uploaded file successfully")
+
+@app.route("/open_sessions", methods=['GET'])
+def get_open_sessions():
+    """
+    This endpoint lets the front end access previously opened chat sessions.
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 14, 2024
+
+    # Get path to output directories
+    path_to_output_directories = brad.chatstatus['config']['log_path']
+    
+    # Get list of directories at this location
+    try:
+        open_sessions = [name for name in os.listdir(path_to_output_directories) 
+                         if os.path.isdir(os.path.join(path_to_output_directories, name))]
+        
+        # Return the list of open sessions as a JSON response
+        return jsonify({"open_sessions": open_sessions})
+    
+    except FileNotFoundError:
+        return jsonify({"error": "Directory not found"})
+    
+    except Exception as e:
+        return jsonify({"error": str(e)})
+

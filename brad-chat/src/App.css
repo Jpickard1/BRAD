@@ -43,6 +43,21 @@ body {
   align-items: center;
 }
 
+.left-sidebar {
+  /* Set the background color of the sidebar to black */
+  background-color: #000000;  
+  /* Set the text color to white */
+  color: #FFFFFF;  
+  /* Optionally, set padding for inner spacing */
+  padding: 10px;  
+  /* Set font size (optional) */
+  font-size: 16px;  
+  /* Set the width of the sidebar (optional) */
+  width: 250px;    
+  /* Add a border (optional, for aesthetics) */
+  border: 1px solid #FFFFFF;
+}
+
 .message-list {
   flex: 1;
   overflow-y: auto;
