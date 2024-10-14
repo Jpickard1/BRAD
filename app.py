@@ -13,11 +13,8 @@ from BRAD.rag import create_database
 
 # HARDCODED VALUES
 UPLOAD_FOLDER = '/usr/src/uploads'
-<<<<<<< HEAD
 DATABASE_FOLDER = '/usr/src/RAG_Database/'
-=======
 SOURCE_FOLDER = '/usr/src/brad'
->>>>>>> chat-sessions
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 brad = chatbot(interactive=False)
