@@ -554,6 +554,23 @@ class Agent():
         self.state['interactive'] = False
         self.state = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + self.chatname, state=self.state)
 
+    def get_display(self):
+        """
+        This function returns the history of all inputs/outputs to the agent. This is intended
+        for use by the GUI, as it will allow the user to jump between sessions while loading in
+        the history of the old session.
+
+        :returns: a list of strings
+        :rtype: list
+        """
+        # numIOpairs = len(self.chatlog.keys())
+        display = []
+        for i in self.chatlog.keys():
+            display.append(self.chatlog[i]['prompt'])
+            display.append(self.chatlog[i]['output'])
+        return display
+
+
     def updateMemory(self):
         """
         Thils function lets BRAD reset his memory to focus on specific previous interactions. This is useful
