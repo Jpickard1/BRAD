@@ -149,6 +149,8 @@ class Agent():
     :type embeddings_model: HuggingFaceEmbeddings, optional
     :param max_api_calls: The maximum number of api / llm calls BRAD can make
     :type max_api_calls: int, optional
+    :param tools: The set of available tool modules. If None, all modules are available for use
+    :type tools: list, optional
 
     :raises FileNotFoundError: If the specified model or database directories do not exist.
     :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
@@ -163,6 +165,7 @@ class Agent():
         ragvectordb=None,
         embeddings_model=None,
         restart=None,
+        tools=None,
         name='BRAD',
         max_api_calls=None, # This prevents BRAD from finding infinite loops and using all your API credits,
         interactive=True,   # This indicates if BRAD is in interactive more or not
@@ -251,7 +254,7 @@ class Agent():
         memory = ConversationBufferMemory(ai_prefix="BRAD")
     
         # Initialize the routers from router.py
-        self.router = getRouter()
+        self.router = getRouter(available=tools)
     
         # Add other information to state
         # Assign values only if the key does not exist or is None/empty
