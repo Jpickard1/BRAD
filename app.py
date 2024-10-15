@@ -1,6 +1,7 @@
 # STANDARD python imports
 import os
 import json
+import shutil
 
 # Imports for building RESTful API
 from flask import Flask, request, jsonify
@@ -72,7 +73,9 @@ def get_open_sessions():
                          if os.path.isdir(os.path.join(path_to_output_directories, name))]
         
         # Return the list of open sessions as a JSON response
-        return jsonify({"open_sessions": open_sessions})
+        message = jsonify({"open_sessions": open_sessions})
+        print(f"{message=}")
+        return message
     
     except FileNotFoundError:
         return jsonify({"error": "Directory not found"})
@@ -80,3 +83,22 @@ def get_open_sessions():
     except Exception as e:
         return jsonify({"error": str(e)})
 
+@app.route("/remove_sessions", methods=['POST'])
+def remove_open_sessions():
+    request_data = request.json
+    session = request_data.get("message")  # Get the session name from the request
+    path_to_output_directories = brad.state['config']['log_path']
+
+    # Construct the full path to the session directory
+    session_path = os.path.join(path_to_output_directories, session)
+
+    # Check if the session directory exists
+    if os.path.exists(session_path):
+        try:
+            # Remove the session directory
+            shutil.rmtree(session_path)
+            return jsonify({"success": True, "message": f"Session '{session}' removed."}), 200
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)}), 500
+    else:
+        return jsonify({"success": False, "message": f"Session '{session}' does not exist."}), 404
