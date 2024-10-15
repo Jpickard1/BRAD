@@ -69,6 +69,9 @@ import json
 import logging
 import time
 from typing import Optional, List
+import pickle
+import atexit
+
 
 # Bioinformatics
 # import gget
@@ -250,6 +253,39 @@ class Agent():
     
         # Start loop
         self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
+
+        # Ensure that the save_state function is registered to run at program exit
+        atexit.register(self.save_state)
+
+
+    def save_state(self):
+        """
+        Saves the agent state to a file named '.agent-state.pkl' in the output directory.
+        This method is registered with atexit to ensure it is called when the program exits.
+        """
+        # Auth: Joshua Pickard
+        #       jpic@umich.edu
+        # Date: October 15, 2024
+
+        output_directory = self.state['output-directory']
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+
+        state_file = os.path.join(output_directory, '.agent-state.pkl')
+
+        try:
+            # Set the databases to none
+            print(self.state)
+            self.state['databases']['RAG'] = None
+            self.state['llm'] = None
+
+            # Save the state to a pickle file
+            with open(state_file, 'wb') as f:
+                pickle.dump(self.state, f)
+            logging.info(f"Agent state saved to {state_file}")
+        except Exception as e:
+            logging.error(f"Failed to save agent state: {e}")
+
 
     def invoke(self, query):
         """
