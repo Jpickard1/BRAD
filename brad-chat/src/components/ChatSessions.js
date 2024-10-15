@@ -12,7 +12,7 @@ function ChatSessions() {
 
       try {
         // Call the backend API using fetch 
-        const response = await fetch('/open_sessions', {
+        const response = await fetch('/api/open_sessions', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
