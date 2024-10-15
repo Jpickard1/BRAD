@@ -3,33 +3,12 @@ import "highlight.js/styles/github.css";
 import Markdown from "marked-react";
 import '../App.css';  // Import the CSS file for custom styles
 
-function SessionList({ messages }) {
+function SessionList({ messages, onRemoveSession }) {
 
   // Function to handle session change
   const handleSessionChange = async (sessionId) => {
     try {
-      const response = await fetch('/change_session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ session_id: sessionId })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      console.log(`Session changed to: ${sessionId}`);
-    } catch (error) {
-      console.error('Error changing session:', error);
-    }
-  };
-
-  // Function to handle session removal
-  const handleRemoveSession = async (sessionId) => {
-    try {
-      const response = await fetch('/api/remove_session', {
+      const response = await fetch('/api/change_session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,9 +20,9 @@ function SessionList({ messages }) {
         throw new Error(`Error: ${response.statusText}`);
       }
 
-      console.log(`Session removed: ${sessionId}`);
+      console.log(`Session changed to: ${sessionId}`);
     } catch (error) {
-      console.error('Error removing session:', error);
+      console.error('Error changing session:', error);
     }
   };
 
@@ -62,7 +41,7 @@ function SessionList({ messages }) {
             className="delete-btn"
             onClick={(e) => {
               e.stopPropagation();  // Prevent triggering session change when delete is clicked
-              handleRemoveSession(message.text);  // Call remove session endpoint
+              onRemoveSession(message.text);  // Call remove session from parent
             }}
           >
             Delete
