@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SessionList from './SessionList';
 import "highlight.js/styles/github.css";
 
-function ChatSessions() {
+function ChatSessions({ sessions, setMessages }) {
   const [chatsessions, setSessions] = useState([]);
 
   // Function to handle session removal
@@ -30,6 +30,35 @@ function ChatSessions() {
     }
   };
 
+
+  // Function to handle session change
+  const handleSessionChange = async (sessionId) => {
+    console.log(`Changing to session: ${sessionId}`);
+    const response = await fetch('/api/change_session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: sessionId })
+    });
+  
+    if (response.ok) {
+      const data = await response.json();  // Get the response data
+      const formattedMessages = data.display.map((text, index) => ({
+        id: index, // Use index as a temporary unique key (for demo purposes)
+        text: text,
+        sender: index % 2 === 0 ? 'user' : 'bot' // Example: alternate between 'user' and 'bot'
+      }));
+  
+      setMessages(formattedMessages); // Set the formatted messages
+      console.log(`Session changed. Chat history:`, formattedMessages);
+  
+    } else {
+      console.error('Error changing session:', await response.json());
+    }
+  };
+  
+
   const fetchSessions = async () => {
     console.log("1. setting chatsessions", chatsessions);
 
@@ -42,7 +71,7 @@ function ChatSessions() {
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        throw new Error('API request failed with status ${response.status}');
       }
 
       console.log("2. Received chat sessions response:", response);
@@ -69,7 +98,7 @@ function ChatSessions() {
   return (
     <div className="chat-sessions">
       <p>Chat Sessions</p>
-      <SessionList messages={chatsessions} onRemoveSession={handleRemoveSession} />
+      <SessionList messages={chatsessions} onRemoveSession={handleRemoveSession} onChangeSession={handleSessionChange} />
     </div>
   );
 }
