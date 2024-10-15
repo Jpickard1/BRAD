@@ -46,6 +46,28 @@ body {
   align-items: center;
 }
 
+.chat-sessions {
+  /* Set the background color of the sidebar to black */
+  background-color: #000000;  
+  /* Set the text color to white */
+  color: #FFFFFF;  
+  /* Optionally, set padding for inner spacing */
+  padding: 10px;  
+  /* Set font size (optional) */
+  font-size: 16px;  
+  /* Set the width of the sidebar (optional) */
+  width: 250px;    
+  /* Add a border (optional, for aesthetics) */
+  border: 1px solid #000000;
+}
+
+/* Flex container to align the sidebar and chat container horizontally */
+.Content {
+  display: flex;
+  flex-grow: 1; /* Makes the content area grow to fill the remaining space after the header */
+}
+
+
 .left-sidebar {
   /* Set the background color of the sidebar to black */
   background-color: #000000;  

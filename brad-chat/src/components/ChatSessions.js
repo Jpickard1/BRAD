@@ -1,53 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import MessageList from './MessageList';
-// import MessageInput from './MessageInput';
-
+import SessionList from './SessionList';
 import "highlight.js/styles/github.css";
-// import hljs from "highlight.js";
-// import RagFileInput from './RagFileInput';
 
 function ChatSessions() {
-
   const [chatsessions, setSessions] = useState([]);
 
   /* Whenever this component is mounted to the page, useEffect runs. This is React specific */
-  useEffect(() => {fetchSessions()}, []);
+  useEffect(() => {
+    const fetchSessions = async () => {
+      console.log("1. setting chatsessions", chatsessions);
 
-  const fetchSessions = async () => {
-    
-    console.log("1. setting chatsessions", chatsessions)
-
-    try {
-        // Call the backend API using fetch
+      try {
+        // Call the backend API using fetch 
         const response = await fetch('/open_sessions', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           }
         });
-        console.log("2. got chat sessions", response)
+
+        // Check if response is OK
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
   
+        console.log("2. Received chat sessions response:", response);
+   
         // Parse the JSON response
         const result = await response.json();
         
-        console.log("3. result", result)
+        console.log("3. result", result);
 
-        // Handle the response
-        // Set the API response to the state
-        for (let i = 0; i < result['open_sessions'].length / 2; i++) {
-            setSessions((chatsessions) => [...chatsessions, { id: Date.now(), text: result['open_sessions'][i], sender: 'bot' }]);
-        }
+        // Collect new sessions and update the state
+        const newSessions = result['open_sessions'].map((session, index) => ({
+          id: `${Date.now()}-${index}`,  // Ensure unique IDs for each session
+          text: session,
+          sender: 'bot',
+        }));
 
-    } catch (error) {
+        // Set new sessions
+        setSessions((prevSessions) => [...prevSessions, ...newSessions]);
+
+      } catch (error) {
         console.error('Error:', error);
-    }
+      }
+    };
 
-  };
+    fetchSessions();
+  }, []); // Empty dependency array to run once on mount
 
   return (
     <div className="chat-sessions">
       <p>Chat Sessions</p>
-      <MessageList messages={chatsessions} />
+      <SessionList messages={chatsessions} />
     </div>
   );
 }
