@@ -209,6 +209,19 @@ class Agent():
             self.chatname = os.path.join(restart, 'log.json')
             self.chatlog  = json.load(open(self.chatname))
 
+            state_file = os.path.join(new_log_dir, '.agent-state.pkl')
+            
+            if os.path.exists(state_file):
+                try:
+                    with open(state_file, 'rb') as f:
+                        self.state = pickle.load(f)
+                    logging.info(f"Loaded agent state from {state_file}")
+                except Exception as e:
+                    logging.error(f"Failed to load agent state from {state_file}: {e}")
+            else:
+                logging.info(f"No existing state file found in {new_log_dir}, starting fresh.")
+
+
         if max_api_calls is None:
             max_api_calls = 1000
         self.max_api_calls = max_api_calls
@@ -219,9 +232,10 @@ class Agent():
     
         # Initialize the RAG database
         if llm is None:
-            #llm = load_nvidia()
-            # llm = load_llama(model_path) # load the llama
+
+            # By devault we use OpenAI
             llm = load_openai()
+
         if ragvectordb is None:
             if self.state['interactive']:
                 state = log.userOutput('\nWould you like to use a database with ' + self.name + ' [Y/N]?', state=self.state)
@@ -240,10 +254,19 @@ class Agent():
         self.router = getRouter()
     
         # Add other information to state
-        self.state['llm'] = llm
-        self.state['memory'] = memory
-        self.state['databases'] = databases
-        self.state['output-directory'] = new_log_dir
+        # Assign values only if the key does not exist or is None/empty
+        if 'llm' not in self.state or not self.state['llm']:
+            self.state['llm'] = llm
+
+        if 'memory' not in self.state or not self.state['memory']:
+            self.state['memory'] = memory
+
+        if 'databases' not in self.state or not self.state['databases']:
+            self.state['databases'] = databases
+
+        if 'output-directory' not in self.state or not self.state['output-directory']:
+            self.state['output-directory'] = new_log_dir
+
         if self.state['config']['experiment']:
             self.experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
             self.state['experiment-output'] = '-'.join(experimentName.split())
@@ -275,7 +298,6 @@ class Agent():
 
         try:
             # Set the databases to none
-            print(self.state)
             self.state['databases']['RAG'] = None
             self.state['llm'] = None
 
