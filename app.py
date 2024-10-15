@@ -64,7 +64,7 @@ def get_open_sessions():
     # Date: October 14, 2024
 
     # Get path to output directories
-    path_to_output_directories = brad.chatstatus['config']['log_path']
+    path_to_output_directories = brad.state['config']['log_path']
     
     # Get list of directories at this location
     try:
