@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
+import PopUpApiEntry from './PopUpApiEntry'
+
 
 function RightSideBar({ setColorScheme }) {
 //  const [llmChoice, setLlmChoice] = useState('GPT-4');  // Default LLM choice
   const [ragDatabase, setRagDatabase] = useState('Wikipedia');  // Default RAG choice
   const [llmChoice, setLlmChoice] = useState("gpt-4o-mini-2024-07-18");  // Default to GPT-4
+  const [isApiEntryVisible, setIsApiEntryVisible] = useState(false); // Only if you want to show/hide the popup
+
+
 
   // Function to handle LLM change
   const handleLlmChange = async (event) => {
@@ -49,6 +54,16 @@ function RightSideBar({ setColorScheme }) {
     setColorScheme(scheme);  // Pass the selected color scheme back to App
   };
 
+
+  const handleOpenApiEntry = () => {
+      setIsApiEntryVisible(true);
+  };
+
+  const handleCloseApiEntry = () => {
+      setIsApiEntryVisible(false);
+  };
+
+
   return (
     <div className="sidebar-right">
       <h2>Settings</h2>
@@ -58,7 +73,7 @@ function RightSideBar({ setColorScheme }) {
         <select id="llm-choice" value={llmChoice} onChange={handleLlmChange}>
           <option value="gpt-4o-mini-2024-07-18">GPT-4*</option>
           <option value="gpt-3.5-turbo-0125">GPT-3.5*</option>
-          <option value="meta / llama3-70b-instruct">Llama3*</option>
+          <option value="meta/llama3-70b-instruct">Llama3*</option>
         </select>
       </div>
 
@@ -78,6 +93,14 @@ function RightSideBar({ setColorScheme }) {
           <option value="dark">Dark</option>
         </select>
       </div>
+
+      <div className="right-side-bar">
+            <button onClick={handleOpenApiEntry}>Enter API Key</button>
+            {/* Display the PopUpApiEntry when the button is clicked */}
+            {isApiEntryVisible && <PopUpApiEntry onClose={handleCloseApiEntry} />}
+            {/* Other sidebar content goes here */}
+      </div>
+
     </div>
   );
 }
