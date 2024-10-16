@@ -154,6 +154,13 @@ body {
   border-radius: 25px;
 }
 
+.message-process {
+  background-color: red;
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+}
+
 /* Code Block styling with highlightjs */
 pre {
   white-space: pre-wrap;      

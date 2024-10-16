@@ -40,8 +40,23 @@ def invoke_request():
     request_data = request.json
     brad_query = request_data.get("message")
     brad_response = brad.invoke(brad_query)
+
+    agent_response_log = brad.chatlog[list(brad.chatlog.keys())[-1]]
+    passed_log_stages = [
+        ('RAG', ['Chunk 1', 'Chunk 2', 'Chunk 3'])
+    ]
+    #if True or (agent_response_log['process']['module'] == 'RAG' and brad.state['databases']['RAG'] is not None):
+    #    # Search the log for the documents: always for now
+    #    for step in agent_response_log['process']['steps']:
+    #        if 'func' in step.keys() and step['func'] == 'rag.retrieval':
+            
+
+    print(f"{agent_response_log=}")
+    print(f"{list(brad.chatlog.keys())=}")
+
     response_data = {
-        "response": brad_response
+        "response": brad_response,
+        "response-log": passed_log_stages
     }
     return jsonify(response_data)
 
