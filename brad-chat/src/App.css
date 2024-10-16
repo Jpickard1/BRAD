@@ -1,11 +1,9 @@
-
 body {
   width: 100%;
   height: 100%;
   position: absolute;
   background-color: #212121;
-  /* font-family: 'Trebuchet MS', sans-serif; */
-  font-family: 'AR One Sans';
+  font-family: 'AR One Sans';  /* font-family: 'Trebuchet MS', sans-serif; */
   color: #f7f7f7;
 }
 
@@ -34,6 +32,12 @@ body {
   word-spacing: 2px;
 }
 
+/* Flex container to align the sidebar and chat container horizontally */
+.Content {
+  display: flex;
+  flex-grow: 1;    /* Makes the content area grow to fill the remaining space after the header */
+}
+
 .chat-container {
   display: flex;
   /* width: 100%; */
@@ -47,64 +51,51 @@ body {
 }
 
 .chat-sessions {
-  /* Set the background color of the sidebar to black */
-  background-color: #000000;  
-  /* Set the text color to white */
-  color: #FFFFFF;  
-  /* Optionally, set padding for inner spacing */
-  padding: 10px;  
-  /* Set font size (optional) */
-  font-size: 16px;  
-  /* Set the width of the sidebar (optional) */
-  width: 250px;    
-  /* Add a border (optional, for aesthetics) */
-  border: 1px solid #000000;
+  background-color: #000000;      /* Set the background color of the sidebar to black */
+  color: #FFFFFF;                 /* Set the text color to white */
+  padding: 10px;                  /* Optionally, set padding for inner spacing */
+  font-size: 16px;                /* Set font size (optional) */
+  width: 250px;                   /* Set the width of the sidebar (optional) */
+  border: 1px solid #000000;      /* Add a border (optional, for aesthetics) */
 }
 
-/* Flex container to align the sidebar and chat container horizontally */
-.Content {
-  display: flex;
-  flex-grow: 1; /* Makes the content area grow to fill the remaining space after the header */
+.sidebar-left {
+  background-color: #000000; /* Set the background color of the sidebar to black */
+  color: #FFFFFF;            /* Set the text color to white */
+  padding: 10px;               /* Optionally, set padding for inner spacing */
+  font-size: 16px;             /* Set font size (optional) */
+  width: 250px;                /* Set the width of the sidebar (optional) */
+  border: 1px solid #FFFFFF; /* Add a border (optional, for aesthetics) */
+  display: flex;               /* Enable Flexbox */
+  flex-direction: column;      /* Arrange items vertically */
+  align-items: center;         /* Center items horizontally */
+  justify-content: flex-start; /* Align items to the top */
+  overflow: hidden;            /* Prevent content from overflowing */
+  height: 100vh;               /* Optional: Set the height to full view height */
 }
 
-
-.left-sidebar {
-  /* Set the background color of the sidebar to black */
-  background-color: #000000;  
-  /* Set the text color to white */
-  color: #FFFFFF;  
-  /* Optionally, set padding for inner spacing */
-  padding: 10px;  
-  /* Set font size (optional) */
-  font-size: 16px;  
-  /* Set the width of the sidebar (optional) */
-  width: 250px;    
-  /* Add a border (optional, for aesthetics) */
-  border: 1px solid #FFFFFF;
-}
-
-.right-sidebar {
-  /* Set the background color of the sidebar to black */
-  background-color: #000000;  
-  /* Set the text color to white */
-  color: #FFFFFF;  
-  /* Optionally, set padding for inner spacing */
-  padding: 10px;  
-  /* Set font size (optional) */
-  font-size: 16px;  
-  /* Set the width of the sidebar (optional) */
-  width: 250px;    
-  /* Add a border (optional, for aesthetics) */
-  border: 1px solid #FFFFFF;
+.sidebar-right {
+  background-color: #000000; /* Set the background color of the sidebar to black */
+  color: #FFFFFF;            /* Set the text color to white */
+  padding: 10px;               /* Optionally, set padding for inner spacing */
+  font-size: 16px;             /* Set font size (optional) */
+  width: 250px;                /* Set the width of the sidebar (optional) */
+  border: 1px solid #FFFFFF; /* Add a border (optional, for aesthetics) */
+  display: flex;               /* Enable Flexbox */
+  flex-direction: column;      /* Arrange items vertically */
+  align-items: center;         /* Center items horizontally */
+  justify-content: flex-start; /* Align items to the top */
+  overflow: hidden;            /* Prevent content from overflowing */
+  height: 100vh;               /* Optional: Set the height to full view height */
 }
 
 
 /* The main container for LeftSideBar and ChatContainer */
 .Main-container {
   display: flex;
-  flex-grow: 1; /* Make sure the main content grows to fill available space */
-  flex-direction: row; /* Place LeftSideBar and ChatContainer side by side */
-  align-items: stretch; /* Ensure the height matches between LeftSideBar and ChatContainer */
+  flex-grow: 1;                /* Make sure the main content grows to fill available space */
+  flex-direction: row;         /* Place LeftSideBar and ChatContainer side by side */
+  align-items: stretch;        /* Ensure the height matches between LeftSideBar and ChatContainer */
   justify-content: flex-start; /* Align the items horizontally from the start */
 }
 
@@ -163,12 +154,6 @@ body {
   border-radius: 25px;
 }
 
-/* .message-list code {
-  overflow-y: auto;
-  text-wrap: ;
-} */
-
-
 /* Code Block styling with highlightjs */
 pre {
   white-space: pre-wrap;      
@@ -197,18 +182,18 @@ pre > code {
 /* Each session box styling */
 .session-box {
   height: 25px;
-  background-color: #f0f0f0;  /* Light grey background */
-  padding: 15px;              /* Padding inside the box */
-  border-radius: 10px;         /* Rounded corners */
+  background-color: #f0f0f0;                 /* Light grey background */
+  padding: 15px;                               /* Padding inside the box */
+  border-radius: 10px;                         /* Rounded corners */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  /* Subtle shadow for depth */
-  margin-bottom: 10px;         /* Space between session boxes */
-  position: relative;          /* Position to allow delete button absolute positioning */
+  margin-bottom: 10px;                         /* Space between session boxes */
+  position: relative;                          /* Position to allow delete button absolute positioning */
   transition: background-color 0.3s ease;
-  cursor: pointer;             /* Cursor changes to pointer on hover */
-  color: black;               /* Text color */
-  display: flex;              /* Use flexbox to align text */
-  align-items: center;        /* Vertically center the text */
-  justify-content: flex-start;  /* Align text to the right horizontally */
+  cursor: pointer;                             /* Cursor changes to pointer on hover */
+  color: black;                              /* Text color */
+  display: flex;                               /* Use flexbox to align text */
+  align-items: center;                         /* Vertically center the text */
+  justify-content: flex-start;                 /* Align text to the right horizontally */
 }
 
 /* Hover effect for session box */
@@ -223,8 +208,8 @@ pre > code {
   right: 10px;                 /* Align to the right */
   top: 50%;                    /* Vertically centered */
   transform: translateY(-50%); /* Ensure perfect centering */
-  background-color: #ff4d4d;   /* Red button background */
-  color: white;                /* White text */
+  background-color: #ff4d4d; /* Red button background */
+  color: white;              /* White text */
   border: none;
   padding: 5px 10px;
   border-radius: 5px;
