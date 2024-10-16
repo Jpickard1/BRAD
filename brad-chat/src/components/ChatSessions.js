@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SessionList from './SessionList';
 import "highlight.js/styles/github.css";
 
-function ChatSessions({ sessions, setMessages }) {
+function ChatSessions({ setMessages }) {
   const [chatsessions, setSessions] = useState([]);
 
   // Function to handle session removal
