@@ -3,6 +3,7 @@ import os
 import json
 import shutil
 import logging
+import time
 
 # Imports for building RESTful API
 from flask import Flask, request, jsonify
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 # HARDCODED VALUES
 UPLOAD_FOLDER = '/usr/src/uploads'
 DATABASE_FOLDER = '/usr/src/RAG_Database/'
+
 SOURCE_FOLDER = '/usr/src/brad'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
@@ -48,19 +50,25 @@ def invoke_request():
 @app.route("/rag_upload", methods=['POST'])
 def upload_file():
     file_list = request.files.getlist("rag_files")
+    # Creates new folder with the current statetime
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    directory_with_time = os.path.join(app.config['UPLOAD_FOLDER'], timestr) 
+    if not os.path.exists(directory_with_time):
+        os.makedirs(directory_with_time)
+
     for file in file_list:
         if file.filename == '':
             response = {"message": "no uploaded file"}
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file_location = os.path.join(directory_with_time, filename) 
+            file.save(file_location)
             response = {"message": "File uploaded successfully"}
-    
-    print("File uploads done")
 
+    print("File uploads done")
     # creating chromadb with uploaded data
     print("running database creation")
-    create_database(docsPath=UPLOAD_FOLDER, dbPath=DATABASE_FOLDER)
+    create_database(docsPath=directory_with_time, dbPath=DATABASE_FOLDER, v=True)
     return jsonify(response)
 
 @app.route("/open_sessions", methods=['GET'])
