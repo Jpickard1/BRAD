@@ -37,6 +37,26 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def parse_log_for_one_query(chatlog_query):
+    if chatlog_query['process']['module'].upper() == 'RAG':
+        process = []
+        for step in chatlog_query['process']['steps']:
+            if 'func' in step.keys() and step['func'].lower() == 'rag.retreival':
+                docsText = chatlog_query['process']['steps']['docs-to-gui']
+                sources = []
+                chunks = []
+                for doc in docsText:
+                    sources.append(doc['source'])
+                    chunks.append(doc['text'])
+                process.append(('RAG-R', sources))
+                process.append(('RAG-G', chunks))
+            elif 'purpose' in step.keys() and step['purpose'].lower() == 'chat without RAG':
+                process.append(('LLM-Generation', "Response generated with only the LLM."))
+
+    else:
+        return None
+
+
 def parse_log_for_process_display(chat_history):
     passed_log_stages = [
         ('RAG-R', ['source 1', 'source 2', 'source 3']),
@@ -46,7 +66,7 @@ def parse_log_for_process_display(chat_history):
         if chat_history[i][1] is not None:
             # print('replacing logs')
             # print(f"{chat_history=}")
-            chat_history[i] = (chat_history[i][0], passed_log_stages)
+            chat_history[i] = (chat_history[i][0], parse_log_for_one_query(chat_history[i][1]))
             # print(f"{chat_history=}")
     return chat_history # passed_log_stages
 

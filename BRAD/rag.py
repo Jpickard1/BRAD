@@ -257,6 +257,8 @@ def retrieval(state):
     # - 2024-06-16: JP initialized the function with similarity search and multiquery
     # - 2024-06-26: MC added cut() to remove poorly chunked pieces of text
     # - 2024-06-29: MC added max_marginal_relevance_search for retrieval
+    # - 2024-10-16: JP saved the doc sources and text as strings that can be sent to
+    #               the GUI for display
     #
     # Issues:
     # - The MultiQueryRetriever.from_llm doesn't give control over the number of
@@ -291,6 +293,14 @@ def retrieval(state):
                                                  llm=llm
                                                 )
         docs = retriever.get_relevant_documents(query=prompt)
+
+    docsText = []
+    for doc in docs:
+        docsText.append({
+            'source': doc.metadata.get('source'),
+            'text' : doc.page_content
+        })
+
     state['process']['steps'].append({
         'func' : 'rag.retrieval',
         'multiquery' : state['config']['RAG']['multiquery'],
@@ -298,6 +308,7 @@ def retrieval(state):
         'mmr' : state['config']['RAG']['mmr'],
         'num-docs' : len(docs),
         'docs' : str(docs),
+        'docs-to-gui': docsText,
         'time' : time.time() - start_time
     })
     return state, docs
