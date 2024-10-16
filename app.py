@@ -19,10 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 # HARDCODED VALUES
+
+# Directory structure
 UPLOAD_FOLDER = '/usr/src/uploads'
 DATABASE_FOLDER = '/usr/src/RAG_Database/'
 
-SOURCE_FOLDER = '/usr/src/brad'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 TOOL_MODULES = ['RAG']
@@ -31,7 +32,19 @@ brad = Agent(interactive=False, tools=TOOL_MODULES)
 PATH_TO_OUTPUT_DIRECTORIES = brad.state['config'].get('log_path')
 
 app = Flask(__name__)
+
+DATA_FOLDER = os.path.join(app.root_path, 'data')
+UPLOAD_FOLDER = os.path.join(DATA_FOLDER, 'uploads')
+DATABASE_FOLDER = os.path.join(DATA_FOLDER, 'RAG_Database/')
+if not os.path.exists(DATA_FOLDER):
+    os.makedirs(DATA_FOLDER)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+if not os.path.exists(DATABASE_FOLDER):
+    os.makedirs(DATABASE_FOLDER)
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 def allowed_file(filename):
     return '.' in filename and \
