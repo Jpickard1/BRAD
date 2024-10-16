@@ -1,10 +1,17 @@
+:root {
+  --bg-color: #212121;
+  --base-color: #2f2f2f;
+  --font-color: #f7f7f7;
+  --hover-color: #797979;
+}
+
 body {
   width: 100%;
   height: 100%;
   position: absolute;
-  background-color: #212121;
+  background-color: var(--bg-color);
   font-family: 'AR One Sans';  /* font-family: 'Trebuchet MS', sans-serif; */
-  color: #f7f7f7;
+  color: var(--font-color);
 }
 
 #root {
@@ -15,7 +22,7 @@ body {
 .App-header {
   font-size: 1em;
   width: 100%;
-  color: #f7f7f7;
+  color: var(--font-color);
   align-items: center;
 }
 
@@ -51,7 +58,7 @@ body {
 }
 
 .chat-sessions {
-  overflow: scroll;
+  overflow-y: scroll;
   padding: 10px;                  /* Optionally, set padding for inner spacing */
   font-size: 16px;                /* Set font size (optional) */
   width: 100%;                   /* Set the width of the sidebar (optional) */
@@ -61,7 +68,7 @@ body {
   flex: 1;
   min-width: 15%;
   max-width: 15%;
-  background-color: #2f2f2f; /* Set the background color of the sidebar to black */
+  background-color: var(--base-color); /* Set the background color of the sidebar to black */
   color: #FFFFFF;            /* Set the text color to white */
   padding: 10px;               /* Optionally, set padding for inner spacing */
   display: flex;               /* Enable Flexbox */
@@ -72,7 +79,7 @@ body {
 }
 
 .sidebar-right {
-  background-color: #2f2f2f; /* Set the background color of the sidebar to black */
+  background-color: var(--base-color); /* Set the background color of the sidebar to black */
   color: #FFFFFF;            /* Set the text color to white */
   padding: 10px;               /* Optionally, set padding for inner spacing */
   font-size: 16px;             /* Set font size (optional) */
@@ -115,14 +122,14 @@ body {
 }
 
 .message.user {
-  background-color: #2f2f2f;
-  color: #f7f7f7;
+  background-color: var(--base-color);
+  color: var(--font-color);
   opacity: 0.8;
   align-self: flex-end;
 }
 
 .message.bot {
-  color: #f7f7f7;
+  color: var(--font-color);
   align-self: flex-start;
   min-width: 50%;
   text-align: left;
@@ -135,8 +142,8 @@ body {
 }
 
 .message-input input {
-  background-color: #2f2f2f;
-  color: #f7f7f7;
+  background-color: var(--base-color);
+  color: var(--font-color);
   padding: 1em;
   border-radius: 25px;
   font-size: 1em;
@@ -145,8 +152,8 @@ body {
 }
 
 .message-input button {
-  background-color: #2f2f2f;
-  color: #f7f7f7;
+  background-color: var(--base-color);
+  color: var(--font-color);
   padding: 5px 10px;
   font-size: 1.5em;
   border-radius: 25px;
@@ -191,7 +198,7 @@ pre > code {
 }
 
 .rag-file-upload {
-  background-color: #2f2f2f;
+  background-color: var(--base-color);
   padding: 1em;
   border-radius: 3em;
 }
@@ -204,9 +211,9 @@ pre > code {
 .rag-file-upload button {
   border-width: 1px;
   margin-right: 1em;
-  border-color: #f7f7f7 ;
-  background-color: #2f2f2f;
-  color: #f7f7f7;
+  border-color: var(--font-color) ;
+  background-color: var(--base-color);
+  color: var(--font-color);
 }
 
 /* General container for the session list */
@@ -220,7 +227,7 @@ pre > code {
 .session-box {
   height: 25px;
   background-color: #878787;                 /* Light grey background */
-  /* color: #f7f7f7; */
+  /* color: var(--font-color); */
   padding: 15px;                               /* Padding inside the box */
   border-radius: 10px;                         /* Rounded corners */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  /* Subtle shadow for depth */
@@ -236,7 +243,7 @@ pre > code {
 
 /* Hover effect for session box */
 .session-box:hover {
-  background-color: #797979;   /* Slightly darker on hover */
+  background-color: var(--hover-color);   /* Slightly darker on hover */
 }
 
 /* Delete button styling */
@@ -257,4 +264,11 @@ pre > code {
 /* Show delete button on hover */
 .session-box:hover .delete-btn {
   display: block;              /* Make delete button visible on hover */
+}
+
+.theme {
+  margin: 1em;
+  background-color: var(--bg-color);
+  color: var(--font-color);
+  border-radius: 2em;
 }
