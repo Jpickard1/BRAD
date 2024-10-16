@@ -1,6 +1,8 @@
 # STANDARD python imports
 import os
 import json
+import shutil
+import logging
 
 # Imports for building RESTful API
 from flask import Flask, request, jsonify
@@ -11,13 +13,20 @@ from werkzeug.utils import secure_filename
 from BRAD.agent import Agent
 from BRAD.rag import create_database
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 # HARDCODED VALUES
 UPLOAD_FOLDER = '/usr/src/uploads'
 DATABASE_FOLDER = '/usr/src/RAG_Database/'
 SOURCE_FOLDER = '/usr/src/brad'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
-brad = Agent(interactive=False)
+TOOL_MODULES = ['RAG']
+
+brad = Agent(interactive=False, tools=TOOL_MODULES)
+PATH_TO_OUTPUT_DIRECTORIES = brad.state['config'].get('log_path')
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -64,7 +73,7 @@ def get_open_sessions():
     # Date: October 14, 2024
 
     # Get path to output directories
-    path_to_output_directories = brad.chatstatus['config']['log_path']
+    path_to_output_directories = brad.state['config']['log_path']
     
     # Get list of directories at this location
     try:
@@ -72,7 +81,8 @@ def get_open_sessions():
                          if os.path.isdir(os.path.join(path_to_output_directories, name))]
         
         # Return the list of open sessions as a JSON response
-        return jsonify({"open_sessions": open_sessions})
+        message = jsonify({"open_sessions": open_sessions})
+        return message
     
     except FileNotFoundError:
         return jsonify({"error": "Directory not found"})
@@ -80,3 +90,110 @@ def get_open_sessions():
     except Exception as e:
         return jsonify({"error": str(e)})
 
+@app.route("/remove_session", methods=['POST'])
+def remove_open_sessions():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 15, 2024
+
+    # Parse the request data
+    request_data = request.json
+    session_name = request_data.get("message")  # Get the session name from the request body
+
+    # Log the incoming request
+    logger.info(f"Received request to remove session: {session_name}")
+
+    if not session_name:
+        logger.error("No session name provided in the request.")
+        return jsonify({"success": False, "message": "No session name provided."}), 400
+
+    path_to_output_directories = PATH_TO_OUTPUT_DIRECTORIES
+
+    # Validate the log path
+    if not path_to_output_directories:
+        logger.error("Log path is not set in the configuration.")
+        return jsonify({"success": False, "message": "Log path not configured."}), 500
+
+    session_path = os.path.join(path_to_output_directories, session_name)
+
+    # Check if the session directory exists
+    if not os.path.exists(session_path):
+        logger.warning(f"Session '{session_name}' does not exist at path: {session_path}")
+        return jsonify({"success": False, "message": f"Session '{session_name}' does not exist."}), 404
+
+    # Try to remove the session directory
+    try:
+        shutil.rmtree(session_path)
+        logger.info(f"Successfully removed session: {session_name}")
+        return jsonify({"success": True, "message": f"Session '{session_name}' removed."}), 200
+
+    except PermissionError as e:
+        logger.error(f"Permission denied while trying to remove session '{session_name}': {str(e)}")
+        return jsonify({"success": False, "message": f"Permission denied: {str(e)}"}), 403
+
+    except FileNotFoundError as e:
+        logger.error(f"Session '{session_name}' not found during deletion: {str(e)}")
+        return jsonify({"success": False, "message": f"Session not found: {str(e)}"}), 404
+
+    except Exception as e:
+        logger.error(f"An error occurred while trying to remove session '{session_name}': {str(e)}")
+        return jsonify({"success": False, "message": f"Error removing session: {str(e)}"}), 500
+
+@app.route("/change_session", methods=['POST'])
+def change_session():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 15, 2024
+
+    request_data = request.json
+    print(f"{request_data=}")
+    session_name = request_data.get("message")  # Get the session name from the request body
+    print(f"{session_name=}")
+
+    # Log the incoming request
+    logger.info(f"Received request to change session to: {session_name}")
+
+    if not session_name:
+        logger.error("No session name provided in the request.")
+        return jsonify({"success": False, "message": "No session name provided."}), 400
+
+    path_to_output_directories = PATH_TO_OUTPUT_DIRECTORIES
+
+    # Validate the log path
+    if not path_to_output_directories:
+        logger.error("Log path is not set in the configuration.")
+        return jsonify({"success": False, "message": "Log path not configured."}), 500
+
+    session_path = os.path.join(path_to_output_directories, session_name)
+
+    # Check if the session directory exists
+    if not os.path.exists(session_path):
+        logger.warning(f"Session '{session_name}' does not exist at path: {session_path}")
+        return jsonify({"success": False, "message": f"Session '{session_name}' does not exist."}), 404
+
+    # Try to remove the session directory
+    try:
+        brad = Agent(interactive=False,
+                     tools=TOOL_MODULES,
+                     restart=session_path
+                     )
+        logger.info(f"Successfully changed to: {session_name}")
+        response = jsonify({
+            "success": True,
+            "message": f"Session '{session_name}' activated.",
+            "display": brad.get_display()
+            }
+        )
+        return response, 200
+
+    except PermissionError as e:
+        logger.error(f"Permission denied while trying to change session '{session_name}': {str(e)}")
+        return jsonify({"success": False, "message": f"Permission denied: {str(e)}"}), 403
+
+    except FileNotFoundError as e:
+        logger.error(f"Session '{session_name}' not found during session change: {str(e)}")
+        return jsonify({"success": False, "message": f"Session not found: {str(e)}"}), 404
+
+    except Exception as e:
+        logger.error(f"An error occurred while trying to change session: '{session_name}': {str(e)}")
+        return jsonify({"success": False, "message": f"Error changing session: {str(e)}"}), 500

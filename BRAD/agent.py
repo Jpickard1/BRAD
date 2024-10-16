@@ -69,6 +69,9 @@ import json
 import logging
 import time
 from typing import Optional, List
+import pickle
+import atexit
+
 
 # Bioinformatics
 # import gget
@@ -146,6 +149,8 @@ class Agent():
     :type embeddings_model: HuggingFaceEmbeddings, optional
     :param max_api_calls: The maximum number of api / llm calls BRAD can make
     :type max_api_calls: int, optional
+    :param tools: The set of available tool modules. If None, all modules are available for use
+    :type tools: list, optional
 
     :raises FileNotFoundError: If the specified model or database directories do not exist.
     :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
@@ -160,6 +165,7 @@ class Agent():
         ragvectordb=None,
         embeddings_model=None,
         restart=None,
+        tools=None,
         name='BRAD',
         max_api_calls=None, # This prevents BRAD from finding infinite loops and using all your API credits,
         interactive=True,   # This indicates if BRAD is in interactive more or not
@@ -206,6 +212,19 @@ class Agent():
             self.chatname = os.path.join(restart, 'log.json')
             self.chatlog  = json.load(open(self.chatname))
 
+            state_file = os.path.join(new_log_dir, '.agent-state.pkl')
+            
+            if os.path.exists(state_file):
+                try:
+                    with open(state_file, 'rb') as f:
+                        self.state = pickle.load(f)
+                    logging.info(f"Loaded agent state from {state_file}")
+                except Exception as e:
+                    logging.error(f"Failed to load agent state from {state_file}: {e}")
+            else:
+                logging.info(f"No existing state file found in {new_log_dir}, starting fresh.")
+
+
         if max_api_calls is None:
             max_api_calls = 1000
         self.max_api_calls = max_api_calls
@@ -216,9 +235,10 @@ class Agent():
     
         # Initialize the RAG database
         if llm is None:
-            #llm = load_nvidia()
-            # llm = load_llama(model_path) # load the llama
+
+            # By devault we use OpenAI
             llm = load_openai()
+
         if ragvectordb is None:
             if self.state['interactive']:
                 state = log.userOutput('\nWould you like to use a database with ' + self.name + ' [Y/N]?', state=self.state)
@@ -234,13 +254,22 @@ class Agent():
         memory = ConversationBufferMemory(ai_prefix="BRAD")
     
         # Initialize the routers from router.py
-        self.router = getRouter()
+        self.router = getRouter(available=tools)
     
         # Add other information to state
-        self.state['llm'] = llm
-        self.state['memory'] = memory
-        self.state['databases'] = databases
-        self.state['output-directory'] = new_log_dir
+        # Assign values only if the key does not exist or is None/empty
+        if 'llm' not in self.state or not self.state['llm']:
+            self.state['llm'] = llm
+
+        if 'memory' not in self.state or not self.state['memory']:
+            self.state['memory'] = memory
+
+        if 'databases' not in self.state or not self.state['databases']:
+            self.state['databases'] = databases
+
+        if 'output-directory' not in self.state or not self.state['output-directory']:
+            self.state['output-directory'] = new_log_dir
+
         if self.state['config']['experiment']:
             self.experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
             self.state['experiment-output'] = '-'.join(experimentName.split())
@@ -250,6 +279,38 @@ class Agent():
     
         # Start loop
         self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
+
+        # Ensure that the save_state function is registered to run at program exit
+        atexit.register(self.save_state)
+
+
+    def save_state(self):
+        """
+        Saves the agent state to a file named '.agent-state.pkl' in the output directory.
+        This method is registered with atexit to ensure it is called when the program exits.
+        """
+        # Auth: Joshua Pickard
+        #       jpic@umich.edu
+        # Date: October 15, 2024
+
+        output_directory = self.state['output-directory']
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+
+        state_file = os.path.join(output_directory, '.agent-state.pkl')
+
+        try:
+            # Set the databases to none
+            self.state['databases']['RAG'] = None
+            self.state['llm'] = None
+
+            # Save the state to a pickle file
+            with open(state_file, 'wb') as f:
+                pickle.dump(self.state, f)
+            logging.info(f"Agent state saved to {state_file}")
+        except Exception as e:
+            logging.error(f"Failed to save agent state: {e}")
+
 
     def invoke(self, query):
         """
@@ -492,6 +553,23 @@ class Agent():
                 break
         self.state['interactive'] = False
         self.state = log.userOutput("Thanks for chatting today! I hope to talk soon, and don't forget that a record of this conversation is available at: " + self.chatname, state=self.state)
+
+    def get_display(self):
+        """
+        This function returns the history of all inputs/outputs to the agent. This is intended
+        for use by the GUI, as it will allow the user to jump between sessions while loading in
+        the history of the old session.
+
+        :returns: a list of strings
+        :rtype: list
+        """
+        # numIOpairs = len(self.chatlog.keys())
+        display = []
+        for i in self.chatlog.keys():
+            display.append(self.chatlog[i]['prompt'])
+            display.append(self.chatlog[i]['output'])
+        return display
+
 
     def updateMemory(self):
         """

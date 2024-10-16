@@ -1,53 +1,104 @@
 import React, { useEffect, useState } from 'react';
-import MessageList from './MessageList';
-// import MessageInput from './MessageInput';
-
+import SessionList from './SessionList';
 import "highlight.js/styles/github.css";
-// import hljs from "highlight.js";
-// import RagFileInput from './RagFileInput';
 
-function ChatSessions() {
-
+function ChatSessions({ sessions, setMessages }) {
   const [chatsessions, setSessions] = useState([]);
 
-  /* Whenever this component is mounted to the page, useEffect runs. This is React specific */
-  useEffect(() => {fetchSessions()}, []);
-
-  const fetchSessions = async () => {
-    
-    console.log("1. setting chatsessions", chatsessions)
-
+  // Function to handle session removal
+  const handleRemoveSession = async (sessionId) => {
     try {
-        // Call the backend API using fetch
-        const response = await fetch('/open_sessions', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        console.log("2. got chat sessions", response)
-  
-        // Parse the JSON response
-        const result = await response.json();
-        
-        console.log("3. result", result)
+      const response = await fetch('/api/remove_session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: sessionId })
+      });
 
-        // Handle the response
-        // Set the API response to the state
-        for (let i = 0; i < result['open_sessions'].length / 2; i++) {
-            setSessions((chatsessions) => [...chatsessions, { id: Date.now(), text: result['open_sessions'][i], sender: 'bot' }]);
-        }
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      console.log(`Session removed: ${sessionId}`);
+      
+      // Fetch the updated sessions after removal
+      await fetchSessions();
 
     } catch (error) {
-        console.error('Error:', error);
+      console.error('Error removing session:', error);
     }
-
   };
+
+
+  // Function to handle session change
+  const handleSessionChange = async (sessionId) => {
+    console.log(`Changing to session: ${sessionId}`);
+    const response = await fetch('/api/change_session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: sessionId })
+    });
+  
+    if (response.ok) {
+      const data = await response.json();  // Get the response data
+      const formattedMessages = data.display.map((text, index) => ({
+        id: index, // Use index as a temporary unique key (for demo purposes)
+        text: text,
+        sender: index % 2 === 0 ? 'user' : 'bot' // Example: alternate between 'user' and 'bot'
+      }));
+  
+      setMessages(formattedMessages); // Set the formatted messages
+      console.log(`Session changed. Chat history:`, formattedMessages);
+  
+    } else {
+      console.error('Error changing session:', await response.json());
+    }
+  };
+  
+
+  const fetchSessions = async () => {
+    console.log("1. setting chatsessions", chatsessions);
+
+    try {
+      const response = await fetch('/api/open_sessions', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed with status ${response.status}');
+      }
+
+      console.log("2. Received chat sessions response:", response);
+      const result = await response.json();
+      console.log("3. result", result);
+
+      const newSessions = result['open_sessions'].map((session, index) => ({
+        id: `${Date.now()}-${index}`,
+        text: session,
+        sender: 'bot',
+      }));
+
+      setSessions(newSessions);
+
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []); // Empty dependency array to run once on mount
 
   return (
     <div className="chat-sessions">
       <p>Chat Sessions</p>
-      <MessageList messages={chatsessions} />
+      <SessionList messages={chatsessions} onRemoveSession={handleRemoveSession} onChangeSession={handleSessionChange} />
     </div>
   );
 }
