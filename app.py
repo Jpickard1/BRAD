@@ -177,13 +177,13 @@ def change_session():
                      tools=TOOL_MODULES,
                      restart=session_path
                      )
-        logger.info(f"Successfully changed to: {session_name}")
         response = jsonify({
             "success": True,
             "message": f"Session '{session_name}' activated.",
             "display": brad.get_display()
             }
         )
+        logger.info(f"Successfully changed to: {session_name}")
         return response, 200
 
     except PermissionError as e:
