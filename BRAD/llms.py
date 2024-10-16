@@ -71,10 +71,12 @@ def load_nvidia(model_name='meta/llama3-70b-instruct', nvidia_api_key=None, temp
     """
     Loads the NVIDIA language model with the specified model name and API key.
 
-    :param nvidia_model: Name of the NVIDIA model to load.
-    :type nvidia_model: str, optional
+    :param model_name: Name of the NVIDIA model to load.
+    :type model_name: str, optional
     :param nvidia_api_key: API key for accessing NVIDIA's services. If not provided, it will be prompted.
     :type nvidia_api_key: str, optional
+    :param temperature: temperature (i.e. creativity or randomness) of the llm
+    :type temperature: float, optional
 
     :raises AssertionError: If the provided NVIDIA API key is not valid.
 
@@ -99,26 +101,26 @@ def load_nvidia(model_name='meta/llama3-70b-instruct', nvidia_api_key=None, temp
           )
     return llm
 
-    
 
 
-
-def load_openai(model_name='gpt-3.5-turbo-0125', api_key=None):
+def load_openai(model_name='gpt-3.5-turbo-0125', api_key=None, temperature=0):
     """
-    Loads the NVIDIA language model with the specified model name and API key.
+    Loads the OPENAI language model with the specified model name and API key.
 
-    :param nvidia_model: Name of the NVIDIA model to load.
-    :type nvidia_model: str, optional
-    :param nvidia_api_key: API key for accessing NVIDIA's services. If not provided, it will be prompted.
-    :type nvidia_api_key: str, optional
+    :param model_name: Name of the OPENAI model to load.
+    :type model_name: str, optional
+    :param api_key: API key for accessing OPENAI's services. If not provided, it will be prompted.
+    :type api_key: str, optional
+    :param temperature: temperature (i.e. creativity or randomness) of the llm
+    :type temperature: float, optional (default 0)
 
-    :raises AssertionError: If the provided NVIDIA API key is not valid.
+    :raises AssertionError: If the provided OPENAI API key is not valid.
 
-    :return: The loaded NVIDIA language model.
-    :rtype: langchain_nvidia_ai_endpoints.ChatNVIDIA
+    :return: The loaded OPENAI language model.
+    :rtype: langchain_openai.ChatOpenAI
 
     :example:
-        >>> nvidia_model = load_nvidia()
+        >>> openai_model = load_openai()
     
     """
     # Auth: Marc Choi
@@ -126,7 +128,7 @@ def load_openai(model_name='gpt-3.5-turbo-0125', api_key=None):
     # Date: July 1, 2024
     from openai import OpenAI
     from langchain_openai import ChatOpenAI
-    from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
+
     #all the Open AI API keys do not all start with a similar character
     if not os.environ.get("OPENAI_API_KEY", "").startswith("sk-"):
         api_key = getpass.getpass("Enter your Open AI API key: ")
@@ -137,7 +139,7 @@ def load_openai(model_name='gpt-3.5-turbo-0125', api_key=None):
         
     llm = ChatOpenAI(
         model=model_name,
-        temperature=0,
+        temperature=temperature,
         max_tokens=None,
         timeout=None,
         max_retries=2,

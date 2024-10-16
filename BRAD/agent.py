@@ -570,6 +570,17 @@ class Agent():
             display.append(self.chatlog[i]['output'])
         return display
 
+    @property
+    def llm(self):
+        """Get the current LLM."""
+        return self.state['llm']
+
+    def set_llm(self, llm):
+        """Set the LLM and handle any related logic."""
+        if not llm:
+            raise ValueError("LLM cannot be None")
+        
+        self.state['llm'] = llm
 
     def updateMemory(self):
         """

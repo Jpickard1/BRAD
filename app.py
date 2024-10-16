@@ -12,6 +12,7 @@ from werkzeug.utils import secure_filename
 # Imports for BRAD library
 from BRAD.agent import Agent
 from BRAD.rag import create_database
+from BRAD import llms # import load_nvidia, load_openai
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -197,3 +198,55 @@ def change_session():
     except Exception as e:
         logger.error(f"An error occurred while trying to change session: '{session_name}': {str(e)}")
         return jsonify({"success": False, "message": f"Error changing session: {str(e)}"}), 500
+
+@app.route("/set_llm", methods=['POST'])
+def set_llm():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 15, 2024
+
+    request_data = request.json
+    llm_choice = request_data.get("llm")  # Get the LLM name from the request body
+    logger.info(f"Received request to set LLM to: {llm_choice}")
+
+    # Validate the LLM choice
+    if not llm_choice:
+        logger.error("No LLM choice provided in the request.")
+        return jsonify({"success": False, "message": "No LLM choice provided."}), 400
+
+    # Determine which API hosts the selected LLM
+    llm_host = 'OPENAI' if 'gpt' in llm_choice.lower() else 'NVIDIA'
+    logger.info(f"Using LLM host: {llm_host}")
+
+    try:
+        # Load the chosen LLM (e.g., from NVIDIA or OpenAI)
+        if llm_host == "NVIDIA":
+            llm = llms.load_nvidia(
+                model_name = llm_choice,
+                temperature = 0,
+            )
+        elif llm_host == "OPENAI":
+            llm = llms.load_openai(
+                model_name = llm_choice,
+                temperature = 0,
+            )
+        else:
+            logger.error(f"Invalid LLM choice: {llm_choice}")
+            return jsonify({"success": False, "message": f"Invalid LLM choice: {llm_choice}"}), 400
+
+        logger.info(f"Sucessfully loaded: {llm_choice} from {llm_host}")
+
+        # Set the LLM in BRAD's status
+        brad.set_llm(llm)
+        logger.info(f"Successfully set the agent's LLM to: {llm_choice}")
+
+        # Respond with success
+        return jsonify({"success": True, "message": f"LLM set to {llm_choice}"}), 200
+
+    except ValueError as e:
+        logger.error(f"Invalid LLM choice: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 400
+
+    except Exception as e:
+        logger.error(f"An error occurred while setting LLM to '{llm_choice}': {str(e)}")
+        return jsonify({"success": False, "message": f"Error setting LLM: {str(e)}"}), 500
