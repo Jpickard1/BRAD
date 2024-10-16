@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import SessionList from './SessionList';
 import "highlight.js/styles/github.css";
+import Markdown from "marked-react";
 
 function ChatSessions({ sessions, setMessages }) {
   const [chatsessions, setSessions] = useState([]);
@@ -98,7 +98,26 @@ function ChatSessions({ sessions, setMessages }) {
   return (
     <div className="chat-sessions">
       <p>Chat Sessions</p>
-      <SessionList messages={chatsessions} onRemoveSession={handleRemoveSession} onChangeSession={handleSessionChange} />
+      {chatsessions.map((message) => (
+        <div
+          key={message.id}
+          className="session-box"
+          onClick={() => handleSessionChange(message.text)}  // Use onChangeSession prop
+        >
+          <Markdown>{message.text}</Markdown>
+
+          <button
+            className="delete-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveSession(message.text);
+            }}
+          >
+            Delete
+          </button>
+        </div>
+      ))}
+
     </div>
   );
 }
