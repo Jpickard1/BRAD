@@ -40,8 +40,18 @@ def invoke_request():
     request_data = request.json
     brad_query = request_data.get("message")
     brad_response = brad.invoke(brad_query)
+
+    # TODO: properly parse brad chatlog based on the RAG. This is left 
+    #       hardcoded to demonstrate the feature.
+    agent_response_log = brad.chatlog[list(brad.chatlog.keys())[-1]]
+    passed_log_stages = [
+        ('RAG-R', ['source 1', 'source 2', 'source 3']),
+        ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
+    ]
+
     response_data = {
-        "response": brad_response
+        "response": brad_response,
+        "response-log": passed_log_stages
     }
     return jsonify(response_data)
 

@@ -8,10 +8,10 @@ function App() {
 
   const handleSendMessage = async (message) => {
     // Add the user's message to the message list
-    setMessages([...messages, { id: Date.now(), text: message, sender: 'user' }]);
-
-    let data = { "message": message };
-
+    setMessages([...messages, { id: Date.now(), text: message, process: null, sender: 'user' }]);
+  
+    let data = { message };
+  
     try {
       // Call the backend API using fetch
       const response = await fetch('/api/invoke', {
@@ -21,20 +21,21 @@ function App() {
         },
         body: JSON.stringify(data),
       });
-
+  
       // Parse the JSON response
       const result = await response.json();
-      let bot_response = result['response'];
-
-      // Add the bot's response to the message list
+      let bot_response = result['response'] || '[No response]';
+      let bot_log = result['response-log'] || '[No log]'; // You mentioned response-log for the process
+  
+      // Add the bot's response to the message list, including both text and process
       setMessages((prevMessages) => [
         ...prevMessages, 
-        { id: Date.now(), text: bot_response, sender: 'bot' }
+        { id: Date.now(), text: bot_response, process: bot_log, sender: 'bot' }
       ]);
     } catch (error) {
       console.error('Error:', error);
     }
-  };
+  };  
 
   return (
     <div className="App">

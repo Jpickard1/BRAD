@@ -154,6 +154,31 @@ body {
   border-radius: 25px;
 }
 
+.message-process {
+  background-color: red;
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+}
+
+.message-process .retriever div {
+  background-color: white;
+  color: black;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid black;
+  border-radius: 0px;
+}
+
+.message-process .rag-paragraph {
+  background-color: #f0f0f0;
+  color: black;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d3d3d3;
+  border-radius: 0px;
+}
+
 /* Code Block styling with highlightjs */
 pre {
   white-space: pre-wrap;      
