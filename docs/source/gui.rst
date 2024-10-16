@@ -17,3 +17,10 @@ React JS GUI
 ------------
 The React frontend offers a graphical user interface for users to interact with the chatbot. Users can send messages, build RAG databases, or change the system configurations, which the frontend captures and sends to the Flask API. Upon receiving the chatbot's response, the GUI updates the chat interface to display both user and bot messages, facilitating a smooth and engaging conversation experience.
 
+API Enpoints
+------------
+
+.. automodule:: app
+   :members:
+   :undoc-members:
+

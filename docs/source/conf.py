@@ -21,6 +21,10 @@ import mock
  
 MOCK_MODULES = ['scipy',
                 'scipy.io',
+                'flask',
+                'werkzeug.utils',
+                'werkzeug',
+                'langchain_openai',
                 'matplotlib',
                 'matplotlib.pyplot',
                 'langchain_core.callbacks',
