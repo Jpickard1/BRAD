@@ -24,6 +24,28 @@ function MessageList({ messages }) {
           </div>
           {selectedMessageId === message.id && message.process && (
             <div className="message-process">
+            {(() => {
+              // Find the payloads for RAG-R and RAG-G
+              const ragR = message.process.find(([name]) => name === "RAG-R")?.[1] || [];
+              const ragG = message.process.find(([name]) => name === "RAG-G")?.[1] || [];
+          
+              // Iterate over both payloads and display the i-th elements together
+              return ragR.map((itemR, index) => {
+                // Extract everything after the last / or \ character
+                const processedItemR = itemR.split(/[/\\]/).pop();
+          
+                return (
+                  <div key={index} className="combined-item">
+                    <div className="retriever">{processedItemR}</div>
+                    <div className="rag-paragraph">{ragG[index]}</div> {/* Show the i-th element of RAG-G */}
+                  </div>
+                );
+              });
+            })()}
+          </div>
+              
+            /*
+            <div className="message-process">
               {message.process.map(([name, payload], index) => {
                 if (name === "RAG-R") {
                   return (
@@ -46,6 +68,7 @@ function MessageList({ messages }) {
                 }
               })}
             </div>
+            */
           )}
         </div>
       ))}
