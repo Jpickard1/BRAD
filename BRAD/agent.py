@@ -576,8 +576,8 @@ class Agent():
         # numIOpairs = len(self.chatlog.keys())
         display = []
         for i in self.chatlog.keys():
-            display.append(self.chatlog[i]['prompt'])
-            display.append(self.chatlog[i]['output'])
+            display.append((self.chatlog[i]['prompt'], None))
+            display.append((self.chatlog[i]['output'], self.chatlog[i]))
         return display
 
 

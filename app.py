@@ -37,6 +37,19 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def parse_log_for_process_display(chat_history):
+    passed_log_stages = [
+        ('RAG-R', ['source 1', 'source 2', 'source 3']),
+        ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
+    ]
+    for i in range(len(chat_history)):
+        if chat_history[i][1] is not None:
+            # print('replacing logs')
+            # print(f"{chat_history=}")
+            chat_history[i] = (chat_history[i][0], passed_log_stages)
+            # print(f"{chat_history=}")
+    return chat_history # passed_log_stages
+
 @app.route("/invoke", methods=['POST'])
 def invoke_request():
     request_data = request.json
@@ -46,11 +59,11 @@ def invoke_request():
     # TODO: properly parse brad chatlog based on the RAG. This is left 
     #       hardcoded to demonstrate the feature.
     agent_response_log = brad.chatlog[list(brad.chatlog.keys())[-1]]
-    passed_log_stages = [
+    passed_log_stages = passed_log_stages = [
         ('RAG-R', ['source 1', 'source 2', 'source 3']),
         ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
     ]
-
+    
     response_data = {
         "response": brad_response,
         "response-log": passed_log_stages
@@ -196,10 +209,14 @@ def change_session():
                      restart=session_path
                      )
         logger.info(f"Successfully changed to: {session_name}")
+        chat_history = brad.get_display()
+        chat_history = parse_log_for_process_display(chat_history)
+        print("Dumb Chat History")
+        print(json.dumps(chat_history, indent=4))
         response = jsonify({
             "success": True,
             "message": f"Session '{session_name}' activated.",
-            "display": brad.get_display()
+            "display": chat_history
             }
         )
         return response, 200
