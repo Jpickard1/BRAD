@@ -41,18 +41,13 @@ def invoke_request():
     brad_query = request_data.get("message")
     brad_response = brad.invoke(brad_query)
 
+    # TODO: properly parse brad chatlog based on the RAG. This is left 
+    #       hardcoded to demonstrate the feature.
     agent_response_log = brad.chatlog[list(brad.chatlog.keys())[-1]]
     passed_log_stages = [
-        ('RAG', ['Chunk 1', 'Chunk 2', 'Chunk 3'])
+        ('RAG-R', ['source 1', 'source 2', 'source 3']),
+        ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
     ]
-    #if True or (agent_response_log['process']['module'] == 'RAG' and brad.state['databases']['RAG'] is not None):
-    #    # Search the log for the documents: always for now
-    #    for step in agent_response_log['process']['steps']:
-    #        if 'func' in step.keys() and step['func'] == 'rag.retrieval':
-            
-
-    print(f"{agent_response_log=}")
-    print(f"{list(brad.chatlog.keys())=}")
 
     response_data = {
         "response": brad_response,

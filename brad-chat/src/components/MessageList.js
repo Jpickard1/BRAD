@@ -24,7 +24,27 @@ function MessageList({ messages }) {
           </div>
           {selectedMessageId === message.id && message.process && (
             <div className="message-process">
-              <Markdown>{Array.isArray(message.process) ? message.process.join(', ') : String(message.process)}</Markdown>
+              {message.process.map(([name, payload], index) => {
+                if (name === "RAG-R") {
+                  return (
+                    <div key={index} className="retriever">
+                      {payload.map((item, i) => (
+                        <div key={i}>{item}</div>
+                      ))}
+                    </div>
+                  );
+                } else if (name === "RAG-G") {
+                  return (
+                    <div key={index}>
+                      {payload.map((paragraph, i) => (
+                        <div key={i} className="rag-paragraph">{paragraph}</div>
+                      ))}
+                    </div>
+                  );
+                } else {
+                  return <div key={index}>{String(payload)}</div>;
+                }
+              })}
             </div>
           )}
         </div>
