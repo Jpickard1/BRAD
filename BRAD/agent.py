@@ -240,7 +240,7 @@ class Agent():
     
         # Initialize the dictionaries of tables and databases accessible to BRAD
         databases = {} # a dictionary to look up databases
-        tables = {}    # a dictionary to look up tables
+        # tables = {}    # a dictionary to look up tables
     
         # Initialize the RAG database
         if llm is None:
@@ -279,9 +279,9 @@ class Agent():
         if 'output-directory' not in self.state or not self.state['output-directory']:
             self.state['output-directory'] = new_log_dir
 
-        if self.state['config']['experiment']:
-            self.experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
-            self.state['experiment-output'] = '-'.join(experimentName.split())
+        # if self.state['config']['experiment']:
+        #     self.experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
+        #     self.state['experiment-output'] = '-'.join(experimentName.split())
     
         # Initialize all modules
         self.module_functions = self.getModules()
@@ -293,7 +293,7 @@ class Agent():
         self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
 
         # Ensure that the save_state function is registered to run at program exit
-        atexit.register(self.save_state)
+        # atexit.register(self.save_state)
 
 
     def save_state(self):
@@ -312,6 +312,13 @@ class Agent():
         state_file = os.path.join(output_directory, '.agent-state.pkl')
 
         try:
+            # Save the log to the json log file
+            self.state['prompt'] = None
+            self.state['output'] = None
+            self.state['process'] = {
+                'module' : 'SLEEP'
+            }
+
             # Set the databases to none
             self.state['databases']['RAG'] = None
             self.state['llm'] = None
@@ -320,6 +327,10 @@ class Agent():
             with open(state_file, 'wb') as f:
                 pickle.dump(self.state, f)
             logging.info(f"Agent state saved to {state_file}")
+
+            self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
+            logging.info(f"Agent log written for power off")
+
         except Exception as e:
             logging.error(f"Failed to save agent state: {e}")
 
@@ -575,11 +586,16 @@ class Agent():
         :returns: a list of strings
         :rtype: list
         """
+        log.debugLog("Get Display Method", display=True)
         # numIOpairs = len(self.chatlog.keys())
         display = []
+        log.debugLog("display = []", display=True)
         for i in self.chatlog.keys():
+            if self.chatlog[i]['process']['module'] == 'SLEEP':
+                continue
             display.append((self.chatlog[i]['prompt'], None))
             display.append((self.chatlog[i]['output'], self.chatlog[i]))
+        log.debugLog(f"{display=}", display=True)
         return display
 
     @property
