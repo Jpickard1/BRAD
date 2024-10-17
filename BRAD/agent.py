@@ -876,7 +876,8 @@ class Agent():
 
     def load_literature_db(
         self,
-        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/DigitalLibrary-10-June-2024/"
+        persist_directory = "/home/acicalo/BRAD/data/RAG_Database",
+        db_name = "DB_cosine_cSize_700_cOver_200"
     ):
         """
         Loads a literature database using specified embedding model and settings.
@@ -889,23 +890,35 @@ class Agent():
     
         :return: A tuple containing the vector database and the embeddings model.
         :rtype: tuple
+
+        The `persist_directory` should point to a directory that has this structure:
+
+        >>> [Oct 16 19:28]  persist_directory
+        ... └── [Oct 16 19:28]  DB_cosine_cSize_700_cOver_200
+        ...     ├── [Oct 16 19:28]  aaa2c989-0e39-4be8-82b4-139ae2784c00
+        ...     │   ├── [Oct 16 19:28]  data_level0.bin
+        ...     │   ├── [Oct 16 19:28]  header.bin
+        ...     │   ├── [Oct 16 19:28]  length.bin
+        ...     │   └── [Oct 16 19:28]  link_lists.bin
+        >>>     └── [Oct 16 19:28]  chroma.sqlite3
     
         """
+        # Dev. Comments
+        # History:
+        # - 2024-06-04: 1st version of this was written
+        # - 2024-10-17: changes to the pathing were made
+
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: June 4, 2024
     
         # load database
         embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')        # Embedding model
-        db_name = 'NewDigitalLibrary'
-        _client_settings = chromadb.PersistentClient(path=(persist_directory + db_name))
+        _client_settings = chromadb.PersistentClient(path=os.path.join(persist_directory, db_name))
         vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings_model, client=_client_settings, collection_name=db_name)
-        print(len(vectordb.get()['ids']))
         if len(vectordb.get()['ids']) == 0:
             print('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
             warnings.warn('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
-        vectordb = remove_repeats(vectordb)
-        print(len(vectordb))
         return vectordb, embeddings_model
 
     def chatbotHelp(self):
