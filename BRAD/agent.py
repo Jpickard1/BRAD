@@ -187,6 +187,9 @@ class Agent():
         # - 2024-07-23: added interactive and max_api_call arguments
         # - 2024-07-29: added config (optional) argument to overwrite the defaults
         # - 2024-10-06: .chatstatus was renamed .state
+        # - 2024-10-16: if the restart location doesn't have a log, then a new agent
+        #               is created
+        #
         # Issues:
         # - We should change the structure of the classes/modules. In this 1st iteration
         #   state was packed as a class variable and used similar to before, but it
@@ -201,6 +204,13 @@ class Agent():
         log_dir = os.path.join(base_dir, self.state['config']['log_path'])
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
+
+        # Check if it will be possible to restart the old session
+        if restart is not None:
+            log_path = os.path.join(restart, 'log.json')
+            if not os.path.exists(log_path):
+                restart = None
+
         if restart is None:
             new_dir_name = dt.now().strftime("%Y-%m-%d_%H-%M-%S")
             new_log_dir = os.path.join(log_dir, new_dir_name)
@@ -223,7 +233,6 @@ class Agent():
                     logging.error(f"Failed to load agent state from {state_file}: {e}")
             else:
                 logging.info(f"No existing state file found in {new_log_dir}, starting fresh.")
-
 
         if max_api_calls is None:
             max_api_calls = 1000
@@ -279,6 +288,9 @@ class Agent():
     
         # Start loop
         self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
+
+        # Write an empty chat log
+        self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
 
         # Ensure that the save_state function is registered to run at program exit
         atexit.register(self.save_state)
@@ -566,8 +578,8 @@ class Agent():
         # numIOpairs = len(self.chatlog.keys())
         display = []
         for i in self.chatlog.keys():
-            display.append(self.chatlog[i]['prompt'])
-            display.append(self.chatlog[i]['output'])
+            display.append((self.chatlog[i]['prompt'], None))
+            display.append((self.chatlog[i]['output'], self.chatlog[i]))
         return display
 
     @property

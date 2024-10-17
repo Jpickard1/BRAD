@@ -267,7 +267,7 @@ def debugLog(output, state=None, display=None):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     if display:
         logging.info(output)
-    elif state['config']['debug']:
+    elif state is not None and state['config']['debug']:
         logging.info(output)
 
 

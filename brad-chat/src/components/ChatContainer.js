@@ -4,6 +4,7 @@ import MessageInput from './MessageInput';
 import "highlight.js/styles/github.css";
 import hljs from "highlight.js";
 import RagFileInput from './RagFileInput';
+import ThemeChangeButton from './ThemeChange';
 
 function ChatContainer({ messages, onSendMessage }) {
   // UseEffect to highlight syntax when messages change
@@ -14,6 +15,7 @@ function ChatContainer({ messages, onSendMessage }) {
   return (
     <div className="chat-container">
       <RagFileInput />
+      <ThemeChangeButton />
       {/* Display the messages */}
       <MessageList messages={messages} />
       {/* Pass the onSendMessage handler to MessageInput */}

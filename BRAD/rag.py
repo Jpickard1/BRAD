@@ -109,6 +109,7 @@ def queryDocs(state):
     # History:
     #  2024-07-21: Added a new feature to change the doc.page_content to include
     #              the source
+    #  2024-10-16: JP changes made to make the logs of this suitable to the GUI
 
     # Issues:
 
@@ -141,12 +142,13 @@ def queryDocs(state):
             addingInRefs = "Source: " + short_source + "\nContent: " + pageContent
             doc.page_content = addingInRefs
             docs[i] = doc
-        
+
         # build chain
         chain = load_qa_chain(llm, chain_type="stuff", verbose = state['config']['debug'])
 
         # invoke the chain
         start_time = time.time()
+
         with get_openai_callback() as cb:
             response = chain({"input_documents": docs, "question": prompt})
         response['metadata'] = {
@@ -257,6 +259,8 @@ def retrieval(state):
     # - 2024-06-16: JP initialized the function with similarity search and multiquery
     # - 2024-06-26: MC added cut() to remove poorly chunked pieces of text
     # - 2024-06-29: MC added max_marginal_relevance_search for retrieval
+    # - 2024-10-16: JP saved the doc sources and text as strings that can be sent to
+    #               the GUI for display
     #
     # Issues:
     # - The MultiQueryRetriever.from_llm doesn't give control over the number of
@@ -291,6 +295,14 @@ def retrieval(state):
                                                  llm=llm
                                                 )
         docs = retriever.get_relevant_documents(query=prompt)
+
+    docsText = []
+    for doc in docs:
+        docsText.append({
+            'source': doc.metadata.get('source'),
+            'text' : doc.page_content
+        })
+
     state['process']['steps'].append({
         'func' : 'rag.retrieval',
         'multiquery' : state['config']['RAG']['multiquery'],
@@ -298,6 +310,7 @@ def retrieval(state):
         'mmr' : state['config']['RAG']['mmr'],
         'num-docs' : len(docs),
         'docs' : str(docs),
+        'docs-to-gui': docsText,
         'time' : time.time() - start_time
     })
     return state, docs
@@ -559,7 +572,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
     os.chdir(local)      ## shift the work dir to local dir
     print('\nWork Directory: {}'.format(local)) if v else None
 
-    #%% Phase 1 - Load DB
+    # Phase 1 - Load DB
     embeddings_model = HuggingFaceEmbeddings(model_name=HuggingFaceEmbeddingsModel)
     print("\nDocuments loading from: 'str(docsPath)") if v else None
     # text_loader_kwargs={'autodetect_encoding': True}
@@ -584,15 +597,21 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
 
             dbName = "DB_cosine_cSize_%d_cOver_%d" %(chunk_size[i], chunk_overlap[j])
 
-            p2_2 = subprocess.run('mkdir  %s/*'%(dbPath+dbName), shell=True)
-            _client_settings = chromadb.PersistentClient(path=(dbPath+dbName))
-
+            # print("dbName reset")
+            # p2_2 = subprocess.run('mkdir  %s/*'%os.path.join(dbPath,dbName), shell=True)
+            p2_2 = os.makedirs(os.path.join(dbPath, dbName), exist_ok=True)
+            # print(os.path.join(dbPath, dbName))
+            # print("subprocess run")
+            _client_settings = chromadb.PersistentClient(path=os.path.join(dbPath,dbName))
+            # print("_client_settings set")
+            # print("Starting database construction")
             vectordb = Chroma.from_documents(documents           = data_splits,
                                              embedding           = embeddings_model,
                                              client              = _client_settings,
                                              collection_name     = dbName,
                                              collection_metadata = {"hnsw:space": "cosine"})
-            log.debugLog("Completed Chroma Database: ", display=v)
+            # print(f"{vectordb=}")
+            # log.debugLog("Completed Chroma Database: ", display=v)
             del text_splitter, data_splits
     return vectordb
 
