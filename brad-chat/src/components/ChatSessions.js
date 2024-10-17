@@ -32,6 +32,47 @@ function ChatSessions({ setMessages }) {
     }
   };
 
+  const handleNewSession = async () => {
+    try {
+      const response = await fetch("/api/create_session", {
+        method: "GET",
+      });
+      const result = await response.json();
+  
+      if (result.success) {
+        // Handle success, such as refreshing the list of sessions
+        console.log(result.message);
+
+        // Update the session display
+        // const data = await response.json();  // Get the response data
+        console.log(`result: ${result}`);
+        console.log(`result.success: ${result.success}`);
+        console.log(`result.message: ${result.message}`);
+        const formattedMessages = result.display.map((item, index) => {
+          const [text, process] = item;  // Destructure the tuple
+          console.log(`text: ${text}`);
+          console.log(`process: ${process}`);
+          return {
+            id: index, // Use index as a temporary unique key (for demo purposes)
+            text: text,
+            process: process !== null ? process : [], // If the second element is null, set it to an empty array (or other default value)
+            sender: index % 2 === 0 ? 'user' : 'bot' // Example: alternate between 'user' and 'bot'
+          };
+        });
+    
+        setMessages(formattedMessages); // Set the formatted messages
+        console.log(`Session created. Chat history:`, formattedMessages);
+  
+
+      } else {
+        console.error("Failed to create a new session:", result.message);
+      }
+      // Fetch updated sessions or update state locally
+      await fetchSessions();
+    } catch (error) {
+      console.error("An error occurred while creating a new session:", error);
+    }
+  };
 
   // Function to handle session change
   const handleSessionChange = async (sessionId) => {
@@ -128,7 +169,7 @@ function ChatSessions({ setMessages }) {
             console.log(`Session changed and renamed`); // Chat history:`, formattedMessages);        
     
             console.log(`Session renamed: ${session.text} to ${updatedText}`);
-            
+
           } else {
             throw new Error(`Error: ${response.statusText}`);
           }
@@ -192,13 +233,19 @@ function ChatSessions({ setMessages }) {
   }, []); // Empty dependency array to run once on mount
 
   return (
-    <div className="chat-sessions">
+    <div className="chat-sessions">      
       <p>Chat Sessions</p>
+      <button
+        className="session-box"
+        onClick={handleNewSession}
+      >
+        New Session
+      </button>
       {chatsessions.map((session) => (
         <div
           key={session.id}
           className="session-box"
-          onClick={() => handleSessionChange(session.text)}  
+          onClick={() => handleSessionChange(session.text)}
         >
           {editingSessionId === session.id ? (
             <input
@@ -236,6 +283,7 @@ function ChatSessions({ setMessages }) {
         </div>
       ))}
     </div>
+
   );
 }
 

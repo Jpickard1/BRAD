@@ -591,10 +591,13 @@ class Agent():
         display = []
         log.debugLog("display = []", display=True)
         for i in self.chatlog.keys():
-            if self.chatlog[i]['process']['module'] == 'SLEEP':
+            if 'module' in self.chatlog[i]['process'].keys() and self.chatlog[i]['process']['module'] == 'SLEEP':
                 continue
-            display.append((self.chatlog[i]['prompt'], None))
-            display.append((self.chatlog[i]['output'], self.chatlog[i]))
+            elif 'MODULE' in self.chatlog[i]['process'].keys() and self.chatlog[i]['process']['MODULE'] == 'SLEEP':
+                continue
+            else:
+                display.append((self.chatlog[i]['prompt'], None))
+                display.append((self.chatlog[i]['output'], self.chatlog[i]))
         log.debugLog(f"{display=}", display=True)
         return display
 

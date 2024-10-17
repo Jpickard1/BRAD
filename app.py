@@ -63,6 +63,13 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def normalize_keys_upper(d):
+    """Recursively normalize dictionary keys to lowercase."""
+    if isinstance(d, dict):
+        return {k.upper(): normalize_keys_upper(v) for k, v in d.items()}
+    return d
+
+
 def parse_log_for_one_query(chatlog_query):
     """
     Safely parses a single chat log query for RAG or LLM processes.
@@ -82,14 +89,17 @@ def parse_log_for_one_query(chatlog_query):
     ...   ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
     >>> ]
     """
-    
+
+    # Ensure that keys will all be uppercase
+    chatlog_query = normalize_keys_upper(chatlog_query)
+
     # Ensure that 'process' and 'module' keys exist in the query
-    process_data = chatlog_query.get('process', {})
-    module_name = process_data.get('module', '').upper()
+    process_data = chatlog_query.get('PROCESS', {})
+    module_name = process_data.get('MODULE', '').upper()
     
     if module_name == 'RAG':
         process = []
-        steps = process_data.get('steps', [])
+        steps = process_data.get('STEPS', [])
         
         for step in steps:
             # Check if 'func' key exists and is 'rag.retrieval'
@@ -333,11 +343,18 @@ def create_session():
                      )
         logger.info(f"Agent active at path: {brad.chatname}")
         
+        chat_history = brad.get_display()
+        logger.info(f"Retrieved chat history")
+        chat_history = parse_log_for_process_display(chat_history)
+        logger.info(f"Extracted agent history for display:")
+        logger.info(json.dumps(chat_history, indent=4))
         response = jsonify({
             "success": True,
             "message": f"New session activated.",
+            "display": chat_history
             }
         )
+        logger.info(f"Response constructed: {response}")
         return response, 200
 
     except Exception as e:
