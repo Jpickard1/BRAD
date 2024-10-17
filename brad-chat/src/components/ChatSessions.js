@@ -106,12 +106,32 @@ function ChatSessions({ setMessages }) {
               updated_name: updatedText,
             }),
           });
+   
+          if (response.ok) {
+            const data = await response.json();  // Get the response data
+            console.log(`data: ${data}`);
+            console.log(`data.success: ${data.success}`);
+            console.log(`data.message: ${data.message}`);
+            const formattedMessages = data.display.map((item, index) => {
+              const [text, process] = item;  // Destructure the tuple
+              console.log(`text: ${text}`);
+              console.log(`process: ${process}`);
+              return {
+                id: index, // Use index as a temporary unique key (for demo purposes)
+                text: text,
+                process: process !== null ? process : [], // If the second element is null, set it to an empty array (or other default value)
+                sender: index % 2 === 0 ? 'user' : 'bot' // Example: alternate between 'user' and 'bot'
+              };
+            });
+        
+            setMessages(formattedMessages); // Set the formatted messages
+            console.log(`Session changed and renamed`); // Chat history:`, formattedMessages);        
     
-          if (!response.ok) {
+            console.log(`Session renamed: ${session.text} to ${updatedText}`);
+            
+          } else {
             throw new Error(`Error: ${response.statusText}`);
           }
-    
-          console.log(`Session renamed: ${session.text} to ${updatedText}`);
     
           // Fetch updated sessions or update state locally
           await fetchSessions(); // or manually update the chatsessions state if necessary
