@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PopUpApiEntry from './PopUpApiEntry'
 
 
 function RightSideBar({ setColorScheme }) {
 //  const [llmChoice, setLlmChoice] = useState('GPT-4');  // Default LLM choice
   const [ragDatabase, setRagDatabase] = useState('Wikipedia');  // Default RAG choice
-  const [llmChoice, setLlmChoice] = useState("gpt-4o-mini-2024-07-18");  // Default to GPT-4
+  const [llmChoice, setLlmChoice] = useState("gpt-3.5-turbo-0125");  // Default to GPT-4
   const [isApiEntryVisible, setIsApiEntryVisible] = useState(false); // Only if you want to show/hide the popup
+  const [availableDatabases, setAvailableDatabases] = useState([]);  // Hold available databases
 
+  // Fetch available databases from the Flask API when the component loads
+  useEffect(() => {
+    const fetchDatabases = async () => {
+      try {
+        const response = await fetch('/databases/available');
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`data.databases: ${data.databases}`);
+          setAvailableDatabases(data.databases);
+          setRagDatabase(data.databases[0]);  // Set the first available DB as default
+        } else {
+          console.error('Failed to fetch databases');
+        }
+      } catch (error) {
+        console.error('Error fetching databases:', error);
+      }
+    };
 
+    fetchDatabases();
+  }, []);  // Run this effect only once when the component mounts
 
   // Function to handle LLM change
   const handleLlmChange = async (event) => {
@@ -44,9 +64,31 @@ function RightSideBar({ setColorScheme }) {
     }
   };
 
+  // Function to handle RAG database change
+  const handleRagChange = async (event) => {
+    const selectedDatabase = event.target.value;
+    console.log(`Setting RAG database to: ${selectedDatabase}`);
 
-  const handleRagChange = (event) => {
-    setRagDatabase(event.target.value);
+    try {
+      const response = await fetch('/databases/set', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ database: selectedDatabase })  // Send selected DB in the request body
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`Database set successfully:`, data.message);
+        setRagDatabase(selectedDatabase);  // Update the current selection
+      } else {
+        const errorData = await response.json();
+        console.error('Error setting database:', errorData.message);
+      }
+    } catch (error) {
+      console.error('Error during database request:', error);
+    }
   };
 
   const handleColorSchemeChange = (event) => {
@@ -71,18 +113,17 @@ function RightSideBar({ setColorScheme }) {
       <div className="setting-option">
         <label htmlFor="llm-choice">Choose LLM:</label>
         <select id="llm-choice" value={llmChoice} onChange={handleLlmChange}>
-          <option value="gpt-4o-mini-2024-07-18">GPT-4*</option>
-          <option value="gpt-3.5-turbo-0125">GPT-3.5*</option>
-          <option value="meta/llama3-70b-instruct">Llama3*</option>
+          <option value="gpt-3.5-turbo-0125">GPT-3.5</option>
+          <option value="gpt-4o-mini-2024-07-18">GPT-4</option>
         </select>
       </div>
 
       <div className="setting-option">
         <label htmlFor="rag-database">Choose RAG Database:</label>
         <select id="rag-database" value={ragDatabase} onChange={handleRagChange}>
-          <option value="Wikipedia">Wikipedia</option>
-          <option value="PubMed">PubMed</option>
-          <option value="ArXiv">ArXiv</option>
+          {availableDatabases.map((db, index) => (
+            <option key={index} value={db}>{db}</option>
+          ))}
         </select>
       </div>
 
@@ -95,13 +136,11 @@ function RightSideBar({ setColorScheme }) {
       </div>
 
       <div className="right-side-bar">
-            <button onClick={handleOpenApiEntry}>Enter API Key</button>
-            {/* Display the PopUpApiEntry when the button is clicked */}
-            {isApiEntryVisible && <PopUpApiEntry onClose={handleCloseApiEntry} />}
-            {/* Other sidebar content goes here */}
+        <button onClick={handleOpenApiEntry}>Enter API Key</button>
+        {isApiEntryVisible && <PopUpApiEntry onClose={handleCloseApiEntry} />}
       </div>
-
     </div>
+
   );
 }
 
