@@ -212,6 +212,56 @@ def upload_file():
     # print("brad agent database is set")
     return jsonify(response)
 
+@app.route("/databases/available", methods=['GET'])
+def available_databases():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 17, 2024    
+    
+    # Get list of directories at this location
+    try:
+        databases = [name for name in os.listdir(DATABASE_FOLDER) 
+                         if os.path.isdir(os.path.join(DATABASE_FOLDER, name))]
+        
+        # Return the list of open sessions as a JSON response
+        response = jsonify({"databases": databases})
+        return response
+    
+    except FileNotFoundError:
+        return jsonify({"error": "Directory not found"})
+    
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
+@app.route("/databases/set", methods=['POST'])
+def available_databases():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 17, 2024    
+    
+    # Get list of directories at this location
+    try:
+        global brad
+
+        request_data = request.json
+        database_name = request_data.get("database")
+        db, _ = brad.load_literature_db(persist_directory=os.path.join(DATA_FOLDER, database_name))
+        brad.state['database']['RAG'] = db
+        
+        logger.info(f"Successfully set the database to: {database_name}")
+
+        # Respond with success
+        return jsonify({"success": True, "message": f"Database set to {database_name}"}), 200
+   
+    except FileNotFoundError:
+        return jsonify({"error": "Directory not found"})
+    
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
+
+
+
 @app.route("/open_sessions", methods=['GET'])
 def get_open_sessions():
     """
@@ -228,14 +278,11 @@ def get_open_sessions():
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: October 14, 2024
-
-    # Get path to output directories
-    path_to_output_directories = brad.state['config']['log_path']
     
     # Get list of directories at this location
     try:
-        open_sessions = [name for name in os.listdir(path_to_output_directories) 
-                         if os.path.isdir(os.path.join(path_to_output_directories, name))]
+        open_sessions = [name for name in os.listdir(PATH_TO_OUTPUT_DIRECTORIES) 
+                         if os.path.isdir(os.path.join(PATH_TO_OUTPUT_DIRECTORIES, name))]
         
         # Return the list of open sessions as a JSON response
         message = jsonify({"open_sessions": open_sessions})
@@ -665,3 +712,4 @@ def set_llm_api_key():
     os.environ["NVIDIA_API_KEY"] = nvidia_key
 
     return jsonify({"message": "NVIDIA API key set successfully."}), 200  # Success response
+
