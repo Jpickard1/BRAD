@@ -138,10 +138,10 @@ def logger(chatlog, state, chatname, elapsed_time=None):
         'process': process_serializable,  # state['process'], # information about the process that ran
         'status' : {                      # information about the chat at that time
             'databases'         : str(state['databases']),
-            'current table'     : {
-                    'key'       : state['current table']['key'],
-                    'tab'       : state['current table']['tab'].to_json() if state['current table']['tab'] is not None else None,
-                },
+            # 'current table'     : {
+            #         'key'       : state['current table']['key'],
+            #         'tab'       : state['current table']['tab'].to_json() if state['current table']['tab'] is not None else None,
+            #     },
             'current documents' : state['current documents'],
             'queue pointer'     : state['queue pointer'],
             'queue'             : state['queue'].copy()
