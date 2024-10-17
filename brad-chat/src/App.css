@@ -160,7 +160,7 @@ body {
 }
 
 .message-process {
-  background-color: red;
+  background-color: rgb(173, 173, 173);
   padding: 10px;
   border-radius: 5px;
   color: white;
@@ -215,6 +215,11 @@ pre > code {
   background-color: var(--base-color);
   color: var(--font-color);
 }
+
+.retriever {
+  text-align: right; /* Aligns the text inside the retriever div to the right */
+}
+
 
 /* General container for the session list */
 .session-list {

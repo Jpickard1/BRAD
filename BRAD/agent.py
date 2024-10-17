@@ -234,7 +234,6 @@ class Agent():
             else:
                 logging.info(f"No existing state file found in {new_log_dir}, starting fresh.")
 
-
         if max_api_calls is None:
             max_api_calls = 1000
         self.max_api_calls = max_api_calls
@@ -289,6 +288,9 @@ class Agent():
     
         # Start loop
         self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
+
+        # Write an empty chat log
+        self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
 
         # Ensure that the save_state function is registered to run at program exit
         atexit.register(self.save_state)
@@ -576,8 +578,8 @@ class Agent():
         # numIOpairs = len(self.chatlog.keys())
         display = []
         for i in self.chatlog.keys():
-            display.append(self.chatlog[i]['prompt'])
-            display.append(self.chatlog[i]['output'])
+            display.append((self.chatlog[i]['prompt'], None))
+            display.append((self.chatlog[i]['output'], self.chatlog[i]))
         return display
 
 

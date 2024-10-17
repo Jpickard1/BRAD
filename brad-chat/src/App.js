@@ -26,7 +26,8 @@ function App() {
       const result = await response.json();
       let bot_response = result['response'] || '[No response]';
       let bot_log = result['response-log'] || '[No log]'; // You mentioned response-log for the process
-  
+      console.log(`bot_response= ${bot_response}`)
+      console.log(`bot_log= ${bot_log}`)
       // Add the bot's response to the message list, including both text and process
       setMessages((prevMessages) => [
         ...prevMessages, 
