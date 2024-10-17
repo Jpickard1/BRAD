@@ -4,6 +4,8 @@ import Markdown from "marked-react";
 
 function ChatSessions({ setMessages }) {
   const [chatsessions, setSessions] = useState([]);
+  const [editingSessionId, setEditingSessionId] = useState(null); // Track the session being edited
+  const [updatedText, setUpdatedText] = useState(""); // Track the updated session name
 
   // Function to handle session removal
   const handleRemoveSession = async (sessionId) => {
@@ -67,6 +69,71 @@ function ChatSessions({ setMessages }) {
     }
   };
   
+    // Handle session rename
+    const handleRenameSession = async (sessionId, newName) => {
+      try {
+        const response = await fetch('/api/rename_session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ session_name: sessionId, updated_name: newName })
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error renaming session: ${response.statusText}`);
+        }
+  
+        console.log(`Session renamed from ${sessionId} to ${newName}`);
+        await fetchSessions(); // Refresh the session list
+  
+      } catch (error) {
+        console.error('Error renaming session:', error);
+      }
+    };
+
+    const handleRename = async (session) => {
+      // Only call the API if the name has changed
+      if (updatedText !== session.text) {
+        try {
+          const response = await fetch('/api/rename_session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              session_name: session.text,
+              updated_name: updatedText,
+            }),
+          });
+    
+          if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+          }
+    
+          console.log(`Session renamed: ${session.text} to ${updatedText}`);
+    
+          // Fetch updated sessions or update state locally
+          await fetchSessions(); // or manually update the chatsessions state if necessary
+    
+        } catch (error) {
+          console.error('Error renaming session:', error);
+        }
+      }
+    
+      // Exit the editing mode
+      setEditingSessionId(null);
+    };
+    
+
+    // When user clicks outside the input field (blur event)
+    const handleBlur = (session) => {
+      if (editingSessionId && updatedText !== session.text) {
+        handleRenameSession(session.text, updatedText); // Call rename API
+      }
+      setEditingSessionId(null); // Exit edit mode
+    };
+  
 
   const fetchSessions = async () => {
     console.log("1. setting chatsessions", chatsessions);
@@ -107,26 +174,47 @@ function ChatSessions({ setMessages }) {
   return (
     <div className="chat-sessions">
       <p>Chat Sessions</p>
-      {chatsessions.map((message) => (
+      {chatsessions.map((session) => (
         <div
-          key={message.id}
+          key={session.id}
           className="session-box"
-          onClick={() => handleSessionChange(message.text)}  // Use onChangeSession prop
+          onClick={() => handleSessionChange(session.text)}  
         >
-          <Markdown>{message.text}</Markdown>
+          {editingSessionId === session.id ? (
+            <input
+              type="text"
+              value={updatedText}
+              onChange={(e) => setUpdatedText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleRename(session); // Trigger rename on Enter/Return key
+                }
+              }}
+              onBlur={() => handleRename(session)} // Trigger rename when focus is lost
+              autoFocus // Automatically focus when editing starts
+            />
+          ) : (
+            <div
+              onMouseEnter={() => {
+                setEditingSessionId(session.id);
+                setUpdatedText(session.text); // Set the text for editing
+              }}
+            >
+              <Markdown>{session.text}</Markdown>
+            </div>
+          )}
 
           <button
             className="delete-btn"
             onClick={(e) => {
               e.stopPropagation();
-              handleRemoveSession(message.text);
+              handleRemoveSession(session.text);
             }}
           >
             Delete
           </button>
         </div>
       ))}
-
     </div>
   );
 }

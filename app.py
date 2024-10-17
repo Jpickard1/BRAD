@@ -360,6 +360,59 @@ def change_session():
         logger.error(f"An error occurred while trying to change session: '{session_name}': {str(e)}")
         return jsonify({"success": False, "message": f"Error changing session: {str(e)}"}), 500
 
+@app.route("/rename_session", methods=['POST'])
+def rename_session():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 17, 2024
+
+    # Parse the request data
+    request_data = request.json
+    session_name = request_data.get("session_name")  # Get the session name from the request body
+    updated_name = request_data.get("updated_name")  # Get the session name from the request body
+
+    # Log the incoming request
+    logger.info(f"Received request to rename session: {session_name} to {updated_name}")
+
+    # Validate the sent arguments
+    if not session_name:
+        logger.error("No session_name provided in the request.")
+        return jsonify({"success": False, "message": "No session name provided."}), 400
+    if not updated_name:
+        logger.error("No updated_name provided in the request.")
+        return jsonify({"success": False, "message": "No updated name provided."}), 400
+
+    # Validate the log path
+    if not PATH_TO_OUTPUT_DIRECTORIES:
+        logger.error("Log path is not set in the configuration.")
+        return jsonify({"success": False, "message": "Log path not configured."}), 500
+
+    session_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, session_name)
+    updated_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, updated_name)
+
+    # Check if the session directory exists
+    if not os.path.exists(session_path):
+        logger.warning(f"Session '{session_name}' does not exist at path: {session_path}")
+        return jsonify({"success": False, "message": f"Session '{session_name}' does not exist."}), 404
+
+    # Try to rename the session directory
+    try:
+        os.rename(session_path, updated_path)
+        logger.info(f"Successfully renamed session: {session_name} -> {updated_name}")
+        return jsonify({"success": True, "message": f"Session '{session_name}' removed."}), 200
+
+    except PermissionError as e:
+        logger.error(f"Permission denied while trying to rename session '{session_name}': {str(e)}")
+        return jsonify({"success": False, "message": f"Permission denied: {str(e)}"}), 403
+
+    except FileNotFoundError as e:
+        logger.error(f"Session '{session_name}' not found during rename: {str(e)}")
+        return jsonify({"success": False, "message": f"Session not found: {str(e)}"}), 404
+
+    except Exception as e:
+        logger.error(f"An error occurred while trying to rename session '{session_name}': {str(e)}")
+        return jsonify({"success": False, "message": f"Error removing session: {str(e)}"}), 500
+
 @app.route("/set_llm", methods=['POST'])
 def set_llm():
     """
