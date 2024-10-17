@@ -64,40 +64,60 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def parse_log_for_one_query(chatlog_query):
-    # print(" ")
-    # print(" ")
-    # print("parse_log_for_one_query")
-    if chatlog_query['process']['module'].upper() == 'RAG':
-        # print("    RAG FOUND!")
+    """
+    Safely parses a single chat log query for RAG or LLM processes.
+    Returns a list of tuples with process steps and relevant sources or chunks.
+    
+    Args:
+        chatlog_query (dict): A single chat query log to parse.
+        
+    Returns:
+        process (list): A list of tuples with parsed information or None if the module is not RAG.
+
+    Expected Pattern:
+    
+    >>> This is the pattern that the front end expects
+    ... passed_log_stages = [
+    ...   ('RAG-R', ['source 1', 'source 2', 'source 3']),
+    ...   ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
+    >>> ]
+    """
+    
+    # Ensure that 'process' and 'module' keys exist in the query
+    process_data = chatlog_query.get('process', {})
+    module_name = process_data.get('module', '').upper()
+    
+    if module_name == 'RAG':
         process = []
-        for step in chatlog_query['process']['steps']:
-            # print(f"        {step=}")
-            if 'func' in step.keys() and step['func'].lower() == 'rag.retrieval':
-                # print("retrieval !")
-                docsText = step['docs-to-gui']
+        steps = process_data.get('steps', [])
+        
+        for step in steps:
+            # Check if 'func' key exists and is 'rag.retrieval'
+            if step.get('func', '').lower() == 'rag.retrieval':
+                docs_text = step.get('docs-to-gui', [])
+                
                 sources = []
                 chunks = []
-                for doc in docsText:
-                    sources.append(doc['source'])
-                    chunks.append(doc['text'])
+                
+                for doc in docs_text:
+                    # Safely access 'source' and 'text', provide fallback if missing
+                    sources.append(doc.get('source', 'Unknown Source'))
+                    chunks.append(doc.get('text', 'Unknown Text'))
+                
+                # Add the sources and chunks to the process list
                 process.append(('RAG-R', sources))
                 process.append(('RAG-G', chunks))
-            elif 'purpose' in step.keys() and step['purpose'].lower() == 'chat without RAG':
-                # print("LLM solo !")
+            
+            # Check if 'purpose' key exists and is 'chat without RAG'
+            elif step.get('purpose', '').lower() == 'chat without rag':
                 process.append(('LLM-Generation', "Response generated with only the LLM."))
-            # print(f"{process=}")
-        # print(f"{process=}")
+        
         return process
-    else:
-        return None
+    
+    return None
 
 
 def parse_log_for_process_display(chat_history):
-    # This is the pattern that the front end expects
-    # passed_log_stages = [
-    #     ('RAG-R', ['source 1', 'source 2', 'source 3']),
-    #     ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
-    # ]
     for i in range(len(chat_history)):
         if chat_history[i][1] is not None:
             # print('replacing logs')
@@ -282,6 +302,48 @@ def remove_open_sessions():
         logger.error(f"An error occurred while trying to remove session '{session_name}': {str(e)}")
         return jsonify({"success": False, "message": f"Error removing session: {str(e)}"}), 500
 
+@app.route("/create_session", methods=['GET'])
+def create_session():
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 17, 2024
+
+    # request_data = request.json
+    # print(f"{request_data=}")
+
+    # Log the incoming request
+    logger.info(f"Received request to create a new session")
+
+    # Try to remove the session directory
+    try:
+        # Delete the old agent
+        global brad
+        
+        # Delete the old agent
+        brad.save_state()
+        logger.info(f"Saving state of agent before deleting")
+        del brad
+        logger.info(f"Removing current agent with `del brad`")
+
+        # Create the new agent
+        logger.info(f"Activating new agent")
+        # Create the new agent
+        brad = Agent(interactive=False,
+                     tools=TOOL_MODULES
+                     )
+        logger.info(f"Agent active at path: {brad.chatname}")
+        
+        response = jsonify({
+            "success": True,
+            "message": f"New session activated.",
+            }
+        )
+        return response, 200
+
+    except Exception as e:
+        logger.error(f"An error occurred while trying to create a new session': {str(e)}")
+        return jsonify({"success": False, "message": f"Error session"}), 500
+
 @app.route("/change_session", methods=['POST'])
 def change_session():
     """
@@ -329,23 +391,44 @@ def change_session():
         logger.warning(f"Session '{session_name}' does not exist at path: {session_path}")
         return jsonify({"success": False, "message": f"Session '{session_name}' does not exist."}), 404
 
+    global brad
+
+    # Check if trying to change to the active session
+    if os.path.join(session_path, 'log.json') == brad.chatname:
+        logger.warning(f"Session '{session_name}' does not exist at path: {session_path}")
+        return jsonify({"success": False, "message": f"Cannot change to the current session."}), 404
+    else:
+        logger.info(f"{os.path.join(session_path, 'log.json')}")
+        logger.info(f"{brad.chatname}")
+
     # Try to remove the session directory
     try:
+        
+        # Delete the old agent
+        brad.save_state()
+        logger.info(f"Saving state of agent before deleting")
+        del brad
+        logger.info(f"Removing current agent with `del brad`")
+
+        # Create the new agent
+        logger.info(f"Activating agent from: {session_path}")
         brad = Agent(interactive=False,
                      tools=TOOL_MODULES,
                      restart=session_path
                      )
-        logger.info(f"Successfully changed to: {session_name}")
+        logger.info(f"Successfully activated agent: {session_name}")
         chat_history = brad.get_display()
+        logger.info(f"Retrieved chat history")
         chat_history = parse_log_for_process_display(chat_history)
-        print("Dump Chat History")
-        print(json.dumps(chat_history, indent=4))
+        logger.info(f"Extracted agent history for display:")
+        logger.info(json.dumps(chat_history, indent=4))
         response = jsonify({
             "success": True,
             "message": f"Session '{session_name}' activated.",
             "display": chat_history
             }
         )
+        logger.info(f"Response constructed: {response}")
         return response, 200
 
     except PermissionError as e:
@@ -397,9 +480,51 @@ def rename_session():
 
     # Try to rename the session directory
     try:
+        global brad
+
+        changeAgent =  brad.chatname != os.path.join(session_path, 'log.json')
+        logger.info(f"Change Agent for rename: {changeAgent}")
+
+        # Activate session being renamed if it is not currently active
+        if changeAgent:
+            # Delete the old agent
+            brad.save_state()
+            logger.info(f"Saving state of agent before deleting")
+            del brad
+            logger.info(f"Removing current agent with `del brad`")
+
+            # Create the new agent
+            logger.info(f"Activating agent from: {session_path}")
+            brad = Agent(interactive=False,
+                        tools=TOOL_MODULES,
+                        restart=session_path
+                        )
+            logger.info(f"Successfully activated agent: {session_name}")
+
+        else:
+            logger.info(f"Continuing with same agent")
+
+        # Rename the directory
         os.rename(session_path, updated_path)
+        logger.info(f"Renamed directories")
+
+        # Rename the chat log location for the agent
+        brad.chatname = os.path.join(updated_path, 'log.json')
+        logger.info(f"Changed agent output log brad.chatname: {brad.chatname}")
+
         logger.info(f"Successfully renamed session: {session_name} -> {updated_name}")
-        return jsonify({"success": True, "message": f"Session '{session_name}' removed."}), 200
+
+        chat_history = brad.get_display()
+        chat_history = parse_log_for_process_display(chat_history)
+        response = jsonify({
+            "success": True,
+            "message": f"Session '{session_name}' activated.",
+            "display": chat_history
+            }
+        )
+        return response, 200
+
+        # return jsonify({"success": True, "message": f"Session '{session_name}' removed."}), 200
 
     except PermissionError as e:
         logger.error(f"Permission denied while trying to rename session '{session_name}': {str(e)}")
