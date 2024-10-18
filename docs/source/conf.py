@@ -177,7 +177,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.autodoc',
 #     'sphinx.ext.apidoc',
-    'sphinxcontrib.autohttp.flask',
+#     'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.autohttp.flaskqref',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
