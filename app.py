@@ -164,8 +164,8 @@ def invoke_request():
     }
     return jsonify(response_data)
 
-@app.route("/rag_upload", methods=['POST'])
-def upload_file():
+@app.route("/databases/create", methods=['POST'])
+def databases_create():
     """
     Upload files for creating a retrieval-augmented generation (RAG) database.
 
@@ -178,6 +178,8 @@ def upload_file():
     :rtype: dict
     """
     file_list = request.files.getlist("rag_files")
+    dbName = request.form.get('name')
+
     # Creates new folder with the current statetime
     timestr = time.strftime("%Y%m%d-%H%M%S")
     directory_with_time = os.path.join(app.config['UPLOAD_FOLDER'], timestr) 
@@ -197,12 +199,13 @@ def upload_file():
     # creating chromadb with uploaded data
     print("running database creation")
     # Count the number of directories in DATABASE_FOLDER
-    num_dirs = len([d for d in os.listdir(DATABASE_FOLDER) if os.path.isdir(os.path.join(DATABASE_FOLDER, d))])
+    # num_dirs = len([d for d in os.listdir(DATABASE_FOLDER) if os.path.isdir(os.path.join(DATABASE_FOLDER, d))])
 
     # Create the database with the count included in the dbPath
     db = create_database(
         docsPath=directory_with_time, 
-        dbPath=os.path.join(DATABASE_FOLDER, str(num_dirs)),  # Convert the number to a string
+        dbPath=os.path.join(DATABASE_FOLDER), # str(num_dirs)),  # Convert the number to a string
+        dbName=dbName,
         v=True
     )
     print("database created")
@@ -222,7 +225,8 @@ def databases_available():
     try:
         databases = [name for name in os.listdir(DATABASE_FOLDER) 
                          if os.path.isdir(os.path.join(DATABASE_FOLDER, name))]
-        
+        databases.insert(0, "None")
+
         # Return the list of open sessions as a JSON response
         response = jsonify({"databases": databases})
         return response
@@ -244,11 +248,20 @@ def databases_set():
         global brad
 
         request_data = request.json
+        logger.info(f"{request_data=}")
         database_name = request_data.get("database")
-        db, _ = brad.load_literature_db(persist_directory=os.path.join(DATA_FOLDER, database_name))
-        brad.state['database']['RAG'] = db
-        
-        logger.info(f"Successfully set the database to: {database_name}")
+        logger.info(f"{database_name=}")    
+        if database_name == "None":
+            brad.state['databases']['RAG'] = None
+            logger.info(f"Successfully disconnected RAG database")
+        else:
+            database_directory = os.path.join(DATABASE_FOLDER, database_name)
+            logger.info(f"{database_directory=}")
+            db, _ = brad.load_literature_db(persist_directory=database_directory)
+            logger.info(f"{db=}")
+            # logger.info(f"{len(db.get()['id'])=}")
+            brad.state['databases']['RAG'] = db
+            logger.info(f"Successfully set the database to: {database_name}")
 
         # Respond with success
         return jsonify({"success": True, "message": f"Database set to {database_name}"}), 200

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PopUpApiEntry from './PopUpApiEntry'
-
+import RagFileInput from './RagFileInput';
+import ThemeChangeButton from './ThemeChange';
 
 function RightSideBar({ setColorScheme }) {
 //  const [llmChoice, setLlmChoice] = useState('GPT-4');  // Default LLM choice
@@ -70,14 +71,14 @@ function RightSideBar({ setColorScheme }) {
     console.log(`Setting RAG database to: ${selectedDatabase}`);
 
     try {
-      const response = await fetch('/databases/set', {
+      const response = await fetch('/api/databases/set', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ database: selectedDatabase })  // Send selected DB in the request body
       });
-
+      console.log(`Database response: `, response);
       if (response.ok) {
         const data = await response.json();
         console.log(`Database set successfully:`, data.message);
@@ -118,27 +119,14 @@ function RightSideBar({ setColorScheme }) {
         </select>
       </div>
 
-      <div className="setting-option">
-        <label htmlFor="rag-database">Choose RAG Database:</label>
-        <select id="rag-database" value={ragDatabase} onChange={handleRagChange}>
-          {availableDatabases.map((db, index) => (
-            <option key={index} value={db}>{db}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="setting-option">
-        <label htmlFor="color-scheme">Color Scheme:</label>
-        <select id="color-scheme" onChange={handleColorSchemeChange}>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </div>
+      <RagFileInput />
 
       <div className="right-side-bar">
         <button onClick={handleOpenApiEntry}>Enter API Key</button>
         {isApiEntryVisible && <PopUpApiEntry onClose={handleCloseApiEntry} />}
       </div>
+      <ThemeChangeButton />
+      
     </div>
 
   );
