@@ -15,12 +15,16 @@ function MessageList({ messages }) {
     }
   };
 
+  function format_message(message){
+    return message.replace(/\n/g, '  \n')
+  }
+
   return (
-    <div className="message-list">
+    <div id="message-list" className="message-list">
       {messages.map((message) => (
         <div key={message.id} className={`message ${message.sender}`}>
           <div onClick={() => handleTextClick(message.id)}>
-            <Markdown>{message.text}</Markdown>
+            <Markdown>{format_message(message.text)}</Markdown>
           </div>
           {selectedMessageId === message.id && message.process && (
             <div className="message-process">
