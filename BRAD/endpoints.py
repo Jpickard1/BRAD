@@ -1,3 +1,13 @@
+"""
+Endpoints to use BRAD GUI and Server
+
+"""
+
+###############################################################################
+#                                  IMPORTS                                    #
+###############################################################################
+
+
 # STANDARD python imports
 import os
 import json
@@ -10,61 +20,85 @@ from flask import Flask, request, jsonify, Blueprint
 from flask import flash, redirect, url_for
 from werkzeug.utils import secure_filename
 
-bp = Blueprint('endpoints', __name__)
-
 # Imports for BRAD library
 from BRAD.agent import Agent
 from BRAD.rag import create_database
 from BRAD import llms # import load_nvidia, load_openai
 
+bp = Blueprint('endpoints', __name__)
+brad = None
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def delete_dirs_without_log(directory):
-    # List only first-level subdirectories
-    for subdir in os.listdir(directory):
-        subdir_path = os.path.join(directory, subdir)
-        
-        # Check if it's a directory
-        if os.path.isdir(subdir_path):
-            log_file_path = os.path.join(subdir_path, 'log.json')
-            
-            # If log.json does not exist in the subdirectory, delete the subdirectory
-            if not os.path.exists(log_file_path):
-                shutil.rmtree(subdir_path)  # Recursively delete directory and its contents
-                print(f"Deleted directory: {subdir_path}")
+def set_brad_instance(instance):
+    global brad
+    brad = instance
 
+UPLOAD_FOLDER = None
+DATABASE_FOLDER = None
+ALLOWED_EXTENSIONS = None
+TOOL_MODULES = None
+DATA_FOLDER = None
+PATH_TO_OUTPUT_DIRECTORIES = None
+def set_globals(data_folder, upload_folder, database_folder, allowed_extensions, tool_modules, path2outputDirs):
+    global UPLOAD_FOLDER, DATABASE_FOLDER, ALLOWED_EXTENSIONS, TOOL_MODULES, DATA_FOLDER, PATH_TO_OUTPUT_DIRECTORIES
+    
+    # Set the global values
+    DATA_FOLDER = upload_folder
+    UPLOAD_FOLDER = upload_folder
+    DATABASE_FOLDER = database_folder
+    ALLOWED_EXTENSIONS = allowed_extensions
+    TOOL_MODULES = tool_modules
+    PATH_TO_OUTPUT_DIRECTORIES = path2outputDirs
 
-# Directory structure
-UPLOAD_FOLDER = '/usr/src/uploads'
-DATABASE_FOLDER = '/usr/src/RAG_Database/'
+###############################################################################
+#                               FLASK FOR APP                                 #
+###############################################################################
+# docs_file_path = os.path.join(os.path.dirname(__file__), "../docs/.docs.true")
+# if not os.path.exists(docs_file_path):
+'''
+if not os.getenv("GENERATING_DOCS"):
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
 
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+    # Make flask blueprint for the app
 
-TOOL_MODULES = ['RAG']
+    # Directory structure
+    UPLOAD_FOLDER = '/usr/src/uploads'
+    DATABASE_FOLDER = '/usr/src/RAG_Database/'
 
-brad = Agent(interactive=False, tools=TOOL_MODULES)
-PATH_TO_OUTPUT_DIRECTORIES = brad.state['config'].get('log_path')
-delete_dirs_without_log(PATH_TO_OUTPUT_DIRECTORIES)
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
-app = Flask(__name__)
+    TOOL_MODULES = ['RAG']
 
-DATA_FOLDER = os.path.join(app.root_path, '..', 'data')
-UPLOAD_FOLDER = os.path.join(DATA_FOLDER, 'uploads')
-DATABASE_FOLDER = os.path.join(DATA_FOLDER, 'RAG_Database')
-print("endpoints.py")
-print(f"{DATA_FOLDER=}")
-print(f"{UPLOAD_FOLDER=}")
-print(f"{DATABASE_FOLDER=}")
+    brad = Agent(interactive=False, tools=TOOL_MODULES)
+    PATH_TO_OUTPUT_DIRECTORIES = brad.state['config'].get('log_path')
+    delete_dirs_without_log(PATH_TO_OUTPUT_DIRECTORIES)
 
-if not os.path.exists(DATA_FOLDER):
-    os.makedirs(DATA_FOLDER)
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-if not os.path.exists(DATABASE_FOLDER):
-    os.makedirs(DATABASE_FOLDER)
+    app = Flask(__name__)
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    DATA_FOLDER = os.path.join(app.root_path, '..', 'data')
+    UPLOAD_FOLDER = os.path.join(DATA_FOLDER, 'uploads')
+    DATABASE_FOLDER = os.path.join(DATA_FOLDER, 'RAG_Database')
+    print("endpoints.py")
+    print(f"{DATA_FOLDER=}")
+    print(f"{UPLOAD_FOLDER=}")
+    print(f"{DATABASE_FOLDER=}")
+
+    if not os.path.exists(DATA_FOLDER):
+        os.makedirs(DATA_FOLDER)
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    if not os.path.exists(DATABASE_FOLDER):
+        os.makedirs(DATABASE_FOLDER)
+
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+'''
+
+###############################################################################
+#                               HELPER METHODS                                #
+###############################################################################
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -143,6 +177,10 @@ def parse_log_for_process_display(chat_history):
             # print(f"{chat_history=}")
     return chat_history # passed_log_stages
 
+###############################################################################
+#                                 ENDPOINTS                                   #
+###############################################################################
+
 @bp.route("/invoke", methods=['POST'])
 def invoke_request():
     """
@@ -158,6 +196,7 @@ def invoke_request():
     :return: A JSON response containing the generated response from the BRAD agent.
     :rtype: dict
     """
+    global brad
     request_data = request.json
     brad_query = request_data.get("message")
     brad_response = brad.invoke(brad_query)
@@ -448,7 +487,8 @@ def change_session():
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: October 15, 2024
-
+    global brad
+    
     request_data = request.json
     print(f"{request_data=}")
     session_name = request_data.get("message")  # Get the session name from the request body
