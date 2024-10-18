@@ -1,3 +1,8 @@
+.. warning::
+
+    This is the most active part of the software being developed. It is necessary for the research tool's deployment, but this part
+    of the software do not impact the backend `BRAD` python package's utility or function.
+
 The GUI for BRAD uses the python package as a backend and deploys a local server with the following structure:
 
 - **Backend**: A Flask API that handles requests and communicates with the Python-based BRAD package.
@@ -20,5 +25,7 @@ The React frontend offers a graphical user interface for users to interact with 
 API Enpoints
 ------------
 
-.. qrefflask:: BRAD.endpoints.bp
-   :endpoints:
+.. automodule:: BRAD.endpoints
+   :members:
+   :undoc-members:
+

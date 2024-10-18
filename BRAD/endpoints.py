@@ -182,7 +182,10 @@ def parse_log_for_process_display(chat_history):
 ###############################################################################
 
 @bp.route("/invoke", methods=['POST'])
-def invoke_request():
+def ep_invoke():
+    invoke(request)
+
+def invoke(request):
     """
     Invoke a query using the BRAD agent.
 
@@ -211,7 +214,10 @@ def invoke_request():
     return jsonify(response_data)
 
 @bp.route("/databases/create", methods=['POST'])
-def databases_create():
+def ep_databases_create():
+    databases_create(request)
+
+def databases_create(request):
     """
     Upload files for creating a retrieval-augmented generation (RAG) database.
 

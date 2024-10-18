@@ -3,27 +3,45 @@
 About BRAD
 ==========
 
-The focus of this project is on developing a system that leverages large language models (LLMs) to support a range of bioinformatics research tasks. The core of this project involves the design and implementation of a modular framework intended to assist in various research activities, including literature search, gene enrichment, and software execution.
+Vision
+------
 
-The primary aim of the project is to create a tool that can automate and streamline standard bioinformatics workflows. By integrating multiple modules, this tool seeks to facilitate tasks such as constructing and querying databases, executing software pipelines, and generating responses to user queries based on curated information.
+Digital biology is experiencing a revolution driven by recent technological advancements. The `Twin Cell Program <https://rajapakse.lab.medicine.umich.edu/twincell-blueprint>`_ aims to develop an autonomous laboratory and a digital twin of a cell to study cellular reprogramming `in silico`.
 
+BRAD plays a crucial role in this digital twin and automation initiative. Its primary objective is to create an interactive AI assistant and agentic system that automates and streamlines standard bioinformatics workflows. By integrating bioinformatics tools with large language models (LLMs), BRAD facilitates a variety of tasks, including constructing and querying databases, executing software pipelines, and generating responses to user queries based on curated information.
+
+Beyond its role in the Twin Cell Program, we hope a collaborative AI will be a beneficial tool and worthy of open source development for the bioinformatics and research community.
 
 Key Features
 ------------
 
-- **Modular Architecture**: The system is designed with a modular approach, allowing for flexibility in integrating and utilizing different tools and components.
-- **Automated Workflows**: The tool is intended to automate repetitive and well-defined tasks, such as running predefined software pipelines and performing standard data enrichment.
-- **Information Retrieval**: It incorporates mechanisms for retrieving and processing information from various sources, including literature databases and online repositories.
-- **Custom Code Execution**: The system supports the execution of custom code in Python, MATLAB, and Bash, enhancing its capability to perform specialized tasks as needed.
+This project focuses on developing a system that leverages LLMs to support various bioinformatics research tasks. The core of BRAD involves designing and implementing a modular framework to assist in activities such as literature searches, gene enrichment analysis, and software execution. Key features include:
 
-Future Work and Contributing
-----------------------------
+- **User Interface**: A Graphical User Interface (GUI) is provided for ease of use, and the BRAD python codes can be accessed as a package as well.
 
-Ongoing efforts aim to improve the coordination between different modules and enhance the overall system’s ability to manage complex workflows. Further development will focus on refining the planning and execution processes to better support the goal of creating a more autonomous digital laboratory environment.
+- **Modular Architecture**: The system's modular design allows for flexibility in integrating and utilizing diverse tools and components, enabling users to customize their workflows.
 
+- **Automated Workflows**: BRAD automates repetitive and well-defined tasks, such as executing predefined software pipelines and performing standard gene enrichment.
 
+- **Information Retrieval**: The system incorporates mechanisms for retrieving and processing information from various sources, including literature repositories and online databases.
+
+- **Custom Code Execution**: Users can execute custom code in Python allowing for the performance of specialized tasks tailored to their specific research needs.
+
+While BRAD supports all of these features, some features require different interfaces. For instance, using BRAD to run code through the GUI is rather challenging, but the GUI provides an improved interface for literature searches.
+
+Future Work
+-----------
+
+Ongoing efforts for this project currently entail:
+
+1. Improving the GUI and accessibility of the code
+2. Improving the RAG pipeline
+3. Improving communication among multiple BRAD agents
+
+Future development will prioritize refining planning and execution processes to support the creation of a more autonomous digital laboratory environment.
 
 .. image:: images/brad-dl-vision.png
   :scale: 100%
   :alt: Digital Laboratory Vision
   :align: center
+
