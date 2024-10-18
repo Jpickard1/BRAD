@@ -13,7 +13,7 @@ function RightSideBar({ setColorScheme }) {
   useEffect(() => {
     const fetchDatabases = async () => {
       try {
-        const response = await fetch('/databases/available');
+        const response = await fetch('/api/databases/available');
         if (response.ok) {
           const data = await response.json();
           console.log(`data.databases: ${data.databases}`);
