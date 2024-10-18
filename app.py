@@ -213,7 +213,7 @@ def upload_file():
     return jsonify(response)
 
 @app.route("/databases/available", methods=['GET'])
-def available_databases():
+def databases_available():
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: October 17, 2024    
@@ -234,7 +234,7 @@ def available_databases():
         return jsonify({"error": str(e)})
     
 @app.route("/databases/set", methods=['POST'])
-def available_databases():
+def databases_set():
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: October 17, 2024    
