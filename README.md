@@ -1,23 +1,6 @@
-# RAG-V1
+# BRAD: Bioinformatics Digital Assistant
 
-## Installation
-
-### Local Install
-
-### Install with PIP
-
-### Reuirements and conda
-
-## Usage
-See `BRAD/llms.py`
-
-### OpenAI's GPT
-
-### NVIDIA's LLMs
-
-### Local LLM's
-
-## Development
+Pleas see the projects main page available [here!](https://brad-bioinformatics-retrieval-augmented-data.readthedocs.io/_/downloads/en/latest/pdf/)
 
 ### Documentation
 
