@@ -3,8 +3,6 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import "highlight.js/styles/github.css";
 import hljs from "highlight.js";
-import RagFileInput from './RagFileInput';
-import ThemeChangeButton from './ThemeChange';
 
 function ChatContainer({ messages, onSendMessage }) {
 
@@ -19,10 +17,12 @@ function ChatContainer({ messages, onSendMessage }) {
     }
   }, [messages]);
 
+  //<RagFileInput />
+  // <ThemeChangeButton />
+      
+
   return (
     <div className="chat-container">
-      <RagFileInput />
-      <ThemeChangeButton />
       {/* Display the messages */}
       <MessageList messages={messages} />
       {/* Pass the onSendMessage handler to MessageInput */}

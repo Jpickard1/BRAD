@@ -187,6 +187,9 @@ class Agent():
         # - 2024-07-23: added interactive and max_api_call arguments
         # - 2024-07-29: added config (optional) argument to overwrite the defaults
         # - 2024-10-06: .chatstatus was renamed .state
+        # - 2024-10-16: if the restart location doesn't have a log, then a new agent
+        #               is created
+        #
         # Issues:
         # - We should change the structure of the classes/modules. In this 1st iteration
         #   state was packed as a class variable and used similar to before, but it
@@ -201,6 +204,13 @@ class Agent():
         log_dir = os.path.join(base_dir, self.state['config']['log_path'])
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
+
+        # Check if it will be possible to restart the old session
+        if restart is not None:
+            log_path = os.path.join(restart, 'log.json')
+            if not os.path.exists(log_path):
+                restart = None
+
         if restart is None:
             new_dir_name = dt.now().strftime("%Y-%m-%d_%H-%M-%S")
             new_log_dir = os.path.join(log_dir, new_dir_name)
@@ -224,14 +234,13 @@ class Agent():
             else:
                 logging.info(f"No existing state file found in {new_log_dir}, starting fresh.")
 
-
         if max_api_calls is None:
             max_api_calls = 1000
         self.max_api_calls = max_api_calls
     
         # Initialize the dictionaries of tables and databases accessible to BRAD
         databases = {} # a dictionary to look up databases
-        tables = {}    # a dictionary to look up tables
+        # tables = {}    # a dictionary to look up tables
     
         # Initialize the RAG database
         if llm is None:
@@ -270,9 +279,9 @@ class Agent():
         if 'output-directory' not in self.state or not self.state['output-directory']:
             self.state['output-directory'] = new_log_dir
 
-        if self.state['config']['experiment']:
-            self.experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
-            self.state['experiment-output'] = '-'.join(experimentName.split())
+        # if self.state['config']['experiment']:
+        #     self.experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
+        #     self.state['experiment-output'] = '-'.join(experimentName.split())
     
         # Initialize all modules
         self.module_functions = self.getModules()
@@ -280,8 +289,11 @@ class Agent():
         # Start loop
         self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
 
+        # Write an empty chat log
+        self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
+
         # Ensure that the save_state function is registered to run at program exit
-        atexit.register(self.save_state)
+        # atexit.register(self.save_state)
 
 
     def save_state(self):
@@ -300,6 +312,13 @@ class Agent():
         state_file = os.path.join(output_directory, '.agent-state.pkl')
 
         try:
+            # Save the log to the json log file
+            self.state['prompt'] = None
+            self.state['output'] = None
+            self.state['process'] = {
+                'module' : 'SLEEP'
+            }
+
             # Set the databases to none
             self.state['databases']['RAG'] = None
             self.state['llm'] = None
@@ -308,6 +327,10 @@ class Agent():
             with open(state_file, 'wb') as f:
                 pickle.dump(self.state, f)
             logging.info(f"Agent state saved to {state_file}")
+
+            self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
+            logging.info(f"Agent log written for power off")
+
         except Exception as e:
             logging.error(f"Failed to save agent state: {e}")
 
@@ -563,13 +586,32 @@ class Agent():
         :returns: a list of strings
         :rtype: list
         """
+        log.debugLog("Get Display Method", display=True)
         # numIOpairs = len(self.chatlog.keys())
         display = []
+        log.debugLog("display = []", display=True)
         for i in self.chatlog.keys():
-            display.append(self.chatlog[i]['prompt'])
-            display.append(self.chatlog[i]['output'])
+            if 'module' in self.chatlog[i]['process'].keys() and self.chatlog[i]['process']['module'] == 'SLEEP':
+                continue
+            elif 'MODULE' in self.chatlog[i]['process'].keys() and self.chatlog[i]['process']['MODULE'] == 'SLEEP':
+                continue
+            else:
+                display.append((self.chatlog[i]['prompt'], None))
+                display.append((self.chatlog[i]['output'], self.chatlog[i]))
+        log.debugLog(f"{display=}", display=True)
         return display
 
+    @property
+    def llm(self):
+        """Get the current LLM."""
+        return self.state['llm']
+
+    def set_llm(self, llm):
+        """Set the LLM and handle any related logic."""
+        if not llm:
+            raise ValueError("LLM cannot be None")
+        
+        self.state['llm'] = llm
 
     def updateMemory(self):
         """
@@ -834,7 +876,8 @@ class Agent():
 
     def load_literature_db(
         self,
-        persist_directory = "/nfs/turbo/umms-indikar/shared/projects/RAG/databases/DigitalLibrary-10-June-2024/"
+        persist_directory = "/home/acicalo/BRAD/data/RAG_Database",
+        db_name = "DB_cosine_cSize_700_cOver_200"
     ):
         """
         Loads a literature database using specified embedding model and settings.
@@ -847,23 +890,35 @@ class Agent():
     
         :return: A tuple containing the vector database and the embeddings model.
         :rtype: tuple
+
+        The `persist_directory` should point to a directory that has this structure:
+
+        >>> [Oct 16 19:28]  persist_directory
+        ... └── [Oct 16 19:28]  DB_cosine_cSize_700_cOver_200
+        ...     ├── [Oct 16 19:28]  aaa2c989-0e39-4be8-82b4-139ae2784c00
+        ...     │   ├── [Oct 16 19:28]  data_level0.bin
+        ...     │   ├── [Oct 16 19:28]  header.bin
+        ...     │   ├── [Oct 16 19:28]  length.bin
+        ...     │   └── [Oct 16 19:28]  link_lists.bin
+        >>>     └── [Oct 16 19:28]  chroma.sqlite3
     
         """
+        # Dev. Comments
+        # History:
+        # - 2024-06-04: 1st version of this was written
+        # - 2024-10-17: changes to the pathing were made
+
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: June 4, 2024
     
         # load database
         embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')        # Embedding model
-        db_name = 'NewDigitalLibrary'
-        _client_settings = chromadb.PersistentClient(path=(persist_directory + db_name))
+        _client_settings = chromadb.PersistentClient(path=os.path.join(persist_directory, db_name))
         vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings_model, client=_client_settings, collection_name=db_name)
-        print(len(vectordb.get()['ids']))
         if len(vectordb.get()['ids']) == 0:
             print('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
             warnings.warn('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
-        vectordb = remove_repeats(vectordb)
-        print(len(vectordb))
         return vectordb, embeddings_model
 
     def chatbotHelp(self):

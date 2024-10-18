@@ -162,6 +162,31 @@ body {
   border-radius: 25px;
 }
 
+.message-process {
+  background-color: rgb(173, 173, 173);
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+}
+
+.message-process .retriever div {
+  background-color: white;
+  color: black;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid black;
+  border-radius: 0px;
+}
+
+.message-process .rag-paragraph {
+  background-color: #f0f0f0;
+  color: black;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d3d3d3;
+  border-radius: 0px;
+}
+
 /* Code Block styling with highlightjs */
 pre {
   white-space: pre-wrap;      
@@ -193,6 +218,11 @@ pre > code {
   background-color: var(--base-color);
   color: var(--font-color);
 }
+
+.retriever {
+  text-align: right; /* Aligns the text inside the retriever div to the right */
+}
+
 
 /* General container for the session list */
 .session-list {
@@ -243,6 +273,16 @@ pre > code {
 /* Show delete button on hover */
 .session-box:hover .delete-btn {
   display: block;              /* Make delete button visible on hover */
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #f0f0f0;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
 }
 
 .theme {
