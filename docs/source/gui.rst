@@ -20,7 +20,5 @@ The React frontend offers a graphical user interface for users to interact with 
 API Enpoints
 ------------
 
-.. automodule:: app
-   :members:
-   :undoc-members:
-
+.. qrefflask:: BRAD.endpoints.bp
+   :endpoints:
