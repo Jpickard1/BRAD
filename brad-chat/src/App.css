@@ -3,6 +3,7 @@
   --base-color: #2f2f2f;
   --font-color: #f7f7f7;
   --hover-color: #797979;
+  --bold-color: #878787;
 }
 
 body {
@@ -62,6 +63,8 @@ body {
   padding: 10px;                  /* Optionally, set padding for inner spacing */
   font-size: 16px;                /* Set font size (optional) */
   width: 100%;                   /* Set the width of the sidebar (optional) */
+  height: 95%;                   /* Set the width of the sidebar (optional) */
+
 }
 
 .left-sidebar {
@@ -69,7 +72,7 @@ body {
   min-width: 15%;
   max-width: 15%;
   background-color: var(--base-color); /* Set the background color of the sidebar to black */
-  color: #FFFFFF;            /* Set the text color to white */
+  color: var(--font-color);              /* White text */
   padding: 10px;               /* Optionally, set padding for inner spacing */
   display: flex;               /* Enable Flexbox */
   flex-direction: column;      /* Arrange items vertically */
@@ -201,19 +204,20 @@ pre > code {
 /* Each session box styling */
 .session-box {
   height: 25px;
-  background-color: #878787;                 /* Light grey background */
+  background-color: var(--bold-color);                 /* Light grey background */
   /* color: var(--font-color); */
   padding: 15px;                               /* Padding inside the box */
-  border-radius: 10px;                         /* Rounded corners */
+  border-radius: 0.9em;                         /* Rounded corners */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  /* Subtle shadow for depth */
   margin-bottom: 10px;                         /* Space between session boxes */
   position: relative;                          /* Position to allow delete button absolute positioning */
   transition: background-color 0.3s ease;
   cursor: pointer;                             /* Cursor changes to pointer on hover */
-  color: black;                              /* Text color */
+  color: var(--font-color);                              /* Text color */
   display: flex;                               /* Use flexbox to align text */
   align-items: center;                         /* Vertically center the text */
   justify-content: flex-start;                 /* Align text to the right horizontally */
+  background: none;
 }
 
 /* Hover effect for session box */
@@ -246,4 +250,16 @@ pre > code {
   background-color: var(--bg-color);
   color: var(--font-color);
   border-radius: 2em;
+}
+
+.hidden {
+  display: none
+}
+
+#leftSideBarToggle {
+  position: fixed;
+  width: 5em;
+  height: 5em;
+  left: 0;
+  top: 0;
 }

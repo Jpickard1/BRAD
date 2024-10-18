@@ -4,11 +4,15 @@ import Markdown from "marked-react";
 
 function MessageList({ messages }) {
 
+  function format_message(message){
+    return message.replace(/\n/g, '  \n')
+  }
+
   return (
-    <div className="message-list">
+    <div id="message-list" className="message-list">
       {messages.map((message) => (
         <div key={message.id} className={`message ${message.sender}`}>
-          <Markdown>{message.text}</Markdown>
+          <Markdown>{format_message(message.text)}</Markdown>
         </div>
       ))}
     </div>
