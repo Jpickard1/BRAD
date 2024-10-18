@@ -11,7 +11,7 @@ function LeftSideBar({ setMessages }) {
   }, []);
 
   return (
-    <div className="left-sidebar">
+    <div className="sidebar-left">
       <ChatSessions setMessages={setMessages} /> {/* Pass setMessages to ChatSessions */}
     </div>
   );

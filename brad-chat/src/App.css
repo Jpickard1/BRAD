@@ -271,6 +271,16 @@ pre > code {
   display: block;              /* Make delete button visible on hover */
 }
 
+.sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #f0f0f0;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+}
+
 .theme {
   margin: 1em;
   background-color: var(--bg-color);
