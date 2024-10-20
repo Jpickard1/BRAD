@@ -10,13 +10,13 @@ The GUI for BRAD uses the python package as a backend and deploys a local server
 - **Frontend**: A React GUI that provides an interactive user interface for sending queries and displaying responses.
 
 
-React JS GUI
-------------
+React GUI
+---------
 The React frontend offers a graphical user interface for users to interact with the chatbot. Users can send messages, build RAG databases, or change the system configurations, which the frontend captures and sends to the Flask API. Upon receiving the chatbot's response, the GUI updates the chat interface to display both user and bot messages, facilitating a smooth and engaging conversation experience.
 
 
-Backend API (Flask)
--------------------
+Flask API
+---------
 The Flask API serves as the backend, enabling communication between the `Agent` logic and the front-end React GUI. This API exposes the following endpoints:
 
 - `sessions`: These endpoints provide information about the open and previously created sessions.
@@ -28,13 +28,43 @@ The Flask API serves as the backend, enabling communication between the `Agent` 
 The API processes the messages using the logic in the `Agent` class and returns a response to the frontend.
 
 Naming Conventions
-------------------
+~~~~~~~~~~~~~~~~~~
 
-.. note:
-    put a note here regarding how the naming conventions in the file and endpoints are organized.
+The following conventions are used for writing a new endpoint:
 
-Endpoint and Methods
---------------------
+- Select one of the main ednpoints listed above
+- Select a secondary name such as: add, set, change, etc. or something descriptive to the endpoint task
+- Define a method called `<main endpoint>_<secondary name>` that handles the logic
+    - this is where the `Agent` class or server information can directly be manipulated
+    - this method has a `request` aregument if it takes parameters (endpoint is `POST`)
+    - this method has no parameters otherwise
+    - this method requires detailed docstrings for the structure of the request and the response
+- Define a method called `ep_<main endpoint>_<secondary name>`
+    - accepts no arguments
+    - returns `<main endpoint>_<secondary name>`
+    - used to mount the logic to the Flast `Blueprint`
+    - place this directly above the method `<main endpoint>_<secondary name>`
+- Attach this method to the `flask.Blueprint` with the line:
+    - `@bp.route("/<main endpoint>/<secondary name>", methods=['POST' or 'GET'])`
+
+Below is an example for adding a generic ednpoint:
+
+    >>> @bp.route("/<main endpoint>/<secondary name>", methods=['POST' or 'GET'])
+    >>> def ep_<main endpoint>_<secondary name>():
+    >>>     return <main endpoint>_<secondary name>(request)
+    >>>     
+    >>> def <main endpoint>_<secondary name>(request):
+    >>>     try:
+    >>>         # TODO: put endpoint logic here
+    >>>         response = jsonify(# TODO: put response variables here)
+    >>>         return response, 200
+    >>>     except:
+    >>>         response = jsonify(# TODO: put detailed error message)
+    >>>         return response, # TODO put error code
+
+
+Endpoints
+~~~~~~~~~
 
 """
 
@@ -208,21 +238,21 @@ def invoke(request):
     json
 
     >>> {
-    ...     "message": "Your query here"
+    >>>     "message": "Your query here"
     >>> }
 
 
     **Output Response Structure**:
     The response will be a JSON object containing the agent's response and a log of the processing stages:
 
-    >>>    { 
-    ...         "response": "Generated response from BRAD agent", 
-    ...         "response-log": { 
-    ...             "stage_1": "log entry for stage 1", 
-    ...             "stage_2": "log entry for stage 2", 
-    ...             ...
-    ...         } 
-    >>>    }
+    >>> { 
+    >>>      "response": "Generated response from BRAD agent", 
+    >>>      "response-log": { 
+    >>>          "stage_1": "log entry for stage 1", 
+    >>>          "stage_2": "log entry for stage 2", 
+    >>>          ...
+    >>>      } 
+    >>> }
 
 
     :param request: A Flask request object containing JSON data with the user message.
@@ -256,32 +286,33 @@ def databases_create(request):
 
     **Input Request Structure**:
     The request should include a list of files (for database creation) and a form field specifying the database name:
+
     - The files are uploaded through the key `"rag_files"`.
     - The database name is provided in the form field `"name"`.
 
     Example request format:
 
-    >>>    POST /databases/create
-    >>>    Form data:
-    >>>    - name: "example_database"
-    >>>    Files:
-    >>>    - rag_files: file1.txt
-    >>>    - rag_files: file2.txt
+    >>> POST /databases/create
+    >>> Form data:
+    >>> - name: "example_database"
+    >>> Files:
+    >>> - rag_files: file1.txt
+    >>> - rag_files: file2.txt
 
 
     **Output Response Structure**:
     The response will return a JSON object with a message indicating the success or failure of the file uploads:
 
-    >>>    { 
-    ...        "message": "File uploaded successfully" 
-    >>>    } 
+    >>> { 
+    >>>     "message": "File uploaded successfully" 
+    >>> } 
 
 
     If no files were uploaded, the response will indicate an error:
 
-    >>>    { 
-    ...        "message": "no uploaded file" 
-    >>>    }
+    >>> { 
+    ...     "message": "no uploaded file" 
+    >>> }
 
 
     :param request: A Flask request object that includes uploaded files and form data.
@@ -392,7 +423,7 @@ def databases_set():
 
     This endpoint allows users to select and set an available database from the server. The selected database will be loaded and set as the active RAG database for the BRAD agent. If "None" is selected, it will disconnect the current database.
 
-    **Input Request Structure**:
+    **Request Structure**:
     The input should be a JSON object containing the name of the database to be set.
 
     Example request:
@@ -403,7 +434,7 @@ def databases_set():
 
     If the database name is `"None"`, the current RAG database will be disconnected.
 
-    **Output Response Structure**:
+    **Response Structure**:
     A JSON response is returned indicating whether the database was successfully set or if an error occurred.
 
     Example success response:
@@ -1081,8 +1112,7 @@ def llm_apikey(request):
     for use by the BRAD agent. The key can be used for authentication when accessing NVIDIA services.
     The function currently supports only the NVIDIA API key but may be extended to process other API keys in the future.
 
-    Request Structure:
-    ------------------
+    **Request Structure**:
     The request must contain a JSON body with the following fields:
 
         >>> {
@@ -1091,8 +1121,7 @@ def llm_apikey(request):
 
     - nvidia-api-key (str): The NVIDIA API key to be set (Required).
 
-    Response Structure:
-    -------------------
+    **Response Structure**:
     On success, the response will contain:
 
         >>> {
