@@ -31,10 +31,6 @@ Agents as LLMs
 Graphical User Interface (GUI)
 ------------------------------
 
-.. toctree::
-
-    gui
-
 .. automodule:: BRAD.endpoints
    :members:
    :undoc-members:

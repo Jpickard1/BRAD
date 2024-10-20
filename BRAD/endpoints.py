@@ -1,17 +1,37 @@
 """
-This document contains the `Flask` blueprint for the API endpoints to use the `BRAD` package.
+.. warning::
 
-API Endpoints
--------------
+    This is the most active part of the software being developed. It is necessary for the research tool's deployment, but this part
+    of the software do not impact the backend `BRAD` python package's utility or function.
 
-- `sessions`: this provides information about
-- `databases`:
-- `configure`:
-- `llm`:
-- `invoke`:
+The GUI for BRAD uses the python package as a backend and deploys a local server with the following structure:
+
+- **Backend**: A Flask API that handles requests and communicates with the Python-based BRAD package.
+- **Frontend**: A React GUI that provides an interactive user interface for sending queries and displaying responses.
+
+
+React JS GUI
+------------
+The React frontend offers a graphical user interface for users to interact with the chatbot. Users can send messages, build RAG databases, or change the system configurations, which the frontend captures and sends to the Flask API. Upon receiving the chatbot's response, the GUI updates the chat interface to display both user and bot messages, facilitating a smooth and engaging conversation experience.
+
+
+Backend API (Flask)
+-------------------
+The Flask API serves as the backend, enabling communication between the `Agent` logic and the front-end React GUI. This API exposes the following endpoints:
+
+- `sessions`: These endpoints provide information about the open and previously created sessions.
+- `databases`: These endpoints allow the user to construct and modify different RAG databases.
+- `configure`: This endpoint allows the frontend to reset configuration variables of the `Agent`.
+- `llm`: These endpoints allow the frontend to change the LLM of the active `Agent`.
+- `invoke`: This endpoint queries the `Agent` class.
+
+The API processes the messages using the logic in the `Agent` class and returns a response to the frontend.
 
 Naming Conventions
 ------------------
+
+.. note:
+    put a note here regarding how the naming conventions in the file and endpoints are organized.
 
 Endpoint and Methods
 --------------------
