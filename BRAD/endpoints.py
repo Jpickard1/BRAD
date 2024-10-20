@@ -457,14 +457,14 @@ def sessions_open():
     >>> GET /sessions/open
 
     Successful response example:
-    >>> {
-    ...     "open_sessions": ["session_1", "session_2", "session_3"]
-    ... }
+        >>> {
+        ...     "open_sessions": ["session_1", "session_2", "session_3"]
+        ... }
 
     Error response example:
-    >>> {
-    ...     "error": "Directory not found"
-    ... }
+        >>> {
+        ...     "error": "Directory not found"
+        >>> }
 
     :return: A JSON response containing the list of open session names.
     :rtype: dict
