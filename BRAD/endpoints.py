@@ -584,18 +584,18 @@ def sessions_create():
 
     Successful response example:
     >>> {
-    ...     "success": True,
-    ...     "message": "New session activated.",
-    ...     "display": {
-    ...         "history": "Extracted history logs for display"
-    ...     }
-    ... }
+    >>>     "success": True,
+    >>>     "message": "New session activated.",
+    >>>     "display": {
+    >>>         "history": "Extracted history logs for display"
+    >>>     }
+    >>> }
 
     Error response example:
     >>> {
-    ...     "success": False,
-    ...     "message": "Error session"
-    ... }
+    >>>     "success": False,
+    >>>     "message": "Error session"
+    >>> }
 
     :return: A JSON response indicating whether the session creation was successful or not.
     :rtype: tuple (flask.Response, int)
@@ -666,32 +666,32 @@ def sessions_change(request):
 
     Example request:
     >>> {
-    ...     "message": "desired_session_name"
-    ... }
+    >>>     "message": "desired_session_name"
+    >>> }
 
     **Response**:
     A JSON response will be returned with the following structure:
 
     Successful response example:
     >>> {
-    ...     "success": True,
-    ...     "message": "Session 'desired_session_name' activated.",
-    ...     "display": {
-    ...         "history": "Extracted chat history for the activated session"
-    ...     }
-    ... }
+    >>>     "success": True,
+    >>>     "message": "Session 'desired_session_name' activated.",
+    >>>     "display": {
+    >>>         "history": "Extracted chat history for the activated session"
+    >>>     }
+    >>> }
 
     Error response example (when session is not found):
     >>> {
-    ...     "success": False,
-    ...     "message": "Session 'desired_session_name' does not exist."
-    ... }
+    >>>     "success": False,
+    >>>     "message": "Session 'desired_session_name' does not exist."
+    >>> }
 
     Error response example (permission error):
     >>> {
-    ...     "success": False,
-    ...     "message": "Permission denied: PermissionError message"
-    ... }
+    >>>     "success": False,
+    >>>     "message": "Permission denied: PermissionError message"
+    >>> }
 
     **Exceptions**:
     - **ValueError**: If no session name is provided in the request.
@@ -807,28 +807,31 @@ def sessions_rename(request):
     The request must be a POST request with a JSON body containing the session's current name and the desired updated name.
 
     Example request:
+
     >>> {
-    ...     "session_name": "old_session_name",
-    ...     "updated_name": "new_session_name"
-    ... }
+    >>>     "session_name": "old_session_name",
+    >>>     "updated_name": "new_session_name"
+    >>> }
 
     **Response**:
     A JSON response will be returned with the following structure:
 
     Successful response example:
+
     >>> {
-    ...     "success": True,
-    ...     "message": "Session 'old_session_name' renamed to 'new_session_name'.",
-    ...     "display": {
-    ...         "history": "Chat history for the renamed session"
-    ...     }
-    ... }
+    >>>     "success": True,
+    >>>     "message": "Session 'old_session_name' renamed to 'new_session_name'.",
+    >>>     "display": {
+    >>>         "history": "Chat history for the renamed session"
+    >>>     }
+    >>> }
 
     Error response example (when session does not exist):
+
     >>> {
-    ...     "success": False,
-    ...     "message": "Session 'old_session_name' does not exist."
-    ... }
+    >>>     "success": False,
+    >>>     "message": "Session 'old_session_name' does not exist."
+    >>> }
 
     **Exceptions**:
     - **ValueError**: If the current or updated session name is not provided in the request.
