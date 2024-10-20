@@ -158,15 +158,18 @@ def parse_log_for_one_query(chatlog_query):
         
     Returns:
         process (list): A list of tuples with parsed information or None if the module is not RAG.
+        llm_usage (dict): A dictionary with information about LLM utilization for the query
 
-    Expected Pattern:
+    Expected Patterns:
     
     >>> passed_log_stages = [
-    ...   ('RAG-R', ['source 1', 'source 2', 'source 3']),
-    ...   ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
+    >>>   ('RAG-R', ['source 1', 'source 2', 'source 3']),
+    >>>   ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
     >>> ]
-
-    :nodoc:
+    >>> llm_usage = {
+    >>>     'llm-calls': (int),
+    >>>     'api-fees' : (float)
+    >>> }
     """
 
     # Ensure that keys will all be uppercase
@@ -176,6 +179,11 @@ def parse_log_for_one_query(chatlog_query):
     process_data = chatlog_query.get('PROCESS', {})
     module_name = process_data.get('MODULE', '').upper()
     
+    llm_usage = {
+        'llm-calls': 0,
+        'api-fees': 0.0
+    }
+
     if module_name == 'RAG':
         process = []
         steps = process_data.get('STEPS', [])
@@ -200,10 +208,16 @@ def parse_log_for_one_query(chatlog_query):
             # Check if 'purpose' key exists and is 'chat without RAG'
             elif step.get('purpose', '').lower() == 'chat without rag':
                 process.append(('LLM-Generation', "Response generated with only the LLM."))
-        
-        return process
+
+            # Check if LLM was used in the query
+            if 'llm' in step.keys():
+                if 'api-info' in step.keys():
+                    llm_usage['llm-calls'] += 1
+                    llm_usage['api-fees'] += step['api-info']['Total Cost (USD)']
+
+        return process, llm_usage
     
-    return None
+    return None, None
 
 
 def parse_log_for_process_display(chat_history):
@@ -251,7 +265,11 @@ def invoke(request):
     >>>          "stage_1": "log entry for stage 1", 
     >>>          "stage_2": "log entry for stage 2", 
     >>>          ...
-    >>>      } 
+    >>>      },
+    >>>      "llm-usage": {
+    >>>          "llm-calls": number of new llm calls,
+    >>>          "api-fees":  cost of api fees,
+    >>>      }
     >>> }
 
 
@@ -266,11 +284,12 @@ def invoke(request):
     brad_response = brad.invoke(brad_query)
 
     agent_response_log = brad.chatlog[list(brad.chatlog.keys())[-1]]
-    passed_log_stages = parse_log_for_one_query(agent_response_log)
-    
+    passed_log_stages, llm_usage = parse_log_for_one_query(agent_response_log)
+
     response_data = {
         "response": brad_response,
-        "response-log": passed_log_stages
+        "response-log": passed_log_stages,
+        "llm-usage": llm_usage
     }
     return jsonify(response_data)
 

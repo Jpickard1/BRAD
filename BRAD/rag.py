@@ -186,6 +186,7 @@ def queryDocs(state):
                 input=prompt,
                 output=response,
                 parsedOutput=state['output'],
+                apiInfo=response['metadata']['call back'],
                 purpose='RAG'
             )
         )
@@ -202,7 +203,7 @@ def queryDocs(state):
         # Invoke LLM tracking its usage
         start_time = time.time()
         with get_openai_callback() as cb:
-            response = conversation.predict(input=prompt)        
+            response = conversation.predict(input=prompt)
         responseDetails = {
             'content' : response,
             'time' : time.time() - start_time,
@@ -221,6 +222,7 @@ def queryDocs(state):
                 input=prompt,
                 output=responseDetails,
                 parsedOutput=response,
+                apiInfo=responseDetails['call back'],
                 purpose='chat without RAG'
             )
         )
