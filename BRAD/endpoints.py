@@ -181,29 +181,28 @@ def invoke(request):
 
     **Input Request Structure**:
     The input request should be a JSON object with the following format:
-    ```json
-    {
-        "message": "Your query here"
-    }
-    ```
+    json
+
+    >>> {
+    ...     "message": "Your query here"
+    >>> }
+
 
     **Output Response Structure**:
     The response will be a JSON object containing the agent's response and a log of the processing stages:
-    ```json
-    {
-        "response": "Generated response from BRAD agent",
-        "response-log": {
-            "stage_1": "log entry for stage 1",
-            "stage_2": "log entry for stage 2",
-            ...
-        }
-    }
-    ```
+
+    >>>    { 
+    ...         "response": "Generated response from BRAD agent", 
+    ...         "response-log": { 
+    ...             "stage_1": "log entry for stage 1", 
+    ...             "stage_2": "log entry for stage 2", 
+    ...             ...
+    ...         } 
+    >>>    }
+
 
     :param request: A Flask request object containing JSON data with the user message.
     :type request: flask.Request
-    :param brad_query: The message to be processed by the BRAD agent.
-    :type brad_query: str
     :return: A JSON response containing the agent's reply and the log of query stages.
     :rtype: dict
     """
@@ -223,7 +222,7 @@ def invoke(request):
 
 @bp.route("/databases/create", methods=['POST'])
 def ep_databases_create():
-    databases_create(request)
+    return databases_create(request)
 
 def databases_create(request):
     """
@@ -237,28 +236,29 @@ def databases_create(request):
     - The database name is provided in the form field `"name"`.
 
     Example request format:
-    ```
-    POST /databases_create
-    Form data:
-    - name: "example_database"
-    Files:
-    - rag_files: file1.txt
-    - rag_files: file2.txt
-    ```
+
+    >>>    POST /databases/create
+    >>>    Form data:
+    >>>    - name: "example_database"
+    >>>    Files:
+    >>>    - rag_files: file1.txt
+    >>>    - rag_files: file2.txt
+
 
     **Output Response Structure**:
     The response will return a JSON object with a message indicating the success or failure of the file uploads:
-    ```json
-    {
-        "message": "File uploaded successfully"
-    }
-    ```
+
+    >>>    { 
+    ...        "message": "File uploaded successfully" 
+    >>>    } 
+
+
     If no files were uploaded, the response will indicate an error:
-    ```json
-    {
-        "message": "no uploaded file"
-    }
-    ```
+
+    >>>    { 
+    ...        "message": "no uploaded file" 
+    >>>    }
+
 
     :param request: A Flask request object that includes uploaded files and form data.
     :type request: flask.Request
@@ -307,7 +307,7 @@ def databases_create(request):
 
 @bp.route("/databases/available", methods=['GET'])
 def ep_databases_available():
-    databases_available(request)
+    return databases_available(request)
 
 def databases_available():
     """
@@ -319,27 +319,25 @@ def databases_available():
     This is a `GET` request and does not require any parameters.
 
     Example request:
-    ```
-    GET /databases/available
-    ```
+
+    >>> GET /databases/available
+    
 
     **Output Response Structure**:
     A JSON object is returned with the list of available databases. In case of errors (e.g., folder not found), an error message is returned.
 
     Example success response:
-    ```json
-    {
-        "databases": ["None", "database1", "database2"]
-    }
-    ```
+
+    >>> {
+    >>>     "databases": ["None", "database1", "database2"]
+    >>> }
 
     Example error response (if folder is not found):
-    ```json
-    {
-        "error": "Directory not found"
-    }
-    ```
 
+    >>> {
+    >>>     "error": "Directory not found"
+    >>> }
+    
     :return: A JSON response containing a list of available databases or an error message.
     :rtype: dict
     """
@@ -377,11 +375,10 @@ def databases_set():
     The input should be a JSON object containing the name of the database to be set.
 
     Example request:
-    ```json
-    {
-        "database": "database_name"
-    }
-    ```
+
+    >>> {
+    >>>     "database": "database_name"
+    >>> }
 
     If the database name is `"None"`, the current RAG database will be disconnected.
 
@@ -389,27 +386,24 @@ def databases_set():
     A JSON response is returned indicating whether the database was successfully set or if an error occurred.
 
     Example success response:
-    ```json
+
     {
         "success": True,
         "message": "Database set to database_name"
     }
-    ```
 
     Example response for disconnecting the database:
-    ```json
-    {
-        "success": True,
-        "message": "Database set to None"
-    }
-    ```
+
+    >>> {
+    >>>     "success": True,
+    >>>     "message": "Database set to None"
+    >>> }
 
     Example error response (if the directory is not found):
-    ```json
-    {
-        "error": "Directory not found"
-    }
-    ```
+
+    >>> {
+    >>>     "error": "Directory not found"
+    >>> }
 
     :param request: The HTTP POST request containing the database name in JSON format.
     :type request: flask.Request
@@ -448,17 +442,32 @@ def databases_set():
     
     except Exception as e:
         return jsonify({"error": str(e)})
-    
 
 
+@bp.route("/sessions/open", methods=['GET'])
+def ep_sessions_open():
+    return sessions_open()
 
-@bp.route("/open_sessions", methods=['GET'])
-def get_open_sessions():
+def sessions_open():
     """
     Retrieve a list of currently open chat sessions.
 
     This endpoint allows the front end to access previously opened chat sessions.
     It returns a list of directories representing the open sessions.
+
+    Request:
+
+    >>> GET /sessions/open
+
+    Successful response example:
+    >>> {
+    ...     "open_sessions": ["session_1", "session_2", "session_3"]
+    ... }
+
+    Error response example:
+    >>> {
+    ...     "error": "Directory not found"
+    ... }
 
     :return: A JSON response containing the list of open session names.
     :rtype: dict
@@ -484,8 +493,11 @@ def get_open_sessions():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-@bp.route("/remove_session", methods=['POST'])
-def remove_open_sessions():
+@bp.route("/sessions/remove", methods=['POST'])
+def ep_sessions_remove():
+    return sessions_remove(request)
+
+def sessions_remove(request):
     """
     Remove a specified open chat session.
 
@@ -549,8 +561,49 @@ def remove_open_sessions():
         logger.error(f"An error occurred while trying to remove session '{session_name}': {str(e)}")
         return jsonify({"success": False, "message": f"Error removing session: {str(e)}"}), 500
 
-@bp.route("/create_session", methods=['GET'])
-def create_session():
+@bp.route("/sessions/create", methods=['GET'])
+def ep_sessions_create():
+    return sessions_create()
+
+def sessions_create():
+    """
+    Create a new chat session by resetting the current BRAD agent.
+
+    This function handles the creation of a new chat session by first saving the state of the current agent, 
+    deleting it, and then activating a new agent. The new session is initialized with tools specified 
+    in the global `TOOL_MODULES`. The function returns a JSON response indicating the success or failure of the operation.
+
+    **Process**:
+    1. Save the state of the current BRAD agent.
+    2. Delete the existing agent.
+    3. Instantiate a new BRAD agent with the specified tools.
+    4. Retrieve and display the chat history for the new session.
+
+    **Request**:
+    >>> GET /sessions/create`
+
+    **Response**:
+    A JSON response will be returned with the following structure:
+
+    Successful response example:
+    >>> {
+    ...     "success": True,
+    ...     "message": "New session activated.",
+    ...     "display": {
+    ...         "history": "Extracted history logs for display"
+    ...     }
+    ... }
+
+    Error response example:
+    >>> {
+    ...     "success": False,
+    ...     "message": "Error session"
+    ... }
+
+    :return: A JSON response indicating whether the session creation was successful or not.
+    :rtype: tuple (flask.Response, int)
+    :raises Exception: For any general errors encountered during the creation of the session.
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: October 17, 2024
@@ -598,13 +651,56 @@ def create_session():
         logger.error(f"An error occurred while trying to create a new session': {str(e)}")
         return jsonify({"success": False, "message": f"Error session"}), 500
 
-@bp.route("/change_session", methods=['POST'])
-def change_session():
+@bp.route("/sessions/change", methods=['POST'])
+def ep_sessions_change():
+    return sessions_change(request)
+
+def sessions_change(request):
     """
     Change the active session to a specified session name.
 
     This endpoint allows users to activate a specific session, making it the current working session.
-    It returns the display of the newly activated session.
+    The session change involves saving the state of the current session, deleting the current agent, 
+    and activating the new session by loading its logs. The function returns the chat history display 
+    of the newly activated session.
+
+    **Request**:
+    The request must be a POST request with a JSON body containing the session name.
+
+    Example request:
+    >>> {
+    ...     "message": "desired_session_name"
+    ... }
+
+    **Response**:
+    A JSON response will be returned with the following structure:
+
+    Successful response example:
+    >>> {
+    ...     "success": True,
+    ...     "message": "Session 'desired_session_name' activated.",
+    ...     "display": {
+    ...         "history": "Extracted chat history for the activated session"
+    ...     }
+    ... }
+
+    Error response example (when session is not found):
+    >>> {
+    ...     "success": False,
+    ...     "message": "Session 'desired_session_name' does not exist."
+    ... }
+
+    Error response example (permission error):
+    >>> {
+    ...     "success": False,
+    ...     "message": "Permission denied: PermissionError message"
+    ... }
+
+    **Exceptions**:
+    - **ValueError**: If no session name is provided in the request.
+    - **FileNotFoundError**: If the specified session directory does not exist.
+    - **PermissionError**: If there are permission issues while accessing or activating the session.
+    - **Exception**: For any other general errors during execution.
 
     :param session_name: The name of the session to activate.
     :type session_name: str
@@ -698,8 +794,54 @@ def change_session():
         logger.error(f"An error occurred while trying to change session: '{session_name}': {str(e)}")
         return jsonify({"success": False, "message": f"Error changing session: {str(e)}"}), 500
 
-@bp.route("/rename_session", methods=['POST'])
-def rename_session():
+@bp.route("/sessions/rename", methods=['POST'])
+def ep_sessions_rename():
+    return sessions_rename(request)
+
+def sessions_rename(request):
+    """
+    Rename an existing session to a new session name.
+
+    This function allows users to rename a session by updating the session's directory and the agent's chat log location.
+    If the session to be renamed is not the currently active session, it activates the session first, then proceeds
+    with renaming it. The chat history of the renamed session is returned upon success.
+
+    **Request**:
+    The request must be a POST request with a JSON body containing the session's current name and the desired updated name.
+
+    Example request:
+    >>> {
+    ...     "session_name": "old_session_name",
+    ...     "updated_name": "new_session_name"
+    ... }
+
+    **Response**:
+    A JSON response will be returned with the following structure:
+
+    Successful response example:
+    >>> {
+    ...     "success": True,
+    ...     "message": "Session 'old_session_name' renamed to 'new_session_name'.",
+    ...     "display": {
+    ...         "history": "Chat history for the renamed session"
+    ...     }
+    ... }
+
+    Error response example (when session does not exist):
+    >>> {
+    ...     "success": False,
+    ...     "message": "Session 'old_session_name' does not exist."
+    ... }
+
+    **Exceptions**:
+    - **ValueError**: If the current or updated session name is not provided in the request.
+    - **FileNotFoundError**: If the specified session directory does not exist.
+    - **PermissionError**: If there are permission issues while renaming the session.
+    - **Exception**: For any other general errors during execution.
+
+    :return: A JSON response indicating success or failure, along with the chat history of the renamed session.
+    :rtype: tuple (flask.Response, int)
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: October 17, 2024
@@ -793,13 +935,42 @@ def rename_session():
         logger.error(f"An error occurred while trying to rename session '{session_name}': {str(e)}")
         return jsonify({"success": False, "message": f"Error removing session: {str(e)}"}), 500
 
-@bp.route("/set_llm", methods=['POST'])
-def set_llm():
+@bp.route("/llm/set", methods=['POST'])
+def ep_llm_set():
+    return llm_set(request)
+
+def llm_set(request):
     """
     Set the language model (LLM) for the BRAD agent.
 
     This endpoint allows users to specify which language model should be used by the BRAD agent.
     It updates the BRAD agent's configuration and responds with the current LLM setting.
+
+    Request Structure:
+    ------------------
+    The request must contain a JSON body with the following fields:
+
+    >>> {
+    >>>   "llm": "str"  # The name of the LLM to set (e.g., "gpt-4", "bloom")
+    >>> }
+
+    - llm (str): The name of the LLM to be used (Required).
+
+    Response Structure:
+    -------------------
+    On success, the response will contain:
+
+    >>> {
+    >>>   "success": true,
+    >>>   "message": "LLM set to <llm_choice>"
+    >>> }
+
+    On failure (missing LLM or invalid LLM), the response will contain:
+
+    >>> {
+    >>>   "success": false,
+    >>>   "message": "Error message describing the failure"
+    >>> }
 
     :param model_name: The name of the LLM to set.
     :type model_name: str
@@ -860,14 +1031,41 @@ def set_llm():
         logger.error(f"An error occurred while setting LLM to '{llm_choice}': {str(e)}")
         return jsonify({"success": False, "message": f"Error setting LLM: {str(e)}"}), 500
 
-@bp.route("/set_llm_api_key", methods=['POST'])
-def set_llm_api_key():
+@bp.route("/llm/apikey", methods=['POST'])
+def ep_llm_apikey():
+    return llm_apikey(request)
+
+def llm_apikey(request):
     """
     Set the NVIDIA API key for the BRAD agent.
 
     This endpoint allows users to provide an NVIDIA API key, which will be stored securely
     for use by the BRAD agent. The key can be used for authentication when accessing NVIDIA services.
     The function currently supports only the NVIDIA API key but may be extended to process other API keys in the future.
+
+    Request Structure:
+    ------------------
+    The request must contain a JSON body with the following fields:
+
+    {
+      "nvidia-api-key": "str"  # The NVIDIA API key to be set
+    }
+
+    - nvidia-api-key (str): The NVIDIA API key to be set (Required).
+
+    Response Structure:
+    -------------------
+    On success, the response will contain:
+
+    {
+      "message": "NVIDIA API key set successfully."
+    }
+
+    On failure (missing API key), the response will contain:
+
+    {
+      "message": "NVIDIA API key is required."
+    }
 
     :param request_data: JSON data containing the NVIDIA API key.
     :type request_data: dict
