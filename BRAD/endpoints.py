@@ -1,6 +1,17 @@
 """
-Endpoints to use BRAD GUI and Server
+This document contains the `Flask` blueprint for the API endpoints to use the `BRAD` package.
 
+API Endpoints
+-------------
+
+- `sessions`: this provides information about
+- `databases`:
+- `configure`:
+- `llm`:
+- `invoke`:
+
+Naming Conventions
+------------------
 """
 
 ###############################################################################
@@ -353,9 +364,57 @@ def ep_databases_set():
     databases_set(request)
 
 def databases_set():
+    """
+    Set the active retrieval-augmented generation (RAG) database for the BRAD agent.
+
+    This endpoint allows users to select and set an available database from the server. The selected database will be loaded and set as the active RAG database for the BRAD agent. If "None" is selected, it will disconnect the current database.
+
+    **Input Request Structure**:
+    The input should be a JSON object containing the name of the database to be set.
+
+    Example request:
+    ```json
+    {
+        "database": "database_name"
+    }
+    ```
+
+    If the database name is `"None"`, the current RAG database will be disconnected.
+
+    **Output Response Structure**:
+    A JSON response is returned indicating whether the database was successfully set or if an error occurred.
+
+    Example success response:
+    ```json
+    {
+        "success": True,
+        "message": "Database set to database_name"
+    }
+    ```
+
+    Example response for disconnecting the database:
+    ```json
+    {
+        "success": True,
+        "message": "Database set to None"
+    }
+    ```
+
+    Example error response (if the directory is not found):
+    ```json
+    {
+        "error": "Directory not found"
+    }
+    ```
+
+    :param request: The HTTP POST request containing the database name in JSON format.
+    :type request: flask.Request
+    :return: A JSON response with a success message or an error message.
+    :rtype: dict
+    """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
-    # Date: October 17, 2024    
+    # Date: October 17, 2024
     
     # Get list of directories at this location
     try:
