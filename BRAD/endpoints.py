@@ -319,7 +319,6 @@ def databases_available():
     This is a `GET` request and does not require any parameters.
 
     Example request:
-
     >>> GET /databases/available
     
 
@@ -327,13 +326,11 @@ def databases_available():
     A JSON object is returned with the list of available databases. In case of errors (e.g., folder not found), an error message is returned.
 
     Example success response:
-
     >>> {
     >>>     "databases": ["None", "database1", "database2"]
     >>> }
 
     Example error response (if folder is not found):
-
     >>> {
     >>>     "error": "Directory not found"
     >>> }
@@ -1047,9 +1044,9 @@ def llm_apikey(request):
     ------------------
     The request must contain a JSON body with the following fields:
 
-    {
-      "nvidia-api-key": "str"  # The NVIDIA API key to be set
-    }
+    >>> {
+    >>>   "nvidia-api-key": "str"  # The NVIDIA API key to be set
+    >>> }
 
     - nvidia-api-key (str): The NVIDIA API key to be set (Required).
 
@@ -1057,15 +1054,15 @@ def llm_apikey(request):
     -------------------
     On success, the response will contain:
 
-    {
-      "message": "NVIDIA API key set successfully."
-    }
+    >>> {
+    >>>   "message": "NVIDIA API key set successfully."
+    >>> }
 
     On failure (missing API key), the response will contain:
 
-    {
-      "message": "NVIDIA API key is required."
-    }
+    >>> {
+    >>>   "message": "NVIDIA API key is required."
+    >>> }
 
     :param request_data: JSON data containing the NVIDIA API key.
     :type request_data: dict
