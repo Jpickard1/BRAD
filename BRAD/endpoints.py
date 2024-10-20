@@ -384,7 +384,7 @@ def databases_create(request):
 
 @bp.route("/databases/available", methods=['GET'])
 def ep_databases_available():
-    return databases_available(request)
+    return databases_available()
 
 def databases_available():
     """
