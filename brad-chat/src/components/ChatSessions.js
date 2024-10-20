@@ -10,7 +10,7 @@ function ChatSessions({ setMessages }) {
   // Function to handle session removal
   const handleRemoveSession = async (sessionId) => {
     try {
-      const response = await fetch('/api/remove_session', {
+      const response = await fetch('/api/sessions/remove', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ function ChatSessions({ setMessages }) {
 
   const handleNewSession = async () => {
     try {
-      const response = await fetch("/api/create_session", {
+      const response = await fetch("/api/sessions/create", {
         method: "GET",
       });
       const result = await response.json();
@@ -77,7 +77,7 @@ function ChatSessions({ setMessages }) {
   // Function to handle session change
   const handleSessionChange = async (sessionId) => {
     console.log(`Changing to session: ${sessionId}`);
-    const response = await fetch('/api/change_session', {
+    const response = await fetch('/api/sessions/change', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ function ChatSessions({ setMessages }) {
     // Handle session rename
     const handleRenameSession = async (sessionId, newName) => {
       try {
-        const response = await fetch('/api/rename_session', {
+        const response = await fetch('/api/sessions/rename', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ function ChatSessions({ setMessages }) {
       // Only call the API if the name has changed
       if (updatedText !== session.text) {
         try {
-          const response = await fetch('/api/rename_session', {
+          const response = await fetch('/api/sessions/rename', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ function ChatSessions({ setMessages }) {
     console.log("1. setting chatsessions", chatsessions);
 
     try {
-      const response = await fetch('/api/open_sessions', {
+      const response = await fetch('/api/sessions/open', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

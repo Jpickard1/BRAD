@@ -17,7 +17,7 @@ function RightSideBar({ setColorScheme }) {
     console.log(`Setting LLM to: ${llmChoice}`);
     
     try {
-      const response = await fetch('/api/set_llm', {
+      const response = await fetch('/api/llm/set', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

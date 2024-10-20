@@ -13,3 +13,4 @@ semantic_router
 langchain_nvidia_ai_endpoints
 requests
 requests_html
+sphinxcontrib-httpdomain

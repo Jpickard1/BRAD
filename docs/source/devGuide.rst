@@ -31,10 +31,10 @@ Agents as LLMs
 Graphical User Interface (GUI)
 ------------------------------
 
-.. toctree::
-
-    gui
-
+.. automodule:: BRAD.endpoints
+   :members:
+   :undoc-members:
+   :exclude-members: set_brad_instance, set_globals, allowed_file, normalize_keys_upper, parse_log_for_one_query, parse_log_for_process_display, 
 
 Configurations
 --------------
