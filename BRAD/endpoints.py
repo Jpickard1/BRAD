@@ -85,6 +85,9 @@ from flask import Flask, request, jsonify, Blueprint
 from flask import flash, redirect, url_for
 from werkzeug.utils import secure_filename
 
+# Used to get list of OpenAI models
+from openai import OpenAI
+
 # Imports for BRAD library
 from BRAD.agent import Agent
 from BRAD.rag import create_database
@@ -158,15 +161,18 @@ def parse_log_for_one_query(chatlog_query):
         
     Returns:
         process (list): A list of tuples with parsed information or None if the module is not RAG.
+        llm_usage (dict): A dictionary with information about LLM utilization for the query
 
-    Expected Pattern:
+    Expected Patterns:
     
     >>> passed_log_stages = [
-    ...   ('RAG-R', ['source 1', 'source 2', 'source 3']),
-    ...   ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
+    >>>   ('RAG-R', ['source 1', 'source 2', 'source 3']),
+    >>>   ('RAG-G', ['This is chunk 1', 'This is chunk 2', 'This is chunk 3'])
     >>> ]
-
-    :nodoc:
+    >>> llm_usage = {
+    >>>     'llm-calls': (int),
+    >>>     'api-fees' : (float)
+    >>> }
     """
 
     # Ensure that keys will all be uppercase
@@ -176,6 +182,11 @@ def parse_log_for_one_query(chatlog_query):
     process_data = chatlog_query.get('PROCESS', {})
     module_name = process_data.get('MODULE', '').upper()
     
+    llm_usage = {
+        'llm-calls': 0,
+        'api-fees': 0.0
+    }
+
     if module_name == 'RAG':
         process = []
         steps = process_data.get('STEPS', [])
@@ -200,10 +211,16 @@ def parse_log_for_one_query(chatlog_query):
             # Check if 'purpose' key exists and is 'chat without RAG'
             elif step.get('purpose', '').lower() == 'chat without rag':
                 process.append(('LLM-Generation', "Response generated with only the LLM."))
-        
-        return process
+
+            # Check if LLM was used in the query
+            if 'llm' in step.keys():
+                if 'api-info' in step.keys():
+                    llm_usage['llm-calls'] += 1
+                    llm_usage['api-fees'] += step['api-info']['Total Cost (USD)']
+
+        return process, llm_usage
     
-    return None
+    return None, None
 
 
 def parse_log_for_process_display(chat_history):
@@ -251,7 +268,11 @@ def invoke(request):
     >>>          "stage_1": "log entry for stage 1", 
     >>>          "stage_2": "log entry for stage 2", 
     >>>          ...
-    >>>      } 
+    >>>      },
+    >>>      "llm-usage": {
+    >>>          "llm-calls": number of new llm calls,
+    >>>          "api-fees":  cost of api fees,
+    >>>      }
     >>> }
 
 
@@ -266,11 +287,12 @@ def invoke(request):
     brad_response = brad.invoke(brad_query)
 
     agent_response_log = brad.chatlog[list(brad.chatlog.keys())[-1]]
-    passed_log_stages = parse_log_for_one_query(agent_response_log)
-    
+    passed_log_stages, llm_usage = parse_log_for_one_query(agent_response_log)
+
     response_data = {
         "response": brad_response,
-        "response-log": passed_log_stages
+        "response-log": passed_log_stages,
+        "llm-usage": llm_usage
     }
     return jsonify(response_data)
 
@@ -362,7 +384,7 @@ def databases_create(request):
 
 @bp.route("/databases/available", methods=['GET'])
 def ep_databases_available():
-    return databases_available(request)
+    return databases_available()
 
 def databases_available():
     """
@@ -1006,6 +1028,53 @@ def sessions_rename(request):
     except Exception as e:
         logger.error(f"An error occurred while trying to rename session '{session_name}': {str(e)}")
         return jsonify({"success": False, "message": f"Error removing session: {str(e)}"}), 500
+
+@bp.route("/llm/get", methods=['GET'])
+def ep_llm_get():
+    return llm_get()
+
+def llm_get():
+    """
+    Get the available OpenAI LLM models.
+
+    This endpoint returns a list of possible LLM models that can be used.
+
+    Request Structure:
+    The request must contain a JSON body with the following fields:
+
+        >>> GET /llm/get
+
+    Successful response example:
+    
+        >>> {
+        >>>     "success": true,
+        >>>     "models": [
+        >>>         "model name 1",
+        >>>         "model name 1",
+        >>>         ...
+        >>>     ]
+        >>> }
+
+    :return: A JSON response indicating success and the name of the active LLM.
+    :rtype: dict
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 20, 2024
+    try:
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        models = []
+        for model in client.models.list():
+            models.append(model.id)
+        response = jsonify({"success": True, "models": models})
+        return response, 200
+    except:
+        response = jsonify({
+            "success": False, 
+            "message": "Unknown error incountered by /llms/get/"
+        })
+        return response, 500
+
 
 @bp.route("/llm/set", methods=['POST'])
 def ep_llm_set():

@@ -9,6 +9,37 @@ function RightSideBar({ setColorScheme }) {
   const [llmChoice, setLlmChoice] = useState("gpt-3.5-turbo-0125");  // Default to GPT-4
   const [isApiEntryVisible, setIsApiEntryVisible] = useState(false); // Only if you want to show/hide the popup
   const [availableDatabases, setAvailableDatabases] = useState([]);  // Hold available databases
+  const [availableLLMs, setAvailableLLMs] = useState([]);  // State to hold fetched LLM models
+  const [loading, setLoading] = useState(true);  // State to track loading
+
+  // Fetch available LLM models on component mount
+  // Fetch available LLM models on component mount
+  useEffect(() => {
+    const fetchLLMs = async () => {
+      try {
+        console.log('Fetching available LLM models...');
+        const response = await fetch('/api/llm/get');  // Fetch from your new endpoint
+        console.log('Response:', response);  // Log the entire response
+        const data = await response.json();
+        
+        console.log('Response data:', data);  // Log the entire response
+
+        if (data.success && Array.isArray(data.models)) {
+          setAvailableLLMs(data.models);  // Update available LLM models
+          setLoading(false);  // Stop loading once data is fetched
+        } else {
+          console.error("Failed to fetch LLM models or incorrect response format.");
+          /* TODO: handle this error */
+        }
+      } catch (error) {
+        console.error('Error fetching LLM models:', error);
+        /* TODO: handle fetch error */
+      }
+    };
+
+    fetchLLMs();  // Call the function to fetch LLM models
+  }, []);  // Empty dependency array means this will run only once when the component mounts
+
 
   // Function to handle LLM change
   const handleLlmChange = async (event) => {
@@ -74,10 +105,18 @@ function RightSideBar({ setColorScheme }) {
       <div className="setting-option">
         <label htmlFor="llm-choice">Choose LLM:</label>
         <select id="llm-choice" value={llmChoice} onChange={handleLlmChange}>
-          <option value="gpt-3.5-turbo-0125">GPT-3.5</option>
-          <option value="gpt-4o-mini-2024-07-18">GPT-4</option>
+          {availableLLMs.length > 0 ? (
+            availableLLMs.map((model, index) => (
+              <option key={index} value={model}>
+                {model}
+              </option>
+            ))
+          ) : (
+            <option value="" disabled>Loading models...</option>
+          )}
         </select>
       </div>
+
 
       <RagFileInput />
       <ThemeChangeButton />
