@@ -388,10 +388,10 @@ def databases_set():
 
     Example success response:
 
-    {
-        "success": True,
-        "message": "Database set to database_name"
-    }
+    >>> {
+    >>>     "success": True,
+    >>>     "message": "Database set to database_name"
+    >>> }
 
     Example response for disconnecting the database:
 
@@ -462,8 +462,8 @@ def sessions_open():
 
     Successful response example:
         >>> {
-        ...     "open_sessions": ["session_1", "session_2", "session_3"]
-        ... }
+        >>>     "open_sessions": ["session_1", "session_2", "session_3"]
+        >>> }
 
     Error response example:
         >>> {
@@ -581,25 +581,25 @@ def sessions_create():
     4. Retrieve and display the chat history for the new session.
 
     **Request**:
-    >>> GET /sessions/create`
+        >>> GET /sessions/create`
 
     **Response**:
     A JSON response will be returned with the following structure:
 
-    Successful response example:
-    >>> {
-    >>>     "success": True,
-    >>>     "message": "New session activated.",
-    >>>     "display": {
-    >>>         "history": "Extracted history logs for display"
-    >>>     }
-    >>> }
+    Successful response example: 
+        >>> {
+        >>>     "success": True,
+        >>>     "message": "New session activated.",
+        >>>     "display": {
+        >>>         "history": "Extracted history logs for display"
+        >>>     }
+        >>> }
 
     Error response example:
-    >>> {
-    >>>     "success": False,
-    >>>     "message": "Error session"
-    >>> }
+        >>> {
+        >>>     "success": False,
+        >>>     "message": "Error session"
+        >>> }
 
     :return: A JSON response indicating whether the session creation was successful or not.
     :rtype: tuple (flask.Response, int)
@@ -669,33 +669,33 @@ def sessions_change(request):
     The request must be a POST request with a JSON body containing the session name.
 
     Example request:
-    >>> {
-    >>>     "message": "desired_session_name"
-    >>> }
+        >>> {
+        >>>     "message": "desired_session_name"
+        >>> }
 
     **Response**:
     A JSON response will be returned with the following structure:
 
     Successful response example:
-    >>> {
-    >>>     "success": True,
-    >>>     "message": "Session 'desired_session_name' activated.",
-    >>>     "display": {
-    >>>         "history": "Extracted chat history for the activated session"
-    >>>     }
-    >>> }
+        >>> {
+        >>>     "success": True,
+        >>>     "message": "Session 'desired_session_name' activated.",
+        >>>     "display": {
+        >>>         "history": "Extracted chat history for the activated session"
+        >>>     }
+        >>> }
 
     Error response example (when session is not found):
-    >>> {
-    >>>     "success": False,
-    >>>     "message": "Session 'desired_session_name' does not exist."
-    >>> }
+        >>> {
+        >>>     "success": False,
+        >>>     "message": "Session 'desired_session_name' does not exist."
+        >>> }
 
     Error response example (permission error):
-    >>> {
-    >>>     "success": False,
-    >>>     "message": "Permission denied: PermissionError message"
-    >>> }
+        >>> {
+        >>>     "success": False,
+        >>>     "message": "Permission denied: PermissionError message"
+        >>> }
 
     **Exceptions**:
     - **ValueError**: If no session name is provided in the request.
@@ -811,31 +811,28 @@ def sessions_rename(request):
     The request must be a POST request with a JSON body containing the session's current name and the desired updated name.
 
     Example request:
-
-    >>> {
-    >>>     "session_name": "old_session_name",
-    >>>     "updated_name": "new_session_name"
-    >>> }
+        >>> {
+        >>>     "session_name": "old_session_name",
+        >>>     "updated_name": "new_session_name"
+        >>> }
 
     **Response**:
     A JSON response will be returned with the following structure:
 
     Successful response example:
-
-    >>> {
-    >>>     "success": True,
-    >>>     "message": "Session 'old_session_name' renamed to 'new_session_name'.",
-    >>>     "display": {
-    >>>         "history": "Chat history for the renamed session"
-    >>>     }
-    >>> }
+        >>> {
+        >>>     "success": True,
+        >>>     "message": "Session 'old_session_name' renamed to 'new_session_name'.",
+        >>>     "display": {
+        >>>         "history": "Chat history for the renamed session"
+        >>>     }
+        >>> }
 
     Error response example (when session does not exist):
-
-    >>> {
-    >>>     "success": False,
-    >>>     "message": "Session 'old_session_name' does not exist."
-    >>> }
+        >>> {
+        >>>     "success": False,
+        >>>     "message": "Session 'old_session_name' does not exist."
+        >>> }
 
     **Exceptions**:
     - **ValueError**: If the current or updated session name is not provided in the request.
@@ -951,30 +948,27 @@ def llm_set(request):
     It updates the BRAD agent's configuration and responds with the current LLM setting.
 
     Request Structure:
-    ------------------
     The request must contain a JSON body with the following fields:
 
-    >>> {
-    >>>   "llm": "str"  # The name of the LLM to set (e.g., "gpt-4", "bloom")
-    >>> }
+        >>> {
+        >>>   "llm": "str"  # The name of the LLM to set (e.g., "gpt-4", "bloom")
+        >>> }
 
     - llm (str): The name of the LLM to be used (Required).
 
-    Response Structure:
-    -------------------
-    On success, the response will contain:
+    Successful response example:
+    
+        >>> {
+        >>>   "success": true,
+        >>>   "message": "LLM set to <llm_choice>"
+        >>> }
 
-    >>> {
-    >>>   "success": true,
-    >>>   "message": "LLM set to <llm_choice>"
-    >>> }
-
-    On failure (missing LLM or invalid LLM), the response will contain:
-
-    >>> {
-    >>>   "success": false,
-    >>>   "message": "Error message describing the failure"
-    >>> }
+    Error response example:
+    
+        >>> {
+        >>>   "success": false,
+        >>>   "message": "Error message describing the failure if the LLM is missing or invalid"
+        >>> }
 
     :param model_name: The name of the LLM to set.
     :type model_name: str
@@ -1051,9 +1045,9 @@ def llm_apikey(request):
     ------------------
     The request must contain a JSON body with the following fields:
 
-    >>> {
-    >>>   "nvidia-api-key": "str"  # The NVIDIA API key to be set
-    >>> }
+        >>> {
+        >>>   "nvidia-api-key": "str"  # The NVIDIA API key to be set
+        >>> }
 
     - nvidia-api-key (str): The NVIDIA API key to be set (Required).
 
@@ -1061,15 +1055,15 @@ def llm_apikey(request):
     -------------------
     On success, the response will contain:
 
-    >>> {
-    >>>   "message": "NVIDIA API key set successfully."
-    >>> }
+        >>> {
+        >>>   "message": "NVIDIA API key set successfully."
+        >>> }
 
     On failure (missing API key), the response will contain:
 
-    >>> {
-    >>>   "message": "NVIDIA API key is required."
-    >>> }
+        >>> {
+        >>>   "message": "NVIDIA API key is required."
+        >>> }
 
     :param request_data: JSON data containing the NVIDIA API key.
     :type request_data: dict
