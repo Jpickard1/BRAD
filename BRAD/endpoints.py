@@ -85,6 +85,9 @@ from flask import Flask, request, jsonify, Blueprint
 from flask import flash, redirect, url_for
 from werkzeug.utils import secure_filename
 
+# Used to get list of OpenAI models
+from openai import OpenAI
+
 # Imports for BRAD library
 from BRAD.agent import Agent
 from BRAD.rag import create_database
@@ -1025,6 +1028,53 @@ def sessions_rename(request):
     except Exception as e:
         logger.error(f"An error occurred while trying to rename session '{session_name}': {str(e)}")
         return jsonify({"success": False, "message": f"Error removing session: {str(e)}"}), 500
+
+@bp.route("/llm/get", methods=['GET'])
+def ep_llm_get():
+    return llm_get()
+
+def llm_get():
+    """
+    Get the available OpenAI LLM models.
+
+    This endpoint returns a list of possible LLM models that can be used.
+
+    Request Structure:
+    The request must contain a JSON body with the following fields:
+
+        >>> GET /llm/get
+
+    Successful response example:
+    
+        >>> {
+        >>>     "success": true,
+        >>>     "models": [
+        >>>         "model name 1",
+        >>>         "model name 1",
+        >>>         ...
+        >>>     ]
+        >>> }
+
+    :return: A JSON response indicating success and the name of the active LLM.
+    :rtype: dict
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: October 20, 2024
+    try:
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        models = []
+        for model in client.models.list():
+            models.append(model.id)
+        response = jsonify({"success": True, "models": models})
+        return response, 200
+    except:
+        response = jsonify({
+            "success": False, 
+            "message": "Unknown error incountered by /llms/get/"
+        })
+        return response, 500
+
 
 @bp.route("/llm/set", methods=['POST'])
 def ep_llm_set():
