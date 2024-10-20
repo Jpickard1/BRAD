@@ -35,6 +35,10 @@ Graphical User Interface (GUI)
 
     gui
 
+.. automodule:: BRAD.endpoints
+   :members:
+   :undoc-members:
+
 
 Configurations
 --------------
