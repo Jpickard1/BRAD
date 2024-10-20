@@ -339,22 +339,22 @@ def databases_available():
 
     This endpoint lists all available databases stored in the designated database folder. The function checks the folder for subdirectories, which represent the databases, and returns the list in JSON format. If no databases are found, the response includes "None" as the first entry in the list.
 
-    **Input Request Structure**:
     This is a `GET` request and does not require any parameters.
 
     Example request:
+
     >>> GET /databases/available
     
-
-    **Output Response Structure**:
     A JSON object is returned with the list of available databases. In case of errors (e.g., folder not found), an error message is returned.
 
     Example success response:
+
     >>> {
     >>>     "databases": ["None", "database1", "database2"]
     >>> }
 
     Example error response (if folder is not found):
+
     >>> {
     >>>     "error": "Directory not found"
     >>> }
@@ -525,6 +525,25 @@ def sessions_remove(request):
     This endpoint allows users to remove a previously opened chat session by its name.
     If the session exists, it will be deleted from the server.
 
+    Example request:
+        >>> POST /sessions/remove
+        >>> {
+        >>>   "session_name": "my_chat_session"
+        >>> }
+
+    On success, the response will contain:
+        >>> {
+        >>>   "success": true,
+        >>>   "message": "Session 'my_chat_session' removed."
+        >>> }
+
+    On failure (e.g., session does not exist), the response will contain:
+        >>> {
+        >>>   "success": false,
+        >>>   "message": "Session 'my_chat_session' does not exist."
+        >>> }
+
+
     :param session_name: The name of the session to be removed.
     :type session_name: str
     :return: A JSON response indicating the success or failure of the removal.
@@ -595,6 +614,7 @@ def sessions_create():
     in the global `TOOL_MODULES`. The function returns a JSON response indicating the success or failure of the operation.
 
     **Process**:
+
     1. Save the state of the current BRAD agent.
     2. Delete the existing agent.
     3. Instantiate a new BRAD agent with the specified tools.

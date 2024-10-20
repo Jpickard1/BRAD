@@ -12,6 +12,11 @@ BRAD plays a crucial role in this digital twin and automation initiative. Its pr
 
 Beyond its role in the Twin Cell Program, we hope a collaborative AI will be a beneficial tool and worthy of open source development for the bioinformatics and research community.
 
+.. image:: images/brad-dl-vision.png
+  :scale: 100%
+  :alt: Digital Laboratory Vision
+  :align: center
+
 Key Features
 ------------
 
@@ -40,8 +45,4 @@ Ongoing efforts for this project currently entail:
 
 Future development will prioritize refining planning and execution processes to support the creation of a more autonomous digital laboratory environment.
 
-.. image:: images/brad-dl-vision.png
-  :scale: 100%
-  :alt: Digital Laboratory Vision
-  :align: center
 
