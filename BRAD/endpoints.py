@@ -26,11 +26,15 @@ from BRAD.rag import create_database
 from BRAD import llms # import load_nvidia, load_openai
 
 bp = Blueprint('endpoints', __name__)
-brad = None
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+###############################################################################
+#                                  GLOBALS                                    #
+###############################################################################
+
+brad = None
 def set_brad_instance(instance):
     '''
     :nodoc:
@@ -155,7 +159,7 @@ def parse_log_for_process_display(chat_history):
 
 @bp.route("/invoke", methods=['POST'])
 def ep_invoke():
-    invoke(request)
+    return invoke(request)
 
 def invoke(request):
     """
