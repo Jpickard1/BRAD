@@ -135,7 +135,7 @@ function RagFileInput() {
                 <progress value={uploadProgress} max="100"></progress>
             </form>
         </div>
-        <div className="setting-option">
+        <div className="setting-option-choose-db">
           <label htmlFor="rag-database">Choose RAG Database:</label>
           <select id="rag-database" value={ragDatabase} onChange={handleRagChange}>
             {availableDatabases.map((db, index) => (

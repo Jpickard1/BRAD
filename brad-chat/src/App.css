@@ -83,11 +83,12 @@ body {
 
 .sidebar-right {
   background-color: var(--base-color); /* Set the background color of the sidebar to black */
-  color: #FFFFFF;            /* Set the text color to white */
+  color: var(--font-color);            /* Set the text color to white */
   padding: 10px;               /* Optionally, set padding for inner spacing */
   font-size: 16px;             /* Set font size (optional) */
-  width: 250px;                /* Set the width of the sidebar (optional) */
-  border: 1px solid #FFFFFF; /* Add a border (optional, for aesthetics) */
+  min-width: 18%;                /* Set the width of the sidebar (optional) */
+  max-width: 18%;                /* Set the width of the sidebar (optional) */
+  width: 18%;                /* Set the width of the sidebar (optional) */
   display: flex;               /* Enable Flexbox */
   flex-direction: column;      /* Arrange items vertically */
   align-items: center;         /* Center items horizontally */
@@ -201,6 +202,7 @@ pre > code {
 }
 
 .rag-file-upload {
+  width: 100%;
   background-color: var(--base-color);
   padding: 1em;
   border-radius: 3em;
@@ -219,6 +221,12 @@ pre > code {
   color: var(--font-color);
 }
 
+.setting-option-choose-db {
+  margin: 1em;
+  overflow: auto;
+  width: 95%;
+}
+
 .retriever {
   text-align: right; /* Aligns the text inside the retriever div to the right */
 }
@@ -234,7 +242,6 @@ pre > code {
 /* Each session box styling */
 .session-box {
   height: 25px;
-  background-color: var(--bold-color);                 /* Light grey background */
   /* color: var(--font-color); */
   padding: 15px;                               /* Padding inside the box */
   border-radius: 0.9em;                         /* Rounded corners */
@@ -297,9 +304,41 @@ pre > code {
 }
 
 #leftSideBarToggle {
+  background-color: var(--base-color);
+  color: var(--font-color);
+  position: absolute;
+  width: 5em;
+  height: 5em;
+  z-index: 200;
+  left: 0;
+  top: 0;
+  outline: none;
+  border: none;
+  border-radius: 1em;
+}
+
+#leftSideBarToggle:active { 
+  border-style: outset;
+}
+
+.sidebar-toggle {
+  background-color: var(--base-color);
+  color: var(--font-color);
   position: fixed;
   width: 5em;
   height: 5em;
-  left: 0;
+  z-index: 200;
+  right: 0;
   top: 0;
+  border-radius: 1em;
+}
+
+.setting-option {
+  padding: 1em;
+  border: var(--hover-color);
+  width: 100%;
+}
+
+#rag-db-name {
+  margin: 1em;
 }

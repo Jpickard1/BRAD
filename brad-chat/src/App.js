@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ChatContainer from './components/ChatContainer';
 import LeftSideBar from './components/LeftSideBar';
+import LeftSideBarButton from './components/LeftSidebarButton';
 import RightSideBar from './components/RightSideBar';
 import './App.css';
 
@@ -48,9 +49,11 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <LeftSideBarButton />       
         <h2>{String.fromCodePoint('0x1f916')} BRAD </h2>
         <button className="sidebar-toggle" onClick={toggleRightSidebar}>
-          {showRightSidebar ? 'Close Settings' : 'Open Settings'}
+          {String.fromCodePoint('0x2699')}
+          {/* {showRightSidebar ? 'Close Settings' : 'Open Settings'} */}
         </button>  {/* Button to toggle RightSideBar */}
       </header>
       <div className="Main-container">
