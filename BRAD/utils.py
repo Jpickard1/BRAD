@@ -29,6 +29,7 @@ import pandas as pd
 import subprocess
 import difflib
 import matplotlib.pyplot as plt
+import shutil
 
 from langchain import PromptTemplate, LLMChain
 from langchain_community.callbacks import get_openai_callback
@@ -594,3 +595,17 @@ def find_integer_in_string(text):
         # Return None if no integer is found
         return None
 
+def delete_dirs_without_log(agent):
+    directory = agent.state['config'].get('log_path')
+    # List only first-level subdirectories
+    for subdir in os.listdir(directory):
+        subdir_path = os.path.join(directory, subdir)
+        
+        # Check if it's a directory
+        if os.path.isdir(subdir_path):
+            log_file_path = os.path.join(subdir_path, 'log.json')
+            
+            # If log.json does not exist in the subdirectory, delete the subdirectory
+            if not os.path.exists(log_file_path):
+                shutil.rmtree(subdir_path)  # Recursively delete directory and its contents
+                print(f"Deleted directory: {subdir_path}")

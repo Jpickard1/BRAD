@@ -89,7 +89,8 @@ from werkzeug.utils import secure_filename
 from openai import OpenAI
 
 # Imports for BRAD library
-from BRAD.agent import Agent
+from BRAD.agent import Agent, AgentFactory
+from BRAD.utils import delete_dirs_without_log 
 from BRAD.rag import create_database
 from BRAD import llms # import load_nvidia, load_openai
 
@@ -102,25 +103,17 @@ logger = logging.getLogger(__name__)
 #                                  GLOBALS                                    #
 ###############################################################################
 
-brad = None
-def set_brad_instance(instance):
-    '''
-    :nodoc:
-    '''
-    global brad
-    brad = instance
 
 UPLOAD_FOLDER = None
 DATABASE_FOLDER = None
 ALLOWED_EXTENSIONS = None
 TOOL_MODULES = None
 DATA_FOLDER = None
-PATH_TO_OUTPUT_DIRECTORIES = None
-def set_globals(data_folder, upload_folder, database_folder, allowed_extensions, tool_modules, path2outputDirs):
+def set_globals(data_folder, upload_folder, database_folder, allowed_extensions, tool_modules):
     '''
     :nodoc:
     '''
-    global UPLOAD_FOLDER, DATABASE_FOLDER, ALLOWED_EXTENSIONS, TOOL_MODULES, DATA_FOLDER, PATH_TO_OUTPUT_DIRECTORIES
+    global UPLOAD_FOLDER, DATABASE_FOLDER, ALLOWED_EXTENSIONS, TOOL_MODULES, DATA_FOLDER
     
     # Set the global values
     DATA_FOLDER = upload_folder
@@ -128,11 +121,29 @@ def set_globals(data_folder, upload_folder, database_folder, allowed_extensions,
     DATABASE_FOLDER = database_folder
     ALLOWED_EXTENSIONS = allowed_extensions
     TOOL_MODULES = tool_modules
-    PATH_TO_OUTPUT_DIRECTORIES = path2outputDirs
+
+PATH_TO_OUTPUT_DIRECTORIES = None
+def set_global_output_path(output_path):
+    '''
+    :nodoc:
+    '''
+    global PATH_TO_OUTPUT_DIRECTORIES
+    PATH_TO_OUTPUT_DIRECTORIES = output_path
+
+
+
 
 ###############################################################################
 #                               HELPER METHODS                                #
 ###############################################################################
+
+def initiate_start():
+    '''
+    Initializer method for important health checks before starting backend
+    '''
+    initial_agent = AgentFactory(tool_modules=TOOL_MODULES, interactive=False).get_agent()
+    delete_dirs_without_log(initial_agent)
+    set_global_output_path(initial_agent.state['config'].get('log_path'))
 
 def allowed_file(filename):
     '''
@@ -281,7 +292,7 @@ def invoke(request):
     :return: A JSON response containing the agent's reply and the log of query stages.
     :rtype: dict
     """
-    global brad
+    brad = AgentFactory().get_agent()
     request_data = request.json
     brad_query = request_data.get("message")
     brad_response = brad.invoke(brad_query)
@@ -490,7 +501,6 @@ def databases_set():
     
     # Get list of directories at this location
     try:
-        global brad
 
         request_data = request.json
         logger.info(f"{request_data=}")
@@ -707,25 +717,21 @@ def sessions_create():
 
     # Log the incoming request
     logger.info(f"Received request to create a new session")
+    # Create the new agent
+    logger.info(f"Activating agent")
+    brad = AgentFactory().get_agent()
+
+    # Create the new agent
+    logger.info(f"Agent active at path: {brad.chatname}")
 
     # Try to remove the session directory
     try:
         # Delete the old agent
-        global brad
         
         # Delete the old agent
         brad.save_state()
-        logger.info(f"Saving state of agent before deleting")
-        del brad
-        logger.info(f"Removing current agent with `del brad`")
+        logger.info(f"Saving state of agent")
 
-        # Create the new agent
-        logger.info(f"Activating new agent")
-        # Create the new agent
-        brad = Agent(interactive=False,
-                     tools=TOOL_MODULES
-                     )
-        logger.info(f"Agent active at path: {brad.chatname}")
         
         chat_history = brad.get_display()
         logger.info(f"Retrieved chat history")
@@ -808,7 +814,6 @@ def sessions_change(request):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: October 15, 2024
-    global brad
     
     request_data = request.json
     print(f"{request_data=}")
@@ -830,13 +835,16 @@ def sessions_change(request):
         return jsonify({"success": False, "message": "Log path not configured."}), 500
 
     session_path = os.path.join(path_to_output_directories, session_name)
+    brad = AgentFactory(interactive=False,
+                    tools=TOOL_MODULES,
+                    restart=session_path
+                    ).get_agent()
 
     # Check if the session directory exists
     if not os.path.exists(session_path):
         logger.warning(f"Session '{session_name}' does not exist at path: {session_path}")
         return jsonify({"success": False, "message": f"Session '{session_name}' does not exist."}), 404
 
-    global brad
 
     # Check if trying to change to the active session
     if os.path.join(session_path, 'log.json') == brad.chatname:
@@ -849,19 +857,10 @@ def sessions_change(request):
     # Try to remove the session directory
     try:
         
-        # Delete the old agent
+        # save agent state
         brad.save_state()
-        logger.info(f"Saving state of agent before deleting")
-        del brad
-        logger.info(f"Removing current agent with `del brad`")
+        logger.info(f"Saving state of agent")
 
-        # Create the new agent
-        logger.info(f"Activating agent from: {session_path}")
-        brad = Agent(interactive=False,
-                     tools=TOOL_MODULES,
-                     restart=session_path
-                     )
-        logger.info(f"Successfully activated agent: {session_name}")
         chat_history = brad.get_display()
         logger.info(f"Retrieved chat history")
         chat_history = parse_log_for_process_display(chat_history)
@@ -963,6 +962,13 @@ def sessions_rename(request):
 
     session_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, session_name)
     updated_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, updated_name)
+    # Create the new agent
+    logger.info(f"Activating agent from: {session_path}")
+    brad = AgentFactory(interactive=False,
+                tools=TOOL_MODULES,
+                restart=session_path
+                ).get_agent()
+    logger.info(f"Successfully activated agent: {session_name}")
 
     # Check if the session directory exists
     if not os.path.exists(session_path):
@@ -971,7 +977,6 @@ def sessions_rename(request):
 
     # Try to rename the session directory
     try:
-        global brad
 
         changeAgent =  brad.chatname != os.path.join(session_path, 'log.json')
         logger.info(f"Change Agent for rename: {changeAgent}")
@@ -980,17 +985,7 @@ def sessions_rename(request):
         if changeAgent:
             # Delete the old agent
             brad.save_state()
-            logger.info(f"Saving state of agent before deleting")
-            del brad
-            logger.info(f"Removing current agent with `del brad`")
-
-            # Create the new agent
-            logger.info(f"Activating agent from: {session_path}")
-            brad = Agent(interactive=False,
-                        tools=TOOL_MODULES,
-                        restart=session_path
-                        )
-            logger.info(f"Successfully activated agent: {session_name}")
+            logger.info(f"Saving state of agent")
 
         else:
             logger.info(f"Continuing with same agent")
