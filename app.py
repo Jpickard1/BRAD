@@ -7,26 +7,15 @@ import logging
 # Imports for building RESTful API
 from flask import Flask
 from BRAD.endpoints import bp as endpoints_bp  # Import the Blueprint
-from BRAD.endpoints import set_brad_instance, set_globals
+from BRAD.endpoints import set_globals, initiate_start
 from BRAD.agent import Agent
+from BRAD.constants import TOOL_MODULES
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def delete_dirs_without_log(directory):
-    # List only first-level subdirectories
-    for subdir in os.listdir(directory):
-        subdir_path = os.path.join(directory, subdir)
-        
-        # Check if it's a directory
-        if os.path.isdir(subdir_path):
-            log_file_path = os.path.join(subdir_path, 'log.json')
-            
-            # If log.json does not exist in the subdirectory, delete the subdirectory
-            if not os.path.exists(log_file_path):
-                shutil.rmtree(subdir_path)  # Recursively delete directory and its contents
-                print(f"Deleted directory: {subdir_path}")
 
 # def create_app():
 # Directory structure
@@ -35,13 +24,8 @@ DATABASE_FOLDER = '/usr/src/RAG_Database/'
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
-TOOL_MODULES = ['RAG']
-
-brad = Agent(interactive=False, tools=TOOL_MODULES)
-set_brad_instance(brad)
-
-PATH_TO_OUTPUT_DIRECTORIES = brad.state['config'].get('log_path')
-delete_dirs_without_log(PATH_TO_OUTPUT_DIRECTORIES)
+# Redundant
+TOOL_MODULES = TOOL_MODULES
 
 
 # Set up app
@@ -67,11 +51,15 @@ if not os.path.exists(DATABASE_FOLDER):
 # app.config['DATA_FOLDER'] = DATA_FOLDER
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
-set_globals(DATA_FOLDER, UPLOAD_FOLDER, DATABASE_FOLDER, ALLOWED_EXTENSIONS, TOOL_MODULES, PATH_TO_OUTPUT_DIRECTORIES)
+set_globals(DATA_FOLDER, UPLOAD_FOLDER, DATABASE_FOLDER, ALLOWED_EXTENSIONS, TOOL_MODULES)
+
+initiate_start()
 
 # Register the Blueprint for the endpoints
 app.register_blueprint(endpoints_bp)
-app.config['agent'] = brad
+
+# removing this in favor of factory
+# app.config['agent'] = brad
 # if __name__ == "__main__":
 #     app = create_app()
 #     if not os.getenv("GENERATING_DOCS"):

@@ -54,6 +54,7 @@ The `Agent` class is organized as follows:
 import pandas as pd
 # from copy import deepcopy
 import os
+import shutil
 # import sys
 # from importlib import reload
 # import textwrap
@@ -123,6 +124,7 @@ from BRAD.coder import codeCaller
 from BRAD.writer import summarizeSteps, chatReport
 from BRAD import log
 from BRAD.bradllm import BradLLM
+from BRAD.constants import TOOL_MODULES
 
 class Agent():
     """
@@ -964,3 +966,17 @@ class Agent():
         llm = BradLLM(bot=self)
         return llm
 
+
+class AgentFactory():
+    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, interactive=False):
+        self.interactive = interactive
+        self.session_path = session_path
+        self.tool_modules = tool_modules
+
+    def get_agent(self):
+        if self.session_path:
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path)
+        else:
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules)
+
+        return agent
