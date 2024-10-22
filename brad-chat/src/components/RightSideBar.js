@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import PopUpApiEntry from './PopUpApiEntry'
 import RagFileInput from './RagFileInput';
 import ThemeChangeButton from './ThemeChange';
+import UsageStatistics from './UsageStatistics';
 
-function RightSideBar({ setColorScheme }) {
+function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
 //  const [llmChoice, setLlmChoice] = useState('GPT-4');  // Default LLM choice
   const [ragDatabase, setRagDatabase] = useState('Wikipedia');  // Default RAG choice
   const [llmChoice, setLlmChoice] = useState("gpt-3.5-turbo-0125");  // Default to GPT-4
@@ -120,6 +121,11 @@ function RightSideBar({ setColorScheme }) {
 
       <RagFileInput />
       <ThemeChangeButton />
+      <div className="usage-stats">
+          <h3>Usage Statistics</h3>
+          <p><b>Session Calls: </b>{usageCalls}</p>
+          <p><b>Session Usage Fee: </b>{usageFees}</p>
+      </div>
       
     </div>
 
