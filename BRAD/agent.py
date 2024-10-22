@@ -3,6 +3,8 @@ The `brad` module serves as the main interface for user interactions, whether th
 
 The `Agent` class creates a single chatbot instance that can be queried in various ways. 
 
+The `AgentFactory` class is a session factory method, used to fetch and maintain Agent sessions from outside the module.  
+
 The `brad.chat` method allows users to initiate a command line chat session without needing to create an `Agent` instance.
 
 Main Methods
@@ -14,6 +16,8 @@ Main Methods:
     This method creates a chat session where a user and `Agent` can have a conversation with back-and-forth inputs.
 2. `Agent.invoke`
     This method responds to an individual user query with a single tool.
+3. `AgentFactory.get_agent`
+    Method to instantiate a new 
 
 .. _state-schema-section:
 
@@ -968,12 +972,36 @@ class Agent():
 
 
 class AgentFactory():
+    """
+    The AgentFactory mechanism allows us to instantiate, terminate and maintain 
+    bot sessions from within the module. Removes the need to have global agents.
+    The factory generates a default agent with default parameters if no input is
+    given. Based on the session input given instantiates a new agent with that 
+    particular session restored
+
+    Provides decoupling of objects used from execution logic. If a new agent class 
+    is implemented the get_agent function needs to be updated appropriately.
+
+    Functions:
+    1. **get_agent**: instantiates the actual agent and returns the particular agent based on initialization
+
+
+    :param tools: The set of available tool modules. If None, all modules are available for use
+    :type tools: list, optional
+    :param session_path: The path to where the bot session is stored. If None, generates a new agent
+    :type tools: str, optional
+    :param interactive: Sets BRAD's mode to interactive or non inteactive. Default mode is non Interactive
+    :type tools: bool, optional
+    """
     def __init__(self, tool_modules=TOOL_MODULES, session_path=None, interactive=False):
         self.interactive = interactive
         self.session_path = session_path
         self.tool_modules = tool_modules
 
     def get_agent(self):
+        """
+        The agent function for instantiating a new agent or retrieve an existing agent
+        """
         if self.session_path:
             agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path)
         else:
