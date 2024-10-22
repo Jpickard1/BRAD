@@ -14,3 +14,15 @@ During the build, the `tutorials/` directory is automatically pulled in to the s
 
 To remove the documentation from `docs/build/` run `make clean` from the same directory where you built it.
 
+### Cite Us
+
+```
+@article{pickard2024bioinformatics,
+  title={Bioinformatics Retrieval Augmentation Data (BRAD) Digital Assistant},
+  author={Pickard, Joshua and Choi, Marc Andrew and Oliven, Natalie and
+          Stansbury, Cooper and Cwycyshyn, Jillian and Galioto, Nicholas
+          and Gorodetsky, Alex and Velasquez, Alvaro and Rajapakse, Indika},
+  journal={arXiv preprint arXiv:2409.02864},
+  year={2024}
+}
+```
