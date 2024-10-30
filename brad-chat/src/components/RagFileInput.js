@@ -23,6 +23,11 @@ function RagFileInput() {
         const url = '/api/databases/create';
         const formData = new FormData();
 
+        if (files == null) {
+          alert("please attach a valid file!")
+          return
+        }
+
         // Append files to FormData
         for (let i = 0; i < files.length; i++) {
             formData.append('rag_files', files[i]);
@@ -61,8 +66,10 @@ function RagFileInput() {
   
               // Optionally, log the updated list of databases
               console.log('Updated databases:', data.databases);
+              alert('Updated databases: ' + data.databases.join(", "));
           } else {
               console.error('Failed to fetch updated databases');
+              alert('Failed to fetch updated databases');
           }
       } catch (error) {
           console.error("Error during file upload or fetching databases: ", error);

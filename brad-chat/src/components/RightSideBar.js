@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import PopUpApiEntry from './PopUpApiEntry'
 import RagFileInput from './RagFileInput';
 import ThemeChangeButton from './ThemeChange';
-import UsageStatistics from './UsageStatistics';
 
 function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
 //  const [llmChoice, setLlmChoice] = useState('GPT-4');  // Default LLM choice
