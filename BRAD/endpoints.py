@@ -355,12 +355,13 @@ def databases_create(request):
     :return: A JSON response indicating the success or failure of the file upload and database creation process.
     :rtype: dict
     """
+    brad = AgentFactory().get_agent()
     file_list = request.files.getlist("rag_files")
     dbName = request.form.get('name')
 
     # Creates new folder with the current statetime
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    directory_with_time = os.path.join(app.config['UPLOAD_FOLDER'], timestr) 
+    directory_with_time = os.path.join(UPLOAD_FOLDER, timestr) 
     if not os.path.exists(directory_with_time):
         os.makedirs(directory_with_time)
 
@@ -500,6 +501,8 @@ def databases_set():
     # Date: October 17, 2024
     
     # Get list of directories at this location
+
+    brad = AgentFactory().get_agent()
     try:
 
         request_data = request.json
@@ -836,8 +839,8 @@ def sessions_change(request):
 
     session_path = os.path.join(path_to_output_directories, session_name)
     brad = AgentFactory(interactive=False,
-                    tools=TOOL_MODULES,
-                    restart=session_path
+                    tool_modules=TOOL_MODULES,
+                    session_path=session_path
                     ).get_agent()
 
     # Check if the session directory exists
@@ -845,9 +848,8 @@ def sessions_change(request):
         logger.warning(f"Session '{session_name}' does not exist at path: {session_path}")
         return jsonify({"success": False, "message": f"Session '{session_name}' does not exist."}), 404
 
-
     # Check if trying to change to the active session
-    if os.path.join(session_path, 'log.json') == brad.chatname:
+    if os.path.join(session_path, '/log.json') == brad.chatname:
         logger.warning(f"Session '{session_name}' does not exist at path: {session_path}")
         return jsonify({"success": False, "message": f"Cannot change to the current session."}), 404
     else:
@@ -965,8 +967,8 @@ def sessions_rename(request):
     # Create the new agent
     logger.info(f"Activating agent from: {session_path}")
     brad = AgentFactory(interactive=False,
-                tools=TOOL_MODULES,
-                restart=session_path
+                tool_modules=TOOL_MODULES,
+                session_path=session_path
                 ).get_agent()
     logger.info(f"Successfully activated agent: {session_name}")
 

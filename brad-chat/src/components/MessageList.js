@@ -15,8 +15,25 @@ function MessageList({ messages }) {
     }
   };
 
+  function find_element(elem, search){
+    let e_name = null
+    if (elem != null) {
+      [e_name] = elem
+    }
+
+    if (e_name === search ) {
+      return true
+    }
+    return false
+  }
+
   function format_message(message){
-    return message.replace(/\n/g, '  \n')
+    if (message){
+      return message.replace(/\n/g, '  \n')
+    }
+    else{
+      return ''
+    }
   }
 
   return (
@@ -37,10 +54,20 @@ function MessageList({ messages }) {
                     </div>
                   );
                 }
-            
+
+                let ragR 
+                let ragG 
+
                 // Find the payloads for RAG-R and RAG-G
-                const ragR = message.process.find(([name]) => name === "RAG-R")?.[1] || [];
-                const ragG = message.process.find(([name]) => name === "RAG-G")?.[1] || [];
+                if (message.process == null){
+                  ragR = []
+                  ragG = []
+                }
+
+                else {
+                  ragR = message.process.find((elem) => find_element(elem, "RAG-R"))?.[1] || [];
+                  ragR = message.process.find((elem) => find_element(elem, "RAG-G"))?.[1] || [];
+                }
             
                 // Iterate over both payloads and display the i-th elements together
                 return ragR.map((itemR, index) => {
