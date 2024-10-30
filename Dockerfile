@@ -15,11 +15,12 @@ RUN mkdir -p /usr/src/RAG_Database
 
 RUN apt-get update
 
+RUN apt-get install --reinstall ca-certificates -y
 
 RUN apt-get install software-properties-common -y
 RUN apt-get install curl -y
 RUN apt-get install vim -y
-RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN add-apt-repository 'ppa:deadsnakes/ppa' -y
 RUN apt-get install python3.11 -y
 RUN ln -sf python3.11 /usr/bin/python3 
 RUN apt-get install python3-dev -y
