@@ -1,0 +1,344 @@
+:root {
+  --bg-color: #212121;
+  --base-color: #2f2f2f;
+  --font-color: #f7f7f7;
+  --hover-color: #797979;
+  --bold-color: #878787;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-color: var(--bg-color);
+  font-family: 'AR One Sans';  /* font-family: 'Trebuchet MS', sans-serif; */
+  color: var(--font-color);
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+.App-header {
+  font-size: 1em;
+  width: 100%;
+  color: var(--font-color);
+  align-items: center;
+}
+
+.App {
+  position: fixed;
+  top: 0;
+  left: 0;
+  text-align: center;
+  height: 100%;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  word-spacing: 2px;
+}
+
+/* Flex container to align the sidebar and chat container horizontally */
+.Content {
+  display: flex;
+  flex-grow: 1;    /* Makes the content area grow to fill the remaining space after the header */
+}
+
+.chat-container {
+  display: flex;
+  width: 100%;
+  height: 94vh;
+  overflow: scroll;
+  /* border: 1px solid #ccc; */
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chat-sessions {
+  overflow-y: scroll;
+  padding: 10px;                  /* Optionally, set padding for inner spacing */
+  font-size: 16px;                /* Set font size (optional) */
+  width: 100%;                   /* Set the width of the sidebar (optional) */
+  height: 95%;                   /* Set the width of the sidebar (optional) */
+
+}
+
+.left-sidebar {
+  flex: 1;
+  min-width: 15%;
+  max-width: 15%;
+  background-color: var(--base-color); /* Set the background color of the sidebar to black */
+  color: var(--font-color);              /* White text */
+  padding: 10px;               /* Optionally, set padding for inner spacing */
+  display: flex;               /* Enable Flexbox */
+  flex-direction: column;      /* Arrange items vertically */
+  align-items: center;         /* Center items horizontally */
+  justify-content: flex-start; /* Align items to the top */
+  overflow: hidden;            /* Prevent content from overflowing */
+}
+
+.sidebar-right {
+  background-color: var(--base-color); /* Set the background color of the sidebar to black */
+  color: var(--font-color);            /* Set the text color to white */
+  padding: 10px;               /* Optionally, set padding for inner spacing */
+  font-size: 16px;             /* Set font size (optional) */
+  min-width: 18%;                /* Set the width of the sidebar (optional) */
+  max-width: 18%;                /* Set the width of the sidebar (optional) */
+  width: 18%;                /* Set the width of the sidebar (optional) */
+  display: flex;               /* Enable Flexbox */
+  flex-direction: column;      /* Arrange items vertically */
+  align-items: center;         /* Center items horizontally */
+  justify-content: flex-start; /* Align items to the top */
+  overflow: hidden;            /* Prevent content from overflowing */
+  height: 100vh;               /* Optional: Set the height to full view height */
+}
+
+
+/* The main container for LeftSideBar and ChatContainer */
+.Main-container {
+  display: flex;
+  flex-grow: 1;                /* Make sure the main content grows to fill available space */
+  flex-direction: row;         /* Place LeftSideBar and ChatContainer side by side */
+  align-items: stretch;        /* Ensure the height matches between LeftSideBar and ChatContainer */
+  justify-content: flex-start; /* Align the items horizontally from the start */
+}
+
+.message-list {
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  margin-bottom: 1em;
+  border-radius: 25px;
+  display: inline-block;
+  padding-left: 1em;
+  padding-right: 1em;
+  min-width: 2em;
+}
+
+.message.user {
+  background-color: var(--base-color);
+  color: var(--font-color);
+  opacity: 0.8;
+  align-self: flex-end;
+}
+
+.message.bot {
+  color: var(--font-color);
+  align-self: flex-start;
+  min-width: 50%;
+  text-align: left;
+}
+
+.message-input {
+  width: 50%;
+  display: flex;
+  padding: 1.5em;
+}
+
+.message-input input {
+  background-color: var(--base-color);
+  color: var(--font-color);
+  padding: 1em;
+  border-radius: 25px;
+  font-size: 1em;
+  margin-right: 0.75em;
+  flex: 1;
+}
+
+.message-input button {
+  background-color: var(--base-color);
+  color: var(--font-color);
+  padding: 5px 10px;
+  font-size: 1.5em;
+  border-radius: 25px;
+}
+
+.message-process {
+  background-color: rgb(173, 173, 173);
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+}
+
+.message-process .retriever div {
+  background-color: white;
+  color: black;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid black;
+  border-radius: 0px;
+}
+
+.message-process .rag-paragraph {
+  background-color: #f0f0f0;
+  color: black;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d3d3d3;
+  border-radius: 0px;
+}
+
+/* Code Block styling with highlightjs */
+pre {
+  white-space: pre-wrap;      
+  white-space: -moz-pre-wrap; 
+  white-space: -pre-wrap;     
+  white-space: -o-pre-wrap;   
+  word-wrap: break-word;      
+}
+
+pre > code {
+  text-align: left;
+}
+
+.rag-file-upload {
+  width: 100%;
+  background-color: var(--base-color);
+  padding: 1em;
+  border-radius: 3em;
+}
+
+.rag-file-upload label {
+  margin: 1em;
+}
+
+
+.rag-file-upload button {
+  border-width: 1px;
+  margin-right: 1em;
+  border-color: var(--font-color) ;
+  background-color: var(--base-color);
+  color: var(--font-color);
+}
+
+.setting-option-choose-db {
+  margin: 1em;
+  overflow: auto;
+  width: 95%;
+}
+
+.retriever {
+  text-align: right; /* Aligns the text inside the retriever div to the right */
+}
+
+
+/* General container for the session list */
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between each session box */
+}
+
+/* Each session box styling */
+.session-box {
+  height: 25px;
+  /* color: var(--font-color); */
+  padding: 15px;                               /* Padding inside the box */
+  border-radius: 0.9em;                         /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  /* Subtle shadow for depth */
+  margin-bottom: 10px;                         /* Space between session boxes */
+  position: relative;                          /* Position to allow delete button absolute positioning */
+  transition: background-color 0.3s ease;
+  cursor: pointer;                             /* Cursor changes to pointer on hover */
+  color: var(--font-color);                              /* Text color */
+  display: flex;                               /* Use flexbox to align text */
+  align-items: center;                         /* Vertically center the text */
+  justify-content: flex-start;                 /* Align text to the right horizontally */
+  background: none;
+}
+
+/* Hover effect for session box */
+.session-box:hover {
+  background-color: var(--hover-color);   /* Slightly darker on hover */
+}
+
+/* Delete button styling */
+.delete-btn {
+  display: none;               /* Hidden by default */
+  position: absolute;          /* Absolute to position it inside the session box */
+  right: 10px;                 /* Align to the right */
+  top: 50%;                    /* Vertically centered */
+  transform: translateY(-50%); /* Ensure perfect centering */
+  background-color: #ff4d4d; /* Red button background */
+  color: white;              /* White text */
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Show delete button on hover */
+.session-box:hover .delete-btn {
+  display: block;              /* Make delete button visible on hover */
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #f0f0f0;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.theme {
+  margin: 1em;
+  background-color: var(--bg-color);
+  color: var(--font-color);
+  border-radius: 2em;
+}
+
+.hidden {
+  display: none
+}
+
+#leftSideBarToggle {
+  background-color: var(--base-color);
+  color: var(--font-color);
+  position: absolute;
+  width: 5em;
+  height: 5em;
+  z-index: 200;
+  left: 0;
+  top: 0;
+  outline: none;
+  border: none;
+  border-radius: 1em;
+}
+
+#leftSideBarToggle:active { 
+  border-style: outset;
+}
+
+.sidebar-toggle {
+  background-color: var(--base-color);
+  color: var(--font-color);
+  position: fixed;
+  width: 5em;
+  height: 5em;
+  z-index: 200;
+  right: 0;
+  top: 0;
+  border-radius: 1em;
+}
+
+.setting-option {
+  padding: 1em;
+  border: var(--hover-color);
+  width: 100%;
+}
+
+#rag-db-name {
+  margin: 1em;
+}

@@ -172,11 +172,14 @@ def getRouterPath(file):
     file_path = os.path.join(current_script_dir, 'routers', file) #'enrichr.txt')
     return file_path
     
-def getRouter():
+def getRouter(available=None):
     """
     Constructs a semantic router layer configured to determine the correct tool module for user queries.
     This routing layer uses the routing files and previously used user inputs as data to predict which
     tool module to use. These routing files are updated over time.
+
+    :param available: list of avaialble modules. If available is `None`, then all modules are available by default.
+    :type available: list, optional
 
     :return: A router layer configured with predefined routes for tasks such as querying Enrichr, web scraping, and generating tables.
     :rtype: RouteLayer
@@ -185,64 +188,79 @@ def getRouter():
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: May 16, 2024
-    routeGget = Route(
-        name = 'GGET',
-        utterances = read_prompts(getRouterPath('enrichr.txt'))
-    )
-    routeScrape = Route(
-        name = 'SCRAPE',
-        utterances = read_prompts(getRouterPath('scrape.txt'))
-    )
-    routeRAG = Route(
-        name = 'RAG',
-        utterances = read_prompts(getRouterPath('rag.txt'))
-    )
-    routeTable = Route(
-        name = 'TABLE',
-        utterances = read_prompts(getRouterPath('table.txt'))
-    )
-    routeData = Route(
-        name = 'DATA',
-        utterances = read_prompts(getRouterPath('data.txt'))
-    )
-    routeMATLAB = Route(
-        name = 'MATLAB',
-        utterances = read_prompts(getRouterPath('matlab.txt'))
-    )
-    routePython = Route(
-        name = 'PYTHON',
-        utterances = read_prompts(getRouterPath('python.txt'))
-    )
-    routePlanner = Route(
-        name = 'PLANNER',
-        utterances = read_prompts(getRouterPath('planner.txt'))
-    )
-    routeCode = Route(
-        name = 'CODE',
-        utterances = read_prompts(getRouterPath('code.txt'))
-    )
-    routeWrite = Route(
-        name = 'WRITE',
-        utterances = read_prompts(getRouterPath('write.txt'))
-    )
-    routeRoute = Route(
-        name = 'ROUTER',
-        utterances = read_prompts(getRouterPath('router.txt'))
-    )
+
+    # Dev. Comments:
+    # -------------------
+    #
+    # History:
+    # - 2024-05-16: first version of this method
+    # - 2024-10-15: this method is modified to allow a user to constrict
+    #               the set of modules available to an agent.
+
+    routes = []
+
+    # Digital Library
+    if available is None or 'GGET' in available:
+        routeGget = Route(
+            name = 'GGET',
+            utterances = read_prompts(getRouterPath('enrichr.txt'))
+        )
+        routes.append(routeGget)
+    if available is None or 'SCRAPE' in available:
+        routeScrape = Route(
+            name = 'SCRAPE',
+            utterances = read_prompts(getRouterPath('scrape.txt'))
+        )
+        routes.append(routeScrape)
+
+    # Lab Notebook
+    if available is None or 'RAG' in available:
+        routeRAG = Route(
+            name = 'RAG',
+            utterances = read_prompts(getRouterPath('rag.txt'))
+        )
+        routes.append(routeRAG)
+
+    # SOFTWARE
+    if available is None or 'CODE' in available:
+        routeCode = Route(
+            name = 'CODE',
+            utterances = read_prompts(getRouterPath('code.txt'))
+        )
+        routes.append(routeCode)
+    if available is None or 'PYTHON' in available:
+        routePython = Route(
+            name = 'PYTHON',
+            utterances = read_prompts(getRouterPath('python.txt'))
+        )
+        routes.append(routePython)
+
+    # Additional Core Modules
+    if available is None or 'PLANNER' in available:
+        routePlanner = Route(
+            name = 'PLANNER',
+            utterances = read_prompts(getRouterPath('planner.txt'))
+        )
+        routes.append(routePlanner)
+    if available is None or 'WRITE' in available:
+        routeWrite = Route(
+            name = 'WRITE',
+            utterances = read_prompts(getRouterPath('write.txt'))
+        )
+        routes.append(routeWrite)
+    if available is None or 'ROUTER' in available:
+        routeRoute = Route(
+            name = 'ROUTER',
+            utterances = read_prompts(getRouterPath('router.txt'))
+        )
+        routes.append(routeRoute)
+
+    # Encoder to embed the routeing examples
     encoder = HuggingFaceEncoder(device='cpu')
-    routes = [routeGget,
-              routeScrape,
-              routeTable,
-              routeRAG,
-              routeData,
-              routeMATLAB,
-              routePython,
-              routePlanner,
-              routeCode,
-              routeWrite,
-              routeRoute
-             ]
+
+    # Construct route layer
     router = RouteLayer(encoder=encoder, routes=routes)    
+
     return router
 
 def buildRoutes(prompt):

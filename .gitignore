@@ -18,6 +18,8 @@
 */*.pdf
 */*.tsv
 
+data/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -159,6 +161,8 @@ venv.bak/
 
 # mkdocs documentation
 /site
+
+data/
 
 # mypy
 .mypy_cache/

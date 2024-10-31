@@ -1,8 +1,9 @@
 {
     "RAG": {
-        "num_articles_retrieved": 10,
+        "num_articles_retrieved": 3,
         "multiquery": false,
         "contextual_compression": false,
+        "documentEnrichment": false,
         "rerank": false,
         "similarity": false,
         "mmr": true,
@@ -57,7 +58,7 @@
         "fontsize": null
     },
     "debug": 0,
-    "log_path": "/home/jpic/BRAD",
+    "log_path": "/mnt/c/dev/containers/ram/v2/logs",
     "experiment": false,
     "image-path-extension": "images",
     "forgetful": 0

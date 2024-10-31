@@ -138,10 +138,10 @@ def logger(chatlog, state, chatname, elapsed_time=None):
         'process': process_serializable,  # state['process'], # information about the process that ran
         'status' : {                      # information about the chat at that time
             'databases'         : str(state['databases']),
-            'current table'     : {
-                    'key'       : state['current table']['key'],
-                    'tab'       : state['current table']['tab'].to_json() if state['current table']['tab'] is not None else None,
-                },
+            # 'current table'     : {
+            #         'key'       : state['current table']['key'],
+            #         'tab'       : state['current table']['tab'].to_json() if state['current table']['tab'] is not None else None,
+            #     },
             'current documents' : state['current documents'],
             'queue pointer'     : state['queue pointer'],
             'queue'             : state['queue'].copy()
@@ -151,7 +151,7 @@ def logger(chatlog, state, chatname, elapsed_time=None):
         json.dump(chatlog, fp, indent=4)
     return chatlog, state
 
-def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, parsedOutput=None, purpose=None):
+def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, parsedOutput=None, apiInfo=None, purpose=None):
     """
     Logs the information for each LLM call, capturing relevant details for tracking and debugging. This can
     include both raw and processed outputs, as well as the context of the call.
@@ -179,6 +179,10 @@ def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, pars
     :param parsedOutput: The processed or parsed output that is actually used or displayed. This can be a subset 
                          or reformatted version of the full LLM output, focusing on the most relevant information.
     :type parsedOutput: any, optional
+
+    :param apiInfo: The callback information regarding LLM api utilization and fees
+
+    :type apiInfo: dict, optional
     
     :param purpose: A description of the purpose of the LLM call. This field explains why the LLM was called and
                     what task or goal the call is intended to achieve (e.g., generate response, extract information).
@@ -201,6 +205,7 @@ def llmCallLog(llm=None, memory=None, prompt=None, input=None, output=None, pars
         'input'        : str(input),   # full input to LLM
         'output'       : str(output),  # full output from LLM
         'parsedOutput' : parsedOutput, # used output information
+        'api-info'     : apiInfo,      # information about LLM api utilization
         'purpose'      : str(purpose)  # why is this llm call needed?
     }
     return llmLog
@@ -267,7 +272,7 @@ def debugLog(output, state=None, display=None):
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     if display:
         logging.info(output)
-    elif state['config']['debug']:
+    elif state is not None and state['config']['debug']:
         logging.info(output)
 
 

@@ -17,10 +17,16 @@ sys.path.insert(0, os.path.abspath('../../BRAD/'))
 print('Building Documentation. Checking path:')
 print(sys.path)
 
+os.environ['GENERATING_DOCS'] = '1'
+
 import mock
  
 MOCK_MODULES = ['scipy',
                 'scipy.io',
+                'flask',
+                'werkzeug.utils',
+                'werkzeug',
+                'langchain_openai',
                 'matplotlib',
                 'matplotlib.pyplot',
                 'langchain_core.callbacks',
@@ -170,7 +176,9 @@ release = '0.1'
 extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
+#     'sphinx.ext.apidoc',
+#     'sphinxcontrib.autohttp.flask',
+    'sphinxcontrib.autohttp.flaskqref',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
@@ -179,6 +187,17 @@ extensions = [
     'sphinx_rtd_theme',
     'nbsphinx'
 ]
+
+# Configure autodoc options
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': False,  # Only document what's explicitly written
+    'private-members': False,
+    'special-members': '__init__',  # Optionally include special methods
+    'inherited-members': True,
+    'show-inheritance': True,
+}
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
