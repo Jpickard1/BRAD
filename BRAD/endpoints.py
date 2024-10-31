@@ -9,6 +9,10 @@ The GUI for BRAD uses the python package as a backend and deploys a local server
 - **Backend**: A Flask API that handles requests and communicates with the Python-based BRAD package.
 - **Frontend**: A React GUI that provides an interactive user interface for sending queries and displaying responses.
 
+.. image:: images/gui-schematic.png
+  :scale: 100%
+  :alt: Digital Laboratory Vision
+  :align: center
 
 React GUI
 ---------
