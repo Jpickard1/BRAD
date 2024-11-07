@@ -69,6 +69,7 @@ body {
 
 .left-sidebar {
   flex: 1;
+  max-height: 95%;
   min-width: 15%;
   max-width: 15%;
   background-color: var(--base-color); /* Set the background color of the sidebar to black */
@@ -100,6 +101,7 @@ body {
 
 /* The main container for LeftSideBar and ChatContainer */
 .Main-container {
+  max-height: 100%;
   display: flex;
   flex-grow: 1;                /* Make sure the main content grows to fill available space */
   flex-direction: row;         /* Place LeftSideBar and ChatContainer side by side */

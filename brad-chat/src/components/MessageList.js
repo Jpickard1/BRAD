@@ -17,7 +17,8 @@ function MessageList({ messages }) {
 
   function find_element(elem, search){
     let e_name = null
-    if (elem != null) {
+
+    if (elem != null && typeof elem != 'object') {
       [e_name] = elem
     }
 

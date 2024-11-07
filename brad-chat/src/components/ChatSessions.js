@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import "highlight.js/styles/github.css";
 import Markdown from "marked-react";
+import handleSessionStorage from '../utils/Utils'
 
 function ChatSessions({ setMessages }) {
   const [chatsessions, setSessions] = useState([]);
@@ -60,6 +61,7 @@ function ChatSessions({ setMessages }) {
           };
         });
     
+
         setMessages(formattedMessages); // Set the formatted messages
         console.log(`Session created. Chat history:`, formattedMessages);
   
@@ -67,6 +69,8 @@ function ChatSessions({ setMessages }) {
       } else {
         console.error("Failed to create a new session:", result.message);
       }
+      let updated_session = result['session-name']
+      handleSessionStorage(updated_session)
       // Fetch updated sessions or update state locally
       await fetchSessions();
     } catch (error) {
@@ -101,6 +105,9 @@ function ChatSessions({ setMessages }) {
           sender: index % 2 === 0 ? 'user' : 'bot' // Example: alternate between 'user' and 'bot'
         };
       });      
+
+      let updated_session = data['session-name']
+      handleSessionStorage(updated_session)
   
       setMessages(formattedMessages); // Set the formatted messages
       console.log(`Session changed. Chat history:`, formattedMessages);

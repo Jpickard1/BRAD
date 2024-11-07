@@ -3,6 +3,7 @@ import ChatContainer from './components/ChatContainer';
 import LeftSideBar from './components/LeftSideBar';
 import LeftSideBarButton from './components/LeftSidebarButton';
 import RightSideBar from './components/RightSideBar';
+import handleSessionStorage from './utils/Utils'
 import './App.css';
 
 function App() {
@@ -11,6 +12,18 @@ function App() {
   const [colorScheme, setColorScheme] = useState('light');  // Manage color scheme state
   const [usageCalls, setUsageCalls] = useState(localStorage.getItem('llm-calls'));  // Manage color scheme state
   const [usageFees, setUsageFees] = useState(localStorage.getItem('api-fees'));  // Manage color scheme state
+
+  const handleSessionStorage_old = (session) => {
+      let current_session = localStorage.getItem('current-session')
+      if (current_session != session){
+        localStorage.setItem('current-session', session)
+      }
+  }
+
+  const getActiveSession = () => {
+      let active_session = localStorage.getItem('current-session')
+      return active_session
+  }
 
   const setStatistics = (bot_usage) => {
 
@@ -46,6 +59,10 @@ function App() {
     let data = { message };
   
     try {
+      let current_session = getActiveSession()
+      if (current_session != null) {
+        data.session = current_session
+      }
       // Call the backend API using fetch
       const response = await fetch('/api/invoke', {
         method: 'POST',
@@ -59,9 +76,12 @@ function App() {
       const result = await response.json();
       let bot_response = result['response'] || '[No response]';
       let bot_log = result['response-log'] || '[No log]'; // You mentioned response-log for the process
+      let updated_session = result['session-name']
 
       let bot_usage = result['llm-usage']
       setStatistics(bot_usage)
+      handleSessionStorage(updated_session)
+
       console.log(`bot_response= ${bot_response}`)
       console.log(`bot_log= ${bot_log}`)
       // Add the bot's response to the message list, including both text and process
