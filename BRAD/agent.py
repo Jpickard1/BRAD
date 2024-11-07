@@ -171,6 +171,7 @@ class Agent():
         ragvectordb=None,
         embeddings_model=None,
         restart=None,
+        start_path=None,
         tools=None,
         name='BRAD',
         max_api_calls=None, # This prevents BRAD from finding infinite loops and using all your API credits,
@@ -195,6 +196,7 @@ class Agent():
         # - 2024-10-06: .chatstatus was renamed .state
         # - 2024-10-16: if the restart location doesn't have a log, then a new agent
         #               is created
+        # - 2024-11-06: added optional argement start_dir to initialize an agent from a new directory if the user prefers
         #
         # Issues:
         # - We should change the structure of the classes/modules. In this 1st iteration
@@ -218,7 +220,9 @@ class Agent():
                 restart = None
 
         if restart is None:
-            new_dir_name = dt.now().strftime("%Y-%m-%d_%H-%M-%S")
+            # making this more human readable
+            new_dir_name = start_path if start_path else dt.now().strftime("%B %d, %Y at %I:%M:%S %p")
+            
             new_log_dir = os.path.join(log_dir, new_dir_name)
             os.makedirs(new_log_dir)
             self.chatname = os.path.join(new_log_dir, 'log.json')
@@ -293,10 +297,12 @@ class Agent():
         self.module_functions = self.getModules()
     
         # Start loop
-        self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
+        # only log if chat bot is fresh
+        if restart is None:
+            self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
 
-        # Write an empty chat log
-        self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
+            # Write an empty chat log
+            self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
 
         # Ensure that the save_state function is registered to run at program exit
         # atexit.register(self.save_state)
@@ -989,14 +995,20 @@ class AgentFactory():
     :param tools: The set of available tool modules. If None, all modules are available for use
     :type tools: list, optional
     :param session_path: The path to where the bot session is stored. If None, generates a new agent
-    :type tools: str, optional
+    :type session_path: str, optional
+    :param start_path: The path to where a new bot session can be started. If None, generates a new agent
+    :type start_path: str, optional
     :param interactive: Sets BRAD's mode to interactive or non inteactive. Default mode is non Interactive
     :type tools: bool, optional
     """
-    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, interactive=False):
+    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False):
         self.interactive = interactive
+        suffix = '/log.json'
+        if session_path and (session_path.endswith(suffix)):
+            session_path = session_path[: -len(suffix)]
         self.session_path = session_path
         self.tool_modules = tool_modules
+        self.start_path = start_path
 
     def get_agent(self):
         """
@@ -1004,6 +1016,8 @@ class AgentFactory():
         """
         if self.session_path:
             agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path)
+        elif self.start_path:
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path)
         else:
             agent = Agent(interactive=self.interactive, tools=self.tool_modules)
 
