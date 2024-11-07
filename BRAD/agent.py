@@ -224,7 +224,7 @@ class Agent():
             new_dir_name = start_path if start_path else dt.now().strftime("%B %d, %Y at %I:%M:%S %p")
             
             new_log_dir = os.path.join(log_dir, new_dir_name)
-            os.makedirs(new_log_dir)
+            os.makedirs(new_log_dir, exist_ok=True)
             self.chatname = os.path.join(new_log_dir, 'log.json')
             self.chatlog  = {}
         else:
