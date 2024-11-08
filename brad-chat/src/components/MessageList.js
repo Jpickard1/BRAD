@@ -48,7 +48,7 @@ function MessageList({ messages }) {
             <div className="message-process">
               {(() => {
                 // Check if message.process is empty
-                if (message.process.length === 0) {
+                if (message.process === null) {
                   return (
                     <div className="retriever">
                       Only the LLM was used.
@@ -60,14 +60,21 @@ function MessageList({ messages }) {
                 let ragG 
 
                 // Find the payloads for RAG-R and RAG-G
-                if (message.process == null){
-                  ragR = []
-                  ragG = []
-                }
+                if (message.process_dict == null){
 
-                else {
-                  ragR = message.process.find((elem) => find_element(elem, "RAG-R"))?.[1] || [];
-                  ragR = message.process.find((elem) => find_element(elem, "RAG-G"))?.[1] || [];
+                  if (message.process == null){
+                    ragR = []
+                    ragG = []
+                  }
+
+                  else {
+                    ragR = message.process.find((elem) => find_element(elem, "RAG-R"))?.[1] || [];
+                    ragR = message.process.find((elem) => find_element(elem, "RAG-G"))?.[1] || [];
+                  }
+                }
+                else{
+                  ragR = message.process_dict['RAG-R'] || [];
+                  ragG = message.process_dict['RAG-G'] || [];
                 }
             
                 // Iterate over both payloads and display the i-th elements together

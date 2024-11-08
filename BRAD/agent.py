@@ -1001,7 +1001,7 @@ class AgentFactory():
     :param interactive: Sets BRAD's mode to interactive or non inteactive. Default mode is non Interactive
     :type tools: bool, optional
     """
-    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False):
+    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None):
         self.interactive = interactive
         suffix = '/log.json'
         if session_path and (session_path.endswith(suffix)):
@@ -1009,6 +1009,16 @@ class AgentFactory():
         self.session_path = session_path
         self.tool_modules = tool_modules
         self.start_path = start_path
+        if db_name:
+            self.db_name = db_name
+        else:
+            self.db_name = None
+
+        if persist_directory:
+            self.persist_directory = persist_directory
+        else:
+            self.persist_directory = None
+        
 
     def get_agent(self):
         """
@@ -1021,4 +1031,10 @@ class AgentFactory():
         else:
             agent = Agent(interactive=self.interactive, tools=self.tool_modules)
 
+
+        if self.db_name and self.persist_directory:
+            db, _ = agent.load_literature_db(persist_directory=self.persist_directory, db_name=self.db_name)
+            agent.state['databases']['RAG'] = db
+        elif self.db_name == None and self.persist_directory==None:
+            agent.state['databases']['RAG'] = None
         return agent

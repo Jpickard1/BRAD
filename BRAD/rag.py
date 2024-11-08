@@ -568,7 +568,7 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
         v (bool, optional): Verbose mode. If True, print progress messages. Default is False.
     """
     # Handle arguments
-    dbPath   += dbName
+    # dbPath   += dbName
     
     local = os.getcwd()  ## Get local dir
     os.chdir(local)      ## shift the work dir to local dir
@@ -597,16 +597,16 @@ def create_database(docsPath='papers/', dbName='database', dbPath='databases/', 
             print("Documents split into chunks...") if v else None
             print("Initializing Chroma Database...") if v else None
 
-            dbName = "DB_cosine_cSize_%d_cOver_%d" %(chunk_size[i], chunk_overlap[j])
+            # dbName = "DB_cosine_cSize_%d_cOver_%d" %(chunk_size[i], chunk_overlap[j])
 
-            # print("dbName reset")
+            print("dbName reset")
             # p2_2 = subprocess.run('mkdir  %s/*'%os.path.join(dbPath,dbName), shell=True)
             p2_2 = os.makedirs(os.path.join(dbPath, dbName), exist_ok=True)
             # print(os.path.join(dbPath, dbName))
             # print("subprocess run")
-            _client_settings = chromadb.PersistentClient(path=os.path.join(dbPath,dbName))
             # print("_client_settings set")
             # print("Starting database construction")
+            _client_settings = chromadb.PersistentClient(path=os.path.join(dbPath,dbName))
             vectordb = Chroma.from_documents(documents           = data_splits,
                                              embedding           = embeddings_model,
                                              client              = _client_settings,

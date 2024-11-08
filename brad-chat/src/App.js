@@ -75,7 +75,8 @@ function App() {
       // Parse the JSON response
       const result = await response.json();
       let bot_response = result['response'] || '[No response]';
-      let bot_log = result['response-log'] || '[No log]'; // You mentioned response-log for the process
+      let bot_log = result['response-log'] || null; // You mentioned response-log for the process
+      let bot_log_dict = result['response-log-dict'] || null; // You mentioned response-log for the process
       let updated_session = result['session-name']
 
       let bot_usage = result['llm-usage']
@@ -87,7 +88,7 @@ function App() {
       // Add the bot's response to the message list, including both text and process
       setMessages((prevMessages) => [
         ...prevMessages, 
-        { id: Date.now(), text: bot_response, process: bot_log, sender: 'bot' }
+        { id: Date.now(), text: bot_response, process: bot_log, process_dict: bot_log_dict, sender: 'bot' }
       ]);
       
     } catch (error) {

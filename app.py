@@ -6,6 +6,7 @@ import logging
 
 # Imports for building RESTful API
 from flask import Flask
+from flask_caching import Cache
 from BRAD.endpoints import bp as endpoints_bp  # Import the Blueprint
 from BRAD.endpoints import set_globals, initiate_start
 from BRAD.agent import Agent
@@ -15,6 +16,9 @@ from BRAD.constants import TOOL_MODULES
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Configue caching
+cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
 
 # def create_app():
@@ -32,6 +36,10 @@ TOOL_MODULES = TOOL_MODULES
 app = Flask(__name__)
 
 print(f"{app.root_path=}")
+
+# set cache for the app
+cache.init_app(app)
+CACHE = cache
 
 # Data directories setup
 DATA_FOLDER = os.path.join(app.root_path, 'data')
@@ -51,7 +59,7 @@ if not os.path.exists(DATABASE_FOLDER):
 # app.config['DATA_FOLDER'] = DATA_FOLDER
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # app.config['DATABASE_FOLDER'] = DATABASE_FOLDER
-set_globals(DATA_FOLDER, UPLOAD_FOLDER, DATABASE_FOLDER, ALLOWED_EXTENSIONS, TOOL_MODULES)
+set_globals(DATA_FOLDER, UPLOAD_FOLDER, DATABASE_FOLDER, ALLOWED_EXTENSIONS, TOOL_MODULES, CACHE)
 
 initiate_start()
 
