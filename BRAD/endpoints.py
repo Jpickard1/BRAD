@@ -83,6 +83,7 @@ import json
 import shutil
 import logging
 import time
+from itertools import filterfalse
 
 # Imports for building RESTful API
 from flask import Flask, request, jsonify, Blueprint
@@ -95,8 +96,10 @@ from openai import OpenAI
 # Imports for BRAD library
 from BRAD.agent import Agent, AgentFactory
 from BRAD.utils import delete_dirs_without_log 
+from BRAD.constants import DEFAULT_SESSION_EXTN
 from BRAD.rag import create_database
 from BRAD import llms # import load_nvidia, load_openai
+
 
 bp = Blueprint('endpoints', __name__)
 
@@ -113,11 +116,12 @@ DATABASE_FOLDER = None
 ALLOWED_EXTENSIONS = None
 TOOL_MODULES = None
 DATA_FOLDER = None
-def set_globals(data_folder, upload_folder, database_folder, allowed_extensions, tool_modules):
+CACHE = None
+def set_globals(data_folder, upload_folder, database_folder, allowed_extensions, tool_modules, cache):
     '''
     :nodoc:
     '''
-    global UPLOAD_FOLDER, DATABASE_FOLDER, ALLOWED_EXTENSIONS, TOOL_MODULES, DATA_FOLDER
+    global UPLOAD_FOLDER, DATABASE_FOLDER, ALLOWED_EXTENSIONS, TOOL_MODULES, DATA_FOLDER, CACHE
     
     # Set the global values
     DATA_FOLDER = upload_folder
@@ -125,14 +129,17 @@ def set_globals(data_folder, upload_folder, database_folder, allowed_extensions,
     DATABASE_FOLDER = database_folder
     ALLOWED_EXTENSIONS = allowed_extensions
     TOOL_MODULES = tool_modules
+    CACHE = cache
 
 PATH_TO_OUTPUT_DIRECTORIES = None
-def set_global_output_path(output_path):
+DEFAULT_SESSION = None
+def set_global_output_path(output_path, default_session):
     '''
     :nodoc:
     '''
-    global PATH_TO_OUTPUT_DIRECTORIES
+    global PATH_TO_OUTPUT_DIRECTORIES, DEFAULT_SESSION
     PATH_TO_OUTPUT_DIRECTORIES = output_path
+    DEFAULT_SESSION = default_session
 
 
 
@@ -145,9 +152,22 @@ def initiate_start():
     '''
     Initializer method for important health checks before starting backend
     '''
-    initial_agent = AgentFactory(tool_modules=TOOL_MODULES, interactive=False).get_agent()
+    initial_agent = AgentFactory(tool_modules=TOOL_MODULES, 
+                                 interactive=False,
+                                 persist_directory=DATABASE_FOLDER,
+                                 db_name=CACHE.get('rag_name')).get_agent()
     delete_dirs_without_log(initial_agent)
-    set_global_output_path(initial_agent.state['config'].get('log_path'))
+    log_path = initial_agent.state['config'].get('log_path')
+    default_session = os.path.join(log_path, DEFAULT_SESSION_EXTN)
+    set_global_output_path(log_path, default_session)
+    # default agent to be used
+    default_agent = AgentFactory(tool_modules=TOOL_MODULES, 
+                                 start_path=default_session, 
+                                 interactive=False, 
+                                 persist_directory=DATABASE_FOLDER,
+                                 db_name=CACHE.get('rag_name')).get_agent()
+
+
 
 def allowed_file(filename):
     '''
@@ -204,6 +224,7 @@ def parse_log_for_one_query(chatlog_query):
 
     if module_name == 'RAG':
         process = []
+        process_dict = {}
         steps = process_data.get('STEPS', [])
         
         for step in steps:
@@ -222,16 +243,21 @@ def parse_log_for_one_query(chatlog_query):
                 # Add the sources and chunks to the process list
                 process.append(('RAG-R', sources))
                 process.append(('RAG-G', chunks))
+
+                process_dict['RAG-R'] =  sources
+                process_dict['RAG-G'] =  chunks
             
             # Check if 'purpose' key exists and is 'chat without RAG'
             elif step.get('purpose', '').lower() == 'chat without rag':
                 process.append(('LLM-Generation', "Response generated with only the LLM."))
+                process_dict['LLM-Generation'] = "Response generated with only the LLM."
 
             # Check if LLM was used in the query
             if 'llm' in step.keys():
                 if 'api-info' in step.keys():
                     llm_usage['llm-calls'] += 1
                     llm_usage['api-fees'] += step['api-info']['Total Cost (USD)']
+            llm_usage['process'] = process_dict
 
         return process, llm_usage
     
@@ -246,8 +272,11 @@ def parse_log_for_process_display(chat_history):
         if chat_history[i][1] is not None:
             # print('replacing logs')
             # print(f"{chat_history=}")
-            chat_history[i] = (chat_history[i][0], parse_log_for_one_query(chat_history[i][1]))
+            history_name = chat_history[i][0]
+            parsed_log = parse_log_for_one_query(chat_history[i][1])
+            chat_history[i] = (history_name, parsed_log)
             # print(f"{chat_history=}")
+
     return chat_history # passed_log_stages
 
 ###############################################################################
@@ -296,17 +325,24 @@ def invoke(request):
     :return: A JSON response containing the agent's reply and the log of query stages.
     :rtype: dict
     """
-    brad = AgentFactory().get_agent()
     request_data = request.json
+    brad_session = request_data.get("session", None)
     brad_query = request_data.get("message")
+    # session_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, brad_session) if brad_session else None
+    brad = AgentFactory(session_path=brad_session, 
+                        persist_directory=DATABASE_FOLDER,
+                        db_name=CACHE.get('rag_name')).get_agent()
     brad_response = brad.invoke(brad_query)
+    brad_name = brad.chatname
 
     agent_response_log = brad.chatlog[list(brad.chatlog.keys())[-1]]
     passed_log_stages, llm_usage = parse_log_for_one_query(agent_response_log)
 
     response_data = {
         "response": brad_response,
+        "session-name": brad_name,
         "response-log": passed_log_stages,
+        "response-log-dict": llm_usage.get('process'),
         "llm-usage": llm_usage
     }
     return jsonify(response_data)
@@ -359,7 +395,9 @@ def databases_create(request):
     :return: A JSON response indicating the success or failure of the file upload and database creation process.
     :rtype: dict
     """
-    brad = AgentFactory().get_agent()
+    brad = AgentFactory(session_path=DEFAULT_SESSION, 
+                        persist_directory=DATABASE_FOLDER,
+                        db_name=CACHE.get('rag_name')).get_agent()
     file_list = request.files.getlist("rag_files")
     dbName = request.form.get('name')
 
@@ -453,11 +491,13 @@ def databases_available():
     
 @bp.route("/databases/set", methods=['POST'])
 def ep_databases_set():
-    databases_set(request)
+    return databases_set(request)
 
-def databases_set():
+def databases_set(request):
     """
     Set the active retrieval-augmented generation (RAG) database for the BRAD agent.
+
+    This uses the flask system cache to set the active database and updates it.
 
     This endpoint allows users to select and set an available database from the server. The selected database will be loaded and set as the active RAG database for the BRAD agent. If "None" is selected, it will disconnect the current database.
 
@@ -506,20 +546,28 @@ def databases_set():
     
     # Get list of directories at this location
 
-    brad = AgentFactory().get_agent()
+    brad = AgentFactory(session_path=DEFAULT_SESSION, 
+                        persist_directory=DATABASE_FOLDER,
+                        db_name=CACHE.get('rag_name')).get_agent()
     try:
 
         request_data = request.json
         logger.info(f"{request_data=}")
         database_name = request_data.get("database")
         logger.info(f"{database_name=}")    
+
+        rag_database = CACHE.get('rag_name')
+        if rag_database != database_name:
+            CACHE.set('rag_name', database_name, timeout=0)
+        logger.info(f"{database_name=}")    
+
         if database_name == "None":
             brad.state['databases']['RAG'] = None
             logger.info(f"Successfully disconnected RAG database")
         else:
             database_directory = os.path.join(DATABASE_FOLDER, database_name)
             logger.info(f"{database_directory=}")
-            db, _ = brad.load_literature_db(persist_directory=database_directory)
+            db, _ = brad.load_literature_db(persist_directory=DATABASE_FOLDER, db_name=database_name)
             logger.info(f"{db=}")
             # logger.info(f"{len(db.get()['id'])=}")
             brad.state['databases']['RAG'] = db
@@ -571,8 +619,8 @@ def sessions_open():
     
     # Get list of directories at this location
     try:
-        open_sessions = [name for name in os.listdir(PATH_TO_OUTPUT_DIRECTORIES) 
-                         if os.path.isdir(os.path.join(PATH_TO_OUTPUT_DIRECTORIES, name))]
+        open_sessions = sorted([name for name in os.listdir(PATH_TO_OUTPUT_DIRECTORIES) 
+                         if os.path.isdir(os.path.join(PATH_TO_OUTPUT_DIRECTORIES, name))], reverse=True)
         
         # Return the list of open sessions as a JSON response
         message = jsonify({"open_sessions": open_sessions})
@@ -726,7 +774,10 @@ def sessions_create():
     logger.info(f"Received request to create a new session")
     # Create the new agent
     logger.info(f"Activating agent")
-    brad = AgentFactory().get_agent()
+    brad = AgentFactory(
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name')
+        ).get_agent()
 
     # Create the new agent
     logger.info(f"Agent active at path: {brad.chatname}")
@@ -734,19 +785,18 @@ def sessions_create():
     # Try to remove the session directory
     try:
         # Delete the old agent
-        
-        # Delete the old agent
-        brad.save_state()
+        # brad.save_state()
         logger.info(f"Saving state of agent")
-
         
         chat_history = brad.get_display()
         logger.info(f"Retrieved chat history")
         chat_history = parse_log_for_process_display(chat_history)
         logger.info(f"Extracted agent history for display:")
         logger.info(json.dumps(chat_history, indent=4))
+        brad_name = brad.chatname
         response = jsonify({
             "success": True,
+            "session-name": brad_name,
             "message": f"New session activated.",
             "display": chat_history
             }
@@ -844,7 +894,9 @@ def sessions_change(request):
     session_path = os.path.join(path_to_output_directories, session_name)
     brad = AgentFactory(interactive=False,
                     tool_modules=TOOL_MODULES,
-                    session_path=session_path
+                    session_path=session_path,
+                    persist_directory=DATABASE_FOLDER,
+                    db_name=CACHE.get('rag_name')
                     ).get_agent()
 
     # Check if the session directory exists
@@ -872,12 +924,17 @@ def sessions_change(request):
         chat_history = parse_log_for_process_display(chat_history)
         logger.info(f"Extracted agent history for display:")
         logger.info(json.dumps(chat_history, indent=4))
-        response = jsonify({
+        brad_name = brad.chatname
+        data = {
             "success": True,
+            "session-name": brad_name,
             "message": f"Session '{session_name}' activated.",
             "display": chat_history
-            }
+        }
+        response = jsonify(
+            data
         )
+        logger.info(f"Response constructed: {data}")
         logger.info(f"Response constructed: {response}")
         return response, 200
 
@@ -972,7 +1029,9 @@ def sessions_rename(request):
     logger.info(f"Activating agent from: {session_path}")
     brad = AgentFactory(interactive=False,
                 tool_modules=TOOL_MODULES,
-                session_path=session_path
+                session_path=session_path,
+                persist_directory=DATABASE_FOLDER,
+                db_name=CACHE.get('rag_name')
                 ).get_agent()
     logger.info(f"Successfully activated agent: {session_name}")
 
