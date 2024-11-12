@@ -1011,7 +1011,7 @@ class AgentFactory():
     :param interactive: Sets BRAD's mode to interactive or non inteactive. Default mode is non Interactive
     :type tools: bool, optional
     """
-    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None):
+    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None, gui=None):
         self.interactive = interactive
         suffix = '/log.json'
         if session_path and (session_path.endswith(suffix)):
@@ -1019,6 +1019,7 @@ class AgentFactory():
         self.session_path = session_path
         self.tool_modules = tool_modules
         self.start_path = start_path
+        self.gui=gui
         if db_name:
             self.db_name = db_name
         else:
@@ -1035,11 +1036,11 @@ class AgentFactory():
         The agent function for instantiating a new agent or retrieve an existing agent
         """
         if self.session_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path, gui=self.gui)
         elif self.start_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path, gui=self.gui)
         else:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, gui=self.gui)
 
 
         if self.db_name and self.persist_directory:

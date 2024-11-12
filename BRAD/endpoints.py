@@ -152,20 +152,26 @@ def initiate_start():
     '''
     Initializer method for important health checks before starting backend
     '''
-    initial_agent = AgentFactory(tool_modules=TOOL_MODULES, 
-                                 interactive=False,
-                                 persist_directory=DATABASE_FOLDER,
-                                 db_name=CACHE.get('rag_name')).get_agent()
+    initial_agent = AgentFactory(
+        tool_modules=TOOL_MODULES, 
+        interactive=False,
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
     delete_dirs_without_log(initial_agent)
     log_path = initial_agent.state['config'].get('log_path')
     default_session = os.path.join(log_path, DEFAULT_SESSION_EXTN)
     set_global_output_path(log_path, default_session)
     # default agent to be used
-    default_agent = AgentFactory(tool_modules=TOOL_MODULES, 
-                                 start_path=default_session, 
-                                 interactive=False, 
-                                 persist_directory=DATABASE_FOLDER,
-                                 db_name=CACHE.get('rag_name')).get_agent()
+    default_agent = AgentFactory(
+        tool_modules=TOOL_MODULES, 
+        start_path=default_session, 
+        interactive=False, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
 
 
 
@@ -329,9 +335,13 @@ def invoke(request):
     brad_session = request_data.get("session", None)
     brad_query = request_data.get("message")
     # session_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, brad_session) if brad_session else None
-    brad = AgentFactory(session_path=brad_session, 
-                        persist_directory=DATABASE_FOLDER,
-                        db_name=CACHE.get('rag_name')).get_agent()
+    brad = AgentFactory(
+        session_path=brad_session, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
+
     brad_response = brad.invoke(brad_query)
     brad_name = brad.chatname
 
@@ -395,9 +405,13 @@ def databases_create(request):
     :return: A JSON response indicating the success or failure of the file upload and database creation process.
     :rtype: dict
     """
-    brad = AgentFactory(session_path=DEFAULT_SESSION, 
-                        persist_directory=DATABASE_FOLDER,
-                        db_name=CACHE.get('rag_name')).get_agent()
+    brad = AgentFactory(
+        session_path=DEFAULT_SESSION, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
+
     file_list = request.files.getlist("rag_files")
     dbName = request.form.get('name')
 
@@ -546,9 +560,12 @@ def databases_set(request):
     
     # Get list of directories at this location
 
-    brad = AgentFactory(session_path=DEFAULT_SESSION, 
-                        persist_directory=DATABASE_FOLDER,
-                        db_name=CACHE.get('rag_name')).get_agent()
+    brad = AgentFactory(
+        session_path=DEFAULT_SESSION, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
     try:
 
         request_data = request.json
@@ -776,8 +793,9 @@ def sessions_create():
     logger.info(f"Activating agent")
     brad = AgentFactory(
         persist_directory=DATABASE_FOLDER,
-        db_name=CACHE.get('rag_name')
-        ).get_agent()
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
 
     # Create the new agent
     logger.info(f"Agent active at path: {brad.chatname}")
@@ -892,12 +910,14 @@ def sessions_change(request):
         return jsonify({"success": False, "message": "Log path not configured."}), 500
 
     session_path = os.path.join(path_to_output_directories, session_name)
-    brad = AgentFactory(interactive=False,
-                    tool_modules=TOOL_MODULES,
-                    session_path=session_path,
-                    persist_directory=DATABASE_FOLDER,
-                    db_name=CACHE.get('rag_name')
-                    ).get_agent()
+    brad = AgentFactory(
+        interactive=False,
+        tool_modules=TOOL_MODULES,
+        session_path=session_path,
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
 
     # Check if the session directory exists
     if not os.path.exists(session_path):
@@ -1027,12 +1047,14 @@ def sessions_rename(request):
     updated_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, updated_name)
     # Create the new agent
     logger.info(f"Activating agent from: {session_path}")
-    brad = AgentFactory(interactive=False,
-                tool_modules=TOOL_MODULES,
-                session_path=session_path,
-                persist_directory=DATABASE_FOLDER,
-                db_name=CACHE.get('rag_name')
-                ).get_agent()
+    brad = AgentFactory(
+        interactive=False,
+        tool_modules=TOOL_MODULES,
+        session_path=session_path,
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
     logger.info(f"Successfully activated agent: {session_name}")
 
     # Check if the session directory exists
