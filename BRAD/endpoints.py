@@ -197,6 +197,11 @@ def parse_log_for_one_query(chatlog_query):
     Safely parses a single chat log query for RAG or LLM processes.
     Returns a list of tuples with process steps and relevant sources or chunks.
     
+    .. note:
+
+        The current positioning of this method will make it challenging for new users to adopt into their own tools.
+        It would be structured better if these features were hard coded for how they will come out of the tool.
+
     Args:
         chatlog_query (dict): A single chat query log to parse.
         
@@ -266,6 +271,9 @@ def parse_log_for_one_query(chatlog_query):
             llm_usage['process'] = process_dict
 
         return process, llm_usage
+
+    elif module_name == 'SCRAPE':
+        return {}, {}
     
     return None, None
 
