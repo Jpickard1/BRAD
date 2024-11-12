@@ -157,6 +157,8 @@ class Agent():
     :type max_api_calls: int, optional
     :param tools: The set of available tool modules. If None, all modules are available for use
     :type tools: list, optional
+    :param gui: Indicates if the Agent is used in the GUI
+    :type gui: boolean, optional
 
     :raises FileNotFoundError: If the specified model or database directories do not exist.
     :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
@@ -176,8 +178,9 @@ class Agent():
         name='BRAD',
         max_api_calls=None, # This prevents BRAD from finding infinite loops and using all your API credits,
         interactive=True,   # This indicates if BRAD is in interactive more or not
-        config=None         # This parameter lets a user specify an additional configuration file that will
+        config=None,        # This parameter lets a user specify an additional configuration file that will
                             # overwrite configurations with the same key
+        gui=False
     ):
         # Auth: Joshua Pickard
         #       jpic@umich.edu
@@ -888,7 +891,8 @@ class Agent():
                 'used terms' : [],
             },
             'recursion_depth': 0,
-            'continue-module': None
+            'continue-module': None, # None (if not continuing in a module) or tuple (with [0] being the module name)
+            'gui':None               # boolean to indicate if the agent is for the gui
         }
         return state
 
