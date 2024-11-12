@@ -89,13 +89,26 @@ def webScraping(state):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: May 20, 2024
+    if state['continue-module'] is None:
+        # Search in the database
+        state = webScrapingStageOne(state)
+    else:
+        # Download from the database
+        state = webScrapingStageTwo(state)
+    state['continue-module'] = None
+    return state
+
+def webScrapingStageOne(state):
+    """
+    This method performs the first round of search involved in the scraping.
+    """
     query    = state['prompt']
     llm      = state['llm']              # get the llm
     memory   = state['memory']           # get the memory of the model
     
     # Define the mapping of keywords to functions
     scraping_functions = {
-        'ARXIV'   : arxiv,
+        'ARXIV'   : arxivStageOne,
         'BIORXIV' : biorxiv,
         'PUBMED'  : pubmed
     }
@@ -134,35 +147,87 @@ def webScraping(state):
 
     # Determine the target source
     source = next((key for key in scraping_functions if key == llmKey), 'PUBMED')
+    # TODO: remove this hardcoded value for debugging
+    source = 'ARXIV'
     process = {'searched': source}
     scrape_function = scraping_functions[source]
-    
+
     # Execute the scraping function and handle errors
-    if state['config']['SCRAPE']['perform_search']:
-        try:
-            output = f'searching on {source}...'
-            log.debugLog(output, state=state)
-            log.debugLog('Search Terms: ' + str(searchTerms), state=state)
-            for numTerm, st in enumerate(searchTerms):
-                if numTerm == state['config']['SCRAPE']['max_search_terms']:
-                    break
-                scrape_function(st, state)
-        except Exception as e:
-            output = f'Error occurred while searching on {source}: {e}'
-            log.debugLog(output, state=state)
-            process = {'searched': 'ERROR'}
-    
-        if state['config']['SCRAPE']['add_from_scrape']:
-            state = updateDatabase(state)
+    try:
+        output = f'searching on {source}...'
+        log.debugLog(output, state=state)
+        log.debugLog('Search Terms: ' + str(searchTerms), state=state)
+        for numTerm, st in enumerate(searchTerms):
+            if numTerm == state['config']['SCRAPE']['max_search_terms']:
+                break
+            # TODO will need to save these results
+            state = scrape_function(st, state)
+    except Exception as e:
+        output = f'Error occurred while searching on {source}: {e}'
+        log.debugLog(output, state=state)
+        process = {'searched': 'ERROR'}
         
-        state['process']['steps'].append(process)
-        state['output'] = "Articles were successfully downloaded."
-    else:
-        state['output'] = "No articles were searched."        
+    state['process']['steps'].append(process)
     return state
 
 
-  
+def webScrapingStageTwo(state):
+#    if state['config']['SCRAPE']['add_from_scrape']:
+#        state = updateDatabase(state)
+#    state['output'] = "Articles were successfully downloaded."
+    pass
+
+
+def arxivStageOne(query, state):
+    """
+    Searches for artciles on arXiv related to a users query, and displays search results that can be downloaded in stage two.
+
+    :param query: The search query for arXiv.
+    :type query: str
+
+    :return: state
+    """
+    process = {}
+    output = 'searching the following on arxiv: ' + query
+    state = log.userOutput(output, state=state)
+    df, pdfs = arxiv_search(query, 10, state=state)
+    print(f"{df=}")
+    print(f"{pdfs=}")
+    print(f"search method worked!")
+    process['search results'] = df
+    displayDf = df[['Title', 'Authors', 'Abstract']]
+    print(f"{displayDf=}")
+
+    output = "\n\n"
+    output += displayDf.to_markdown()
+    output += "\n\n"
+    print(f"{output=}")
+
+    if state['config']['SCRAPE']['save_search_results']:
+        utils.save(state, df, "arxiv-search-" + str(query) + '.csv')
+    print(f"{len(state['queue'])=}")
+    print(f"{(len(state['queue'])==0)=}")
+#    print(f"{state.keys()=}")
+#    print(f"{state=}")
+    print(f"{state['interactive']=}")
+    print(f"{state['gui']=}")
+    if len(state['queue']) == 0:
+        if state['interactive'] or state['gui']:
+            output += '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)
+#            download = input().strip().upper()
+#            state['process']['steps'].append(
+#                {
+#                    'func'           : 'scraper.arxiv',
+#                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+#                    'input'          : download,
+#                    'purpose'        : 'decide to download pdfs or not'
+#                }
+#            )
+#        else:
+#            download = state['SCRAPE']['download_search_results']
+    return state
+    
 def arxiv(query, state):
     """
     Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.
