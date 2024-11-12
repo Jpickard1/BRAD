@@ -48,6 +48,7 @@ import os
 from Bio import Entrez
 import math
 import pandas as pd
+import random
 import datetime
 import time
 import sys
@@ -704,22 +705,39 @@ def parse_llm_response(response):
     :returns: A dictionary with the database name and a list of search terms.
     :rtype: dict
     """
-    # Initialize an empty dictionary to hold the parsed data
-    parsed_data = {}
+    # Define possible fallback databases
+    fallback_databases = ["arxiv", "pubmed", "biorxiv"]
 
-    # Split the response into lines
-    lines = response.strip().split('\n')
+    try:
+        # Initialize an empty dictionary to hold the parsed data
+        parsed_data = {}
 
-    # Extract the database name
-    database_line = lines[0].replace("Database:", "").strip()
-    parsed_data["database"] = database_line
+        # Split the response into lines
+        lines = response.strip().split('\n')
 
-    # Extract the search terms
-    search_terms_line = lines[1].replace("Search Terms:", "").strip()
-    search_terms = [term.strip() for term in search_terms_line.split(',')]
-    parsed_data["search_terms"] = search_terms
+        # Extract the database name
+        database_line = lines[0].replace("Database:", "").strip()
+        parsed_data["database"] = database_line
 
-    return parsed_data
+        # Extract the search terms
+        search_terms_line = lines[1].replace("Search Terms:", "").strip()
+        search_terms = [term.strip() for term in search_terms_line.split(',')]
+        parsed_data["search_terms"] = search_terms
+
+        return parsed_data
+
+    except Exception as e:
+        # Log the parsing error and select a random fallback database
+        print(f"Parsing error: {e}. Selecting a random database as fallback.")
+        
+        # Choose a random fallback database
+        parsed_data = {
+            "database": random.choice(fallback_databases),
+            "search_terms": response
+        }
+        
+        return parsed_data
+
 
 def updateDatabase(state):
     """
