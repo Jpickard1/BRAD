@@ -407,10 +407,15 @@ class Agent():
             self.state = self.reconfig()
             return True
             # continue
+        # Continue previous module
+        elif self.state['continue-module'] is not None:
+            route = self.state['continue-module'][0]
+        # Use router to select correct module
         elif '/force' not in self.state['prompt'].split(' '):     # use the router
             route = self.router(self.state['prompt']).name
             if route is None:
                 route = 'RAG'
+        # Forced routes
         else:
             route = self.state['prompt'].split(' ')[1]            # use the forced router
             if self.state['config']['ROUTER']['build router db']:
@@ -882,7 +887,8 @@ class Agent():
             'search'            : {
                 'used terms' : [],
             },
-            'recursion_depth': 0
+            'recursion_depth': 0,
+            'continue-module': None
         }
         return state
 
