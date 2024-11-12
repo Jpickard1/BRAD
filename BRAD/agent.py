@@ -414,6 +414,8 @@ class Agent():
         # Continue previous module
         elif self.state['continue-module'] is not None:
             route = self.state['continue-module'][0]
+            prinf("continue module is not None!")
+            print(f"{route=}")
         # Use router to select correct module
         elif '/force' not in self.state['prompt'].split(' '):     # use the router
             route = self.router(self.state['prompt']).name
@@ -482,6 +484,7 @@ class Agent():
         elapsed_time = end_time - start_time
         
         # Log and reset these values
+        print(f"WRITE LOG")
         self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=elapsed_time)
         return self.state['output']
 

@@ -162,6 +162,7 @@ def webScrapingStageOne(state):
                 break
             # TODO will need to save these results
             state = scrape_function(st, state)
+            print(f"{state=}")
     except Exception as e:
         output = f'Error occurred while searching on {source}: {e}'
         log.debugLog(output, state=state)
@@ -172,10 +173,29 @@ def webScrapingStageOne(state):
 
 
 def webScrapingStageTwo(state):
+    query    = state['prompt']
+    print(f"webScrapingStageTwo")
+    if query.upper() != 'Y':
+        # TODO: this should route directly to the general chat
+        print('Nothing to download now :)')
+        return state
+    toolHistory = state['continue-module'][1]
+    print(f"{toolHistory=}")
+    scraping_functions = {
+        'ARXIV'   : arxivStageTwo,
+        'BIORXIV' : biorxiv,
+        'PUBMED'  : pubmed
+    }
+    source = next((key for key in scraping_functions if key == toolHistory['database']), 'ARXIV')
+    print(f"{source=}")
+    scrape_function = scraping_functions[source]
+    print(f"{scrape_function=}")
+    state = scrape_function(query, state)
+    print(f"{state=}")
 #    if state['config']['SCRAPE']['add_from_scrape']:
 #        state = updateDatabase(state)
 #    state['output'] = "Articles were successfully downloaded."
-    pass
+    return state
 
 
 def arxivStageOne(query, state):
@@ -215,19 +235,20 @@ def arxivStageOne(query, state):
         if state['interactive'] or state['gui']:
             output += '\n Would you like to download these articles [Y/N]?'
             state = log.userOutput(output, state=state)
-#            download = input().strip().upper()
-#            state['process']['steps'].append(
-#                {
-#                    'func'           : 'scraper.arxiv',
-#                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
-#                    'input'          : download,
-#                    'purpose'        : 'decide to download pdfs or not'
-#                }
-#            )
-#        else:
-#            download = state['SCRAPE']['download_search_results']
+
+    state['continue-module'] = ('SCRAPE', {
+        'database': 'ARXIV',
+        'pdfs': pdfs
+    })
+
     return state
     
+def arxivStageTwo(query, state):
+    pdfs = state['continue-module'][1]['pdfs']
+    pdf_string = arxiv_scrape(pdfs, state)
+    state = log.userOutput("The following articles were downloaded:\n\n"+ pdf_string, state=state)
+    return state
+
 def arxiv(query, state):
     """
     Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.
