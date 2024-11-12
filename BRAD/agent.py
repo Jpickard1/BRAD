@@ -403,6 +403,8 @@ class Agent():
             return True
             # continue
         # Routing
+        # TODO: setting the configuration variables should be removed as a
+        #       feature from the GUI or be guardrailed
         elif self.state['prompt'].startswith('/set'):             # set a configuration variable
             self.state = self.reconfig()
             return True
@@ -411,6 +413,8 @@ class Agent():
             route = self.router(self.state['prompt']).name
             if route is None:
                 route = 'RAG'
+        elif self.state['CONTINUE-MODULE'] is not None:
+            route = self.state['CONTINUE-MODULE'][0] # Name of the module to return to
         else:
             route = self.state['prompt'].split(' ')[1]            # use the forced router
             if self.state['config']['ROUTER']['build router db']:
