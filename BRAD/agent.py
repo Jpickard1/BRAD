@@ -886,7 +886,8 @@ class Agent():
             'search'            : {
                 'used terms' : [],
             },
-            'recursion_depth': 0
+            'recursion_depth': 0,
+            'CONTINUE-MODULE': None
         }
         return state
 
