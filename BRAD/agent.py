@@ -209,6 +209,7 @@ class Agent():
         self.state = self.loadstate(config=config)
         self.name       = name.strip()
         self.state['interactive'] = interactive # By default a chatbot is not interactive
+        self.state['gui'] = gui
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     
         base_dir = os.path.expanduser('~')
@@ -892,7 +893,8 @@ class Agent():
             },
             'recursion_depth': 0,
             'continue-module': None, # None (if not continuing in a module) or tuple (with [0] being the module name)
-            'gui':None               # boolean to indicate if the agent is for the gui
+            'gui':None,              # boolean to indicate if the agent is for the gui
+            'interactive':False
         }
         return state
 
