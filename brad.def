@@ -1,0 +1,40 @@
+Bootstrap: library
+From: ubuntu:sha256.7a63c14842a5c9b9c0567c1530af87afbb82187444ea45fd7473726ca31a598b
+
+%files
+    . /usr/src/brad
+    ./bin/start.sh /usr/src/start.sh
+
+%environment
+    export TZ=UTC/GMT
+    export DEBIAN_FRONTEND=noninteractive
+    export PYTHONDONTWRITEBYTECODE=1
+    export PYTHONUNBUFFERED=1
+
+
+%post
+    mkdir -p /usr/src/brad
+    mkdir -p /usr/src/uploads
+    mkdir -p /usr/src/RAG_Database
+    mkdir /logs
+    apt-get update && apt-get install software-properties-common curl vim -y
+    add-apt-repository ppa:deadsnakes/ppa && apt-get install python3.11 -y
+    ln -sf python3.11 /usr/bin/python3 
+    apt-get install python3-dev -y
+    apt-get install python3-pip -y
+    python3 -m ensurepip
+    pip3 install --no-cache --upgrade pip setuptools
+    python3 --version
+    pip install -r requirements.txt --ignore-installed --no-cache-dir
+
+    pip install /usr/src/brad/
+    pip install langchain==0.3.1
+    
+    curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash \
+    && source ~/.nvm/nvm.sh \
+    && nvm install 20.18.0 \
+    && nvm use 20.18.0 && npm install --prefix /usr/src/brad/brad-chat
+
+
+%startscript
+    bash /usr/src/start.sh
