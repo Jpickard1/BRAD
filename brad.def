@@ -10,6 +10,7 @@ From: ubuntu:sha256.7a63c14842a5c9b9c0567c1530af87afbb82187444ea45fd7473726ca31a
     export DEBIAN_FRONTEND=noninteractive
     export PYTHONDONTWRITEBYTECODE=1
     export PYTHONUNBUFFERED=1
+    export NVM_DIR="/.nvm"
 
 
 %post
@@ -31,9 +32,7 @@ From: ubuntu:sha256.7a63c14842a5c9b9c0567c1530af87afbb82187444ea45fd7473726ca31a
     pip install langchain==0.3.1
     
     curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash \
-    && source ~/.nvm/nvm.sh \
-    && nvm install 20.18.0 \
-    && nvm use 20.18.0 && npm install --prefix /usr/src/brad/brad-chat
+    && . ~/.nvm/nvm.sh && nvm install 20.18.0 && nvm use 20.18.0 && npm install --prefix /usr/src/brad/brad-chat
 
 
 %startscript
