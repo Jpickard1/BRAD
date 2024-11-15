@@ -26,8 +26,9 @@ function ThemeChangeButton() {
         root.style.setProperty('--bg-color', '#FFFFFF'); 
         root.style.setProperty('--base-color', '#F4F4F4'); 
         root.style.setProperty('--font-color', '#5D5D5D'); 
-        root.style.setProperty('--bold-color', '#F9F9F9');
         root.style.setProperty('--hover-color', '#ECECEC'); 
+        root.style.setProperty('--bold-color', '#F9F9F9');
+        root.style.setProperty('--dark-bold-color', '#b2b2b2');
     }
     if (theme == 'dark') {
         root.style.setProperty('--bg-color', '#212121'); 
@@ -35,12 +36,13 @@ function ThemeChangeButton() {
         root.style.setProperty('--font-color', '#f7f7f7'); 
         root.style.setProperty('--hover-color', '#797979'); 
         root.style.setProperty('--bold-color', '#878787');
+        root.style.setProperty('--dark-bold-color', '#1f1f1f');
     }
 
   }, [theme]);
 
   return (
-    <div class='settings'>
+    <div class='settings' className="settings sidebar-setting">
       <button class='theme' onClick={toggleTheme}>
         {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
       </button>

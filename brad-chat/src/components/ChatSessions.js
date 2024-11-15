@@ -243,7 +243,7 @@ function ChatSessions({ setMessages }) {
     <div className="chat-sessions">      
       <p>Chat Sessions</p>
       <button
-        className="session-box"
+        className="session-box new-session"
         onClick={handleNewSession}
       >
         New Session
