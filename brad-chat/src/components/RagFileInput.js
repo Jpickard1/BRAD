@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function RagFileInput() {
-    const [files, setFiles] = useState();
+    const [files, setFiles] = useState([]);
     const [dbName, setDbName] = useState('');  // State to hold the name input
     const [uploadProgress, setUploadProgress] = useState(0);
     const [ragDatabase, setRagDatabase] = useState('Wikipedia');  // Default RAG choice
@@ -127,7 +127,8 @@ function RagFileInput() {
   
 
     return (
-      <div>
+      <div className='sidebar-setting'>
+        <label>Upload Files:</label>
         <div className='rag-file-upload'>
             <form onSubmit={handleSubmit} className="rag-file-input">
                 <input
@@ -138,6 +139,17 @@ function RagFileInput() {
                     onChange={handleNameChange}
                 />
                 <input id="rag-file-input" type="file" name="rag_files" onChange={handleChange} multiple />
+                <label  for="rag-file-input">Choose File</label>
+                {Array.from(files).length > 0 && (
+                  <div className="file-names">
+                    {/* <strong>Selected Files:</strong> */}
+                    <ul>
+                      {Array.from(files).map((file, index) => (
+                        <li key={index}>{file.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <button id="rag-file-submit" type="submit">upload {String.fromCodePoint('0x25B2')}</button>
                 <progress value={uploadProgress} max="100"></progress>
             </form>
