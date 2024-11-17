@@ -102,7 +102,13 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
     <div className="sidebar-right">
       <h2>Settings</h2>
 
-      <div className="setting-option">
+      <div className="usage-stats sidebar-setting">
+          <h3>Usage Statistics</h3>
+          <p><b>Session Calls: </b>{usageCalls}</p>
+          <p><b>Session Usage Fee: </b>{usageFees}</p>
+      </div>
+
+      <div className="setting-option sidebar-setting">
         <label htmlFor="llm-choice">Choose LLM:</label>
         <select id="llm-choice" value={llmChoice} onChange={handleLlmChange}>
           {availableLLMs.length > 0 ? (
@@ -120,11 +126,6 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
 
       <RagFileInput />
       <ThemeChangeButton />
-      <div className="usage-stats">
-          <h3>Usage Statistics</h3>
-          <p><b>Session Calls: </b>{usageCalls}</p>
-          <p><b>Session Usage Fee: </b>{usageFees}</p>
-      </div>
       
     </div>
 

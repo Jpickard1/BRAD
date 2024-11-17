@@ -363,6 +363,7 @@ def invoke(request):
         "response-log-dict": llm_usage.get('process'),
         "llm-usage": llm_usage
     }
+    brad.save_state()
     return jsonify(response_data)
 
 @bp.route("/databases/create", methods=['POST'])
