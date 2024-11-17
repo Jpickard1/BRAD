@@ -215,7 +215,7 @@ def arxivStageOne(query, state):
     print(f"{pdfs=}")
     print(f"search method worked!")
     process['search results'] = df
-    displayDf = df[['Title', 'Authors', 'Abstract']]
+    displayDf = set_arxiv_df_display(df, pdfs)
     print(f"{displayDf=}")
 
     output = "\n\n"
@@ -242,7 +242,56 @@ def arxivStageOne(query, state):
     })
 
     return state
+
+def set_arxiv_df_display(df, pdfs):
+    """
+    Modify an arXiv DataFrame to include clickable markdown links for paper titles.
+
+    This function processes a DataFrame containing paper information from arXiv
+    and updates the 'Title' column to include clickable markdown links that point
+    to the corresponding PDF URLs. It also retains the 'Authors' column for display.
+
+    Parameters:
+        df (pandas.DataFrame): The DataFrame containing the arXiv data. 
+                               It must include a 'Title' and an 'Authors' column.
+        pdfs (list of str): A list of URLs corresponding to the PDF links for the papers.
+                            The order of URLs should match the order of titles in the DataFrame.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing two columns:
+                          - 'Title': Titles converted into clickable markdown links.
+                          - 'Authors': The original authors column from the input DataFrame.
+
+    Raises:
+        ValueError: If the length of the `pdfs` list does not match the number of titles in `df`.
+
+    Example:
+        >>> df = pd.DataFrame({'Title': ['Paper A', 'Paper B'], 'Authors': ['Author X', 'Author Y']})
+        >>> pdfs = ['http://arxiv.org/pdf/paperA.pdf', 'http://arxiv.org/pdf/paperB.pdf']
+        >>> display_df = set_arxiv_df_display(df, pdfs)
+        >>> print(display_df)
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: Nov. 17, 2024
     
+    # Check if the lengths of titles and PDF links match
+    if len(df['Title']) != len(pdfs):
+        raise ValueError("The number of titles in the DataFrame must match the number of PDF URLs.")
+
+    # Select relevant columns
+    display_df = df[['Title', 'Authors']].copy()
+
+    # Create markdown links for titles
+    markdown_titles = [
+        f"[{title}]({pdf})"
+        for title, pdf in zip(display_df['Title'].values, pdfs)
+    ]
+    display_df['Title'] = markdown_titles
+
+    return display_df
+
+
 def arxivStageTwo(query, state):
     pdfs = state['continue-module'][1]['pdfs']
     pdf_string = arxiv_scrape(pdfs, state)
