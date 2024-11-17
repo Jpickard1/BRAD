@@ -74,6 +74,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from BRAD.promptTemplates import scrapeTemplate
 from BRAD import utils
 from BRAD import log
+from BRAD import justchat
 
 def webScraping(state):
     """
@@ -178,6 +179,7 @@ def webScrapingStageTwo(state):
     if query.upper() != 'Y':
         # TODO: this should route directly to the general chat
         print('Nothing to download now :)')
+        state = justchat.llm_only(state)
         return state
     toolHistory = state['continue-module'][1]
     print(f"{toolHistory=}")
