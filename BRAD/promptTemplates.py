@@ -483,11 +483,11 @@ Latex Version=<put paragraphs here>
 """
     return template
 
-def historyChatTemplate():
+def history_chat_template():
     template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
     return template
 
-def getDefaultContext():
+def get_default_context():
     llmContext = """Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,
 bioinformatics, genetics, and data science. You can be connected to a text database to augment your answers
 based on the literature with Retrieval Augmented Generation, or you can use several additional modules including

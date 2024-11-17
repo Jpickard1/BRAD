@@ -44,9 +44,8 @@ from sentence_transformers import SentenceTransformer, util
 import logging
 
 from BRAD.promptTemplates import (
-    historyChatTemplate,
-    summarizeDocumentTemplate,
-    getDefaultContext,
+    history_chat_template,
+    get_default_context,
 )
 
 # Extraction
@@ -85,7 +84,7 @@ def llm_only(state):
     memory = state["memory"]  # get the memory of the model
 
     # Get information to invoke the llm
-    template = historyChatTemplate()
+    template = history_chat_template()
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
     conversation = ConversationChain(
         prompt=PROMPT,
@@ -93,7 +92,7 @@ def llm_only(state):
         verbose=state["config"]["debug"],
         memory=memory,
     )
-    prompt = getDefaultContext() + prompt
+    prompt = get_default_context() + prompt
 
     # Invoke LLM tracking its usage
     start_time = time.time()
