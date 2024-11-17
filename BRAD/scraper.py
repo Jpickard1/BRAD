@@ -95,7 +95,7 @@ def webScraping(state):
     else:
         # Download from the database
         state = webScrapingStageTwo(state)
-    state['continue-module'] = None
+        state['continue-module'] = None
     return state
 
 def webScrapingStageOne(state):
