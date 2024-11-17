@@ -59,25 +59,16 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from sentence_transformers import SentenceTransformer, util
 
-#BERTscore
 import logging
-# import transformers
-# transformers.tokenization_utils.logger.setLevel(logging.ERROR)
-# transformers.configuration_utils.logger.setLevel(logging.ERROR)
-# transformers.modeling_utils.logger.setLevel(logging.ERROR)
 
 from BRAD.promptTemplates import historyChatTemplate, summarizeDocumentTemplate, getDefaultContext
-
 
 #Extraction
 import re
 
-
-
-import BRAD.gene_ontology as gonto
-from BRAD.gene_ontology import geneOntology
 from BRAD import utils
 from BRAD import log
+from BRAD import justchat
 
 # History:
 #  2024-09-22: Changing the chains to return information regarding API usage
@@ -191,45 +182,7 @@ def queryDocs(state):
             )
         )
     else:
-        template = historyChatTemplate()
-        PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
-        conversation = ConversationChain(prompt  = PROMPT,
-                                         llm     = llm,
-                                         verbose = state['config']['debug'],
-                                         memory  = memory,
-                                        )
-        prompt = getDefaultContext() + prompt
-
-        # Invoke LLM tracking its usage
-        start_time = time.time()
-        with get_openai_callback() as cb:
-            response = conversation.predict(input=prompt)
-        responseDetails = {
-            'content' : response,
-            'time' : time.time() - start_time,
-            'call back': {
-                "Total Tokens": cb.total_tokens,
-                "Prompt Tokens": cb.prompt_tokens,
-                "Completion Tokens": cb.completion_tokens,
-                "Total Cost (USD)": cb.total_cost
-            }
-        }
-        # Log the LLM response
-        state['process']['steps'].append(
-            log.llmCallLog(
-                llm=llm,
-                prompt=PROMPT,
-                input=prompt,
-                output=responseDetails,
-                parsedOutput=response,
-                apiInfo=responseDetails['call back'],
-                purpose='chat without RAG'
-            )
-        )
-
-        # Display output to the user
-        state = log.userOutput(response, state=state)
-        # state['output'] = response
+        state = justchat.llm_only(state)
     return state
 
 
