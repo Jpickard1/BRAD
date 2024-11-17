@@ -206,7 +206,7 @@ class Agent():
         #   state was packed as a class variable and used similar to before, but it
         #   is likely reasonable to split this variable up into separate class variables.
         # super().__init__()
-        self.state = self.loadstate(config=config)
+        self.state = self.load_state(config=config)
         self.name       = name.strip()
         self.state['interactive'] = interactive # By default a chatbot is not interactive
         self.state['gui'] = gui
@@ -414,7 +414,7 @@ class Agent():
         # Continue previous module
         elif self.state['continue-module'] is not None:
             route = self.state['continue-module'][0]
-            prinf("continue module is not None!")
+            print("continue module is not None!")
             print(f"{route=}")
         # Use router to select correct module
         elif '/force' not in self.state['prompt'].split(' '):     # use the router
@@ -860,7 +860,7 @@ class Agent():
             state = log.userOutput("Configuration " + str(key) + " not found", state=self.state)
         return state
 
-    def loadstate(self, config=None):
+    def load_state(self, config=None):
         """
         Initializes and loads the agent state with default values and configuration settings.
     
