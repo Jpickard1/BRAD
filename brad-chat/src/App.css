@@ -409,23 +409,32 @@ pre > code {
   flex-direction: column;
   gap: 1rem;
   padding: 2rem;
-  color: #f0f0f0;
+  opacity: 0; /* Hidden initially */
+  transform: translateY(-200px); /* Move up initially */
+  transition: opacity 0.5s ease, transform 0.5s ease; /* Smooth animation */
+}
+
+.suggestions-container.loaded {
+  opacity: 1; /* Fully visible after loaded */
+  transform: translateY(0); /* Move to original position */
 }
 
 .suggestion-box {
-  background-color: #f0f0f0;
+  background-color: var(--suggestion-color, #ff0000); /* Default background */
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   padding: 1.5rem;
   font-size: 1.1rem;
   text-align: center;
   cursor: pointer;
+  color: #000000; /* Set text color to black */
   transition: background-color 0.3s ease;
 }
 
 .suggestion-box:hover {
-  background-color: #d9e9ff;
+  background-color: var(--hover-color, #d9e9ff); /* Dynamic hover color */
 }
+
 
 .sidebar-setting input[type="file"] {
     padding: 1em;
