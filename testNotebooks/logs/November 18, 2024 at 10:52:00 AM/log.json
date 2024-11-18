@@ -1,0 +1,59 @@
+{
+    "0": {
+        "time": "Mon Nov 18 10:52:10 2024",
+        "elapsed time": 0,
+        "prompt": null,
+        "output": "\nWould you like to use a database with BRAD [Y/N]?Welcome to RAG! The chat log from this conversation will be saved to /home/machoi/RAG2/RAG-DEV/testNotebooks/logs/November 18, 2024 at 10:52:00 AM/log.json. How can I help?",
+        "process": {},
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    },
+    "1": {
+        "time": "Mon Nov 18 10:52:12 2024",
+        "elapsed time": 1.9447526931762695,
+        "prompt": "PUBMED Cellular Reprogramming",
+        "output": "Articles were successfully downloaded.",
+        "process": {
+            "module": "SCRAPE",
+            "steps": [
+                {
+                    "llm": "gpt-3.5-turbo-0125",
+                    "memory": "chat_memory=InMemoryChatMessageHistory(messages=[HumanMessage(content='PUBMED Cellular Reprogramming'), AIMessage(content='Database: PUBMED\\nSearch Terms: cellular reprogramming, induced pluripotent stem cells, direct reprogramming, transcription factor reprogramming, epigenetic reprogramming, cell fate conversion, lineage reprogramming, somatic cell reprogramming, cellular reprogramming mechanisms, cellular reprogramming applications')]) ai_prefix='BRAD'",
+                    "prompt": "input_variables=['history', 'input'] template='Current conversation:\\n{history}\\n\\nQuery:{input}\\n\\nFrom the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose at least 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Do not include general purpose search terms such as \"recent advances\", \"novel\", \"current research\", \"latest trends\", \"theoretical foundations\", or other general query terms. Also, do not use very general fields as serch terms such as: \"dynamical systems\", \"machine learning\", or \"single cell\". It is correct to use these terms with modifications to be more specific, so that \"biological dynamical systems\", \"machine learning for genomics\", or \"single cell clustering\" would be good terms to search.\\n\\nThe following search terms have been previously uses and identical terms should be avoided in this search: []\\n\\n**Format your output as follows. Do not include any addition information:**\\nDatabase: <ARXIV, PUBMED, or BIORXIV>\\nSearch Terms: <improved search terms>\\n'",
+                    "input": "PUBMED Cellular Reprogramming",
+                    "output": "Database: PUBMED\nSearch Terms: cellular reprogramming, induced pluripotent stem cells, direct reprogramming, transcription factor reprogramming, epigenetic reprogramming, cell fate conversion, lineage reprogramming, somatic cell reprogramming, cellular reprogramming mechanisms, cellular reprogramming applications",
+                    "parsedOutput": {
+                        "database": "PUBMED",
+                        "search_terms": [
+                            "cellular reprogramming",
+                            "induced pluripotent stem cells",
+                            "direct reprogramming",
+                            "transcription factor reprogramming",
+                            "epigenetic reprogramming",
+                            "cell fate conversion",
+                            "lineage reprogramming",
+                            "somatic cell reprogramming",
+                            "cellular reprogramming mechanisms",
+                            "cellular reprogramming applications"
+                        ]
+                    },
+                    "api-info": null,
+                    "purpose": "identify how to web scrape"
+                },
+                {
+                    "searched": "ERROR"
+                }
+            ]
+        },
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    }
+}

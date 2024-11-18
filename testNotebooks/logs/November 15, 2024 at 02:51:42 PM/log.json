@@ -1,0 +1,191 @@
+{
+    "0": {
+        "time": "Fri Nov 15 14:51:50 2024",
+        "elapsed time": 0,
+        "prompt": null,
+        "output": "\nWould you like to use a database with BRAD [Y/N]?Welcome to RAG! The chat log from this conversation will be saved to /home/machoi/RAG2/RAG-DEV/testNotebooks/logs/November 15, 2024 at 02:51:42 PM/log.json. How can I help?",
+        "process": {},
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    },
+    "1": {
+        "time": "Fri Nov 15 14:52:06 2024",
+        "elapsed time": 2.2169647216796875,
+        "prompt": "SCRAPE PUBMED for Pore-C literature",
+        "output": "As a chatbot, I do not have the capability to directly scrape PubMed for literature. However, I can provide information on Pore-C technology based on existing knowledge. Pore-C is a method used in genomics to study chromatin structure and organization at the single-cell level. It involves the use of nanopore sequencing to analyze chromatin accessibility and DNA methylation patterns in individual cells. This technology has been instrumental in advancing our understanding of epigenetic regulation and gene expression in various biological processes. If you would like more specific information or references on Pore-C literature, I recommend searching PubMed directly or consulting relevant scientific journals in the field of genomics and epigenetics.",
+        "process": {
+            "module": "RAG",
+            "steps": [
+                {
+                    "llm": "client=<openai.resources.chat.completions.Completions object at 0x1474059f7250> async_client=<openai.resources.chat.completions.AsyncCompletions object at 0x147405a07550> model_name='gpt-3.5-turbo-0125' temperature=0.0 openai_api_key=SecretStr('**********') openai_proxy=''",
+                    "memory": "None",
+                    "prompt": "input_variables=['history', 'input'] template='Current conversation: {history}\\n\\n\\nNew Input: \\n{input}'",
+                    "input": "Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,\nbioinformatics, genetics, and data science. You can be connected to a text database to augment your answers\nbased on the literature with Retrieval Augmented Generation, or you can use several additional modules including\nsearching the web for new articles, searching Gene Ontology or Enrichr bioinformatics databases, running snakemake\nand matlab pipelines, or analyzing your own codes. Please answer the following questions to the best of your\nability.\n\nPrompt: SCRAPE PUBMED for Pore-C literature",
+                    "output": "{'content': 'As a chatbot, I do not have the capability to directly scrape PubMed for literature. However, I can provide information on Pore-C technology based on existing knowledge. Pore-C is a method used in genomics to study chromatin structure and organization at the single-cell level. It involves the use of nanopore sequencing to analyze chromatin accessibility and DNA methylation patterns in individual cells. This technology has been instrumental in advancing our understanding of epigenetic regulation and gene expression in various biological processes. If you would like more specific information or references on Pore-C literature, I recommend searching PubMed directly or consulting relevant scientific journals in the field of genomics and epigenetics.', 'time': 2.130453586578369, 'call back': {'Total Tokens': 278, 'Prompt Tokens': 141, 'Completion Tokens': 137, 'Total Cost (USD)': 0.000276}}",
+                    "parsedOutput": "As a chatbot, I do not have the capability to directly scrape PubMed for literature. However, I can provide information on Pore-C technology based on existing knowledge. Pore-C is a method used in genomics to study chromatin structure and organization at the single-cell level. It involves the use of nanopore sequencing to analyze chromatin accessibility and DNA methylation patterns in individual cells. This technology has been instrumental in advancing our understanding of epigenetic regulation and gene expression in various biological processes. If you would like more specific information or references on Pore-C literature, I recommend searching PubMed directly or consulting relevant scientific journals in the field of genomics and epigenetics.",
+                    "api-info": {
+                        "Total Tokens": 278,
+                        "Prompt Tokens": 141,
+                        "Completion Tokens": 137,
+                        "Total Cost (USD)": 0.000276
+                    },
+                    "purpose": "chat without RAG"
+                }
+            ]
+        },
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    },
+    "2": {
+        "time": "Fri Nov 15 14:52:21 2024",
+        "elapsed time": 1.4517266750335693,
+        "prompt": "pubmed for Pore-C literature",
+        "output": "No articles were searched.",
+        "process": {
+            "module": "SCRAPE",
+            "steps": [
+                {
+                    "llm": "gpt-3.5-turbo-0125",
+                    "memory": "chat_memory=InMemoryChatMessageHistory(messages=[HumanMessage(content='Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,\\nbioinformatics, genetics, and data science. You can be connected to a text database to augment your answers\\nbased on the literature with Retrieval Augmented Generation, or you can use several additional modules including\\nsearching the web for new articles, searching Gene Ontology or Enrichr bioinformatics databases, running snakemake\\nand matlab pipelines, or analyzing your own codes. Please answer the following questions to the best of your\\nability.\\n\\nPrompt: SCRAPE PUBMED for Pore-C literature'), AIMessage(content='As a chatbot, I do not have the capability to directly scrape PubMed for literature. However, I can provide information on Pore-C technology based on existing knowledge. Pore-C is a method used in genomics to study chromatin structure and organization at the single-cell level. It involves the use of nanopore sequencing to analyze chromatin accessibility and DNA methylation patterns in individual cells. This technology has been instrumental in advancing our understanding of epigenetic regulation and gene expression in various biological processes. If you would like more specific information or references on Pore-C literature, I recommend searching PubMed directly or consulting relevant scientific journals in the field of genomics and epigenetics.'), HumanMessage(content='pubmed for Pore-C literature'), AIMessage(content='Database: PUBMED\\nSearch Terms: \\n1. Pore-C sequencing\\n2. Single-cell chromatin analysis\\n3. Nanopore technology in genomics\\n4. Chromatin accessibility at single-cell level\\n5. DNA methylation patterns in individual cells\\n6. Epigenetic regulation with Pore-C\\n7. Gene expression profiling using Pore-C\\n8. Pore-C applications in epigenomics\\n9. Single-cell chromatin structure analysis\\n10. Pore-C methodology advancements')]) ai_prefix='BRAD'",
+                    "prompt": "input_variables=['history', 'input'] template='Current conversation:\\n{history}\\n\\nQuery:{input}\\n\\nFrom the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose at least 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Do not include general purpose search terms such as \"recent advances\", \"novel\", \"current research\", \"latest trends\", \"theoretical foundations\", or other general query terms. Also, do not use very general fields as serch terms such as: \"dynamical systems\", \"machine learning\", or \"single cell\". It is correct to use these terms with modifications to be more specific, so that \"biological dynamical systems\", \"machine learning for genomics\", or \"single cell clustering\" would be good terms to search.\\n\\nThe following search terms have been previously uses and identical terms should be avoided in this search: []\\n\\n**Format your output as follows. Do not include any addition information:**\\nDatabase: <ARXIV, PUBMED, or BIORXIV>\\nSearch Terms: <improved search terms>\\n'",
+                    "input": "pubmed for Pore-C literature",
+                    "output": "Database: PUBMED\nSearch Terms: \n1. Pore-C sequencing\n2. Single-cell chromatin analysis\n3. Nanopore technology in genomics\n4. Chromatin accessibility at single-cell level\n5. DNA methylation patterns in individual cells\n6. Epigenetic regulation with Pore-C\n7. Gene expression profiling using Pore-C\n8. Pore-C applications in epigenomics\n9. Single-cell chromatin structure analysis\n10. Pore-C methodology advancements",
+                    "parsedOutput": {
+                        "database": "PUBMED",
+                        "search_terms": [
+                            ""
+                        ]
+                    },
+                    "api-info": null,
+                    "purpose": "identify how to web scrape"
+                }
+            ]
+        },
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    },
+    "3": {
+        "time": "Fri Nov 15 15:04:36 2024",
+        "elapsed time": 1.8837180137634277,
+        "prompt": "",
+        "output": "No articles were searched.",
+        "process": {
+            "module": "SCRAPE",
+            "steps": [
+                {
+                    "llm": "gpt-3.5-turbo-0125",
+                    "memory": "chat_memory=InMemoryChatMessageHistory(messages=[HumanMessage(content='Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,\\nbioinformatics, genetics, and data science. You can be connected to a text database to augment your answers\\nbased on the literature with Retrieval Augmented Generation, or you can use several additional modules including\\nsearching the web for new articles, searching Gene Ontology or Enrichr bioinformatics databases, running snakemake\\nand matlab pipelines, or analyzing your own codes. Please answer the following questions to the best of your\\nability.\\n\\nPrompt: SCRAPE PUBMED for Pore-C literature'), AIMessage(content='As a chatbot, I do not have the capability to directly scrape PubMed for literature. However, I can provide information on Pore-C technology based on existing knowledge. Pore-C is a method used in genomics to study chromatin structure and organization at the single-cell level. It involves the use of nanopore sequencing to analyze chromatin accessibility and DNA methylation patterns in individual cells. This technology has been instrumental in advancing our understanding of epigenetic regulation and gene expression in various biological processes. If you would like more specific information or references on Pore-C literature, I recommend searching PubMed directly or consulting relevant scientific journals in the field of genomics and epigenetics.'), HumanMessage(content='pubmed for Pore-C literature'), AIMessage(content='Database: PUBMED\\nSearch Terms: \\n1. Pore-C sequencing\\n2. Single-cell chromatin analysis\\n3. Nanopore technology in genomics\\n4. Chromatin accessibility at single-cell level\\n5. DNA methylation patterns in individual cells\\n6. Epigenetic regulation with Pore-C\\n7. Gene expression profiling using Pore-C\\n8. Pore-C applications in epigenomics\\n9. Single-cell chromatin structure analysis\\n10. Pore-C methodology advancements'), HumanMessage(content=''), AIMessage(content='Database: PUBMED\\nSearch Terms: \\n1. Pore-C sequencing advancements\\n2. Single-cell chromatin accessibility analysis\\n3. Nanopore technology for epigenomics\\n4. Chromatin structure at single-cell resolution\\n5. DNA methylation profiling with Pore-C\\n6. Epigenetic modifications using Pore-C\\n7. Gene expression regulation in Pore-C studies\\n8. Pore-C applications in chromatin biology\\n9. Single-cell epigenetic analysis with Pore-C\\n10. Pore-C methodology optimization')]) ai_prefix='BRAD'",
+                    "prompt": "input_variables=['history', 'input'] template='Current conversation:\\n{history}\\n\\nQuery:{input}\\n\\nFrom the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose at least 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Do not include general purpose search terms such as \"recent advances\", \"novel\", \"current research\", \"latest trends\", \"theoretical foundations\", or other general query terms. Also, do not use very general fields as serch terms such as: \"dynamical systems\", \"machine learning\", or \"single cell\". It is correct to use these terms with modifications to be more specific, so that \"biological dynamical systems\", \"machine learning for genomics\", or \"single cell clustering\" would be good terms to search.\\n\\nThe following search terms have been previously uses and identical terms should be avoided in this search: []\\n\\n**Format your output as follows. Do not include any addition information:**\\nDatabase: <ARXIV, PUBMED, or BIORXIV>\\nSearch Terms: <improved search terms>\\n'",
+                    "input": "",
+                    "output": "Database: PUBMED\nSearch Terms: \n1. Pore-C sequencing advancements\n2. Single-cell chromatin accessibility analysis\n3. Nanopore technology for epigenomics\n4. Chromatin structure at single-cell resolution\n5. DNA methylation profiling with Pore-C\n6. Epigenetic modifications using Pore-C\n7. Gene expression regulation in Pore-C studies\n8. Pore-C applications in chromatin biology\n9. Single-cell epigenetic analysis with Pore-C\n10. Pore-C methodology optimization",
+                    "parsedOutput": {
+                        "database": "PUBMED",
+                        "search_terms": [
+                            ""
+                        ]
+                    },
+                    "api-info": null,
+                    "purpose": "identify how to web scrape"
+                }
+            ]
+        },
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    },
+    "4": {
+        "time": "Fri Nov 15 15:04:46 2024",
+        "elapsed time": 1.4120330810546875,
+        "prompt": "pubmed pore-c",
+        "output": "No articles were searched.",
+        "process": {
+            "module": "SCRAPE",
+            "steps": [
+                {
+                    "llm": "gpt-3.5-turbo-0125",
+                    "memory": "chat_memory=InMemoryChatMessageHistory(messages=[HumanMessage(content='Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,\\nbioinformatics, genetics, and data science. You can be connected to a text database to augment your answers\\nbased on the literature with Retrieval Augmented Generation, or you can use several additional modules including\\nsearching the web for new articles, searching Gene Ontology or Enrichr bioinformatics databases, running snakemake\\nand matlab pipelines, or analyzing your own codes. Please answer the following questions to the best of your\\nability.\\n\\nPrompt: SCRAPE PUBMED for Pore-C literature'), AIMessage(content='As a chatbot, I do not have the capability to directly scrape PubMed for literature. However, I can provide information on Pore-C technology based on existing knowledge. Pore-C is a method used in genomics to study chromatin structure and organization at the single-cell level. It involves the use of nanopore sequencing to analyze chromatin accessibility and DNA methylation patterns in individual cells. This technology has been instrumental in advancing our understanding of epigenetic regulation and gene expression in various biological processes. If you would like more specific information or references on Pore-C literature, I recommend searching PubMed directly or consulting relevant scientific journals in the field of genomics and epigenetics.'), HumanMessage(content='pubmed for Pore-C literature'), AIMessage(content='Database: PUBMED\\nSearch Terms: \\n1. Pore-C sequencing\\n2. Single-cell chromatin analysis\\n3. Nanopore technology in genomics\\n4. Chromatin accessibility at single-cell level\\n5. DNA methylation patterns in individual cells\\n6. Epigenetic regulation with Pore-C\\n7. Gene expression profiling using Pore-C\\n8. Pore-C applications in epigenomics\\n9. Single-cell chromatin structure analysis\\n10. Pore-C methodology advancements'), HumanMessage(content=''), AIMessage(content='Database: PUBMED\\nSearch Terms: \\n1. Pore-C sequencing advancements\\n2. Single-cell chromatin accessibility analysis\\n3. Nanopore technology for epigenomics\\n4. Chromatin structure at single-cell resolution\\n5. DNA methylation profiling with Pore-C\\n6. Epigenetic modifications using Pore-C\\n7. Gene expression regulation in Pore-C studies\\n8. Pore-C applications in chromatin biology\\n9. Single-cell epigenetic analysis with Pore-C\\n10. Pore-C methodology optimization'), HumanMessage(content='pubmed pore-c'), AIMessage(content='Database: PUBMED\\nSearch Terms: \\n1. Pore-C sequencing optimization\\n2. Single-cell chromatin accessibility profiling\\n3. Nanopore technology for chromatin analysis\\n4. Chromatin structure dynamics in single cells\\n5. DNA methylation patterns in Pore-C studies\\n6. Epigenetic modifications with nanopore sequencing\\n7. Gene expression regulation using Pore-C\\n8. Pore-C applications in epigenetic research\\n9. Single-cell chromatin conformation analysis\\n10. Pore-C methodology enhancements')]) ai_prefix='BRAD'",
+                    "prompt": "input_variables=['history', 'input'] template='Current conversation:\\n{history}\\n\\nQuery:{input}\\n\\nFrom the query, decide if ARXIV, PUBMED, or BIORXIV should be searched, and propose at least 10 search terms for this query and database. Separate each term with a comma, and provide no extra information/explination for either the database or search terms. Do not include general purpose search terms such as \"recent advances\", \"novel\", \"current research\", \"latest trends\", \"theoretical foundations\", or other general query terms. Also, do not use very general fields as serch terms such as: \"dynamical systems\", \"machine learning\", or \"single cell\". It is correct to use these terms with modifications to be more specific, so that \"biological dynamical systems\", \"machine learning for genomics\", or \"single cell clustering\" would be good terms to search.\\n\\nThe following search terms have been previously uses and identical terms should be avoided in this search: []\\n\\n**Format your output as follows. Do not include any addition information:**\\nDatabase: <ARXIV, PUBMED, or BIORXIV>\\nSearch Terms: <improved search terms>\\n'",
+                    "input": "pubmed pore-c",
+                    "output": "Database: PUBMED\nSearch Terms: \n1. Pore-C sequencing optimization\n2. Single-cell chromatin accessibility profiling\n3. Nanopore technology for chromatin analysis\n4. Chromatin structure dynamics in single cells\n5. DNA methylation patterns in Pore-C studies\n6. Epigenetic modifications with nanopore sequencing\n7. Gene expression regulation using Pore-C\n8. Pore-C applications in epigenetic research\n9. Single-cell chromatin conformation analysis\n10. Pore-C methodology enhancements",
+                    "parsedOutput": {
+                        "database": "PUBMED",
+                        "search_terms": [
+                            ""
+                        ]
+                    },
+                    "api-info": null,
+                    "purpose": "identify how to web scrape"
+                }
+            ]
+        },
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    },
+    "5": {
+        "time": "Fri Nov 15 15:13:26 2024",
+        "elapsed time": 0.7469391822814941,
+        "prompt": "what can you tlel me",
+        "output": "BRAD: I apologize, but it seems like your question got cut off. Could you please provide more context or clarify your query so I can assist you better?",
+        "process": {
+            "module": "RAG",
+            "steps": [
+                {
+                    "llm": "client=<openai.resources.chat.completions.Completions object at 0x1474059f7250> async_client=<openai.resources.chat.completions.AsyncCompletions object at 0x147405a07550> model_name='gpt-3.5-turbo-0125' temperature=0.0 openai_api_key=SecretStr('**********') openai_proxy=''",
+                    "memory": "None",
+                    "prompt": "input_variables=['history', 'input'] template='Current conversation: {history}\\n\\n\\nNew Input: \\n{input}'",
+                    "input": "Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,\nbioinformatics, genetics, and data science. You can be connected to a text database to augment your answers\nbased on the literature with Retrieval Augmented Generation, or you can use several additional modules including\nsearching the web for new articles, searching Gene Ontology or Enrichr bioinformatics databases, running snakemake\nand matlab pipelines, or analyzing your own codes. Please answer the following questions to the best of your\nability.\n\nPrompt: what can you tlel me",
+                    "output": "{'content': 'BRAD: I apologize, but it seems like your question got cut off. Could you please provide more context or clarify your query so I can assist you better?', 'time': 0.7422480583190918, 'call back': {'Total Tokens': 793, 'Prompt Tokens': 760, 'Completion Tokens': 33, 'Total Cost (USD)': 0.00042950000000000003}}",
+                    "parsedOutput": "BRAD: I apologize, but it seems like your question got cut off. Could you please provide more context or clarify your query so I can assist you better?",
+                    "api-info": {
+                        "Total Tokens": 793,
+                        "Prompt Tokens": 760,
+                        "Completion Tokens": 33,
+                        "Total Cost (USD)": 0.00042950000000000003
+                    },
+                    "purpose": "chat without RAG"
+                }
+            ]
+        },
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    },
+    "6": {
+        "time": "Fri Nov 15 15:13:36 2024",
+        "elapsed time": 0.0869743824005127,
+        "prompt": "what can you code",
+        "output": "",
+        "process": {
+            "module": "CODE",
+            "steps": []
+        },
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    }
+}

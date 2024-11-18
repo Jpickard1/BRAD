@@ -1,0 +1,15 @@
+{
+    "0": {
+        "time": "Fri Nov 15 14:50:23 2024",
+        "elapsed time": 0,
+        "prompt": null,
+        "output": "\nWould you like to use a database with BRAD [Y/N]?Welcome to RAG! The chat log from this conversation will be saved to /home/machoi/RAG2/RAG-DEV/testNotebooks/logs/November 15, 2024 at 02:48:31 PM/log.json. How can I help?",
+        "process": {},
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    }
+}

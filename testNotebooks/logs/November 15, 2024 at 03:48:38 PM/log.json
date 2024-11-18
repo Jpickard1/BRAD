@@ -1,0 +1,31 @@
+{
+    "0": {
+        "time": "Fri Nov 15 15:48:40 2024",
+        "elapsed time": 0,
+        "prompt": null,
+        "output": "\nWould you like to use a database with BRAD [Y/N]?Welcome to RAG! The chat log from this conversation will be saved to /home/machoi/RAG2/RAG-DEV/testNotebooks/logs/November 15, 2024 at 03:48:38 PM/log.json. How can I help?",
+        "process": {},
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    },
+    "1": {
+        "time": "Fri Nov 15 15:48:41 2024",
+        "elapsed time": 0.1836698055267334,
+        "prompt": "PUBMED Cellular Reprogramming",
+        "output": "",
+        "process": {
+            "module": "SCRAPE",
+            "steps": []
+        },
+        "status": {
+            "databases": "{'RAG': None}",
+            "current documents": null,
+            "queue pointer": 0,
+            "queue": []
+        }
+    }
+}
