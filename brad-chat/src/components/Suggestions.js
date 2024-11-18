@@ -14,7 +14,7 @@ function Suggestions({ onSuggestionClick }) {
     "Get Help"
   ];
 
-  const [shuffledSuggestions, setShuffledSuggestions] = useState([]);
+  const [finalSuggestions, setFinalSuggestions] = useState([]);
   const [loaded, setLoaded] = useState(false); // Track when component is fully loaded
 
   const colors = [
@@ -24,13 +24,37 @@ function Suggestions({ onSuggestionClick }) {
     "#ffa500"
   ]; // Example color palette
 
-  // Shuffle the suggestions and apply colors
+  // Function to shuffle an array (used for both suggestions and colors)
+  const shuffleArray = (array) => {
+    const arrayCopy = [...array]; // Copy the array to avoid in-place mutation
+    for (let i = arrayCopy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arrayCopy[i], arrayCopy[j]] = [arrayCopy[j], arrayCopy[i]]; // Swap elements
+    }
+    return arrayCopy;
+  };
+
+  // Prepare the suggestions
   useEffect(() => {
-    const shuffled = [...suggestionsList].sort(() => Math.random() - 0.5); // Randomize order
-    setShuffledSuggestions(
-      shuffled.map((suggestion, index) => ({
+    // Filter out "Get Help" from the randomization pool
+    const randomPool = suggestionsList.filter(suggestion => suggestion !== "Get Help");
+
+    // Select 3 random suggestions from the pool
+    const randomSuggestions = randomPool
+      .sort(() => Math.random() - 0.5) // Shuffle
+      .slice(0, 3); // Pick first 3 after shuffle
+
+    // Add "Get Help" to the final list
+    const selectedSuggestions = [...randomSuggestions, "Get Help"];
+
+    // Shuffle the colors array
+    const shuffledColors = shuffleArray([...colors]);
+
+    // Map with colors
+    setFinalSuggestions(
+      selectedSuggestions.map((suggestion, index) => ({
         text: suggestion,
-        color: colors[index % colors.length],
+        color: shuffledColors[index % shuffledColors.length],
       }))
     );
 
@@ -38,9 +62,10 @@ function Suggestions({ onSuggestionClick }) {
     setTimeout(() => setLoaded(true), 1000); // Add delay to allow the DOM to render
   }, []);
 
+
   return (
     <div className={`suggestions-container ${loaded ? 'loaded' : ''}`}>
-      {shuffledSuggestions.map((suggestion, index) => (
+      {finalSuggestions.map((suggestion, index) => (
         <div
           key={index}
           className="suggestion-box"
