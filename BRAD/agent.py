@@ -56,36 +56,16 @@ The `Agent` class is organized as follows:
 
 # Standard
 import pandas as pd
-# from copy import deepcopy
 import os
 import shutil
-# import sys
-# from importlib import reload
-# import textwrap
-# from scipy import sparse
-# import importlib
-# from itertools import product
 from datetime import datetime as dt
-# from IPython.display import display # displaying dataframes
-# import string
 import warnings
-# import re
 import json
 import logging
 import time
 from typing import Optional, List
 import pickle
 import atexit
-
-
-# Bioinformatics
-# import gget
-
-# Plotting
-# import matplotlib
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-
 
 # Router
 from semantic_router.layer import RouteLayer
@@ -106,8 +86,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains.question_answering import load_qa_chain
 from langchain.output_parsers import CommaSeparatedListOutputParser
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
-from langchain.memory import ConversationBufferMemory                   # used for Agent memory
-
+from langchain.memory import ConversationBufferMemory
 
 # LangChain Core
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
@@ -199,13 +178,16 @@ class Agent():
         # - 2024-10-06: .chatstatus was renamed .state
         # - 2024-10-16: if the restart location doesn't have a log, then a new agent
         #               is created
-        # - 2024-11-06: added optional argement start_dir to initialize an agent from a new directory if the user prefers
+        # - 2024-11-18: configurations are automatically read/written from created sessions
+        #               when turning the Agent back on
         #
         # Issues:
         # - We should change the structure of the classes/modules. In this 1st iteration
         #   state was packed as a class variable and used similar to before, but it
         #   is likely reasonable to split this variable up into separate class variables.
-        # super().__init__()
+        # - Current configurations only allow either a specific configuration file or a
+        #   configuration file from a previous chat session (dominate) - JP
+
         self.state = self.load_state(config=config)
         self.name       = name.strip()
         self.state['interactive'] = interactive # By default a chatbot is not interactive
@@ -247,6 +229,18 @@ class Agent():
                     logging.error(f"Failed to load agent state from {state_file}: {e}")
             else:
                 logging.info(f"No existing state file found in {new_log_dir}, starting fresh.")
+
+            # Update from the old configurations
+            config_file = os.path.join(new_log_dir, 'config.json')
+            if os.path.exists(config_file):
+                try:
+                    saved_configs = self.load_config(config_file)
+                    self.state['config'] = saved_configs
+                    logging.info(f"Loaded configuration from {config_file}")
+                except Exception as e:
+                    logging.error(f"Failed to load configuration from {config_file}: {e}")
+            else:
+                logging.info(f"No configuration file found at {config_file}.")
 
         if max_api_calls is None:
             max_api_calls = 1000
@@ -292,10 +286,6 @@ class Agent():
 
         if 'output-directory' not in self.state or not self.state['output-directory']:
             self.state['output-directory'] = new_log_dir
-
-        # if self.state['config']['experiment']:
-        #     self.experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
-        #     self.state['experiment-output'] = '-'.join(experimentName.split())
     
         # Initialize all modules
         self.module_functions = self.getModules()

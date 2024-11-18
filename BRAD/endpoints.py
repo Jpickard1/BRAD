@@ -793,9 +793,6 @@ def sessions_create():
     #       jpic@umich.edu
     # Date: October 17, 2024
 
-    # request_data = request.json
-    # print(f"{request_data=}")
-
     # Log the incoming request
     logger.info(f"Received request to create a new session")
     # Create the new agent
@@ -808,6 +805,25 @@ def sessions_create():
 
     # Create the new agent
     logger.info(f"Agent active at path: {brad.chatname}")
+
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Define source and destination paths
+    source_path = os.path.join(script_dir, 'config', 'config.json')
+
+    # brad.chatname ends with 'log.json' which is removed with [:-8]
+    destination_path = os.path.join(brad.chatname[:-8], 'config.json')
+
+    # Copy the file
+    try:
+        shutil.copy(source_path, destination_path)
+        print(f"Configuration file copied to: {destination_path}")
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
 
     # Try to remove the session directory
     try:
