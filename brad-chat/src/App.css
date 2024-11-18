@@ -354,6 +354,14 @@ pre > code {
   border-radius: 1em;
 }
 
+.settings-button {
+  width: 100%;
+  padding: 1.5em;
+  background-color: var(--bg-color);
+  color: var(--font-color);
+  border-radius: 1em;
+}
+
 .hidden {
   display: none
 }
