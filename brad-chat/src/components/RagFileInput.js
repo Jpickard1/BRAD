@@ -24,13 +24,53 @@ function RagFileInput() {
     };
 
     // Handlers for new Search Settings
-    const handleNumArticlesChange = (e) => {
-      const value = e.target.value;
-      if (/^\d*$/.test(value)) { // Ensures only numbers are entered
-        setNumArticles(value);
-      }
+    const handleNumArticlesChange = async (e) => {
+        const newValue = e.target.value; // Get the updated value from the input field
+        setNumArticles(newValue); // Update the state with the new value
+    
+        // Ensure the newValue is a valid number before proceeding
+        if (!newValue || isNaN(newValue) || parseInt(newValue, 10) < 1) {
+            alert("Please enter a valid number greater than or equal to 1.");
+            return;
+        }
+    
+        try {
+            // API endpoint URL
+            const url = '/api/configure/RAG/numberArticles';
+            console.log("url:", url);
+            // JSON payload to send
+            const payload = {
+                session: localStorage.getItem('current-session'), // Pass your session identifier here
+                number_articles: parseInt(newValue, 10),
+            };
+            console.log("payload:", payload);
+    
+            // Make the POST request
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+            console.log("response:", response);
+    
+            // Handle the response
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Configuration updated successfully:", data);
+                alert("Number of articles retrieved updated successfully!");
+            } else {
+                const errorData = await response.json();
+                console.error("Error updating configuration:", errorData);
+                alert(`Failed to update configuration: ${errorData.message || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error("An error occurred while updating configuration:", error);
+            alert("An error occurred while updating the number of articles retrieved.");
+        }
     };
-
+  
     const handleRetrievalMechanismChange = (e) => setRetrievalMechanism(e.target.value);
 
     const handleContextualCompressionToggle = () => setContextualCompression(!contextualCompression);
@@ -193,7 +233,8 @@ function RagFileInput() {
               type="number"
               min="1"
               value={numArticles}
-              onChange={handleNumArticlesChange}
+              onChange={(e) => setNumArticles(e.target.value)} // Updates the state without triggering the API call
+              onKeyDown={handleNumArticlesChange} // Trigger API call only on Enter
               placeholder="Enter a number"
             />
           </div>
