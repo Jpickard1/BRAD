@@ -61,7 +61,7 @@ from sentence_transformers import SentenceTransformer, util
 
 import logging
 
-from BRAD.promptTemplates import historyChatTemplate, summarizeDocumentTemplate, getDefaultContext
+from BRAD.promptTemplates import history_chat_template, summarize_document_template, get_default_context
 
 #Extraction
 import re
@@ -288,7 +288,7 @@ def contextualCompression(docs, state):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: July 5, 2024
-    template = summarizeDocumentTemplate()
+    template = summarize_document_template()
     PROMPT = PromptTemplate(input_variables=["user_query"], template=template)
     reducedDocs = []
     for i, doc in enumerate(docs):

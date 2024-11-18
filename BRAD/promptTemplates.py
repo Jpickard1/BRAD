@@ -331,7 +331,7 @@ This output should be exactly one line and no longer. Stop the response after th
 """
     return template
 
-def summarizeDocumentTemplate():
+def summarize_document_template():
     template = """**INSTRUCTIONS**
 You are an assistant responsible for compressing the important information in a document.
 You will be given a users query and a piece of text. Summarize the text with the following aims:
