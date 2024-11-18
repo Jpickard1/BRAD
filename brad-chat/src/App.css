@@ -344,3 +344,26 @@ pre > code {
 #rag-db-name {
   margin: 1em;
 }
+
+.suggestions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+  color: #f0f0f0;
+}
+
+.suggestion-box {
+  background-color: #f0f0f0;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  font-size: 1.1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.suggestion-box:hover {
+  background-color: #d9e9ff;
+}
