@@ -10,6 +10,11 @@ function RagFileInput() {
     // const [isApiEntryVisible, setIsApiEntryVisible] = useState(false); // Only if you want to show/hide the popup
     const [availableDatabases, setAvailableDatabases] = useState([]);  // Hold available databases
 
+    // New state variables for Search Settings
+    const [numArticles, setNumArticles] = useState('');
+    const [retrievalMechanism, setRetrievalMechanism] = useState('MMR');
+    const [contextualCompression, setContextualCompression] = useState(false);
+
     function handleChange(event) {
         setFiles(event.target.files);
     }
@@ -17,6 +22,18 @@ function RagFileInput() {
     const handleNameChange = (e) => {
         setDbName(e.target.value);  // Update the state when name input changes
     };
+
+    // Handlers for new Search Settings
+    const handleNumArticlesChange = (e) => {
+      const value = e.target.value;
+      if (/^\d*$/.test(value)) { // Ensures only numbers are entered
+        setNumArticles(value);
+      }
+    };
+
+    const handleRetrievalMechanismChange = (e) => setRetrievalMechanism(e.target.value);
+
+    const handleContextualCompressionToggle = () => setContextualCompression(!contextualCompression);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -128,9 +145,19 @@ function RagFileInput() {
 
     return (
       <div className='sidebar-setting'>
-        <label>Upload Files:</label>
+        
+        <div className="setting-option-choose-db">
+          <label htmlFor="rag-database"><b>Choose Database:</b></label>
+          <select id="rag-database" value={ragDatabase} onChange={handleRagChange}>
+            {availableDatabases.map((db, index) => (
+              <option key={index} value={db}>{db}</option>
+            ))}
+          </select>
+        </div>
+
+        <label><b>Upload Files:</b></label>
         <div className='rag-file-upload'>
-            <form onSubmit={handleSubmit} className="rag-file-input">
+          <form onSubmit={handleSubmit} className="rag-file-input">
                 <input
                     id="rag-db-name"
                     type="text"
@@ -154,13 +181,48 @@ function RagFileInput() {
                 <progress value={uploadProgress} max="100"></progress>
             </form>
         </div>
-        <div className="setting-option-choose-db">
-          <label htmlFor="rag-database">Choose RAG Database:</label>
-          <select id="rag-database" value={ragDatabase} onChange={handleRagChange}>
-            {availableDatabases.map((db, index) => (
-              <option key={index} value={db}>{db}</option>
-            ))}
-          </select>
+
+        {/* Search Settings */}
+        <label><b>Search Settings:</b></label>
+        <div className="search-settings">
+          {/* Number of Articles Retrieved */}
+          <div className="setting-option">
+            <label htmlFor="num-articles"><b>Number of Articles Retrieved:</b></label>
+            <input
+              id="num-articles"
+              type="number"
+              min="1"
+              value={numArticles}
+              onChange={handleNumArticlesChange}
+              placeholder="Enter a number"
+            />
+          </div>
+
+          {/* Retrieval Mechanism */}
+          <div className="setting-option">
+            <label htmlFor="retrieval-mechanism"><b>Retrieval Mechanism:</b></label>
+            <select
+              id="retrieval-mechanism"
+              value={retrievalMechanism}
+              onChange={handleRetrievalMechanismChange}
+            >
+              <option value="MMR">MMR</option>
+              <option value="similarity">Similarity</option>
+              <option value="multiquery">Multiquery</option>
+            </select>
+          </div>
+
+          {/* Contextual Compression */}
+          <div className="setting-option">
+            <label htmlFor="contextual-compression"><b>Contextual Compression:</b></label>
+            <input
+              id="contextual-compression"
+              type="checkbox"
+              checked={contextualCompression}
+              onChange={handleContextualCompressionToggle}
+            />
+            <span>{contextualCompression ? 'On' : 'Off'}</span>
+          </div>
         </div>
       </div>
     );
