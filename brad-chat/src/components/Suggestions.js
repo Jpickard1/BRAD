@@ -62,7 +62,6 @@ function Suggestions({ onSuggestionClick }) {
     setTimeout(() => setLoaded(true), 1000); // Add delay to allow the DOM to render
   }, []);
 
-
   return (
     <div className={`suggestions-container ${loaded ? 'loaded' : ''}`}>
       {finalSuggestions.map((suggestion, index) => (
@@ -70,12 +69,27 @@ function Suggestions({ onSuggestionClick }) {
           key={index}
           className="suggestion-box"
           style={{
-            '--suggestion-color': suggestion.color, // Set background color variable
+            '--suggestion-color': suggestion.color, // Set shuffled color variable
             '--hover-color': "#d9e9ff", // Set hover color variable
           }}
-          onClick={() => onSuggestionClick(suggestion.text)}
         >
-          {suggestion.text}
+          {/* Check if the suggestion is "Get Help" and make it a link */}
+          {suggestion.text === "Get Help" ? (
+            <a
+              href="https://brad-bioinformatics-retrieval-augmented-data.readthedocs.io/_/downloads/en/latest/pdf/" // Replace with your desired URL
+              target="_blank"
+              rel="noopener noreferrer" // Ensures security when opening a new tab
+              style={{
+                '--suggestion-color': suggestion.color, // Set shuffled color variable
+                '--hover-color': "#d9e9ff", // Set hover color variable
+              }}
+//              style={{ color: suggestion.color, textDecoration: 'none' }}
+            >
+              {suggestion.text}
+            </a>
+          ) : (
+            <span onClick={() => onSuggestionClick(suggestion.text)}>{suggestion.text}</span>
+          )}
         </div>
       ))}
     </div>
