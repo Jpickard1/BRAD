@@ -11,6 +11,16 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
   const [availableDatabases, setAvailableDatabases] = useState([]);  // Hold available databases
   const [availableLLMs, setAvailableLLMs] = useState([]);  // State to hold fetched LLM models
   const [loading, setLoading] = useState(true);  // State to track loading
+  const [isLLMVisible, setIsLLMVisible] = useState(false);
+  const [isRAGVisible, setIsRAGVisible] = useState(false);
+
+  const toggleLLMVisibility = () => {
+    setIsLLMVisible(!isLLMVisible);
+  };
+
+  const toggleRAGVisibility = () => {
+    setIsRAGVisible(!isRAGVisible);
+  };
 
   // Fetch available LLM models on component mount
   // Fetch available LLM models on component mount
@@ -90,46 +100,61 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
       setIsApiEntryVisible(false);
   };
 
-
-  /*
-        <div className="right-side-bar">
-        <button onClick={handleOpenApiEntry}>Enter API Key</button>
-        {isApiEntryVisible && <PopUpApiEntry onClose={handleCloseApiEntry} />}
-      </div>
-  */
-
   return (
     <div className="sidebar-right">
       <h2>Settings</h2>
 
-      <div className="usage-stats sidebar-setting">
-          <h3>Usage Statistics</h3>
-          <p><b>Session Calls: </b>{usageCalls}</p>
-          <p><b>Session Usage Fee: </b>{usageFees}</p>
+      {/* LLM Settings Section */}
+      <div className="setting-group">
+        <button class='theme' className="toggle-button" onClick={toggleLLMVisibility}>
+          {isLLMVisible ? 'Hide LLM Settings' : 'Show LLM Settings'}
+        </button>
+        {isLLMVisible && (
+          <div className="llm-settings">
+            <div className="usage-stats sidebar-setting">
+              <h3>Usage Statistics</h3>
+              <p><b>Session Calls: </b>{usageCalls}</p>
+              <p><b>Session Usage Fee: </b>{usageFees}</p>
+            </div>
+
+            <div className="setting-option sidebar-setting">
+              <label htmlFor="llm-choice">Choose LLM:</label>
+              <select id="llm-choice" value={llmChoice} onChange={handleLlmChange}>
+                {availableLLMs.length > 0 ? (
+                  availableLLMs.map((model, index) => (
+                    <option key={index} value={model}>
+                      {model}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>Loading models...</option>
+                )}
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="setting-option sidebar-setting">
-        <label htmlFor="llm-choice">Choose LLM:</label>
-        <select id="llm-choice" value={llmChoice} onChange={handleLlmChange}>
-          {availableLLMs.length > 0 ? (
-            availableLLMs.map((model, index) => (
-              <option key={index} value={model}>
-                {model}
-              </option>
-            ))
-          ) : (
-            <option value="" disabled>Loading models...</option>
-          )}
-        </select>
+      {/* RAG Settings Section */}
+      <div className="setting-group">
+        <button class='theme' className="toggle-button" onClick={toggleRAGVisibility}>
+          {isRAGVisible ? 'Hide RAG Settings' : 'Show RAG Settings'}
+        </button>
+        {isRAGVisible && (
+          <div className="rag-settings">
+            <RagFileInput />
+          </div>
+        )}
       </div>
 
+      {/* Display Section */}
+      <div className="setting-group">
+        {/*<h3>Display Settings</h3>*/}
+        <ThemeChangeButton />
+      </div>
 
-      <RagFileInput />
-      <ThemeChangeButton />
-      
     </div>
-
-  );
+  );    
 }
 
 export default RightSideBar;
