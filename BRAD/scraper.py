@@ -207,9 +207,77 @@ def arxiv(query, state):
         output += arxiv_scrape(pdfs, state)
     return output, process
 
+def fetch_details(id_list):
+    """
+    Fetches metadata for a list of PubMed article IDs from the PubMed database using the Entrez API.
+
+    Parameters:
+    id_list (list of str): A list of PubMed article IDs (e.g., ['12345678', '23456789']) to retrieve details for.
+
+    Returns:
+    dict: A dictionary containing the parsed XML response from PubMed with metadata for the specified articles.
+          The structure of the dictionary depends on the contents of the PubMed entries.
+
+    Raises:
+    Exception: If the Entrez request fails or there is an issue with the provided PubMed IDs.
+
+    Notes:
+    - The function requires an active internet connection and the Biopython library (`Bio.Entrez`).
+    - The email address 'inhyak@gmail.com' is used to identify the user when making requests to the NCBI Entrez API.
+    """
+    ids = ','.join(id_list)
+    Entrez.email = 'inhyak@gmail.com'
+    handle = Entrez.efetch(db='pubmed',
+                           retmode='xml',
+                           id=ids)
+    results = Entrez.read(handle)
+    return results
 
 
-def search_pubmed_article(query, number_of_articles=10, state=None):
+def pubmed(query, state):
+    """
+    Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.
+
+    :param query: The search query for arXiv.
+    :type query: str
+
+    :return: A tuple containing the output message and a process dictionary.
+    :rtype: tuple
+
+    """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+    process = {}
+    output = 'searching the following on pubmed: ' + query
+    state = log.userOutput(output, state=state)
+    df, pdfs = pubmed_search(query, 10, state=state)
+    process['search results'] = df
+    display(df.head(10))
+    if state['config']['SCRAPE']['save_search_results']:
+        utils.save(state, df, "pubmed-search-" + str(query) + '.csv')
+    if len(state['queue']) == 0:
+        if state['interactive']:
+            output += '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput('Would you like to download these articles [Y/N]?', state=state)
+            download = input().strip().upper()
+            state['process']['steps'].append(
+                {
+                    'func'           : 'scraper.pubmed',
+                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+                    'input'          : download,
+                    'purpose'        : 'decide to download pdfs or not'
+                }
+            )
+        else:
+            download = state['SCRAPE']['download_search_results']
+    else:
+        download = 'Y'
+    process['download'] = (download == 'Y')
+    if download == 'Y':
+        output += pubmed_scrape(pdfs, state)
+    return output, process
+
+def pubmed_search(query, number_of_articles=10, state=None):
     """
     Searches PubMed for articles matching the specified query and retrieves their PMIDs.
 
@@ -232,9 +300,36 @@ def search_pubmed_article(query, number_of_articles=10, state=None):
     record = Entrez.read(handle)
     log.debugLog(f'record={str(record)}', state=state)
     handle.close()
-    return record['IdList']
+    
+    title_list = []
+    author_list = []
+    abstract_list = []
+    journal_list = []
+    language_list = []
+    for i in range(len(record['IdList'])):
+        chunk = record['IdList'][i]
+        papers = fetch_details(chunk)
+        for i, paper in enumerate (papers['PubmedArticle']):
+            title_list.append(paper['MedlineCitation']['Article']['ArticleTitle'])
+            author_names = []
+            try:
+                for author in paper['MedlineCitation']['Article']['AuthorList']:
+                    full_name = f"{author.get('ForeName', '')} {author.get('LastName', '')}".strip()
+                    author_names.append(full_name)
+            except KeyError:
+                author_names.append('No Author Found')
+            author_list.append('; '.join(author_names) if author_names else 'No Author Found')
+            try:
+                abstract_list.append(paper['MedlineCitation']['Article']['Abstract']['AbstractText'][0])
+            except:
+                abstract_list.append('No Abstract')
+                journal_list.append(paper['MedlineCitation']['Article']['Journal']['Title'])
+                language_list.append(paper['MedlineCitation']['Article']['Language'][0])
+    df = pd.DataFrame(list(zip(title_list, author_list, abstract_list)), columns=['Title', 'Authors', 'Abstract'])
 
-def pubmed(query, state):
+    return df, record['IdList']
+
+def pubmed_scrape(pmid_list, state):
     """
     Scrapes PubMed for articles matching the query, retrieves their PMIDs, and downloads available PDFs.
 
@@ -244,51 +339,39 @@ def pubmed(query, state):
     # Auth: Marc Choi
     #       machoi@umich.edu
 
-    pmid_list = search_pubmed_article(query, state=state)
-    citation_arr = []
-    if pmid_list:
-        for pmid in pmid_list:
-            citation = pmid
-            citation_arr.append(citation)
-        s = HTMLSession()
-
-        headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
-
-        try: 
-            path = utils.pdfDownloadPath(state) # os.path.abspath(os.getcwd()) + '/specialized_docs'
-            os.makedirs(path, exist_ok = True)
-            log.debugLog("Directory '%s' created successfully" % path, state=state)
-        except OSError as error: 
-            log.debugLog("Directory '%s' can not be created" % path, state=state)
-        for pmc in citation_arr:
-            try:
-                base_url = 'https://pubmed.ncbi.nlm.nih.gov/'
-                r = s.get(base_url + pmc + '/', headers = headers, timeout = 5)
-                if r.html.find('a.id-link', first=True) is not None:
-                    pdf_url = r.html.find('a.id-link', first=True).attrs['href']
-                    if 'ncbi.nlm.nih.gov' not in pdf_url:
-                        continue
-                    r = s.get(pdf_url, headers = headers, timeout = 5)
-                    try:
-                        ending = r.html.find('a.int-view', first=True).attrs['href']
-                        pdf_real = 'https://ncbi.nlm.nih.gov'+ending
-                        r = s.get(pdf_real, stream=True, timeout = 5)
-                        with open(os.path.join(path, pmc + '.pdf'), 'wb') as f:
-                            for chunk in r.iter_content(chunk_size = 1024):
-                                if chunk:
-                                    f.write(chunk)
-                    except AttributeError as e:
-                        print(e)
-                        log.debugLog(f"{pmc} could not be gathered.", state=state)
-                        pass                
+    s = HTMLSession()
+    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'}
+    try: 
+        path = utils.pdfDownloadPath(state) # os.path.abspath(os.getcwd()) + '/specialized_docs'
+        os.makedirs(path, exist_ok = True)
+        log.debugLog("Directory '%s' created successfully" % path, state=state)
+    except OSError as error: 
+        log.debugLog("Directory '%s' can not be created" % path, state=state)
+    for pmc in pmid_list:
+        try:
+            base_url = 'https://pubmed.ncbi.nlm.nih.gov/'
+            r = s.get(base_url + pmc + '/', headers = headers, timeout = 5)
+            if r.html.find('a.id-link', first=True) is not None:
+                pdf_url = r.html.find('a.id-link', first=True).attrs['href']
+                if 'ncbi.nlm.nih.gov' not in pdf_url:
+                    continue
+                r = s.get(pdf_url, headers = headers, timeout = 5)
+                try:
+                    ending = r.html.find('a.int-view', first=True).attrs['href']
+                    pdf_real = 'https://ncbi.nlm.nih.gov'+ending
+                    r = s.get(pdf_real, stream=True, timeout = 5)
+                    with open(os.path.join(path, pmc + '.pdf'), 'wb') as f:
+                        for chunk in r.iter_content(chunk_size = 1024):
+                            if chunk:
+                                f.write(chunk)
+                except AttributeError as e:
+                    print(e)
+                    log.debugLog(f"{pmc} could not be gathered.", state=state)
+                    pass                
                     
-            except ConnectionError as e:
-                pass
-                log.debugLog(f"{pmc} could not be gathered.", state=state)
-
-    else:
-        log.debugLog("no articles found", state=state)
-    log.debugLog("pdf collection complete!", state=state)
+        except ConnectionError as e:
+            pass
+            log.debugLog(f"{pmc} could not be gathered.", state=state)
 
 def biorxiv(query, state):
     """
