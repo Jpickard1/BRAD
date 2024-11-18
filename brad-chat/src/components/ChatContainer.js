@@ -4,8 +4,6 @@ import MessageInput from './MessageInput';
 import Suggestions from './Suggestions';
 import "highlight.js/styles/github.css";
 import hljs from "highlight.js";
-// Import useCallback if needed
-// import React, { useCallback, useEffect } from 'react';
 
 function ChatContainer({ messages, onSendMessage }) {
 
@@ -21,7 +19,7 @@ function ChatContainer({ messages, onSendMessage }) {
 
   return (
     <div className="chat-container">
-      {/* Display suggestions if no messages, otherwise display the messages */}
+      {/* Display suggestions if no messages, or if the only message is a bot welcome message */}
       {messages.length === 0 ? (
         <Suggestions onSuggestionClick={onSendMessage} />
       ) : (
@@ -30,6 +28,7 @@ function ChatContainer({ messages, onSendMessage }) {
       {/* Message input is displayed regardless of messages */}
       <MessageInput onSendMessage={onSendMessage} />
     </div>
+
   );
 }
 

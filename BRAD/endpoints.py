@@ -825,7 +825,7 @@ def sessions_create():
             "success": True,
             "session-name": brad_name,
             "message": f"New session activated.",
-            "display": chat_history
+            "display": [], # chat_history
             }
         )
         logger.info(f"Response constructed: {response}")
