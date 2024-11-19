@@ -1529,24 +1529,21 @@ def llm_apikey(request):
     #       jpic@umich.edu
     # Date: October 16, 2024
 
-    # TODO: implement logic to allow OpenAI keys to be processed similarly
-    # TODO: allow these keys to be written to a file that can be read from later
-
     request_data = request.json
     print(request_data)
-    nvidia_key = request_data.get("nvidia-api-key")  # Get the NVIDIA API key from the request body
+    api_key = request_data.get("api-key")  # Get the NVIDIA API key from the request body
 
-    if not nvidia_key:
-        logger.error("No NVIDIA API key provided.")
-        return jsonify({"message": "NVIDIA API key is required."}), 400  # Return error if no key provided
-
-    # Here, you can add logic to store the API key securely
-    # For example, save it to a configuration file or a secure database
-
-    logger.info(f"Received NVIDIA API key: {nvidia_key}")
-    
-    # Example of saving the key (you might want to implement proper security measures)
-    os.environ["NVIDIA_API_KEY"] = nvidia_key
-
-    return jsonify({"message": "NVIDIA API key set successfully."}), 200  # Success response
+    # OpenAI
+    if api_key.startswith('sk'):
+        logger.info(f"Received OPENAI API key: {api_key}")            
+        os.environ["OPENAI_API_KEY"] = api_key
+        return jsonify({"message": "OPENAI API key set successfully."}), 200  # Success response
+    # NVIDIA
+    elif api_key.startswith('nvapi'):
+        logger.info(f"Received NVIDIA API key: {api_key}")    
+        # Example of saving the key (you might want to implement proper security measures)
+        os.environ["NVIDIA_API_KEY"] = api_key
+        return jsonify({"message": "NVIDIA API key set successfully."}), 200  # Success response
+    else:
+        return jsonify({"message": "API key was not successfully set."}), 400  # Success response
 
