@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PopUpApiEntry from './PopUpApiEntry'
 import RagFileInput from './RagFileInput';
 import ThemeChangeButton from './ThemeChange';
+import SearchSettings from './SearchSettings'
 
 function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
 //  const [llmChoice, setLlmChoice] = useState('GPT-4');  // Default LLM choice
@@ -13,6 +14,7 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
   const [loading, setLoading] = useState(true);  // State to track loading
   const [isLLMVisible, setIsLLMVisible] = useState(false);
   const [isRAGVisible, setIsRAGVisible] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [apiKey, setApiKey] = useState('');
 
   const toggleLLMVisibility = () => {
@@ -21,6 +23,10 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
 
   const toggleRAGVisibility = () => {
     setIsRAGVisible(!isRAGVisible);
+  };
+
+  const toggleSearchVisibility = () => {
+    setIsSearchVisible(!isSearchVisible);
   };
 
   const handleApiKeyChange = (e) => {
@@ -112,7 +118,7 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
       {/* LLM Settings Section */}
       <div className="setting-group">
         <button className="settings-button" onClick={toggleLLMVisibility}>
-          {isLLMVisible ? 'Hide LLM Settings' : 'Show LLM Settings'}
+          {isLLMVisible ? 'Hide LLM Settings' : 'LLM Settings'}
         </button>
         {isLLMVisible && (
           <div className="llm-settings">
@@ -152,7 +158,7 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
       {/* RAG Settings Section */}
       <div className="setting-group">
         <button className="settings-button" onClick={toggleRAGVisibility}>
-          {isRAGVisible ? 'Hide RAG Settings' : 'Show RAG Settings'}
+          {isRAGVisible ? 'Hide RAG Settings' : 'RAG Settings'}
         </button>
         {isRAGVisible && (
           <div className="rag-settings">
@@ -160,6 +166,19 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
           </div>
         )}
       </div>
+
+      {/* Online Search Settings Section */}
+      <div className="setting-group">
+        <button className="settings-button" onClick={toggleSearchVisibility}>
+          {isSearchVisible ? 'Hide Search Settings' : 'Search Settings'}
+        </button>
+        {isSearchVisible && (
+          <div className="search-settings">
+            <SearchSettings />
+          </div>
+        )}
+      </div>
+
 
       {/* Display Section */}
       <div className="setting-group">
