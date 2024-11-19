@@ -416,11 +416,8 @@ def configure_RAG_numberArticles(request):
     # Date: November 18, 2024
 
     request_data = request.json
-#    print(f"{request_data=}")
     brad_session = request_data.get("session", None)
-#    print(f"{brad_session=}")
     number_articles = request_data.get("number_articles")
-#    print(f"{number_articles=}")
     brad = AgentFactory(
         session_path=brad_session, 
         persist_directory=DATABASE_FOLDER,
@@ -430,7 +427,6 @@ def configure_RAG_numberArticles(request):
 
     # Update and save configurations
     brad.state['config']['RAG']['num_articles_retrieved'] = int(number_articles)
-#    print(f"{brad.state=}")
     brad.save_config()
 
     response_data = {
@@ -438,6 +434,142 @@ def configure_RAG_numberArticles(request):
     }
     return jsonify(response_data), 200
 
+@bp.route("/configure/RAG/contextualCompression", methods=['POST'])
+def ep_configure_RAG_contextualCompression():
+    return configure_RAG_contextualCompression(request)
+
+def configure_RAG_contextualCompression(request):
+    """
+    Configure the contextual compression by the RAG system.
+
+    This endpoint updates the RAG (Retrieval-Augmented Generation) configuration to specify if contextual
+    compression should be applied to each document.
+
+    **Input Request Structure**:
+    The input request should be a JSON object with the following format:
+    json
+
+    >>> {
+    >>>     "session": "/path/to/session/directory",
+    >>>     "contextual_compression": true
+    >>> }
+
+    - **session**: (str) The file path to the session directory containing agent data.
+    - **contextual_compression**: (bool) The value to set the contextual compression configuration.
+
+    **Output Response Structure**:
+    The response will be a JSON object confirming the update:
+
+    >>> {
+    >>>     "message": "looks good"
+    >>> }
+
+    - **message**: (str) Confirmation message indicating the operation was successful.
+
+    **Error Handling**:
+    If the request is invalid or an error occurs during processing, the endpoint may return an error response:
+    json
+
+    >>> {
+    >>>     "message": "Error message describing the issue"
+    >>> }
+
+    :param request: A Flask request object containing JSON data with session and number_articles.
+    :type request: flask.Request
+    :return: A JSON response confirming the configuration update or an error message.
+    :rtype: dict
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: November 18, 2024
+
+    request_data = request.json
+    brad_session = request_data.get("session", None)
+    contextual_compression = request_data.get("contextual_compression")
+    brad = AgentFactory(
+        session_path=brad_session, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
+
+    # Update and save configurations
+    brad.state['config']['RAG']['contextual_compression'] = contextual_compression
+    brad.save_config()
+
+    response_data = {
+        "message": "looks good"
+    }
+    return jsonify(response_data), 200
+
+@bp.route("/configure/RAG/searchMechanism", methods=['POST'])
+def ep_configure_RAG_searchMechanism():
+    return configure_RAG_searchMechanism(request)
+
+def configure_RAG_searchMechanism(request):
+    """
+    Configure the retrieval method of the RAG system.
+
+    This endpoint updates the RAG (Retrieval-Augmented Generation) to set which retrieval method is used
+
+    **Input Request Structure**:
+    The input request should be a JSON object with the following format:
+    json
+
+    >>> {
+    >>>     "session": "/path/to/session/directory",
+    >>>     "search_method": <MMR, Similarity, Multi>
+    >>> }
+
+    - **session**: (str) The file path to the session directory containing agent data.
+    - **search_method**: (str) The search method to use.
+
+    **Output Response Structure**:
+    The response will be a JSON object confirming the update:
+
+    >>> {
+    >>>     "message": "looks good"
+    >>> }
+
+    - **message**: (str) Confirmation message indicating the operation was successful.
+
+    **Error Handling**:
+    If the request is invalid or an error occurs during processing, the endpoint may return an error response:
+    json
+
+    >>> {
+    >>>     "message": "Error message describing the issue"
+    >>> }
+
+    :param request: A Flask request object containing JSON data with session and number_articles.
+    :type request: flask.Request
+    :return: A JSON response confirming the configuration update or an error message.
+    :rtype: dict
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: November 18, 2024
+
+    request_data = request.json
+    brad_session = request_data.get("session", None)
+    search_method = request_data.get("search_method")
+    brad = AgentFactory(
+        session_path=brad_session, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
+
+    # Update and save configurations
+    search_methods = ['multiquery', 'similarity', 'mmr']
+    for method in search_methods:
+        brad.state['config']['RAG'][method] = (method == search_method)
+    brad.save_config()
+
+    response_data = {
+        "message": "looks good"
+    }
+    return jsonify(response_data), 200
 
 @bp.route("/databases/create", methods=['POST'])
 def ep_databases_create():
