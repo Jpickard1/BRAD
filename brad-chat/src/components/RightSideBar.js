@@ -13,6 +13,7 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
   const [loading, setLoading] = useState(true);  // State to track loading
   const [isLLMVisible, setIsLLMVisible] = useState(false);
   const [isRAGVisible, setIsRAGVisible] = useState(false);
+  const [apiKey, setApiKey] = useState('');
 
   const toggleLLMVisibility = () => {
     setIsLLMVisible(!isLLMVisible);
@@ -21,6 +22,10 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
   const toggleRAGVisibility = () => {
     setIsRAGVisible(!isRAGVisible);
   };
+
+  const handleApiKeyChange = (e) => {
+    setApiKey(e.target.value);
+  };  
 
   // Fetch available LLM models on component mount
   // Fetch available LLM models on component mount
@@ -129,6 +134,16 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
               <h3>Usage Statistics</h3>
               <p><b>Session Calls: </b>{usageCalls}</p>
               <p><b>Session Usage Fee: </b>{usageFees}</p>
+            </div>
+            <div className="api-key-input sidebar-setting">
+              <label htmlFor="api-key"><b>Enter API Key:</b></label>
+              <input
+                type="text"
+                id="api-key"
+                value={apiKey}
+                onChange={handleApiKeyChange}
+                placeholder="Enter your API key"
+              />
             </div>
           </div>
         )}
