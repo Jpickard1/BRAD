@@ -1487,17 +1487,16 @@ def ep_llm_apikey():
 
 def llm_apikey(request):
     """
-    Set the NVIDIA API key for the BRAD agent.
+    Set the API key for the BRAD agent.
 
-    This endpoint allows users to provide an NVIDIA API key, which will be stored securely
+    This endpoint allows users to provide an OPENAI or NVIDIA API key, which will be stored securely
     for use by the BRAD agent. The key can be used for authentication when accessing NVIDIA services.
-    The function currently supports only the NVIDIA API key but may be extended to process other API keys in the future.
 
     **Request Structure**:
     The request must contain a JSON body with the following fields:
 
         >>> {
-        >>>   "nvidia-api-key": "str"  # The NVIDIA API key to be set
+        >>>   "api-key": "str"  # The NVIDIA API key to be set
         >>> }
 
     - nvidia-api-key (str): The NVIDIA API key to be set (Required).
@@ -1512,7 +1511,7 @@ def llm_apikey(request):
     On failure (missing API key), the response will contain:
 
         >>> {
-        >>>   "message": "NVIDIA API key is required."
+        >>>   "message": "API key was not successfully set."
         >>> }
 
     :param request_data: JSON data containing the NVIDIA API key.
