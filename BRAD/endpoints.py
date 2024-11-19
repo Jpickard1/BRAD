@@ -110,6 +110,12 @@ logger = logging.getLogger(__name__)
 #                                  GLOBALS                                    #
 ###############################################################################
 
+NVIDIA_LLM_MODELS = [
+    "meta/llama3-70b-instruct",
+    "mistralai/mistral-7b-instruct-v0.3",
+    "microsoft/phi-3.5-mini-instruct",
+    "google/gemma-2-2b-it"
+]
 
 UPLOAD_FOLDER = None
 DATABASE_FOLDER = None
@@ -1375,7 +1381,7 @@ def llm_get():
     # Date: October 20, 2024
     try:
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        models = []
+        models = NVIDIA_LLM_MODELS
         for model in client.models.list():
             models.append(model.id)
         response = jsonify({"success": True, "models": models})
