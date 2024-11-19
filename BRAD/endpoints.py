@@ -159,7 +159,7 @@ def initiate_start():
         db_name=CACHE.get('rag_name'),
         gui=True
     ).get_agent()
-    delete_dirs_without_log(initial_agent)
+#    delete_dirs_without_log(initial_agent)
     log_path = initial_agent.state['config'].get('log_path')
     default_session = os.path.join(log_path, DEFAULT_SESSION_EXTN)
     set_global_output_path(log_path, default_session)

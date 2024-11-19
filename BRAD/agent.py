@@ -210,7 +210,14 @@ class Agent():
             new_dir_name = start_path if start_path else dt.now().strftime("%B %d, %Y at %I:%M:%S %p")
             
             new_log_dir = os.path.join(log_dir, new_dir_name)
-            os.makedirs(new_log_dir, exist_ok=True)
+            try:
+                os.makedirs(new_log_dir, exist_ok=True)
+            except Exception as e:
+                print(f"Failed to create directory '{new_log_dir}'. Error: {e}")
+                fallback_dir = "C:\\Users\\jpic\\Documents\\BRAD-logs"  # Replace this with a directory that must exist
+                print(f"Using fallback directory: {fallback_dir}")
+                new_log_dir = fallback_dir
+                os.makedirs(new_log_dir, exist_ok=True)  # This should always succeed since the fallback exists
             self.chatname = os.path.join(new_log_dir, 'log.json')
             self.chatlog  = {}
         else:
