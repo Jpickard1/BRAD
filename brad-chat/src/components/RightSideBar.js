@@ -29,9 +29,45 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
     setIsSearchVisible(!isSearchVisible);
   };
 
-  const handleApiKeyChange = (e) => {
-    setApiKey(e.target.value);
-  };  
+  const handleApiKeyChange = async (e) => {
+      console.log("Setting API key:", e.target.value);
+      setApiKey(e.target.value);
+    
+      const apiKey = e.target.value;
+      setApiKey(apiKey);
+
+      // Construct the request payload
+      const payload = {
+          "api-key": apiKey
+      };
+      console.log("Payload")
+      console.log(payload)
+      try {
+          // Make the POST request to the API endpoint
+          const response = await fetch('/api/llm/apikey', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(payload),
+          });
+
+          // Handle the response
+          if (response.ok) {
+              const responseData = await response.json();
+              console.log(responseData.message); // Log the success message
+              alert(responseData.message); // Optional: Display the success message
+          } else {
+              const errorData = await response.json();
+              console.error('Error setting API key:', errorData.message);
+              alert('Error: ' + errorData.message); // Optional: Display the error message
+          }
+      } catch (error) {
+          console.error('Network or server error:', error);
+          alert('An unexpected error occurred while setting the API key.');
+      }
+  };
+
 
   // Fetch available LLM models on component mount
   // Fetch available LLM models on component mount
@@ -144,12 +180,12 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
             <div className="api-key-input sidebar-setting">
               <label htmlFor="api-key"><b>Enter API Key:</b></label>
               <input
-                type="text"
-                id="api-key"
-                value={apiKey}
-                onChange={handleApiKeyChange}
-                placeholder="Enter your API key"
-              />
+                    id="rag-db-name"
+                    type="text"
+                    placeholder="Enter database name"
+                    value={apiKey}
+                    onClickCapture={handleApiKeyChange}
+                />
             </div>
           </div>
         )}
