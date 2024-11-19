@@ -342,7 +342,7 @@ def invoke(request):
     request_data = request.json
     brad_session = request_data.get("session", None)
     brad_query = request_data.get("message")
-    # session_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, brad_session) if brad_session else None
+
     brad = AgentFactory(
         session_path=brad_session, 
         persist_directory=DATABASE_FOLDER,
@@ -365,6 +365,79 @@ def invoke(request):
     }
     brad.save_state()
     return jsonify(response_data)
+
+@bp.route("/configure/RAG/numberArticles", methods=['POST'])
+def ep_configure_RAG_numberArticles():
+    return configure_RAG_numberArticles(request)
+
+def configure_RAG_numberArticles(request):
+    """
+    Configure the number of articles retrieved by the RAG system.
+
+    This endpoint updates the RAG (Retrieval-Augmented Generation) configuration to specify the number of articles the system should retrieve. 
+    The new value is saved in the BRAD agent's state and configuration file.
+
+    **Input Request Structure**:
+    The input request should be a JSON object with the following format:
+    json
+
+    >>> {
+    >>>     "session": "/path/to/session/directory",
+    >>>     "number_articles": 5
+    >>> }
+
+    - **session**: (str) The file path to the session directory containing agent data.
+    - **number_articles**: (int) The number of articles to be retrieved by the RAG system.
+
+    **Output Response Structure**:
+    The response will be a JSON object confirming the update:
+
+    >>> {
+    >>>     "message": "looks good"
+    >>> }
+
+    - **message**: (str) Confirmation message indicating the operation was successful.
+
+    **Error Handling**:
+    If the request is invalid or an error occurs during processing, the endpoint may return an error response:
+    json
+
+    >>> {
+    >>>     "message": "Error message describing the issue"
+    >>> }
+
+    :param request: A Flask request object containing JSON data with session and number_articles.
+    :type request: flask.Request
+    :return: A JSON response confirming the configuration update or an error message.
+    :rtype: dict
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: November 18, 2024
+
+    request_data = request.json
+#    print(f"{request_data=}")
+    brad_session = request_data.get("session", None)
+#    print(f"{brad_session=}")
+    number_articles = request_data.get("number_articles")
+#    print(f"{number_articles=}")
+    brad = AgentFactory(
+        session_path=brad_session, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
+
+    # Update and save configurations
+    brad.state['config']['RAG']['num_articles_retrieved'] = int(number_articles)
+#    print(f"{brad.state=}")
+    brad.save_config()
+
+    response_data = {
+        "message": "looks good"
+    }
+    return jsonify(response_data), 200
+
 
 @bp.route("/databases/create", methods=['POST'])
 def ep_databases_create():

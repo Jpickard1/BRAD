@@ -810,13 +810,20 @@ class Agent():
         :raises FileNotFoundError: If the directory for the configuration file is not found.
         :raises TypeError: If the configuration dictionary contains non-serializable values.    
         """
+        # Dev. Comments
+        # History:
+        # - 2024-11-18: This method modifies the objects configurations but does not change
+        #               the configurations of the package. (JP)
+        #
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: June 4, 2024
 
-        current_script_path = os.path.abspath(__file__)
-        current_script_dir = os.path.dirname(current_script_path)
-        file_path = os.path.join(current_script_dir, 'config', 'config.json')
+        # current_script_path = os.path.abspath(__file__)
+        # current_script_dir = os.path.dirname(current_script_path)
+        # file_path = os.path.join(current_script_dir, 'config', 'config.json')
+        file_path = os.path.join(self.chatname[:-8], 'config.json')
+        print(f"{file_path=}")
         with open(file_path, 'w') as f:
             json.dump(self.state['config'], f, indent=4)
 
