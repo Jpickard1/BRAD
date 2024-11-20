@@ -278,7 +278,7 @@ def parse_log_for_one_query(chatlog_query):
 
         return process, llm_usage
 
-    elif module_name == 'SCRAPE':
+    elif module_name == 'SCRAPE' or module_name == 'DATABASE':
         return {}, {}
     
     return None, None

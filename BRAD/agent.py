@@ -101,7 +101,7 @@ from BRAD.rag import queryDocs, remove_repeats
 from BRAD.gene_ontology import *
 from BRAD.pythonCaller import *
 from BRAD.llms import *
-from BRAD.geneDatabaseCaller import *
+from BRAD.geneDatabaseCaller import geneDBRetriever
 from BRAD.planner import planner
 from BRAD.coder import codeCaller
 from BRAD.writer import summarizeSteps, chatReport
