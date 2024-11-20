@@ -31,7 +31,7 @@ from langchain_community.callbacks import get_openai_callback
 from BRAD.gene_ontology import geneOntology
 from BRAD.enrichr import queryEnrichr
 from BRAD import utils
-from BRAD.promptTemplates import geneDatabaseCallerTemplate
+from BRAD.promptTemplates import geneDatabaseCallerTemplate, geneDatabaseLLMreply
 from BRAD import log
 
 def geneDBRetriever(state):
@@ -54,8 +54,8 @@ def geneDBRetriever(state):
     
     query    = state['prompt']
     llm      = state['llm']              # get the llm
-    # memory   = state['memory']           # get the memory of the model
-    memory = ConversationBufferMemory(ai_prefix="BRAD")
+    memory   = state['memory']           # get the memory of the model
+    # memory = ConversationBufferMemory(ai_prefix="BRAD")
     
     # Define the mapping of keywords to functions
     database_functions = {
@@ -133,6 +133,47 @@ def geneDBRetriever(state):
     except Exception as e:
         output = f'Error occurred while searching database: {e}'
         log.errorLog(output, info='geneDatabaseCaller.geneDBRetriever', state=state)
+
+    # Generate LLM response based on the search results
+    template = geneDatabaseLLMreply()
+    filled_template = template.format(
+        database_selection=database,
+        search_results=state['output']
+    )
+    PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
+    conversation = ConversationChain(prompt  = PROMPT,
+                                     llm     = llm,
+                                     verbose = state['config']['debug'],
+                                     memory  = memory,
+                                    )
+    # Invoke LLM tracking its usage
+    start_time = time.time()
+    with get_openai_callback() as cb:
+        chainResponse = conversation.predict(input=query)        
+    responseDetails = {
+        'content' : chainResponse,
+        'time' : time.time() - start_time,
+        'call back': {
+            "Total Tokens": cb.total_tokens,
+            "Prompt Tokens": cb.prompt_tokens,
+            "Completion Tokens": cb.completion_tokens,
+            "Total Cost (USD)": cb.total_cost
+        }
+    }    
+    log.debugLog(chainResponse, state=state)    # Print gene list if debugging
+    response = chainResponse # parse_llm_response(chainResponse, state)
+    state['process']['steps'].append(
+        log.llmCallLog(
+            llm          = llm,
+            prompt       = PROMPT,
+            input        = query,
+            output       = responseDetails,
+            parsedOutput = response,
+            purpose      = 'LLM response after search'
+        )
+    )
+    print(f"{response=}")
+    state['output'] += response
     return state
 
 def parse_llm_response(response, state):

@@ -374,6 +374,21 @@ load: <True/False>
 """
     return template
 
+def geneDatabaseLLMreply():
+    template = """You are a bioinformatics agent. Based on the user's question, you found the following information in the {database_selection} database. These are the search results:
+
+{search_results}
+
+Current conversation:\n{{history}}
+
+User Query:
+{{input}}
+
+**Instructions**
+1. Please synthesize the above information to provide an informative response to the user.
+"""
+    return template
+
 def fileChooserTemplate():
     template = """**INSTRUCTIONS**
 You are a digital assistant responsible for determining which file we should load based on a users prompt. You many choose either the files listed under AVAILABLE FILES or found in the USER QUERY. Based upon the user query, specify which if any fields should be loaded from the table. Rather than specifying a table name, the user might specify ot load data from a particular step. In this case, files are saved with the prefix `S<number>-<File Name>` to denote which step to load them from.
