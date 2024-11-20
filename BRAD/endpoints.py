@@ -159,28 +159,29 @@ def initiate_start():
     '''
     Initializer method for important health checks before starting backend
     '''
-    initial_agent = AgentFactory(
-        tool_modules=TOOL_MODULES, 
-        interactive=False,
-        persist_directory=DATABASE_FOLDER,
-        db_name=CACHE.get('rag_name'),
-        gui=True
-    ).get_agent()
-#    delete_dirs_without_log(initial_agent)
+
+    initial_agent = AgentFactory(tool_modules=TOOL_MODULES, 
+                                 interactive=False,
+                                 persist_directory=DATABASE_FOLDER,
+                                 db_name=CACHE.get('rag_name'), 
+                                 llm_choice=CACHE.get('LLMChoice'),
+                                 gui=True
+                                 ).get_agent()
+    delete_dirs_without_log(initial_agent)
+
     log_path = initial_agent.state['config'].get('log_path')
     default_session = os.path.join(log_path, DEFAULT_SESSION_EXTN)
     set_global_output_path(log_path, default_session)
+
     # default agent to be used
-    default_agent = AgentFactory(
-        tool_modules=TOOL_MODULES, 
-        start_path=default_session, 
-        interactive=False, 
-        persist_directory=DATABASE_FOLDER,
-        db_name=CACHE.get('rag_name'),
-        gui=True
-    ).get_agent()
-
-
+    default_agent = AgentFactory(tool_modules=TOOL_MODULES, 
+                                 start_path=default_session, 
+                                 interactive=False, 
+                                 persist_directory=DATABASE_FOLDER,
+                                 db_name=CACHE.get('rag_name'),
+                                 llm_choice=CACHE.get('LLMChoice'),
+                                 gui=True
+                                 ).get_agent()
 
 def allowed_file(filename):
     '''
@@ -197,7 +198,6 @@ def normalize_keys_upper(d):
     if isinstance(d, dict):
         return {k.upper(): normalize_keys_upper(v) for k, v in d.items()}
     return d
-
 
 def parse_log_for_one_query(chatlog_query):
     """
@@ -355,12 +355,13 @@ def invoke(request):
     brad_session = request_data.get("session", None)
     brad_query = request_data.get("message")
 
-    brad = AgentFactory(
-        session_path=brad_session, 
-        persist_directory=DATABASE_FOLDER,
-        db_name=CACHE.get('rag_name'),
-        gui=True
-    ).get_agent()
+    # session_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, brad_session) if brad_session else None
+    brad = AgentFactory(session_path=brad_session, 
+                        persist_directory=DATABASE_FOLDER,
+                        db_name=CACHE.get('rag_name'),
+                        llm_choice=CACHE.get('LLMChoice'),
+                        gui=True
+                        ).get_agent()
 
     brad_response = brad.invoke(brad_query)
     brad_name = brad.chatname
@@ -631,12 +632,12 @@ def databases_create(request):
     :return: A JSON response indicating the success or failure of the file upload and database creation process.
     :rtype: dict
     """
-    brad = AgentFactory(
-        session_path=DEFAULT_SESSION, 
-        persist_directory=DATABASE_FOLDER,
-        db_name=CACHE.get('rag_name'),
-        gui=True
-    ).get_agent()
+    brad = AgentFactory(session_path=DEFAULT_SESSION, 
+                        persist_directory=DATABASE_FOLDER,
+                        db_name=CACHE.get('rag_name'),
+                        llm_choice=CACHE.get('LLMChoice'),
+                        gui=True
+                        ).get_agent()
 
     file_list = request.files.getlist("rag_files")
     dbName = request.form.get('name')
@@ -737,7 +738,7 @@ def databases_set(request):
     """
     Set the active retrieval-augmented generation (RAG) database for the BRAD agent.
 
-    This uses the flask system cache to set the active database and updates it.
+    This uses the flask system cache to set the active database and llm hosts and updates it.
 
     This endpoint allows users to select and set an available database from the server. The selected database will be loaded and set as the active RAG database for the BRAD agent. If "None" is selected, it will disconnect the current database.
 
@@ -790,8 +791,10 @@ def databases_set(request):
         session_path=DEFAULT_SESSION, 
         persist_directory=DATABASE_FOLDER,
         db_name=CACHE.get('rag_name'),
+        llm_choice=CACHE.get('LLMChoice'),
         gui=True
     ).get_agent()
+
     try:
 
         request_data = request.json
@@ -802,6 +805,7 @@ def databases_set(request):
         rag_database = CACHE.get('rag_name')
         if rag_database != database_name:
             CACHE.set('rag_name', database_name, timeout=0)
+        
         logger.info(f"{database_name=}")    
 
         if database_name == "None":
@@ -1017,6 +1021,7 @@ def sessions_create():
     brad = AgentFactory(
         persist_directory=DATABASE_FOLDER,
         db_name=CACHE.get('rag_name'),
+        llm_choice=CACHE.get('LLMChoice'),
         gui=True
     ).get_agent()
 
@@ -1152,12 +1157,14 @@ def sessions_change(request):
         return jsonify({"success": False, "message": "Log path not configured."}), 500
 
     session_path = os.path.join(path_to_output_directories, session_name)
+
     brad = AgentFactory(
         interactive=False,
         tool_modules=TOOL_MODULES,
         session_path=session_path,
         persist_directory=DATABASE_FOLDER,
         db_name=CACHE.get('rag_name'),
+        llm_choice=CACHE.get('LLMChoice'),
         gui=True
     ).get_agent()
 
@@ -1295,8 +1302,10 @@ def sessions_rename(request):
         session_path=session_path,
         persist_directory=DATABASE_FOLDER,
         db_name=CACHE.get('rag_name'),
+        llm_choice=CACHE.get('LLMChoice'),
         gui=True
     ).get_agent()
+
     logger.info(f"Successfully activated agent: {session_name}")
 
     # Check if the session directory exists
@@ -1454,33 +1463,22 @@ def llm_set(request):
         logger.error("No LLM choice provided in the request.")
         return jsonify({"success": False, "message": "No LLM choice provided."}), 400
 
-    # Determine which API hosts the selected LLM
-    llm_host = 'OPENAI' if 'gpt' in llm_choice.lower() else 'NVIDIA'
-    logger.info(f"Using LLM host: {llm_host}")
 
     try:
-        # Load the chosen LLM (e.g., from NVIDIA or OpenAI)
-        if llm_host == "NVIDIA":
-            print(f"{llm_choice=}")
-            llm = llms.load_nvidia(
-                model_name = llm_choice,
-                temperature = 0,
-            )
-            print(f"{llm=}")
-        elif llm_host == "OPENAI":
-            llm = llms.load_openai(
-                model_name = llm_choice,
-                temperature = 0,
-            )
-        else:
-            logger.error(f"Invalid LLM choice: {llm_choice}")
-            return jsonify({"success": False, "message": f"Invalid LLM choice: {llm_choice}"}), 400
+        # Determine which API hosts the selected LLM
+        # llm = llms.llm_switcher(llm_choice=llm_choice)
 
-        logger.info(f"Sucessfully loaded: {llm_choice} from {llm_host}")
+        cache_llm_choice = CACHE.get('LLMChoice')
+        if llm_choice != cache_llm_choice:
+            logger.info(f"setting LLM choice in cache: {llm_choice}")
+            CACHE.set('LLMChoice', llm_choice, timeout=0)
 
+        logger.info(f"Sucessfully loaded: {llm_choice}")
+
+        # We only set the LLM Host in the cache. The set_llm gets called from the agent factory
         # Set the LLM in BRAD's status
-        brad.set_llm(llm)
-        logger.info(f"Successfully set the agent's LLM to: {llm_choice}")
+        # brad.set_llm(llm)
+        # logger.info(f"Successfully set the agent's LLM to: {llm_choice}")
 
         # Respond with success
         return jsonify({"success": True, "message": f"LLM set to {llm_choice}"}), 200

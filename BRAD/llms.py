@@ -146,3 +146,22 @@ def load_openai(model_name='gpt-3.5-turbo-0125', api_key=None, temperature=0):
     )
 
     return llm
+
+def llm_switcher(llm_choice, temperature=0):
+    llm_host = 'OPENAI' if 'gpt' in llm_choice.lower() else 'NVIDIA'
+    if llm_host == "NVIDIA":
+        print(f"{llm_choice=}")
+        llm = load_nvidia(
+            model_name = llm_choice,
+            temperature = temperature,
+        )
+        print(f"{llm=}")
+    elif llm_host == "OPENAI":
+        llm = load_openai(
+            model_name = llm_choice,
+            temperature = temperature,
+        )
+    else:
+        raise Exception("not a valid llm model")
+    
+    return llm
