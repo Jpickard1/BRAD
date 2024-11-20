@@ -29,15 +29,23 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
     setIsSearchVisible(!isSearchVisible);
   };
 
+  const setKey = async (e) => {
+    console.log(e.target.value)
+    console.log("Key Value")
+    setApiKey(e.target.value)
+  }
+
   const handleApiKeyChange = async (e) => {
       console.log("Setting API key:", e.target.value);
-      setApiKey(e.target.value);
+//      setApiKey(e.target.value);
     
-      const apiKey = e.target.value;
-      setApiKey(apiKey);
+//      const apiKey = e.target.value;
+//      setApiKey(apiKey);
 
       // Construct the request payload
-      const payload = {
+      console.log(apiKey)
+      console.log("apiKey")
+        const payload = {
           "api-key": apiKey
       };
       console.log("Payload")
@@ -180,12 +188,14 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
             <div className="api-key-input sidebar-setting">
               <label htmlFor="api-key"><b>Enter API Key:</b></label>
               <input
-                    id="rag-db-name"
+                    id="api-id"
                     type="text"
                     placeholder="Enter database name"
-                    value={apiKey}
-                    onClickCapture={handleApiKeyChange}
-                />
+                    onChange={setKey}
+              />
+             <button
+               onClick={handleApiKeyChange}>Submit Key
+             </button> 
             </div>
           </div>
         )}
