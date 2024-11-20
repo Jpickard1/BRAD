@@ -15,6 +15,33 @@ function MessageList({ messages }) {
     }
   };
 
+  const handleSourceClick = async (pdffile) => {
+      const response = await 
+      
+      fetch(`/api/uploads/${pdffile}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/pdf',
+        },
+      }).then(response => {
+        console.log(response);
+        if (!response.ok) {
+          throw new Error('API request failed with status ${response.status}');
+        }
+        return response.blob()
+
+      }).then(blob => {
+
+        const pdfUrl = URL.createObjectURL(blob);
+
+        window.open(pdfUrl, '_blank');
+        
+        setTimeout(() => URL.revokeObjectURL(pdfUrl), 10000);
+
+      })
+
+  }
+
   function find_element(elem, search){
     let e_name = null
 
@@ -58,6 +85,7 @@ function MessageList({ messages }) {
 
                 let ragR 
                 let ragG 
+                let ragS 
 
                 // Find the payloads for RAG-R and RAG-G
                 if (message.process_dict == null){
@@ -65,26 +93,38 @@ function MessageList({ messages }) {
                   if (message.process == null){
                     ragR = []
                     ragG = []
+                    ragS = []
                   }
 
                   else {
                     ragR = message.process.find((elem) => find_element(elem, "RAG-R"))?.[1] || [];
-                    ragR = message.process.find((elem) => find_element(elem, "RAG-G"))?.[1] || [];
+                    ragG = message.process.find((elem) => find_element(elem, "RAG-G"))?.[1] || [];
                   }
                 }
                 else{
                   ragR = message.process_dict['RAG-R'] || [];
                   ragG = message.process_dict['RAG-G'] || [];
+                  ragS = message.process_dict['RAG-S'] || [];
+                }
+                let finlist = [];
+                let slen = ragS.length;
+                console.log("printing length", slen)
+                for (let i = 0; i < slen; i++) {
+                  finlist[i] = [ragR[i], ragG[i], ragS[i]]
                 }
             
                 // Iterate over both payloads and display the i-th elements together
-                return ragR.map((itemR, index) => {
+                return finlist.map((item, index) => {
+                  let itemR
+                  let itemG
+                  let itemS
+                  [itemR, itemG, itemS] = item
                   // Extract everything after the last / or \ character
                   const processedItemR = itemR.split(/[/\\]/).pop();
             
                   return (
                     <div key={index} className="combined-item">
-                      <div className="retriever">{processedItemR}</div>
+                      <div onClick={() => handleSourceClick(itemS)} className="retriever">{processedItemR}</div>
                       <div className="rag-paragraph">{ragG[index]}</div> {/* Show the i-th element of RAG-G */}
                     </div>
                   );

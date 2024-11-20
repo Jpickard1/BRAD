@@ -30,6 +30,7 @@ import subprocess
 import difflib
 import matplotlib.pyplot as plt
 import shutil
+from urllib.parse import urlparse
 
 from langchain import PromptTemplate, LLMChain
 from langchain_community.callbacks import get_openai_callback
@@ -609,3 +610,16 @@ def delete_dirs_without_log(agent):
             if not os.path.exists(log_file_path):
                 shutil.rmtree(subdir_path)  # Recursively delete directory and its contents
                 print(f"Deleted directory: {subdir_path}")
+
+
+
+def strip_root_path(url, root_path):
+    """Strips the root path from a URL."""
+
+    parsed_url = urlparse(url)
+    parsed_root = urlparse(root_path)
+
+    if parsed_url.path.startswith(parsed_root.path):
+        return parsed_url.geturl().replace(parsed_root.path, '', 1)
+    else:
+        return url

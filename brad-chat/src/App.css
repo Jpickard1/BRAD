@@ -4,6 +4,7 @@
   --font-color: #f7f7f7;
   --hover-color: #797979;
   --bold-color: #878787;
+  --dark-bold-color: #1f1f1f;
 }
 
 body {
@@ -203,31 +204,80 @@ pre > code {
   text-align: left;
 }
 
-.rag-file-upload {
-  width: 100%;
-  background-color: var(--base-color);
+.rag-file-input {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+}
+
+.rag-file-input label {
+  font-size: 12px;
   padding: 1em;
+  color: var(--font-color);
+  border-color: var(--font-color);
+  background-color: white;
+}
+
+.rag-file-input label:hover {
+  background-color: var(--hover-color); /* Light background color on hover */
+}
+
+.rag-file-input progress {
+  width: 100%;
+
+}
+
+.rag-db-name {
+  max-width: 80%;
+}
+
+
+.rag-file-upload {
+  max-width: 100%;
+  background-color: var(--base-color);
   border-radius: 3em;
 }
 
-.rag-file-upload label {
-  margin: 1em;
+.rag-file-upload input {
+  padding: 1em;
+  border-radius: 0.5em;
+  background-color: var(--dark-bold-color);
+  color: var(--font-color);
+  margin-bottom: 0.5em;
 }
 
+.rag-file-upload label {
+  padding: 1em;
+  border-radius: 0.5em;
+  cursor: pointer;    
+  background-color: var(--dark-bold-color);
+  color: var(--font-color);
+  margin-bottom: 0.5em;
+}
 
 .rag-file-upload button {
-  border-width: 1px;
-  margin-right: 1em;
+  padding: 1em;
+  border-radius: 0.5em;
+  border: none;
   border-color: var(--font-color) ;
-  background-color: var(--base-color);
+  background-color: var(--dark-bold-color);
   color: var(--font-color);
+  cursor: pointer;
+  margin-bottom: 0.5em;
+}
+
+.rag-file-upload input[type="file"] {
+  max-width: 95%;
+  overflow-y: scroll;
+  opacity: 0;
+  position: absolute;
+  z-index: -1;
 }
 
 .setting-option-choose-db {
-  margin: 1em;
   overflow: auto;
-  width: 95%;
 }
+
 
 .retriever {
   text-align: right; /* Aligns the text inside the retriever div to the right */
@@ -244,6 +294,7 @@ pre > code {
 /* Each session box styling */
 .session-box {
   height: 25px;
+  width: 100%;
   /* color: var(--font-color); */
   padding: 15px;                               /* Padding inside the box */
   border-radius: 0.9em;                         /* Rounded corners */
@@ -257,6 +308,7 @@ pre > code {
   align-items: center;                         /* Vertically center the text */
   justify-content: flex-start;                 /* Align text to the right horizontally */
   background: none;
+  text-align: left;
 }
 
 /* Hover effect for session box */
@@ -295,10 +347,19 @@ pre > code {
 }
 
 .theme {
-  margin: 1em;
+  width: 100%;
+  padding: 1.5em;
   background-color: var(--bg-color);
   color: var(--font-color);
-  border-radius: 2em;
+  border-radius: 1em;
+}
+
+.settings-button {
+  width: 100%;
+  padding: 1.5em;
+  background-color: var(--bg-color);
+  color: var(--font-color);
+  border-radius: 1em;
 }
 
 .hidden {
@@ -317,6 +378,7 @@ pre > code {
   outline: none;
   border: none;
   border-radius: 1em;
+  cursor: pointer;
 }
 
 #leftSideBarToggle:active { 
@@ -338,9 +400,146 @@ pre > code {
 .setting-option {
   padding: 1em;
   border: var(--hover-color);
-  width: 100%;
+  width: 80%;
+}
+.sidebar-setting {
+  padding: 1em;
+  width: 83%;
 }
 
-#rag-db-name {
+
+.rag-db-name {
   margin: 1em;
+}
+
+.suggestions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+  opacity: 0; /* Hidden initially */
+  transform: translateY(-200px); /* Move up initially */
+  transition: opacity 0.5s ease, transform 0.5s ease; /* Smooth animation */
+}
+
+.suggestions-container.loaded {
+  opacity: 1; /* Fully visible after loaded */
+  transform: translateY(0); /* Move to original position */
+}
+
+.suggestion-box {
+  background-color: var(--suggestion-color, #ff0000); /* Default background */
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  font-size: 1.1rem;
+  text-align: center;
+  cursor: pointer;
+  color: #000000; /* Set text color to black */
+  transition: background-color 0.3s ease;
+}
+
+.suggestion-box:hover {
+  background-color: var(--hover-color, #d9e9ff); /* Dynamic hover color */
+}
+
+
+.sidebar-setting input[type="file"] {
+    padding: 1em;
+    border-radius: 4px;
+    background-color: var(--dark-bold-color);
+    color: var(--font-color);
+    cursor: pointer;
+}
+
+.setting-option-choose-db > label {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  display: block;
+  width: 100%;
+  text-align: left;
+
+}
+.sidebar-setting > label {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.sidebar-section label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+  background-color: var(--dark-bold-color);
+  color: var(--font-color);
+}
+
+.sidebar-setting select {
+  width: 100%;
+  padding: 1em;
+  /* border: 1px solid #ccc; */
+  border-radius: 0.5em;
+  background-color: var(--dark-bold-color);
+  color: var(--font-color);
+}
+
+.new-session {
+  padding: 1.5em;
+}
+
+.usage-stats {
+  text-align: left;
+}
+
+
+.sidebar-setting {
+  padding: 20px;
+}
+
+.setting-option {
+  margin-bottom: 15px;
+}
+
+.setting-option label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.setting-option input[type="number"],
+.setting-option select {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.setting-option input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.file-names ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+button#rag-file-submit {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button#rag-file-submit:hover {
+  background-color: #45a049;
+}
+
+progress {
+  width: 100%;
+  height: 20px;
+  margin-top: 10px;
 }

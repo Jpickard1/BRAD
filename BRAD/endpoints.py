@@ -84,9 +84,10 @@ import shutil
 import logging
 import time
 from itertools import filterfalse
+from urllib.parse import urlparse
 
 # Imports for building RESTful API
-from flask import Flask, request, jsonify, Blueprint
+from flask import Flask, request, jsonify, Blueprint, send_from_directory
 from flask import flash, redirect, url_for
 from werkzeug.utils import secure_filename
 
@@ -95,7 +96,7 @@ from openai import OpenAI
 
 # Imports for BRAD library
 from BRAD.agent import Agent, AgentFactory
-from BRAD.utils import delete_dirs_without_log 
+from BRAD.utils import delete_dirs_without_log, strip_root_path
 from BRAD.constants import DEFAULT_SESSION_EXTN
 from BRAD.rag import create_database
 from BRAD import llms # import load_nvidia, load_openai
@@ -110,6 +111,12 @@ logger = logging.getLogger(__name__)
 #                                  GLOBALS                                    #
 ###############################################################################
 
+NVIDIA_LLM_MODELS = [
+    "meta/llama3-70b-instruct",
+    "mistralai/mistral-7b-instruct-v0.3",
+    "microsoft/phi-3.5-mini-instruct",
+    "google/gemma-2-2b-it"
+]
 
 UPLOAD_FOLDER = None
 DATABASE_FOLDER = None
@@ -152,26 +159,29 @@ def initiate_start():
     '''
     Initializer method for important health checks before starting backend
     '''
+
     initial_agent = AgentFactory(tool_modules=TOOL_MODULES, 
                                  interactive=False,
                                  persist_directory=DATABASE_FOLDER,
                                  db_name=CACHE.get('rag_name'), 
-                                 llm_choice=CACHE.get('LLMChoice')
+                                 llm_choice=CACHE.get('LLMChoice'),
+                                 gui=True
                                  ).get_agent()
     delete_dirs_without_log(initial_agent)
+
     log_path = initial_agent.state['config'].get('log_path')
     default_session = os.path.join(log_path, DEFAULT_SESSION_EXTN)
     set_global_output_path(log_path, default_session)
+
     # default agent to be used
     default_agent = AgentFactory(tool_modules=TOOL_MODULES, 
                                  start_path=default_session, 
                                  interactive=False, 
                                  persist_directory=DATABASE_FOLDER,
                                  db_name=CACHE.get('rag_name'),
-                                 llm_choice=CACHE.get('LLMChoice')
+                                 llm_choice=CACHE.get('LLMChoice'),
+                                 gui=True
                                  ).get_agent()
-
-
 
 def allowed_file(filename):
     '''
@@ -194,6 +204,11 @@ def parse_log_for_one_query(chatlog_query):
     Safely parses a single chat log query for RAG or LLM processes.
     Returns a list of tuples with process steps and relevant sources or chunks.
     
+    .. note:
+
+        The current positioning of this method will make it challenging for new users to adopt into their own tools.
+        It would be structured better if these features were hard coded for how they will come out of the tool.
+
     Args:
         chatlog_query (dict): A single chat query log to parse.
         
@@ -229,7 +244,10 @@ def parse_log_for_one_query(chatlog_query):
         process = []
         process_dict = {}
         steps = process_data.get('STEPS', [])
-        
+        source_locations = process_data.get('SOURCE_LOCATIONS')
+        if source_locations:
+            source_locations = [strip_root_path(i, UPLOAD_FOLDER) for i in source_locations]
+        process_data['SOURCE_LOCATIONS'] = source_locations
         for step in steps:
             # Check if 'func' key exists and is 'rag.retrieval'
             if step.get('func', '').lower() == 'rag.retrieval':
@@ -246,9 +264,11 @@ def parse_log_for_one_query(chatlog_query):
                 # Add the sources and chunks to the process list
                 process.append(('RAG-R', sources))
                 process.append(('RAG-G', chunks))
+                process.append(('RAG-S', source_locations))
 
                 process_dict['RAG-R'] =  sources
                 process_dict['RAG-G'] =  chunks
+                process_dict['RAG-S'] =  source_locations
             
             # Check if 'purpose' key exists and is 'chat without RAG'
             elif step.get('purpose', '').lower() == 'chat without rag':
@@ -263,6 +283,9 @@ def parse_log_for_one_query(chatlog_query):
             llm_usage['process'] = process_dict
 
         return process, llm_usage
+
+    elif module_name == 'SCRAPE' or module_name == 'DATABASE':
+        return {}, {}
     
     return None, None
 
@@ -331,12 +354,15 @@ def invoke(request):
     request_data = request.json
     brad_session = request_data.get("session", None)
     brad_query = request_data.get("message")
+
     # session_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, brad_session) if brad_session else None
     brad = AgentFactory(session_path=brad_session, 
                         persist_directory=DATABASE_FOLDER,
                         db_name=CACHE.get('rag_name'),
-                        llm_choice=CACHE.get('LLMChoice')
+                        llm_choice=CACHE.get('LLMChoice'),
+                        gui=True
                         ).get_agent()
+
     brad_response = brad.invoke(brad_query)
     brad_name = brad.chatname
 
@@ -350,7 +376,213 @@ def invoke(request):
         "response-log-dict": llm_usage.get('process'),
         "llm-usage": llm_usage
     }
+    brad.save_state()
     return jsonify(response_data)
+
+@bp.route("/configure/RAG/numberArticles", methods=['POST'])
+def ep_configure_RAG_numberArticles():
+    return configure_RAG_numberArticles(request)
+
+def configure_RAG_numberArticles(request):
+    """
+    Configure the number of articles retrieved by the RAG system.
+
+    This endpoint updates the RAG (Retrieval-Augmented Generation) configuration to specify the number of articles the system should retrieve. 
+    The new value is saved in the BRAD agent's state and configuration file.
+
+    **Input Request Structure**:
+    The input request should be a JSON object with the following format:
+    json
+
+    >>> {
+    >>>     "session": "/path/to/session/directory",
+    >>>     "number_articles": 5
+    >>> }
+
+    - **session**: (str) The file path to the session directory containing agent data.
+    - **number_articles**: (int) The number of articles to be retrieved by the RAG system.
+
+    **Output Response Structure**:
+    The response will be a JSON object confirming the update:
+
+    >>> {
+    >>>     "message": "looks good"
+    >>> }
+
+    - **message**: (str) Confirmation message indicating the operation was successful.
+
+    **Error Handling**:
+    If the request is invalid or an error occurs during processing, the endpoint may return an error response:
+    json
+
+    >>> {
+    >>>     "message": "Error message describing the issue"
+    >>> }
+
+    :param request: A Flask request object containing JSON data with session and number_articles.
+    :type request: flask.Request
+    :return: A JSON response confirming the configuration update or an error message.
+    :rtype: dict
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: November 18, 2024
+
+    request_data = request.json
+    brad_session = request_data.get("session", None)
+    number_articles = request_data.get("number_articles")
+    brad = AgentFactory(
+        session_path=brad_session, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
+
+    # Update and save configurations
+    brad.state['config']['RAG']['num_articles_retrieved'] = int(number_articles)
+    brad.save_config()
+
+    response_data = {
+        "message": "looks good"
+    }
+    return jsonify(response_data), 200
+
+@bp.route("/configure/RAG/contextualCompression", methods=['POST'])
+def ep_configure_RAG_contextualCompression():
+    return configure_RAG_contextualCompression(request)
+
+def configure_RAG_contextualCompression(request):
+    """
+    Configure the contextual compression by the RAG system.
+
+    This endpoint updates the RAG (Retrieval-Augmented Generation) configuration to specify if contextual
+    compression should be applied to each document.
+
+    **Input Request Structure**:
+    The input request should be a JSON object with the following format:
+    json
+
+    >>> {
+    >>>     "session": "/path/to/session/directory",
+    >>>     "contextual_compression": true
+    >>> }
+
+    - **session**: (str) The file path to the session directory containing agent data.
+    - **contextual_compression**: (bool) The value to set the contextual compression configuration.
+
+    **Output Response Structure**:
+    The response will be a JSON object confirming the update:
+
+    >>> {
+    >>>     "message": "looks good"
+    >>> }
+
+    - **message**: (str) Confirmation message indicating the operation was successful.
+
+    **Error Handling**:
+    If the request is invalid or an error occurs during processing, the endpoint may return an error response:
+    json
+
+    >>> {
+    >>>     "message": "Error message describing the issue"
+    >>> }
+
+    :param request: A Flask request object containing JSON data with session and number_articles.
+    :type request: flask.Request
+    :return: A JSON response confirming the configuration update or an error message.
+    :rtype: dict
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: November 18, 2024
+
+    request_data = request.json
+    brad_session = request_data.get("session", None)
+    contextual_compression = request_data.get("contextual_compression")
+    brad = AgentFactory(
+        session_path=brad_session, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
+
+    # Update and save configurations
+    brad.state['config']['RAG']['contextual_compression'] = contextual_compression
+    brad.save_config()
+
+    response_data = {
+        "message": "looks good"
+    }
+    return jsonify(response_data), 200
+
+@bp.route("/configure/RAG/searchMechanism", methods=['POST'])
+def ep_configure_RAG_searchMechanism():
+    return configure_RAG_searchMechanism(request)
+
+def configure_RAG_searchMechanism(request):
+    """
+    Configure the retrieval method of the RAG system.
+
+    This endpoint updates the RAG (Retrieval-Augmented Generation) to set which retrieval method is used
+
+    **Input Request Structure**:
+    The input request should be a JSON object with the following format:
+    json
+
+    >>> {
+    >>>     "session": "/path/to/session/directory",
+    >>>     "search_method": <MMR, Similarity, Multi>
+    >>> }
+
+    - **session**: (str) The file path to the session directory containing agent data.
+    - **search_method**: (str) The search method to use.
+
+    **Output Response Structure**:
+    The response will be a JSON object confirming the update:
+
+    >>> {
+    >>>     "message": "looks good"
+    >>> }
+
+    - **message**: (str) Confirmation message indicating the operation was successful.
+
+    **Error Handling**:
+    If the request is invalid or an error occurs during processing, the endpoint may return an error response:
+    json
+
+    >>> {
+    >>>     "message": "Error message describing the issue"
+    >>> }
+
+    :param request: A Flask request object containing JSON data with session and number_articles.
+    :type request: flask.Request
+    :return: A JSON response confirming the configuration update or an error message.
+    :rtype: dict
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: November 18, 2024
+
+    request_data = request.json
+    brad_session = request_data.get("session", None)
+    search_method = request_data.get("search_method")
+    brad = AgentFactory(
+        session_path=brad_session, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        gui=True
+    ).get_agent()
+
+    # Update and save configurations
+    search_methods = ['multiquery', 'similarity', 'mmr']
+    for method in search_methods:
+        brad.state['config']['RAG'][method] = (method == search_method)
+    brad.save_config()
+
+    response_data = {
+        "message": "looks good"
+    }
+    return jsonify(response_data), 200
 
 @bp.route("/databases/create", methods=['POST'])
 def ep_databases_create():
@@ -403,8 +635,10 @@ def databases_create(request):
     brad = AgentFactory(session_path=DEFAULT_SESSION, 
                         persist_directory=DATABASE_FOLDER,
                         db_name=CACHE.get('rag_name'),
-                        llm_choice=CACHE.get('LLMChoice')
+                        llm_choice=CACHE.get('LLMChoice'),
+                        gui=True
                         ).get_agent()
+
     file_list = request.files.getlist("rag_files")
     dbName = request.form.get('name')
 
@@ -553,11 +787,14 @@ def databases_set(request):
     
     # Get list of directories at this location
 
-    brad = AgentFactory(session_path=DEFAULT_SESSION, 
-                        persist_directory=DATABASE_FOLDER,
-                        db_name=CACHE.get('rag_name'),
-                        llm_choice=CACHE.get('LLMChoice')
-                        ).get_agent()
+    brad = AgentFactory(
+        session_path=DEFAULT_SESSION, 
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        llm_choice=CACHE.get('LLMChoice'),
+        gui=True
+    ).get_agent()
+
     try:
 
         request_data = request.json
@@ -777,9 +1014,6 @@ def sessions_create():
     #       jpic@umich.edu
     # Date: October 17, 2024
 
-    # request_data = request.json
-    # print(f"{request_data=}")
-
     # Log the incoming request
     logger.info(f"Received request to create a new session")
     # Create the new agent
@@ -787,11 +1021,31 @@ def sessions_create():
     brad = AgentFactory(
         persist_directory=DATABASE_FOLDER,
         db_name=CACHE.get('rag_name'),
-        llm_choice=CACHE.get('LLMChoice')
-        ).get_agent()
+        llm_choice=CACHE.get('LLMChoice'),
+        gui=True
+    ).get_agent()
 
     # Create the new agent
     logger.info(f"Agent active at path: {brad.chatname}")
+
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Define source and destination paths
+    source_path = os.path.join(script_dir, 'config', 'config.json')
+
+    # brad.chatname ends with 'log.json' which is removed with [:-8]
+    destination_path = os.path.join(brad.chatname[:-8], 'config.json')
+
+    # Copy the file
+    try:
+        shutil.copy(source_path, destination_path)
+        print(f"Configuration file copied to: {destination_path}")
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
 
     # Try to remove the session directory
     try:
@@ -809,7 +1063,7 @@ def sessions_create():
             "success": True,
             "session-name": brad_name,
             "message": f"New session activated.",
-            "display": chat_history
+            "display": [], # chat_history
             }
         )
         logger.info(f"Response constructed: {response}")
@@ -903,13 +1157,16 @@ def sessions_change(request):
         return jsonify({"success": False, "message": "Log path not configured."}), 500
 
     session_path = os.path.join(path_to_output_directories, session_name)
-    brad = AgentFactory(interactive=False,
-                    tool_modules=TOOL_MODULES,
-                    session_path=session_path,
-                    persist_directory=DATABASE_FOLDER,
-                    db_name=CACHE.get('rag_name'),
-                    llm_choice=CACHE.get('LLMChoice')
-                    ).get_agent()
+
+    brad = AgentFactory(
+        interactive=False,
+        tool_modules=TOOL_MODULES,
+        session_path=session_path,
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        llm_choice=CACHE.get('LLMChoice'),
+        gui=True
+    ).get_agent()
 
     # Check if the session directory exists
     if not os.path.exists(session_path):
@@ -1039,13 +1296,16 @@ def sessions_rename(request):
     updated_path = os.path.join(PATH_TO_OUTPUT_DIRECTORIES, updated_name)
     # Create the new agent
     logger.info(f"Activating agent from: {session_path}")
-    brad = AgentFactory(interactive=False,
-                tool_modules=TOOL_MODULES,
-                session_path=session_path,
-                persist_directory=DATABASE_FOLDER,
-                db_name=CACHE.get('rag_name'),
-                llm_choice=CACHE.get('LLMChoice')
-                ).get_agent()
+    brad = AgentFactory(
+        interactive=False,
+        tool_modules=TOOL_MODULES,
+        session_path=session_path,
+        persist_directory=DATABASE_FOLDER,
+        db_name=CACHE.get('rag_name'),
+        llm_choice=CACHE.get('LLMChoice'),
+        gui=True
+    ).get_agent()
+
     logger.info(f"Successfully activated agent: {session_name}")
 
     # Check if the session directory exists
@@ -1136,7 +1396,7 @@ def llm_get():
     # Date: October 20, 2024
     try:
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        models = []
+        models = NVIDIA_LLM_MODELS
         for model in client.models.list():
             models.append(model.id)
         response = jsonify({"success": True, "models": models})
@@ -1237,17 +1497,16 @@ def ep_llm_apikey():
 
 def llm_apikey(request):
     """
-    Set the NVIDIA API key for the BRAD agent.
+    Set the API key for the BRAD agent.
 
-    This endpoint allows users to provide an NVIDIA API key, which will be stored securely
+    This endpoint allows users to provide an OPENAI or NVIDIA API key, which will be stored securely
     for use by the BRAD agent. The key can be used for authentication when accessing NVIDIA services.
-    The function currently supports only the NVIDIA API key but may be extended to process other API keys in the future.
 
     **Request Structure**:
     The request must contain a JSON body with the following fields:
 
         >>> {
-        >>>   "nvidia-api-key": "str"  # The NVIDIA API key to be set
+        >>>   "api-key": "str"  # The NVIDIA API key to be set
         >>> }
 
     - nvidia-api-key (str): The NVIDIA API key to be set (Required).
@@ -1262,7 +1521,7 @@ def llm_apikey(request):
     On failure (missing API key), the response will contain:
 
         >>> {
-        >>>   "message": "NVIDIA API key is required."
+        >>>   "message": "API key was not successfully set."
         >>> }
 
     :param request_data: JSON data containing the NVIDIA API key.
@@ -1279,24 +1538,27 @@ def llm_apikey(request):
     #       jpic@umich.edu
     # Date: October 16, 2024
 
-    # TODO: implement logic to allow OpenAI keys to be processed similarly
-    # TODO: allow these keys to be written to a file that can be read from later
-
     request_data = request.json
     print(request_data)
-    nvidia_key = request_data.get("nvidia-api-key")  # Get the NVIDIA API key from the request body
+    api_key = request_data.get("api-key")  # Get the NVIDIA API key from the request body
 
-    if not nvidia_key:
-        logger.error("No NVIDIA API key provided.")
-        return jsonify({"message": "NVIDIA API key is required."}), 400  # Return error if no key provided
+    # OpenAI
+    if api_key.startswith('sk'):
+        logger.info(f"Received OPENAI API key: {api_key}")            
+        os.environ["OPENAI_API_KEY"] = api_key
+        return jsonify({"message": "OPENAI API key set successfully."}), 200  # Success response
+    # NVIDIA
+    elif api_key.startswith('nvapi'):
+        logger.info(f"Received NVIDIA API key: {api_key}")    
+        # Example of saving the key (you might want to implement proper security measures)
+        os.environ["NVIDIA_API_KEY"] = api_key
+        return jsonify({"message": "NVIDIA API key set successfully."}), 200  # Success response
+    else:
+        return jsonify({"message": "API key was not successfully set."}), 400  # Success response
 
-    # Here, you can add logic to store the API key securely
-    # For example, save it to a configuration file or a secure database
 
-    logger.info(f"Received NVIDIA API key: {nvidia_key}")
-    
-    # Example of saving the key (you might want to implement proper security measures)
-    os.environ["NVIDIA_API_KEY"] = nvidia_key
-
-    return jsonify({"message": "NVIDIA API key set successfully."}), 200  # Success response
-
+@bp.route("/uploads/<path:filename>", methods=['GET'])
+def static_proxy(filename):
+    print(UPLOAD_FOLDER)
+    print(filename)
+    return send_from_directory(UPLOAD_FOLDER, filename)

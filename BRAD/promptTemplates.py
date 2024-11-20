@@ -331,7 +331,7 @@ This output should be exactly one line and no longer. Stop the response after th
 """
     return template
 
-def summarizeDocumentTemplate():
+def summarize_document_template():
     template = """**INSTRUCTIONS**
 You are an assistant responsible for compressing the important information in a document.
 You will be given a users query and a piece of text. Summarize the text with the following aims:
@@ -371,6 +371,21 @@ Query:{{input}}
 database: <ENRICHR or GENEONTOLOGY>
 genes: <None or Gene 1, Gene 2, Gene 3, ...>
 load: <True/False>
+"""
+    return template
+
+def geneDatabaseLLMreply():
+    template = """You are a bioinformatics agent. Based on the user's question, you found the following information in the {database_selection} database. These are the search results:
+
+{search_results}
+
+Current conversation:\n{{history}}
+
+User Query:
+{{input}}
+
+**Instructions**
+1. Please synthesize the above information to provide an informative response to the user.
 """
     return template
 
@@ -483,11 +498,11 @@ Latex Version=<put paragraphs here>
 """
     return template
 
-def historyChatTemplate():
+def history_chat_template():
     template = """Current conversation: {history}\n\n\nNew Input: \n{input}"""
     return template
 
-def getDefaultContext():
+def get_default_context():
     llmContext = """Context: You are BRAD (Bioinformatic Retrieval Augmented Data), a chatbot specializing in biology,
 bioinformatics, genetics, and data science. You can be connected to a text database to augment your answers
 based on the literature with Retrieval Augmented Generation, or you can use several additional modules including

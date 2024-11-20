@@ -56,36 +56,16 @@ The `Agent` class is organized as follows:
 
 # Standard
 import pandas as pd
-# from copy import deepcopy
 import os
 import shutil
-# import sys
-# from importlib import reload
-# import textwrap
-# from scipy import sparse
-# import importlib
-# from itertools import product
 from datetime import datetime as dt
-# from IPython.display import display # displaying dataframes
-# import string
 import warnings
-# import re
 import json
 import logging
 import time
 from typing import Optional, List
 import pickle
 import atexit
-
-
-# Bioinformatics
-# import gget
-
-# Plotting
-# import matplotlib
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-
 
 # Router
 from semantic_router.layer import RouteLayer
@@ -106,8 +86,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains.question_answering import load_qa_chain
 from langchain.output_parsers import CommaSeparatedListOutputParser
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
-from langchain.memory import ConversationBufferMemory                   # used for Agent memory
-
+from langchain.memory import ConversationBufferMemory
 
 # LangChain Core
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
@@ -122,7 +101,7 @@ from BRAD.rag import queryDocs, remove_repeats
 from BRAD.gene_ontology import *
 from BRAD.pythonCaller import *
 from BRAD.llms import *
-from BRAD.geneDatabaseCaller import *
+from BRAD.geneDatabaseCaller import geneDBRetriever
 from BRAD.planner import planner
 from BRAD.coder import codeCaller
 from BRAD.writer import summarizeSteps, chatReport
@@ -157,6 +136,8 @@ class Agent():
     :type max_api_calls: int, optional
     :param tools: The set of available tool modules. If None, all modules are available for use
     :type tools: list, optional
+    :param gui: Indicates if the Agent is used in the GUI
+    :type gui: boolean, optional
 
     :raises FileNotFoundError: If the specified model or database directories do not exist.
     :raises json.JSONDecodeError: If the configuration file contains invalid JSON.
@@ -176,8 +157,9 @@ class Agent():
         name='BRAD',
         max_api_calls=None, # This prevents BRAD from finding infinite loops and using all your API credits,
         interactive=True,   # This indicates if BRAD is in interactive more or not
-        config=None         # This parameter lets a user specify an additional configuration file that will
+        config=None,        # This parameter lets a user specify an additional configuration file that will
                             # overwrite configurations with the same key
+        gui=False
     ):
         # Auth: Joshua Pickard
         #       jpic@umich.edu
@@ -196,16 +178,20 @@ class Agent():
         # - 2024-10-06: .chatstatus was renamed .state
         # - 2024-10-16: if the restart location doesn't have a log, then a new agent
         #               is created
-        # - 2024-11-06: added optional argement start_dir to initialize an agent from a new directory if the user prefers
+        # - 2024-11-18: configurations are automatically read/written from created sessions
+        #               when turning the Agent back on
         #
         # Issues:
         # - We should change the structure of the classes/modules. In this 1st iteration
         #   state was packed as a class variable and used similar to before, but it
         #   is likely reasonable to split this variable up into separate class variables.
-        # super().__init__()
-        self.state = self.loadstate(config=config)
+        # - Current configurations only allow either a specific configuration file or a
+        #   configuration file from a previous chat session (dominate) - JP
+
+        self.state = self.load_state(config=config)
         self.name       = name.strip()
         self.state['interactive'] = interactive # By default a chatbot is not interactive
+        self.state['gui'] = gui
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     
         base_dir = os.path.expanduser('~')
@@ -224,7 +210,14 @@ class Agent():
             new_dir_name = start_path if start_path else dt.now().strftime("%B %d, %Y at %I:%M:%S %p")
             
             new_log_dir = os.path.join(log_dir, new_dir_name)
-            os.makedirs(new_log_dir, exist_ok=True)
+            try:
+                os.makedirs(new_log_dir, exist_ok=True)
+            except Exception as e:
+                print(f"Failed to create directory '{new_log_dir}'. Error: {e}")
+                fallback_dir = "C:\\Users\\jpic\\Documents\\BRAD-logs"  # Replace this with a directory that must exist
+                print(f"Using fallback directory: {fallback_dir}")
+                new_log_dir = fallback_dir
+                os.makedirs(new_log_dir, exist_ok=True)  # This should always succeed since the fallback exists
             self.chatname = os.path.join(new_log_dir, 'log.json')
             self.chatlog  = {}
         else:
@@ -243,6 +236,18 @@ class Agent():
                     logging.error(f"Failed to load agent state from {state_file}: {e}")
             else:
                 logging.info(f"No existing state file found in {new_log_dir}, starting fresh.")
+
+            # Update from the old configurations
+            config_file = os.path.join(new_log_dir, 'config.json')
+            if os.path.exists(config_file):
+                try:
+                    saved_configs = self.load_config(config_file)
+                    self.state['config'] = saved_configs
+                    logging.info(f"Loaded configuration from {config_file}")
+                except Exception as e:
+                    logging.error(f"Failed to load configuration from {config_file}: {e}")
+            else:
+                logging.info(f"No configuration file found at {config_file}.")
 
         if max_api_calls is None:
             max_api_calls = 1000
@@ -288,10 +293,6 @@ class Agent():
 
         if 'output-directory' not in self.state or not self.state['output-directory']:
             self.state['output-directory'] = new_log_dir
-
-        # if self.state['config']['experiment']:
-        #     self.experimentName = os.path.join(log_dir, 'EXP-out-' + str(dt.now()) + '.csv')
-        #     self.state['experiment-output'] = '-'.join(experimentName.split())
     
         # Initialize all modules
         self.module_functions = self.getModules()
@@ -407,10 +408,17 @@ class Agent():
             self.state = self.reconfig()
             return True
             # continue
+        # Continue previous module
+        elif self.state.get('continue-module') is not None:
+            route = self.state['continue-module'][0]
+            print("continue module is not None!")
+            print(f"{route=}")
+        # Use router to select correct module
         elif '/force' not in self.state['prompt'].split(' '):     # use the router
             route = self.router(self.state['prompt']).name
             if route is None:
                 route = 'RAG'
+        # Forced routes
         else:
             route = self.state['prompt'].split(' ')[1]            # use the forced router
             if self.state['config']['ROUTER']['build router db']:
@@ -473,6 +481,7 @@ class Agent():
         elapsed_time = end_time - start_time
         
         # Log and reset these values
+        print(f"WRITE LOG")
         self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=elapsed_time)
         return self.state['output']
 
@@ -801,13 +810,20 @@ class Agent():
         :raises FileNotFoundError: If the directory for the configuration file is not found.
         :raises TypeError: If the configuration dictionary contains non-serializable values.    
         """
+        # Dev. Comments
+        # History:
+        # - 2024-11-18: This method modifies the objects configurations but does not change
+        #               the configurations of the package. (JP)
+        #
         # Auth: Joshua Pickard
         #       jpic@umich.edu
         # Date: June 4, 2024
 
-        current_script_path = os.path.abspath(__file__)
-        current_script_dir = os.path.dirname(current_script_path)
-        file_path = os.path.join(current_script_dir, 'config', 'config.json')
+        # current_script_path = os.path.abspath(__file__)
+        # current_script_dir = os.path.dirname(current_script_path)
+        # file_path = os.path.join(current_script_dir, 'config', 'config.json')
+        file_path = os.path.join(self.chatname[:-8], 'config.json')
+        print(f"{file_path=}")
         with open(file_path, 'w') as f:
             json.dump(self.state['config'], f, indent=4)
 
@@ -848,7 +864,7 @@ class Agent():
             state = log.userOutput("Configuration " + str(key) + " not found", state=self.state)
         return state
 
-    def loadstate(self, config=None):
+    def load_state(self, config=None):
         """
         Initializes and loads the agent state with default values and configuration settings.
     
@@ -882,7 +898,10 @@ class Agent():
             'search'            : {
                 'used terms' : [],
             },
-            'recursion_depth': 0
+            'recursion_depth': 0,
+            'continue-module': None, # None (if not continuing in a module) or tuple (with [0] being the module name)
+            'gui':None,              # boolean to indicate if the agent is for the gui
+            'interactive':False
         }
         return state
 
@@ -1001,7 +1020,8 @@ class AgentFactory():
     :param interactive: Sets BRAD's mode to interactive or non inteactive. Default mode is non Interactive
     :type tools: bool, optional
     """
-    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None, llm_choice=None):
+
+    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None, llm_choice=None, gui=None):
         self.interactive = interactive
         suffix = '/log.json'
         if session_path and (session_path.endswith(suffix)):
@@ -1009,6 +1029,7 @@ class AgentFactory():
         self.session_path = session_path
         self.tool_modules = tool_modules
         self.start_path = start_path
+        self.gui=gui
         if db_name:
             self.db_name = db_name
         else:
@@ -1027,11 +1048,11 @@ class AgentFactory():
         The agent function for instantiating a new agent or retrieve an existing agent
         """
         if self.session_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path, gui=self.gui)
         elif self.start_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path, gui=self.gui)
         else:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, gui=self.gui)
 
 
         if self.db_name and self.persist_directory:

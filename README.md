@@ -29,7 +29,7 @@ then proceed to http://localhost:3000
 
 
 ## Development
-=======
+
 <div align="center">
   <img width="635" alt="brad-dl-vision" src="https://github.com/user-attachments/assets/da7a1722-28ca-44e8-b45f-4350b7b29305">
 </div>

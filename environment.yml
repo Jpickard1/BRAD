@@ -1,4 +1,4 @@
-name: BRAD-1
+name: BRAD-DEV
 channels:
   - defaults
 dependencies:

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function RagFileInput() {
+function SearchSettings() {
     const [files, setFiles] = useState([]);
     const [dbName, setDbName] = useState('');  // State to hold the name input
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -195,78 +195,8 @@ function RagFileInput() {
           </select>
         </div>
 
-        <label><b>Upload Files:</b></label>
-        <div className='rag-file-upload'>
-          <form onSubmit={handleSubmit} className="rag-file-input">
-                <input
-                    id="rag-db-name"
-                    type="text"
-                    placeholder="Enter database name"
-                    value={dbName}
-                    onChange={handleNameChange}
-                />
-                <input id="rag-file-input" type="file" name="rag_files" onChange={handleChange} multiple />
-                <label  for="rag-file-input">Choose File</label>
-                {Array.from(files).length > 0 && (
-                  <div className="file-names">
-                    {/* <strong>Selected Files:</strong> */}
-                    <ul>
-                      {Array.from(files).map((file, index) => (
-                        <li key={index}>{file.name}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                <button id="rag-file-submit" type="submit">upload {String.fromCodePoint('0x25B2')}</button>
-                <progress value={uploadProgress} max="100"></progress>
-            </form>
-        </div>
-
-        {/* Search Settings */}
-        <label><b>Search Settings:</b></label>
-        <div className="search-settings">
-          {/* Number of Articles Retrieved */}
-          <div className="setting-option">
-            <label htmlFor="num-articles"><b>Number of Articles Retrieved:</b></label>
-            <input
-              id="num-articles"
-              type="number"
-              min="1"
-              value={numArticles}
-              onChange={(e) => setNumArticles(e.target.value)} // Updates the state without triggering the API call
-              onKeyDown={handleNumArticlesChange} // Trigger API call only on Enter
-              placeholder="Enter a number"
-            />
-          </div>
-
-          {/* Retrieval Mechanism */}
-          <div className="setting-option">
-            <label htmlFor="retrieval-mechanism"><b>Retrieval Mechanism:</b></label>
-            <select
-              id="retrieval-mechanism"
-              value={retrievalMechanism}
-              onChange={handleRetrievalMechanismChange}
-            >
-              <option value="MMR">MMR</option>
-              <option value="similarity">Similarity</option>
-              <option value="multiquery">Multiquery</option>
-            </select>
-          </div>
-
-          {/* Contextual Compression */}
-          <div className="setting-option">
-            <label htmlFor="contextual-compression"><b>Contextual Compression:</b></label>
-            <input
-              id="contextual-compression"
-              type="checkbox"
-              checked={contextualCompression}
-              onChange={handleContextualCompressionToggle}
-            />
-            <span>{contextualCompression ? 'On' : 'Off'}</span>
-          </div>
-        </div>
       </div>
     );
 }
 
-export default RagFileInput;
+export default SearchSettings;
