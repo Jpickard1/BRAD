@@ -393,9 +393,7 @@ def biorxiv(query, state):
                         kwd_type    = 'all', 
                         athr        = [], 
                         max_records = 10, 
-                        max_time    = 300,
-                        cols        = ['title', 'authors', 'url'],
-                        abstracts   = False
+                        max_time    = 300
                         )
 
 def biorxiv_real_search(state,
@@ -407,9 +405,7 @@ def biorxiv_real_search(state,
                         kwd_type    = 'all', 
                         athr        = [], 
                         max_records = 10, 
-                        max_time    = 300,
-                        cols        = ['title', 'authors', 'url'],
-                        abstracts   = False
+                        max_time    = 300
                         ):
 
     """
@@ -446,8 +442,12 @@ def biorxiv_real_search(state,
     #       machoi@umich.edu
 
     ## keep track of timing
+    kwd_string = ''
+    if len(kwd) > 0:
+        kwd_string = ' '.join(kwd)
+    output = 'searching the following on biorxiv: ' + kwd_string
+    state = log.userOutput(output, state=state)
     overall_time = time.time()
-
     ## url
     BASE = 'http://{:s}.org/search/'.format(journal)
     url = BASE
@@ -464,7 +464,6 @@ def biorxiv_real_search(state,
     ## journal selection
     journal_str = 'jcode%3A' + journal
     url += journal_str
-
     ## subject selection
     if len(subjects) > 0:
         first_subject = ('%20').join(subjects[0].split())
@@ -497,12 +496,10 @@ def biorxiv_real_search(state,
     url += '%20numresults%3A' + str(num_page_results) + '%20format_result%3Acondensed' + '%20sort%3Arelevance-rank'
     
     log.debugLog(url, state=state)
-
 	## lists to store date
     titles = []
     author_lists = []
     urls = []
-
 	### once the string has been built, access site
 
 	# initialize number of pages to loop through
@@ -541,11 +538,9 @@ def biorxiv_real_search(state,
             break
 
         page += 1
-
 	## only consider desired number of results
     records_data = list(zip(*list(map(lambda dummy_list: dummy_list[0:num_fetch_results], [titles, author_lists, urls]))))
-    full_records_df = pd.DataFrame(records_data,columns=['title', 'authors', 'url'])
-
+    full_records_df = pd.DataFrame(records_data, columns=['title', 'authors', 'url'])
 	## keep user informed on why task ended
     if num_results > max_records:
         log.debugLog('Max number of records ({:d}) reached. Fetched in {:.1f} seconds.'.format(max_records, time.time() - overall_time), state=state)
@@ -554,42 +549,58 @@ def biorxiv_real_search(state,
     else:
         log.debugLog('Fetched {:d} records in {:.1f} seconds.'.format(num_fetch_results, time.time() - overall_time), state=state)
 		## check if abstracts are to be pulled
-    if abstracts:
-        log.debugLog('Fetching abstracts for {:d} papers...'.format(len(full_records_df)), state=state)
-        full_records_df['abstract'] = [bs(requests.post(paper_url).text, features='html.parser').find('div', attrs={'class': 'section abstract'}).text.replace('Abstract','').replace('\n','') for paper_url in full_records_df.url]
-        cols += ['abstract']
-        log.debugLog('Abstracts fetched.', state=state)
-
-    try: 
-        path = utils.pdfDownloadPath(state) # os.path.abspath(os.getcwd()) + '/specialized_docs'
-        os.makedirs(path, exist_ok = True) 
-        log.debugLog("Directory '%s' created successfully" % path, state=state)
-    except OSError as error: 
-        log.debugLog("Directory '%s' can not be created" % path, state=state)
-    log.debugLog('Downloading {:d} PDFs to {:s}...'.format(len(full_records_df), path), state=state)
-    pdf_urls = [''.join(url) + '.full.pdf' for url in full_records_df.url] # list of urls to pull pdfs from
-
+    log.debugLog('Fetching abstracts for {:d} papers...'.format(len(full_records_df)), state=state)
+    abstracts = [bs(requests.post(paper_url).text, features='html.parser').find('div', attrs={'class': 'section abstract'}).text.replace('Abstract','').replace('\n','') for paper_url in full_records_df.url]
+    full_records_df['abstracts'] = abstracts
+    log.debugLog('Abstracts fetched.', state=state)
+    download = 'N'
+    if state['config']['SCRAPE']['save_search_results']:
+        utils.save(state, display_df, "biorxiv-search-" + str(query) + '.csv')
+    if len(state['queue']) == 0:
+        if state['interactive']:
+            display_df = full_records_df.drop('url', axis=1)
+            display(display_df.head(10))
+            output += '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput('Would you like to download these articles [Y/N]?', state=state)
+            download = input().strip().upper()
+            state['process']['steps'].append(
+                {
+                    'func'           : 'scraper.biorxiv',
+                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+                    'input'          : download,
+                    'purpose'        : 'decide to download pdfs or not'
+                }
+            )
+        else:
+            download = state['SCRAPE']['download_search_results']
+    else:
+        download = 'Y'
+    if download == 'Y':
+        try: 
+            path = utils.pdfDownloadPath(state) # os.path.abspath(os.getcwd()) + '/specialized_docs'
+            os.makedirs(path, exist_ok = True) 
+            log.debugLog("Directory '%s' created successfully" % path, state=state)
+        except OSError as error: 
+            log.debugLog("Directory '%s' can not be created" % path, state=state)
+        log.debugLog('Downloading {:d} PDFs to {:s}...'.format(len(full_records_df), path), state=state)
+        pdf_urls = [''.join(url) + '.full.pdf' for url in full_records_df.url] # list of urls to pull pdfs from
 	# create filenames to export pdfs to
 	# currently setup in year_lastname format
-    pdf_lastnames_full = ['_'.join([name.split()[-1] for name in namelist]) for namelist in full_records_df.authors] # pull out lastnames only
-    pdf_lastnames = [name if len(name) < 200 else name.split('_')[0] + '_et_al' for name in pdf_lastnames_full] # make sure file names don't get longer than ~200 chars
-    pdf_paths = [''.join(lastname) + '.pdf' for lastname in zip(pdf_lastnames)] # full path for each file
+        pdf_lastnames_full = ['_'.join([name.split()[-1] for name in namelist]) for namelist in full_records_df.authors] # pull out lastnames only
+        pdf_lastnames = [name if len(name) < 200 else name.split('_')[0] + '_et_al' for name in pdf_lastnames_full] # make sure file names don't get longer than ~200 chars
+        pdf_paths = [''.join(lastname) + '.pdf' for lastname in zip(pdf_lastnames)] # full path for each file
     # export pdfs
-    for paper_idx in range(len(pdf_urls)):
-        response = requests.get(pdf_urls[paper_idx])
-        file = open(os.path.join(path,pdf_paths[paper_idx]), 'wb')
-        file.write(response.content)
-        file.close()
-        gc.collect()
-    state = log.userOutput("Download complete.", state=state)
+        for paper_idx in range(len(pdf_urls)):
+            response = requests.get(pdf_urls[paper_idx])
+            file = open(os.path.join(path,pdf_paths[paper_idx]), 'wb')
+            file.write(response.content)
+            file.close()
+            gc.collect()
 
-	## create dataframe to be returned
-    records_df = full_records_df[cols]
-	
-    state = log.userOutput('Total time to fetch and manipulate records was {:.1f} seconds.'.format(time.time() - overall_time), state=state)
-
+        state = log.userOutput("Download complete.", state=state)
+        state = log.userOutput('Total time to fetch and manipulate records was {:.1f} seconds.'.format(time.time() - overall_time), state=state)
 	## return the results
-    return(records_df)
+    return(full_records_df)
 
 #Parsers
 def create_db(query, query2):
