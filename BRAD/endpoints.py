@@ -243,7 +243,8 @@ def parse_log_for_one_query(chatlog_query):
         process = []
         process_dict = {}
         steps = process_data.get('STEPS', [])
-        
+        source_locations = process_data['SOURCE_LOCATIONS']
+
         for step in steps:
             # Check if 'func' key exists and is 'rag.retrieval'
             if step.get('func', '').lower() == 'rag.retrieval':

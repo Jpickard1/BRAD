@@ -158,14 +158,17 @@ def queryDocs(state):
 
         # display sources
         sources = []
+        source_locations = []
         for doc in docs:
             source = doc.metadata.get('source')
             short_source = os.path.basename(str(source))
             sources.append(short_source)
+            source_locations.append(source)
         sources = list(set(sources))
         state = log.userOutput("Sources:", state=state) 
         state = log.userOutput('\n'.join(sources), state=state) 
         state['process']['sources'] = sources
+        state['process']['source_locations'] = source_locations
         
         # format outputs for logging
         response['input_documents'] = getInputDocumentJSONs(response['input_documents'])
