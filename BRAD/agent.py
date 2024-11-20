@@ -1042,7 +1042,7 @@ class AgentFactory():
 
         if self.llm_choice:
             llm = llm_switcher(
-                model_name = self.llm_choice,
+                self.llm_choice,
                 temperature = 0,
             )
             agent.set_llm(llm)
