@@ -74,6 +74,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from BRAD.promptTemplates import scrapeTemplate
 from BRAD import utils
 from BRAD import log
+from BRAD import justchat
 
 def webScraping(state):
     """
@@ -89,13 +90,26 @@ def webScraping(state):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: May 20, 2024
+    if state['continue-module'] is None:
+        # Search in the database
+        state = webScrapingStageOne(state)
+    else:
+        # Download from the database
+        state = webScrapingStageTwo(state)
+        state['continue-module'] = None
+    return state
+
+def webScrapingStageOne(state):
+    """
+    This method performs the first round of search involved in the scraping.
+    """
     query    = state['prompt']
     llm      = state['llm']              # get the llm
     memory   = state['memory']           # get the memory of the model
     
     # Define the mapping of keywords to functions
     scraping_functions = {
-        'ARXIV'   : arxiv,
+        'ARXIV'   : arxivStageOne,
         'BIORXIV' : biorxiv,
         'PUBMED'  : pubmed
     }
@@ -134,35 +148,158 @@ def webScraping(state):
 
     # Determine the target source
     source = next((key for key in scraping_functions if key == llmKey), 'PUBMED')
+    # TODO: remove this hardcoded value for debugging
+    source = 'ARXIV'
     process = {'searched': source}
     scrape_function = scraping_functions[source]
-    
+
     # Execute the scraping function and handle errors
-    if state['config']['SCRAPE']['perform_search']:
-        try:
-            output = f'searching on {source}...'
-            log.debugLog(output, state=state)
-            log.debugLog('Search Terms: ' + str(searchTerms), state=state)
-            for numTerm, st in enumerate(searchTerms):
-                if numTerm == state['config']['SCRAPE']['max_search_terms']:
-                    break
-                scrape_function(st, state)
-        except Exception as e:
-            output = f'Error occurred while searching on {source}: {e}'
-            log.debugLog(output, state=state)
-            process = {'searched': 'ERROR'}
-    
-        if state['config']['SCRAPE']['add_from_scrape']:
-            state = updateDatabase(state)
+    try:
+        output = f'searching on {source}...'
+        log.debugLog(output, state=state)
+        log.debugLog('Search Terms: ' + str(searchTerms), state=state)
+        for numTerm, st in enumerate(searchTerms):
+            if numTerm == state['config']['SCRAPE']['max_search_terms']:
+                break
+            # TODO will need to save these results
+            state = scrape_function(st, state)
+            print(f"{state=}")
+    except Exception as e:
+        output = f'Error occurred while searching on {source}: {e}'
+        log.debugLog(output, state=state)
+        process = {'searched': 'ERROR'}
         
-        state['process']['steps'].append(process)
-        state['output'] = "Articles were successfully downloaded."
-    else:
-        state['output'] = "No articles were searched."        
+    state['process']['steps'].append(process)
     return state
 
 
-  
+def webScrapingStageTwo(state):
+    query    = state['prompt']
+    print(f"webScrapingStageTwo")
+    if query.upper() != 'Y':
+        # TODO: this should route directly to the general chat
+        print('Nothing to download now :)')
+        state = justchat.llm_only(state)
+        return state
+    toolHistory = state['continue-module'][1]
+    print(f"{toolHistory=}")
+    scraping_functions = {
+        'ARXIV'   : arxivStageTwo,
+        'BIORXIV' : biorxiv,
+        'PUBMED'  : pubmed
+    }
+    source = next((key for key in scraping_functions if key == toolHistory['database']), 'ARXIV')
+    print(f"{source=}")
+    scrape_function = scraping_functions[source]
+    print(f"{scrape_function=}")
+    state = scrape_function(query, state)
+    print(f"{state=}")
+#    if state['config']['SCRAPE']['add_from_scrape']:
+#        state = updateDatabase(state)
+#    state['output'] = "Articles were successfully downloaded."
+    return state
+
+
+def arxivStageOne(query, state):
+    """
+    Searches for artciles on arXiv related to a users query, and displays search results that can be downloaded in stage two.
+
+    :param query: The search query for arXiv.
+    :type query: str
+
+    :return: state
+    """
+    process = {}
+    output = 'searching the following on arxiv: ' + query
+    state = log.userOutput(output, state=state)
+    df, pdfs = arxiv_search(query, 10, state=state)
+    print(f"{df=}")
+    print(f"{pdfs=}")
+    print(f"search method worked!")
+    process['search results'] = df
+    displayDf = set_arxiv_df_display(df, pdfs)
+    print(f"{displayDf=}")
+
+    output = "\n\n"
+    output += displayDf.to_markdown()
+    output += "\n\n"
+    print(f"{output=}")
+
+    if state['config']['SCRAPE']['save_search_results']:
+        utils.save(state, df, "arxiv-search-" + str(query) + '.csv')
+    print(f"{len(state['queue'])=}")
+    print(f"{(len(state['queue'])==0)=}")
+#    print(f"{state.keys()=}")
+#    print(f"{state=}")
+    print(f"{state['interactive']=}")
+    print(f"{state['gui']=}")
+    if len(state['queue']) == 0:
+        if state['interactive'] or state['gui']:
+            output += '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)
+
+    state['continue-module'] = ('SCRAPE', {
+        'database': 'ARXIV',
+        'pdfs': pdfs
+    })
+
+    return state
+
+def set_arxiv_df_display(df, pdfs):
+    """
+    Modify an arXiv DataFrame to include clickable markdown links for paper titles.
+
+    This function processes a DataFrame containing paper information from arXiv
+    and updates the 'Title' column to include clickable markdown links that point
+    to the corresponding PDF URLs. It also retains the 'Authors' column for display.
+
+    Parameters:
+        df (pandas.DataFrame): The DataFrame containing the arXiv data. 
+                               It must include a 'Title' and an 'Authors' column.
+        pdfs (list of str): A list of URLs corresponding to the PDF links for the papers.
+                            The order of URLs should match the order of titles in the DataFrame.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing two columns:
+                          - 'Title': Titles converted into clickable markdown links.
+                          - 'Authors': The original authors column from the input DataFrame.
+
+    Raises:
+        ValueError: If the length of the `pdfs` list does not match the number of titles in `df`.
+
+    Example:
+        >>> df = pd.DataFrame({'Title': ['Paper A', 'Paper B'], 'Authors': ['Author X', 'Author Y']})
+        >>> pdfs = ['http://arxiv.org/pdf/paperA.pdf', 'http://arxiv.org/pdf/paperB.pdf']
+        >>> display_df = set_arxiv_df_display(df, pdfs)
+        >>> print(display_df)
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: Nov. 17, 2024
+    
+    # Check if the lengths of titles and PDF links match
+    if len(df['Title']) != len(pdfs):
+        raise ValueError("The number of titles in the DataFrame must match the number of PDF URLs.")
+
+    # Select relevant columns
+    display_df = df[['Title', 'Authors']].copy()
+
+    # Create markdown links for titles
+    markdown_titles = [
+        f"[{title}]({pdf})"
+        for title, pdf in zip(display_df['Title'].values, pdfs)
+    ]
+    display_df['Title'] = markdown_titles
+
+    return display_df
+
+
+def arxivStageTwo(query, state):
+    pdfs = state['continue-module'][1]['pdfs']
+    pdf_string = arxiv_scrape(pdfs, state)
+    state = log.userOutput("The following articles were downloaded:\n\n"+ pdf_string, state=state)
+    return state
+
 def arxiv(query, state):
     """
     Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.

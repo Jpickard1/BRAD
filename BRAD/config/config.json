@@ -11,10 +11,10 @@
     },
     "SCRAPE": {
         "add_from_scrape": true,
-        "max_search_terms": 10,
+        "max_search_terms": 1,
         "save_search_results": false,
         "download_search_results": false,
-        "perform_search": false
+        "perform_search": true
     },
     "CODE": {
         "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",
@@ -58,7 +58,7 @@
         "fontsize": null
     },
     "debug": 0,
-    "log_path": "/mnt/c/dev/containers/ram/v2/logs",
+    "log_path": "C:\\Users\\jpic\\Documents\\BRAD",
     "experiment": false,
     "image-path-extension": "images",
     "forgetful": 0
