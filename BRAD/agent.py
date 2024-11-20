@@ -409,7 +409,7 @@ class Agent():
             return True
             # continue
         # Continue previous module
-        elif self.state['continue-module'] is not None:
+        elif self.state.get('continue-module') is not None:
             route = self.state['continue-module'][0]
             print("continue module is not None!")
             print(f"{route=}")

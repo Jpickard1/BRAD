@@ -135,7 +135,7 @@ def logger(chatlog, state, chatname, elapsed_time=None):
         'elapsed time' : elapsed_time,
         'prompt' : state['prompt'],  # the input to the user
         'output' : state['output'],  # the output to the user
-        'continue-module': state['continue-module'],
+        'continue-module': state.get('continue-module'),
         'process': process_serializable,  # state['process'], # information about the process that ran
         'status' : {                      # information about the chat at that time
             'databases'         : str(state['databases']),

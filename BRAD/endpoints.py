@@ -84,9 +84,10 @@ import shutil
 import logging
 import time
 from itertools import filterfalse
+from urllib.parse import urlparse
 
 # Imports for building RESTful API
-from flask import Flask, request, jsonify, Blueprint
+from flask import Flask, request, jsonify, Blueprint, send_from_directory
 from flask import flash, redirect, url_for
 from werkzeug.utils import secure_filename
 
@@ -95,7 +96,7 @@ from openai import OpenAI
 
 # Imports for BRAD library
 from BRAD.agent import Agent, AgentFactory
-from BRAD.utils import delete_dirs_without_log 
+from BRAD.utils import delete_dirs_without_log, strip_root_path
 from BRAD.constants import DEFAULT_SESSION_EXTN
 from BRAD.rag import create_database
 from BRAD import llms # import load_nvidia, load_openai
@@ -243,8 +244,10 @@ def parse_log_for_one_query(chatlog_query):
         process = []
         process_dict = {}
         steps = process_data.get('STEPS', [])
-        source_locations = process_data['SOURCE_LOCATIONS']
-
+        source_locations = process_data.get('SOURCE_LOCATIONS')
+        if source_locations:
+            source_locations = [strip_root_path(i, UPLOAD_FOLDER) for i in source_locations]
+        process_data['SOURCE_LOCATIONS'] = source_locations
         for step in steps:
             # Check if 'func' key exists and is 'rag.retrieval'
             if step.get('func', '').lower() == 'rag.retrieval':
@@ -261,9 +264,11 @@ def parse_log_for_one_query(chatlog_query):
                 # Add the sources and chunks to the process list
                 process.append(('RAG-R', sources))
                 process.append(('RAG-G', chunks))
+                process.append(('RAG-S', source_locations))
 
                 process_dict['RAG-R'] =  sources
                 process_dict['RAG-G'] =  chunks
+                process_dict['RAG-S'] =  source_locations
             
             # Check if 'purpose' key exists and is 'chat without RAG'
             elif step.get('purpose', '').lower() == 'chat without rag':
@@ -1553,3 +1558,9 @@ def llm_apikey(request):
     else:
         return jsonify({"message": "API key was not successfully set."}), 400  # Success response
 
+
+@bp.route("/uploads/<path:filename>", methods=['GET'])
+def static_proxy(filename):
+    print(UPLOAD_FOLDER)
+    print(filename)
+    return send_from_directory(UPLOAD_FOLDER, filename)
