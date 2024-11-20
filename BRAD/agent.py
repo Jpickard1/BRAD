@@ -481,8 +481,12 @@ class Agent():
         elapsed_time = end_time - start_time
         
         # Log and reset these values
-        print(f"WRITE LOG")
-        self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=elapsed_time)
+        self.chatlog, self.state = log.logger(
+            self.chatlog,
+            self.state,
+            self.chatname,
+            elapsed_time=elapsed_time
+        )
         return self.state['output']
 
     def chat(self):
