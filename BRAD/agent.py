@@ -457,7 +457,7 @@ class Agent():
         try:
             self.state = module(self.state)
         except:
-            log.debugLog('An arror occurred during module execution!', state=self.state)
+            log.debugLog('An error occurred while using a tool.', state=self.state)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
         log.debugLog('\n\n\nroute\n\n\n', state=self.state)
