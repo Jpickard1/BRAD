@@ -543,12 +543,6 @@ class Agent():
 
                 # update memory to use previous points of the pipeline
                 if 'inputs' in list(self.state['queue'][self.state['queue pointer']].keys()):
-                    # This is piecemeal for now
-                    # if multiple inputs go to file caller, that can be handled during funciton call creation
-                    # only single inputs can go to DATABASE
-                    # only single inputs can go to ROUTER
-                    # only single inputs can go to PLANNER
-                    print('hacky integration of old results')
                     print(query)
                     print(self.state['queue'][self.state['queue pointer']]['module'])
                     if self.state['queue'][self.state['queue pointer']]['module'] == 'RAG':
@@ -575,9 +569,6 @@ class Agent():
                                         query += str(df[['path_name']].values[:10])
                                 except:
                                     print('this part of the code doesnt work so great, yet!')
-                    # self.updateMemory()
-                    # resetMemory = True
-            
             else:
                 query = input('Input >> ')  # get query from user
             
