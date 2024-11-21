@@ -60,6 +60,7 @@ def codeCaller(state):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: June 22, 2024
+
     log.debugLog("CODER", state=state)
     prompt = state['prompt']                                        # Get the user prompt
     llm = state['llm']                                              # Get the llm
@@ -67,12 +68,12 @@ def codeCaller(state):
 
     # Get available matlab and python scripts
     path = state['config']['CODE']['path']
-
+    
     scripts = {}
     for fdir in path:
         scripts[fdir] = {}
         scripts[fdir]['python'] = find_py_files(fdir) # pythonScripts
-        scripts[fdir]['matlab'] = find_matlab_files(fdir) # matlabScripts
+    #    scripts[fdir]['matlab'] = find_matlab_files(fdir) # matlabScripts
     
     # Get matlab and python docstrings
     scriptPurpose = {}
@@ -104,7 +105,7 @@ def codeCaller(state):
         "Completion Tokens": cb.completion_tokens,
         "Total Cost (USD)": cb.total_cost
     }
-    
+
     log.debugLog(res.content, state=state)
     scriptName   = res.content.strip().split('\n')[0].split(':')[1].strip()
     scriptType   = scriptPurpose[scriptName]['type']
@@ -144,7 +145,7 @@ def codeCaller(state):
             purpose         = 'Select which code to run'
         )
     )
-    
+
     # Format code to execute: read the doc strings, format function call (second llm call), parse the llm output
     log.debugLog("ALL SCRIPTS FOUND. BUILDING TEMPLATE", state=state)
     
@@ -170,7 +171,6 @@ def codeCaller(state):
     # Create the prompt template
     PROMPT = PromptTemplate(input_variables=["history", "input"], template=filled_template)
     log.debugLog(PROMPT, state=state)
-    
     # this will allow better logging of the response from the query API
     try:
         # LCEL chain creation: prompt | llm
@@ -180,16 +180,27 @@ def codeCaller(state):
         start_time = time.time()
         with get_openai_callback() as cb:
             response = chain.invoke({"history": memory.abuffer(), "input": state['prompt']})
+
         responseOriginal = response
         responseOriginal['time'] = time.time() - start_time
-        responseOriginal['call back'] = {
-            "Total Tokens": cb.total_tokens,
-            "Prompt Tokens": cb.prompt_tokens,
-            "Completion Tokens": cb.completion_tokens,
-            "Total Cost (USD)": cb.total_cost
-        }        
+
+        try:
+            responseOriginal['call back'] = {
+                "Total Tokens": cb.total_tokens,
+                "Prompt Tokens": cb.prompt_tokens,
+                "Completion Tokens": cb.completion_tokens,
+                "Total Cost (USD)": cb.total_cost
+            }
+        except:
+           responseOriginal['call back'] = {
+                "Total Tokens": None,
+                "Prompt Tokens": None,
+                "Completion Tokens": None,
+                "Total Cost (USD)": None
+            }
+
         response = response.content
-        
+
     # this catches the initial implementation
     except:
         conversation = ConversationChain(
@@ -201,19 +212,32 @@ def codeCaller(state):
         start_time = time.time()
         with get_openai_callback() as cb:
             response = conversation.predict(input=state['prompt'])
+
         responseOriginal = response
-        responseOriginal = {
-            'content' : response,
-            'time' : time.time() - start_time,
-            'call back': {
-                "Total Tokens": cb.total_tokens,
-                "Prompt Tokens": cb.prompt_tokens,
-                "Completion Tokens": cb.completion_tokens,
-                "Total Cost (USD)": cb.total_cost
+        try:
+            responseOriginal = {
+                'content' : response,
+                'time' : time.time() - start_time,
+                'call back': {
+                    "Total Tokens": cb.total_tokens,
+                    "Prompt Tokens": cb.prompt_tokens,
+                    "Completion Tokens": cb.completion_tokens,
+                    "Total Cost (USD)": cb.total_cost
+                }
             }
-        }
+        except:
+            responseOriginal = {
+                'content' : response,
+                'time' : time.time() - start_time,
+                'call back': {
+                    "Total Tokens": None,
+                    "Prompt Tokens": None,
+                    "Completion Tokens": None,
+                    "Total Cost (USD)": None
+                }
+            }
     
-    responseParser = {'python': extract_python_code, 'MATLAB': extract_matlab_code}.get(scriptType)
+    responseParser = {'python': extract_python_code}.get(scriptType)
     code2execute = responseParser(response, scriptPath, state, memory=memory)
 
     state['process']['steps'].append(
