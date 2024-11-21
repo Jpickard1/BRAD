@@ -1,0 +1,40 @@
+name: Pypi CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'main'
+    types:
+      - closed
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Build package (optional)
+        run: poetry build
+      
+      - name: install twine
+        run: pip install twine
+      
+      - name: Push to GitHub
+        run: python -m twine upload --username __token__ --password ${{ secrets.PYPI_TOKEN }} --repository pypi dist/* --verbose

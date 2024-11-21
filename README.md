@@ -96,7 +96,7 @@ cd brad-chat
 npm start
 ```
 
-This will start BRAD Backend at - http://localhost:3000
+This will start BRAD Backend at - http://localhost:3000  
 And the BRAD frontend at - http://localhost:5000
 
 <br>
