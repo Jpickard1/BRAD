@@ -124,7 +124,7 @@ def queryDocs(state):
         
         # contextual compression of the documents
         if state['config']['RAG']['contextual_compression']:
-            docs = contextualCompression(docs, state)
+            docs = contextual_compression(docs, state)
 
         for i, doc in enumerate(docs):
             source = doc.metadata.get('source')
@@ -273,7 +273,7 @@ def retrieval(state):
     })
     return state, docs
 
-def contextualCompression(docs, state):
+def contextual_compression(docs, state):
     """
     Summarizes the content of documents based on a user query, updating the 
     document search results with these summaries.
@@ -315,12 +315,13 @@ def contextualCompression(docs, state):
         # Log LLM
         state['process']['steps'].append(
             log.llmCallLog(
-                llm             = state['llm'],       # what LLM?
+                llm             = state['llm'],            # what LLM?
                 prompt          = PROMPT,                  # what prompt template?
                 input           = prompt,                  # what specific input to the llm or template?
                 output          = res,                     # what is the full llm output?
                 parsedOutput    = summary,                 # what is the useful output?
-                purpose         = 'contextual compression' # why did you use an llm
+                purpose         = 'contextual compression',# why did you use an llm
+                apiInfo         = res.response_metadata['call back'],
             )
         )
         
