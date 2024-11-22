@@ -18,10 +18,16 @@ function Suggestions({ onSuggestionClick }) {
   const [loaded, setLoaded] = useState(false); // Track when component is fully loaded
 
   const colors = [
-    "#ff0000",
-    "#00ff00",
-    "#0000ff",
-    "#ffa500"
+    // "#ff0000",
+    // "#00ff00",
+    // "#0000ff",
+    // "#ffa500"
+    "#1F1F1F",
+    "#2F2F2F",
+    "#3F3F3F",
+    "#4F4F4F",
+    "#5F5F5F",
+    "#6F6F6F"
   ]; // Example color palette
 
   // Function to shuffle an array (used for both suggestions and colors)
@@ -70,7 +76,6 @@ function Suggestions({ onSuggestionClick }) {
           className="suggestion-box"
           style={{
             '--suggestion-color': suggestion.color, // Set shuffled color variable
-            '--hover-color': "#d9e9ff", // Set hover color variable
           }}
         >
           {/* Check if the suggestion is "Get Help" and make it a link */}
