@@ -35,6 +35,9 @@ This module has the following methods:
 
 
 import subprocess
+
+from IPython.display import display
+
 from langchain.document_loaders import DirectoryLoader
 from langchain.document_loaders import UnstructuredPDFLoader
 from langchain.vectorstores import Chroma
@@ -74,6 +77,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from BRAD.promptTemplates import scrapeTemplate
 from BRAD import utils
 from BRAD import log
+from BRAD import justchat
 
 def webScraping(state):
     """
@@ -89,15 +93,28 @@ def webScraping(state):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: May 20, 2024
+    if state['continue-module'] is None:
+        # Search in the database
+        state = webScrapingStageOne(state)
+    else:
+        # Download from the database
+        state = webScrapingStageTwo(state)
+        state['continue-module'] = None
+    return state
+
+def webScrapingStageOne(state):
+    """
+    This method performs the first round of search involved in the scraping.
+    """
     query    = state['prompt']
     llm      = state['llm']              # get the llm
     memory   = state['memory']           # get the memory of the model
     
     # Define the mapping of keywords to functions
     scraping_functions = {
-        'ARXIV'   : arxiv,
-        'BIORXIV' : biorxiv,
-        'PUBMED'  : pubmed
+        'ARXIV'   : arxivStageOne,
+        'BIORXIV' : biorxivStageOne,
+        'PUBMED'  : pubmedStageOne
     }
     
     # Identify the database and the search terms
@@ -136,76 +153,53 @@ def webScraping(state):
     source = next((key for key in scraping_functions if key == llmKey), 'PUBMED')
     process = {'searched': source}
     scrape_function = scraping_functions[source]
-    
+
     # Execute the scraping function and handle errors
-    if state['config']['SCRAPE']['perform_search']:
-        try:
-            output = f'searching on {source}...'
-            log.debugLog(output, state=state)
-            log.debugLog('Search Terms: ' + str(searchTerms), state=state)
-            for numTerm, st in enumerate(searchTerms):
-                if numTerm == state['config']['SCRAPE']['max_search_terms']:
-                    break
-                scrape_function(st, state)
-        except Exception as e:
-            output = f'Error occurred while searching on {source}: {e}'
-            log.debugLog(output, state=state)
-            process = {'searched': 'ERROR'}
-    
-        if state['config']['SCRAPE']['add_from_scrape']:
-            state = updateDatabase(state)
+    try:
+        output = f'searching on {source}...'
+        log.debugLog(output, state=state)
+        log.debugLog('Search Terms: ' + str(searchTerms), state=state)
+        for numTerm, st in enumerate(searchTerms):
+            if numTerm == state['config']['SCRAPE']['max_search_terms']:
+                break
+            # TODO will need to save these results
+            state = scrape_function(st, state)
+#            print(f"{state=}")
+    except Exception as e:
+        output = f'Error occurred while searching on {source}: {e}'
+        log.debugLog(output, state=state)
+        process = {'searched': 'ERROR'}
         
-        state['process']['steps'].append(process)
-        state['output'] = "Articles were successfully downloaded."
-    else:
-        state['output'] = "No articles were searched."        
+    state['process']['steps'].append(process)
     return state
 
 
-  
-def arxiv(query, state):
-    """
-    Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.
+def webScrapingStageTwo(state):
+    query    = state['prompt']
+#    print(f"webScrapingStageTwo")
+    if query.upper() != 'Y':
+        # TODO: this should route directly to the general chat
+#        print('Nothing to download now :)')
+        state = justchat.llm_only(state)
+        return state
+    toolHistory = state['continue-module'][1]
+#    print(f"{toolHistory=}")
+    scraping_functions = {
+        'ARXIV'   : arxivStageTwo,
+        'BIORXIV' : biorxivStageTwo,
+        'PUBMED'  : pubmedStageTwo
+    }
+    source = next((key for key in scraping_functions if key == toolHistory['database']), 'ARXIV')
+#    print(f"{source=}")
+    scrape_function = scraping_functions[source]
+#    print(f"{scrape_function=}")
+    state = scrape_function(query, state)
+#    print(f"{state=}")
+#    if state['config']['SCRAPE']['add_from_scrape']:
+#        state = updateDatabase(state)
+#    state['output'] = "Articles were successfully downloaded."
+    return state
 
-    :param query: The search query for arXiv.
-    :type query: str
-
-    :return: A tuple containing the output message and a process dictionary.
-    :rtype: tuple
-
-    """
-    # Auth: Marc Choi
-    #       machoi@umich.edu
-    process = {}
-    output = 'searching the following on arxiv: ' + query
-    state = log.userOutput(output, state=state)
-    df, pdfs = arxiv_search(query, 10, state=state)
-    process['search results'] = df
-    displayDf = df[['Title', 'Authors', 'Abstract']]
-    display(displayDf)
-    if state['config']['SCRAPE']['save_search_results']:
-        utils.save(state, df, "arxiv-search-" + str(query) + '.csv')
-    if len(state['queue']) == 0:
-        if state['interactive']:
-            output += '\n Would you like to download these articles [Y/N]?'
-            state = log.userOutput('Would you like to download these articles [Y/N]?', state=state)
-            download = input().strip().upper()
-            state['process']['steps'].append(
-                {
-                    'func'           : 'scraper.arxiv',
-                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
-                    'input'          : download,
-                    'purpose'        : 'decide to download pdfs or not'
-                }
-            )
-        else:
-            download = state['SCRAPE']['download_search_results']
-    else:
-        download = 'Y'
-    process['download'] = (download == 'Y')
-    if download == 'Y':
-        output += arxiv_scrape(pdfs, state)
-    return output, process
 
 def fetch_details(id_list):
     """
@@ -373,81 +367,358 @@ def pubmed_scrape(pmid_list, state):
             pass
             log.debugLog(f"{pmc} could not be gathered.", state=state)
 
-def biorxiv(query, state):
+def pubmedStageOne(query, state):
     """
-    Scrapes the bioRxiv preprint server for articles matching a specific query.
+    Searches for artciles on arXiv related to a users query, and displays search results that can be downloaded in stage two.
 
-    :param query: The keyword to search for in bioRxiv articles.
+    :param query: The search query for arXiv.
     :type query: str
+
+    :return: state
+    """
+    process = {}
+    output = 'searching the following on pubmed: ' + query
+    state = log.userOutput(output, state=state)
+    df, pdfs = pubmed_search(query, 10, state=state)
+    
+    process['search results'] = df
+    displayDf = set_arxiv_df_display(df, pdfs, gui=state.get('gui', False))
+    
+    if state.get('gui'):
+        output = "\n\n"
+        output += displayDf.to_markdown()
+        output += "\n\n"
+    else:
+        display(displayDf)
+    
+    if state['config']['SCRAPE']['save_search_results']:
+        utils.save(state, df, "pubmed-search-" + str(query) + '.csv')
+
+    if len(state['queue']) == 0:
+        if state['gui']:
+            output += '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)
+        else:
+            output = '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)            
+
+    state['continue-module'] = ('SCRAPE', {
+        'database': 'PUBMED',
+        'pdfs': pdfs
+    })
+
+    return state
+
+def pubmedStageTwo(query, state):
+    pdfs = state['continue-module'][1]['pdfs']
+    pdf_string = pubmed_scrape(pdfs, state)
+    state = log.userOutput("The following articles were downloaded:\n\n"+ pdf_string, state=state)
+    return state
+    
+def arxivStageOne(query, state):
+    """
+    Searches for artciles on arXiv related to a users query, and displays search results that can be downloaded in stage two.
+
+    :param query: The search query for arXiv.
+    :type query: str
+
+    :return: state
+    """
+    process = {}
+    output = 'searching the following on arxiv: ' + query
+    state = log.userOutput(output, state=state)
+    df, pdfs = arxiv_search(query, 10, state=state)
+    
+    process['search results'] = df
+    displayDf = set_arxiv_df_display(df, pdfs, gui=state.get('gui', False))
+    
+    if state.get('gui'):
+        output = "\n\n"
+        output += displayDf.to_markdown()
+        output += "\n\n"
+    else:
+        display(displayDf)
+    
+    if state['config']['SCRAPE']['save_search_results']:
+        utils.save(state, df, "arxiv-search-" + str(query) + '.csv')
+
+    if len(state['queue']) == 0:
+        if state['gui']:
+            output += '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)
+        else:
+            output = '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)            
+
+    state['continue-module'] = ('SCRAPE', {
+        'database': 'ARXIV',
+        'pdfs': pdfs
+    })
+
+    return state
+
+def set_arxiv_df_display(df, pdfs, gui=False):
+    """
+    Modify an arXiv DataFrame to include clickable markdown links for paper titles.
+
+    This function processes a DataFrame containing paper information from arXiv
+    and updates the 'Title' column to include clickable markdown links that point
+    to the corresponding PDF URLs. It also retains the 'Authors' column for display.
+
+    Parameters:
+        df (pandas.DataFrame): The DataFrame containing the arXiv data. 
+                               It must include a 'Title' and an 'Authors' column.
+        pdfs (list of str): A list of URLs corresponding to the PDF links for the papers.
+                            The order of URLs should match the order of titles in the DataFrame.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing two columns:
+                          - 'Title': Titles converted into clickable markdown links.
+                          - 'Authors': The original authors column from the input DataFrame.
+
+    Raises:
+        ValueError: If the length of the `pdfs` list does not match the number of titles in `df`.
+
+    Example:
+        >>> df = pd.DataFrame({'Title': ['Paper A', 'Paper B'], 'Authors': ['Author X', 'Author Y']})
+        >>> pdfs = ['http://arxiv.org/pdf/paperA.pdf', 'http://arxiv.org/pdf/paperB.pdf']
+        >>> display_df = set_arxiv_df_display(df, pdfs)
+        >>> print(display_df)
+    """
+    # Auth: Joshua Pickard
+    #       jpic@umich.edu
+    # Date: Nov. 17, 2024
+    
+    # Check if the lengths of titles and PDF links match
+    if len(df['Title']) != len(pdfs):
+        raise ValueError("The number of titles in the DataFrame must match the number of PDF URLs.")
+
+    # Select relevant columns
+    display_df = df[['Title', 'Authors']].copy()
+
+    # Create markdown links for titles
+    if gui:
+        markdown_titles = [
+            f"[{title}]({pdf})"
+            for title, pdf in zip(display_df['Title'].values, pdfs)
+        ]
+        display_df['Title'] = markdown_titles
+
+    return display_df
+
+
+def arxivStageTwo(query, state):
+    pdfs = state['continue-module'][1]['pdfs']
+    pdf_string = arxiv_scrape(pdfs, state)
+    state = log.userOutput("The following articles were downloaded:\n\n"+ pdf_string, state=state)
+    return state
+
+
+    
+def arxiv(query, state):
+    """
+    Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.
+
+    :param query: The search query for arXiv.
+    :type query: str
+
+    :return: A tuple containing the output message and a process dictionary.
+    :rtype: tuple
 
     """
     # Auth: Marc Choi
     #       machoi@umich.edu
+    process = {}
+    output = 'searching the following on arxiv: ' + query
+    state = log.userOutput(output, state=state)
+    df, pdfs = arxiv_search(query, 10, state=state)
+    process['search results'] = df
+    displayDf = df[['Title', 'Authors', 'Abstract']]
+    display(displayDf)
+    if state['config']['SCRAPE']['save_search_results']:
+        utils.save(state, df, "arxiv-search-" + str(query) + '.csv')
+    if len(state['queue']) == 0:
+        if state['interactive']:
+            output += '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput('Would you like to download these articles [Y/N]?', state=state)
+            download = input().strip().upper()
+            state['process']['steps'].append(
+                {
+                    'func'           : 'scraper.arxiv',
+                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+                    'input'          : download,
+                    'purpose'        : 'decide to download pdfs or not'
+                }
+            )
+        else:
+            download = state['SCRAPE']['download_search_results']
+    else:
+        download = 'Y'
+    process['download'] = (download == 'Y')
+    if download == 'Y':
+        output += arxiv_scrape(pdfs, state)
+    return output, process
 
-    biorxiv_real_search(state  = state,
-                        start_date  = datetime.date.today().replace(year=2015), 
-                        end_date    = datetime.date.today(),
-                        subjects    = [], 
-                        journal     = 'biorxiv',
-                        kwd         = [query], 
-                        kwd_type    = 'all', 
-                        athr        = [], 
-                        max_records = 10, 
-                        max_time    = 300
-                        )
 
-def biorxiv_real_search(state,
-                        start_date  = datetime.date.today().replace(year=2015), 
-                        end_date    = datetime.date.today(), 
-                        subjects    = [], 
-                        journal     = 'biorxiv',
-                        kwd         = [], 
-                        kwd_type    = 'all', 
-                        athr        = [], 
-                        max_records = 10, 
-                        max_time    = 300
-                        ):
+
+def search_pubmed_article(query, number_of_articles=10, state=None):
+    """
+    Searches PubMed for articles matching the specified query and retrieves their PMIDs.
+
+    :param query: The keyword or phrase to search for in PubMed articles.
+    :type query: str
+    :param number_of_articles: The maximum number of article PMIDs to return. Defaults to 10.
+    :type number_of_articles: int
+
+    :return: A list of PMIDs for articles matching the query.
+    :rtype: list
 
     """
-    Searches for articles on arXiv, bioRxiv, or PubMed based on the given queries and creates a database from the scraped articles and PDFs.
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+    Entrez.email = 'inhyak@gmail.com'
+    log.debugLog("search_pubmed_article", state=state)
+    log.debugLog(f'term={query}', state=state)
+    handle = Entrez.esearch(db='pubmed', term = query, retmax=number_of_articles, sort='relevance')
+    log.debugLog(f'handle={str(handle)}', state=state)
+    record = Entrez.read(handle)
+    log.debugLog(f'record={str(record)}', state=state)
+    handle.close()
+    return record['IdList']
 
-    :param start_date: The start date for the search query. Defaults to today's date.
-    :type start_date: datetime.date
-    :param end_date: The end date for the search query. Defaults to today's date.
-    :type end_date: datetime.date
-    :param subjects: The subjects to search for in the specified journal. Defaults to an empty list.
-    :type subjects: list
-    :param journal: The journal to search for articles. Defaults to 'biorxiv'.
-    :type journal: str
-    :param kwd: The keywords to search for in the abstract or title. Defaults to an empty list.
-    :type kwd: list
-    :param kwd_type: The type of keyword search to perform. Defaults to 'all'.
-    :type kwd_type: str
-    :param athr: The authors to search for in the articles. Defaults to an empty list.
-    :type athr: list
-    :param max_records: The maximum number of records to fetch. Defaults to 75.
-    :type max_records: int
-    :param max_time: The maximum time (in seconds) to spend fetching records. Defaults to 300.
-    :type max_time: int
-    :param cols: The columns to include in the database. Defaults to ['title', 'authors', 'url'].
-    :type cols: list
-    :param abstracts: Whether to include abstracts in the database. Defaults to False.
-    :type abstracts: bool
 
-    :return: The DataFrame containing the records fetched and processed.
-    :rtype: pd.DataFrame
-
+def biorxivStageOne(query, state):
     """
+    Searches for articles on biorxiv based on a provided query, filters the results, and optionally saves the search results.
+
+    This function interacts with the biorxiv database to retrieve research papers matching a specific query. It tracks the timing of the search, limits the results to a specified number, and then displays the search results. If specified in the configuration, it also saves the search results to a CSV file. The user is prompted to decide whether to download the articles or not. The function updates the application state with the results for further processing in subsequent stages.
+
+    Parameters:
+    -----------
+    query : str
+        The search query to be used for fetching articles from biorxiv.
+    
+    state : dict
+        A dictionary containing the current state of the application, including user preferences and configuration settings.
+        It must contain keys like `state['gui']` for GUI mode, `state['queue']` for the list of tasks in the queue, and 
+        `state['config']['SCRAPE']['save_search_results']` for saving the search results.
+
+    Returns:
+    --------
+    state : dict
+        The updated state dictionary after completing the search. It includes the fetched articles (in `state['continue-module']`) 
+        and possibly updated prompts to the user for further actions like downloading the articles.
+
+    Notes:
+    ------
+    - This function depends on a few external utilities like `biorxiv_dataframe`, `log.userOutput`, and `utils.save`.
+    - The function limits the number of records retrieved to 10 (`max_records = 10`) and the maximum allowed time for the search to 5 minutes (`max_time = 300 seconds`).
+    - The state dictionary is updated to include the retrieved articles for further processing in the subsequent module (`SCRAPE`).
+    - If the GUI is enabled (`state.get('gui')`), the search results are formatted for display in the GUI; otherwise, they are displayed using the `display()` function.
+
+    Example:
+    --------
+    state = biorxivStageOne("machine learning", state)
+    
+    This would search for articles related to "machine learning" on biorxiv, display the results, and potentially save them to a CSV file.
+    """
+    
     # Auth: Marc Choi
     #       machoi@umich.edu
 
     ## keep track of timing
+
+    start_date  = datetime.date.today().replace(year=2015)
+    end_date    = datetime.date.today()
+    subjects    = []
+    journal     = 'biorxiv'
+    kwd         = [query] 
+    kwd_type    = 'all'
+    athr        = []
+    max_records = 10
+    max_time    = 300
+
     kwd_string = ''
     if len(kwd) > 0:
         kwd_string = ' '.join(kwd)
     output = 'searching the following on biorxiv: ' + kwd_string
     state = log.userOutput(output, state=state)
-    overall_time = time.time()
+    full_records_df = biorxiv_dataframe(state,
+                        start_date  = datetime.date.today().replace(year=2015), 
+                        end_date    = datetime.date.today(),
+                        max_records = 10, 
+                        max_time    = 300)
+    displayDf = full_records_df.drop('url', axis=1)
+    
+    if state.get('gui'):
+        output = "\n\n"
+        output += displayDf.to_markdown()
+        output += "\n\n"
+    else:
+        display(displayDf)
+        
+    if state['config']['SCRAPE']['save_search_results']:
+        utils.save(state, full_records_df, "biorxiv-search-" + str(query) + '.csv')
+
+    if len(state['queue']) == 0:
+        if state['gui']:
+            output += '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)
+        else:
+            output = '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)            
+
+    state['continue-module'] = ('SCRAPE', {
+        'database': 'BIORXIV',
+        'pdfs': full_records_df
+    })
+
+    return state
+
+def biorxivStageTwo(query, state):
+    pdfs = state['continue-module'][1]['pdfs']
+    pdf_string = biorxiv_scrape(pdfs, state)
+    state = log.userOutput("The following articles were downloaded:\n\n"+ pdf_string, state=state)
+    return state
+    
+    
+
+def biorxiv_scrape(full_records_df, state):
+    try: 
+        path = utils.pdfDownloadPath(state) # os.path.abspath(os.getcwd()) + '/specialized_docs'
+        os.makedirs(path, exist_ok = True) 
+        log.debugLog("Directory '%s' created successfully" % path, state=state)
+    except OSError as error: 
+        log.debugLog("Directory '%s' can not be created" % path, state=state)
+        log.debugLog('Downloading {:d} PDFs to {:s}...'.format(len(full_records_df), path), state=state)
+        pdf_urls = [''.join(url) + '.full.pdf' for url in full_records_df.url] # list of urls to pull pdfs from
+	# create filenames to export pdfs to
+	# currently setup in year_lastname format
+    pdf_lastnames_full = ['_'.join([name.split()[-1] for name in namelist]) for namelist in full_records_df.authors] # pull out lastnames only
+    pdf_lastnames = [name if len(name) < 200 else name.split('_')[0] + '_et_al' for name in pdf_lastnames_full] # make sure file names don't get longer than ~200 chars
+    pdf_paths = [''.join(lastname) + '.pdf' for lastname in zip(pdf_lastnames)] # full path for each file
+    # export pdfs
+    for paper_idx in range(len(pdf_urls)):
+        response = requests.get(pdf_urls[paper_idx])
+        file = open(os.path.join(path,pdf_paths[paper_idx]), 'wb')
+        file.write(response.content)
+        file.close()
+        gc.collect()
+
+    state = log.userOutput("Download complete.", state=state)
+    return state
+
+def biorxiv_dataframe(state,
+                      start_date  = datetime.date.today().replace(year=2015), 
+                      end_date    = datetime.date.today(), 
+                      subjects    = [], 
+                      journal     = 'biorxiv',
+                      kwd         = [], 
+                      kwd_type    = 'all', 
+                      athr        = [], 
+                      max_records = 10, 
+                      max_time    = 300
+                     ):
     ## url
     BASE = 'http://{:s}.org/search/'.format(journal)
     url = BASE
@@ -534,7 +805,7 @@ def biorxiv_real_search(state,
 		
         urls = ['http://www.{:s}.org'.format(journal) + article.find('a', href=True)['href'] for article in articles]
 		## see if too much time has passed or max number of records reached or no more pages
-        if time.time() - overall_time > max_time or (page+1)*num_page_results >= num_fetch_results:
+        if (page+1)*num_page_results >= num_fetch_results:
             break
 
         page += 1
@@ -542,65 +813,94 @@ def biorxiv_real_search(state,
     records_data = list(zip(*list(map(lambda dummy_list: dummy_list[0:num_fetch_results], [titles, author_lists, urls]))))
     full_records_df = pd.DataFrame(records_data, columns=['title', 'authors', 'url'])
 	## keep user informed on why task ended
-    if num_results > max_records:
-        log.debugLog('Max number of records ({:d}) reached. Fetched in {:.1f} seconds.'.format(max_records, time.time() - overall_time), state=state)
-    elif time.time() - overall_time > max_time:
-        log.debugLog('Max time ({:.0f} seconds) reached. Fetched {:d} records in {:.1f} seconds.'.format(max_time, num_fetch_results, time.time() - overall_time), state=state)
-    else:
-        log.debugLog('Fetched {:d} records in {:.1f} seconds.'.format(num_fetch_results, time.time() - overall_time), state=state)
 		## check if abstracts are to be pulled
     log.debugLog('Fetching abstracts for {:d} papers...'.format(len(full_records_df)), state=state)
     abstracts = [bs(requests.post(paper_url).text, features='html.parser').find('div', attrs={'class': 'section abstract'}).text.replace('Abstract','').replace('\n','') for paper_url in full_records_df.url]
     full_records_df['abstracts'] = abstracts
-    log.debugLog('Abstracts fetched.', state=state)
-    download = 'N'
-    if state['config']['SCRAPE']['save_search_results']:
-        utils.save(state, display_df, "biorxiv-search-" + str(query) + '.csv')
-    if len(state['queue']) == 0:
-        if state['interactive']:
-            display_df = full_records_df.drop('url', axis=1)
-            display(display_df.head(10))
-            output += '\n Would you like to download these articles [Y/N]?'
-            state = log.userOutput('Would you like to download these articles [Y/N]?', state=state)
-            download = input().strip().upper()
-            state['process']['steps'].append(
-                {
-                    'func'           : 'scraper.biorxiv',
-                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
-                    'input'          : download,
-                    'purpose'        : 'decide to download pdfs or not'
-                }
-            )
-        else:
-            download = state['SCRAPE']['download_search_results']
-    else:
-        download = 'Y'
-    if download == 'Y':
-        try: 
-            path = utils.pdfDownloadPath(state) # os.path.abspath(os.getcwd()) + '/specialized_docs'
-            os.makedirs(path, exist_ok = True) 
-            log.debugLog("Directory '%s' created successfully" % path, state=state)
-        except OSError as error: 
-            log.debugLog("Directory '%s' can not be created" % path, state=state)
-        log.debugLog('Downloading {:d} PDFs to {:s}...'.format(len(full_records_df), path), state=state)
-        pdf_urls = [''.join(url) + '.full.pdf' for url in full_records_df.url] # list of urls to pull pdfs from
-	# create filenames to export pdfs to
-	# currently setup in year_lastname format
-        pdf_lastnames_full = ['_'.join([name.split()[-1] for name in namelist]) for namelist in full_records_df.authors] # pull out lastnames only
-        pdf_lastnames = [name if len(name) < 200 else name.split('_')[0] + '_et_al' for name in pdf_lastnames_full] # make sure file names don't get longer than ~200 chars
-        pdf_paths = [''.join(lastname) + '.pdf' for lastname in zip(pdf_lastnames)] # full path for each file
-    # export pdfs
-        for paper_idx in range(len(pdf_urls)):
-            response = requests.get(pdf_urls[paper_idx])
-            file = open(os.path.join(path,pdf_paths[paper_idx]), 'wb')
-            file.write(response.content)
-            file.close()
-            gc.collect()
+    return full_records_df
 
-        state = log.userOutput("Download complete.", state=state)
-        state = log.userOutput('Total time to fetch and manipulate records was {:.1f} seconds.'.format(time.time() - overall_time), state=state)
-	## return the results
-    return(full_records_df)
+def biorxiv_real_search(state,
+                        start_date  = datetime.date.today().replace(year=2015), 
+                        end_date    = datetime.date.today(), 
+                        subjects    = [], 
+                        journal     = 'biorxiv',
+                        kwd         = [], 
+                        kwd_type    = 'all', 
+                        athr        = [], 
+                        max_records = 10, 
+                        max_time    = 300
+                        ):
+
+    """
+    Searches for articles on arXiv, bioRxiv, or PubMed based on the given queries and creates a database from the scraped articles and PDFs.
+
+    :param start_date: The start date for the search query. Defaults to today's date.
+    :type start_date: datetime.date
+    :param end_date: The end date for the search query. Defaults to today's date.
+    :type end_date: datetime.date
+    :param subjects: The subjects to search for in the specified journal. Defaults to an empty list.
+    :type subjects: list
+    :param journal: The journal to search for articles. Defaults to 'biorxiv'.
+    :type journal: str
+    :param kwd: The keywords to search for in the abstract or title. Defaults to an empty list.
+    :type kwd: list
+    :param kwd_type: The type of keyword search to perform. Defaults to 'all'.
+    :type kwd_type: str
+    :param athr: The authors to search for in the articles. Defaults to an empty list.
+    :type athr: list
+    :param max_records: The maximum number of records to fetch. Defaults to 75.
+    :type max_records: int
+    :param max_time: The maximum time (in seconds) to spend fetching records. Defaults to 300.
+    :type max_time: int
+    :param cols: The columns to include in the database. Defaults to ['title', 'authors', 'url'].
+    :type cols: list
+    :param abstracts: Whether to include abstracts in the database. Defaults to False.
+    :type abstracts: bool
+
+    :return: The DataFrame containing the records fetched and processed.
+    :rtype: pd.DataFrame
+
+    """
+    # Auth: Marc Choi
+    #       machoi@umich.edu
+
+    ## keep track of timing
+    kwd_string = ''
+    if len(kwd) > 0:
+        kwd_string = ' '.join(kwd)
+    output = 'searching the following on biorxiv: ' + kwd_string
+    state = log.userOutput(output, state=state)
+    full_records_df = biorxiv_dataframe(state,
+                        start_date  = datetime.date.today().replace(year=2015), 
+                        end_date    = datetime.date.today(),
+                        max_records = 10, 
+                        max_time    = 300)
+    displayDf = full_records_df.drop('url', axis=1)
+    
+    if state.get('gui'):
+        output = "\n\n"
+        output += displayDf.to_markdown()
+        output += "\n\n"
+    else:
+        display(displayDf)
+        
+    if state['config']['SCRAPE']['save_search_results']:
+        utils.save(state, full_records_df, "biorxiv-search-" + str(query) + '.csv')
+
+    if len(state['queue']) == 0:
+        if state['gui']:
+            output += '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)
+        else:
+            output = '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)            
+
+    state['continue-module'] = ('SCRAPE', {
+        'database': 'BIORXIV',
+        'pdfs': full_records_df
+    })
+
+    return state
 
 #Parsers
 def create_db(query, query2):
@@ -732,8 +1032,7 @@ def arxiv_search(query, count, state=None):
         if i >= count:
             break
     df = pd.DataFrame(paper_list)
-    if state['config']['debug']:
-        display(df.head())
+
     pdf_urls = [attempt for attempt in arxiv_urls if 'pdf' in attempt.lower()]
     return df, pdf_urls
     
@@ -772,7 +1071,8 @@ def arxiv_scrape(pdf_urls, state):
             pass
             log.debugLog(f"{pmc} could not be gathered.", state=state)
     return pdf_string
-            
+
+
 def result_set_to_string(result_set):
     """
     Converts a BeautifulSoup result set to a string.
