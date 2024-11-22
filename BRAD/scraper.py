@@ -35,6 +35,9 @@ This module has the following methods:
 
 
 import subprocess
+
+from IPython.display import display
+
 from langchain.document_loaders import DirectoryLoader
 from langchain.document_loaders import UnstructuredPDFLoader
 from langchain.vectorstores import Chroma
@@ -163,7 +166,7 @@ def webScrapingStageOne(state):
                 break
             # TODO will need to save these results
             state = scrape_function(st, state)
-            print(f"{state=}")
+#            print(f"{state=}")
     except Exception as e:
         output = f'Error occurred while searching on {source}: {e}'
         log.debugLog(output, state=state)
@@ -175,25 +178,25 @@ def webScrapingStageOne(state):
 
 def webScrapingStageTwo(state):
     query    = state['prompt']
-    print(f"webScrapingStageTwo")
+#    print(f"webScrapingStageTwo")
     if query.upper() != 'Y':
         # TODO: this should route directly to the general chat
-        print('Nothing to download now :)')
+#        print('Nothing to download now :)')
         state = justchat.llm_only(state)
         return state
     toolHistory = state['continue-module'][1]
-    print(f"{toolHistory=}")
+#    print(f"{toolHistory=}")
     scraping_functions = {
         'ARXIV'   : arxivStageTwo,
         'BIORXIV' : biorxiv,
         'PUBMED'  : pubmed
     }
     source = next((key for key in scraping_functions if key == toolHistory['database']), 'ARXIV')
-    print(f"{source=}")
+#    print(f"{source=}")
     scrape_function = scraping_functions[source]
-    print(f"{scrape_function=}")
+#    print(f"{scrape_function=}")
     state = scrape_function(query, state)
-    print(f"{state=}")
+#    print(f"{state=}")
 #    if state['config']['SCRAPE']['add_from_scrape']:
 #        state = updateDatabase(state)
 #    state['output'] = "Articles were successfully downloaded."
@@ -213,30 +216,27 @@ def arxivStageOne(query, state):
     output = 'searching the following on arxiv: ' + query
     state = log.userOutput(output, state=state)
     df, pdfs = arxiv_search(query, 10, state=state)
-    print(f"{df=}")
-    print(f"{pdfs=}")
-    print(f"search method worked!")
+    
     process['search results'] = df
-    displayDf = set_arxiv_df_display(df, pdfs)
-    print(f"{displayDf=}")
-
-    output = "\n\n"
-    output += displayDf.to_markdown()
-    output += "\n\n"
-    print(f"{output=}")
-
+    displayDf = set_arxiv_df_display(df, pdfs, gui=state.get('gui', False))
+    
+    if state.get('gui'):
+        output = "\n\n"
+        output += displayDf.to_markdown()
+        output += "\n\n"
+    else:
+        display(displayDf)
+    
     if state['config']['SCRAPE']['save_search_results']:
         utils.save(state, df, "arxiv-search-" + str(query) + '.csv')
-    print(f"{len(state['queue'])=}")
-    print(f"{(len(state['queue'])==0)=}")
-#    print(f"{state.keys()=}")
-#    print(f"{state=}")
-    print(f"{state['interactive']=}")
-    print(f"{state['gui']=}")
+
     if len(state['queue']) == 0:
-        if state['interactive'] or state['gui']:
+        if state['gui']:
             output += '\n Would you like to download these articles [Y/N]?'
             state = log.userOutput(output, state=state)
+        else:
+            output = '\n Would you like to download these articles [Y/N]?'
+            state = log.userOutput(output, state=state)            
 
     state['continue-module'] = ('SCRAPE', {
         'database': 'ARXIV',
@@ -245,7 +245,7 @@ def arxivStageOne(query, state):
 
     return state
 
-def set_arxiv_df_display(df, pdfs):
+def set_arxiv_df_display(df, pdfs, gui=False):
     """
     Modify an arXiv DataFrame to include clickable markdown links for paper titles.
 
@@ -285,11 +285,12 @@ def set_arxiv_df_display(df, pdfs):
     display_df = df[['Title', 'Authors']].copy()
 
     # Create markdown links for titles
-    markdown_titles = [
-        f"[{title}]({pdf})"
-        for title, pdf in zip(display_df['Title'].values, pdfs)
-    ]
-    display_df['Title'] = markdown_titles
+    if gui:
+        markdown_titles = [
+            f"[{title}]({pdf})"
+            for title, pdf in zip(display_df['Title'].values, pdfs)
+        ]
+        display_df['Title'] = markdown_titles
 
     return display_df
 
@@ -775,8 +776,7 @@ def arxiv_search(query, count, state=None):
         if i >= count:
             break
     df = pd.DataFrame(paper_list)
-    if state['config']['debug']:
-        display(df.head())
+
     pdf_urls = [attempt for attempt in arxiv_urls if 'pdf' in attempt.lower()]
     return df, pdf_urls
     

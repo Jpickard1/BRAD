@@ -300,7 +300,7 @@ class Agent():
         # Start loop
         # only log if chat bot is fresh
         if restart is None:
-            self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
+            self.state = log.userOutput('Welcome to BRAD! The output from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
 
             # Write an empty chat log
             self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
@@ -411,8 +411,7 @@ class Agent():
         # Continue previous module
         elif self.state['continue-module'] is not None:
             route = self.state['continue-module'][0]
-            print("continue module is not None!")
-            print(f"{route=}")
+
         # Use router to select correct module
         elif '/force' not in self.state['prompt'].split(' '):     # use the router
             route = self.router(self.state['prompt']).name

@@ -122,9 +122,6 @@ def logger(chatlog, state, chatname, elapsed_time=None):
     #       jpic@umich.edu
     # Date: June 4, 2024
     
-    
-    debugLog('\n\nPLANNER:\n\n' + str(state['process']), state)
-    
     process_serializable = {
             key: value if is_json_serializable(value) else str(value)
             for key, value in state['process'].items()
