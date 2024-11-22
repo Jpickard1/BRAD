@@ -300,7 +300,7 @@ class Agent():
         # Start loop
         # only log if chat bot is fresh
         if restart is None:
-            self.state = log.userOutput('Welcome to RAG! The chat log from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
+            self.state = log.userOutput('Welcome to BRAD! The output from this conversation will be saved to ' + self.chatname + '. How can I help?', state=self.state)
 
             # Write an empty chat log
             self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=0)
@@ -411,8 +411,7 @@ class Agent():
         # Continue previous module
         elif self.state.get('continue-module') is not None:
             route = self.state['continue-module'][0]
-            print("continue module is not None!")
-            print(f"{route=}")
+
         # Use router to select correct module
         elif '/force' not in self.state['prompt'].split(' '):     # use the router
             route = self.router(self.state['prompt']).name
@@ -457,7 +456,7 @@ class Agent():
         try:
             self.state = module(self.state)
         except:
-            log.debugLog('An arror occurred during module execution!', state=self.state)
+            log.debugLog('An error occurred while using a tool.', state=self.state)
 
         # Remove the item that was executed. We need must do it after running it for the current file naming system.
         log.debugLog('\n\n\nroute\n\n\n', state=self.state)
@@ -481,8 +480,12 @@ class Agent():
         elapsed_time = end_time - start_time
         
         # Log and reset these values
-        print(f"WRITE LOG")
-        self.chatlog, self.state = log.logger(self.chatlog, self.state, self.chatname, elapsed_time=elapsed_time)
+        self.chatlog, self.state = log.logger(
+            self.chatlog,
+            self.state,
+            self.chatname,
+            elapsed_time=elapsed_time
+        )
         return self.state['output']
 
     def chat(self):
@@ -539,12 +542,6 @@ class Agent():
 
                 # update memory to use previous points of the pipeline
                 if 'inputs' in list(self.state['queue'][self.state['queue pointer']].keys()):
-                    # This is piecemeal for now
-                    # if multiple inputs go to file caller, that can be handled during funciton call creation
-                    # only single inputs can go to DATABASE
-                    # only single inputs can go to ROUTER
-                    # only single inputs can go to PLANNER
-                    print('hacky integration of old results')
                     print(query)
                     print(self.state['queue'][self.state['queue pointer']]['module'])
                     if self.state['queue'][self.state['queue pointer']]['module'] == 'RAG':
@@ -571,9 +568,6 @@ class Agent():
                                         query += str(df[['path_name']].values[:10])
                                 except:
                                     print('this part of the code doesnt work so great, yet!')
-                    # self.updateMemory()
-                    # resetMemory = True
-            
             else:
                 query = input('Input >> ')  # get query from user
             

@@ -58,7 +58,6 @@ def planner(state):
 
     llm      = state['llm']              # get the llm
     prompt   = state['prompt']           # get the user prompt
-    vectordb = state['databases']['RAG'] # get the vector database
     memory   = state['memory']           # get the memory of the model
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -83,6 +82,7 @@ def planner(state):
     else:
         selected_pipeline = selected_pipeline[0]
     log.debugLog(f'selected_pipeline={selected_pipeline}', state=state)
+
     state['process']['steps'].append(
         log.llmCallLog(
             llm          = llm,
@@ -232,7 +232,7 @@ def planner(state):
         # If loadedProcesses is neither a dictionary nor a list, issue a warning
         else:
             log.debugLog("Warning: loadedProcesses is neither a dictionary nor a list", state=state)
-
+        print('Display pipeline')
         state = displayPipeline2User(processes, state=state)
         state['process']['steps'].append(
             {
@@ -240,8 +240,6 @@ def planner(state):
                 'what' : 'loaded an older pipeline'
             }
         )
-
-        # TODO: Add code that allows BRAD to fill in missing pieces of a pipeline / use templated pipelines
 
     state['interactive'] = False
     state['queue'] = processes
@@ -392,7 +390,6 @@ def getKnownPipelines(state):
     # Initialize an empty list to store pipeline dictionaries
     pipelines = {}
     summary = ""
-
     # Read all JSON files in the 'pipelines' directory
     for file_name in os.listdir(pipelines_dir):
         if file_name.endswith('.json'):
@@ -406,5 +403,4 @@ def getKnownPipelines(state):
                 }
                 # Extract 'name' and 'description' to build the summary string
                 summary += f"Name: {pipeline['name']}\tDescription: {pipeline['description']}\n"
-
     return pipelines, summary
