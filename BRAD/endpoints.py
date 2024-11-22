@@ -360,6 +360,7 @@ def invoke(request):
                         persist_directory=DATABASE_FOLDER,
                         db_name=CACHE.get('rag_name'),
                         llm_choice=CACHE.get('LLMChoice'),
+                        temperature=CACHE.get('Temperature'),
                         gui=True
                         ).get_agent()
 
@@ -1417,7 +1418,8 @@ def llm_set(request):
     """
     Set the language model (LLM) for the BRAD agent.
 
-    This endpoint allows users to specify which language model should be used by the BRAD agent.
+    This endpoint allows users to specify which language model should be used by the BRAD agent
+    and updates BRAD's temperature low temperature -> higher confidence and low hallucination
     It updates the BRAD agent's configuration and responds with the current LLM setting.
 
     Request Structure:
@@ -1456,6 +1458,7 @@ def llm_set(request):
 
     request_data = request.json
     llm_choice = request_data.get("llm")  # Get the LLM name from the request body
+    temperature = request_data.get("temperature")  # Get the LLM name from the request body
     logger.info(f"Received request to set LLM to: {llm_choice}")
 
     # Validate the LLM choice
@@ -1469,11 +1472,16 @@ def llm_set(request):
         # llm = llms.llm_switcher(llm_choice=llm_choice)
 
         cache_llm_choice = CACHE.get('LLMChoice')
+        cache_temperature = CACHE.get('Temperature')
         if llm_choice != cache_llm_choice:
             logger.info(f"setting LLM choice in cache: {llm_choice}")
             CACHE.set('LLMChoice', llm_choice, timeout=0)
+        if temperature != cache_temperature and temperature:
+            logger.info(f"setting LLM temperature in cache: {temperature}")
+            CACHE.set('Temperature', float(temperature), timeout=0)
 
         logger.info(f"Sucessfully loaded: {llm_choice}")
+        logger.info(f"Sucessfully set temperature: {temperature}")
 
         # We only set the LLM Host in the cache. The set_llm gets called from the agent factory
         # Set the LLM in BRAD's status
@@ -1481,7 +1489,7 @@ def llm_set(request):
         # logger.info(f"Successfully set the agent's LLM to: {llm_choice}")
 
         # Respond with success
-        return jsonify({"success": True, "message": f"LLM set to {llm_choice}"}), 200
+        return jsonify({"success": True, "message": f"LLM set to {llm_choice} ; Temperature set to {temperature}"}), 200
 
     except ValueError as e:
         logger.error(f"Invalid LLM choice: {str(e)}")

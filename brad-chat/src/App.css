@@ -5,6 +5,8 @@
   --hover-color: #797979;
   --bold-color: #878787;
   --dark-bold-color: #1f1f1f;
+  --suggestion-color-darker: #797979;
+  --suggestion-color-dark: #797979;
 }
 
 body {
@@ -430,17 +432,17 @@ pre > code {
 .suggestion-box {
   background-color: var(--suggestion-color, #ff0000); /* Default background */
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border-radius: 1em;
   padding: 1.5rem;
   font-size: 1.1rem;
   text-align: center;
   cursor: pointer;
-  color: #000000; /* Set text color to black */
+  color: var(--font-color);
   transition: background-color 0.3s ease;
 }
 
 .suggestion-box:hover {
-  background-color: var(--hover-color, #d9e9ff); /* Dynamic hover color */
+  background-color: var(--hover-color); /* Dynamic hover color */
 }
 
 

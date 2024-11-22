@@ -1015,7 +1015,7 @@ class AgentFactory():
     :type tools: bool, optional
     """
 
-    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None, llm_choice=None, gui=None):
+    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None, llm_choice=None, gui=None, temperature=0):
         self.interactive = interactive
         suffix = '/log.json'
         if session_path and (session_path.endswith(suffix)):
@@ -1035,6 +1035,7 @@ class AgentFactory():
             self.persist_directory = None
 
         self.llm_choice = llm_choice
+        self.temperature = temperature
         
 
     def get_agent(self):
@@ -1058,7 +1059,7 @@ class AgentFactory():
         if self.llm_choice:
             llm = llm_switcher(
                 self.llm_choice,
-                temperature = 0,
+                temperature = self.temperature,
             )
             agent.set_llm(llm)
         return agent
