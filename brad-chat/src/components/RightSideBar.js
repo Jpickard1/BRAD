@@ -16,6 +16,7 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
   const [isRAGVisible, setIsRAGVisible] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [temperature, setTemperature] = useState(0);
 
   const toggleLLMVisibility = () => {
     setIsLLMVisible(!isLLMVisible);
@@ -140,6 +141,42 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
     }
   };
 
+    const handletemperatureChange = async (e) => {
+      if (e.key != "Enter") {
+        return 
+      }
+
+      if (temperature > 1) {
+        alert('Error: ' + "temperature cannot be greater than 1"); // Optional: Display the error message
+      }
+
+      let data = {
+        session: localStorage.getItem('current-session'),
+        llm: llmChoice,
+        "temperature": temperature
+      }
+
+      try{
+          const response = await fetch('/api/llm/set', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)  // Sending LLM choice in the request body
+          });
+            if (response.ok) {
+                const data = await response.json();
+                console.log("temperature updated successfully:", data);
+            } else {
+                const errorData = await response.json();
+                console.error("Error updating temperature:", errorData);
+            }
+      }
+      catch{
+        console.log("error occured setting temperature")
+      }
+    }
+
 
   const handleColorSchemeChange = (event) => {
     const scheme = event.target.value;
@@ -180,6 +217,20 @@ function RightSideBar({ setColorScheme, usageCalls, usageFees }) {
                 )}
               </select>
             </div>
+            {/* Temperature */}
+            <div className="setting-option">
+              <label htmlFor="temperature"><b>Temperature ( between 0-1 ):</b></label>
+              <input
+                id="temperature"
+                type="number"
+                min="0"
+                value={temperature}
+                onChange={(e) => setTemperature(e.target.value)} // Updates the state without triggering the API call
+                onKeyDown={handletemperatureChange} // Trigger API call only on Enter
+                placeholder="set temperature"
+              />
+            </div>
+
             <div className="usage-stats sidebar-setting">
               <h3>Usage Statistics</h3>
               <p><b>Session Calls: </b>{usageCalls}</p>

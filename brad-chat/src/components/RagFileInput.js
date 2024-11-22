@@ -25,6 +25,10 @@ function RagFileInput() {
 
     // Handlers for new Search Settings
     const handleNumArticlesChange = async (e) => {
+      if (e.key != "Enter") {
+        return 
+      }
+
         const newValue = e.target.value; // Get the updated value from the input field
         setNumArticles(newValue); // Update the state with the new value
     
@@ -71,9 +75,66 @@ function RagFileInput() {
         }
     };
   
-    const handleRetrievalMechanismChange = (e) => setRetrievalMechanism(e.target.value);
+    const handleRetrievalMechanismChange = async (e) => {
+      let newretrievalmechanism = e.target.value 
+      setRetrievalMechanism(newretrievalmechanism);
+      let data = {
+        session: localStorage.getItem('current-session'),
+        "search_method": newretrievalmechanism
+      }
 
-    const handleContextualCompressionToggle = () => setContextualCompression(!contextualCompression);
+      try{
+        const response = await fetch('api/configure/RAG/searchMechanism', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Search mechanism updated successfully:", data);
+            } else {
+                const errorData = await response.json();
+                console.error("Error updating Search mechanism:", errorData);
+            }
+      }
+      catch{
+        console.log("error occured setting Search mechanism")
+      }
+    }
+
+    const handleContextualCompressionToggle = async () => {
+      let newcontextualCompression = !contextualCompression 
+      setContextualCompression(newcontextualCompression);
+
+      let data = {
+        session: localStorage.getItem('current-session'),
+        "contextual_compression": newcontextualCompression
+      }
+
+      try{
+        const response = await fetch('/api/configure/RAG/contextualCompression', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+            if (response.ok) {
+                const data = await response.json();
+                console.log("contextual compression updated successfully:", data);
+            } else {
+                const errorData = await response.json();
+                console.error("Error updating Contextual compression:", errorData);
+            }
+      }
+      catch{
+        console.log("error occured setting contextual compression")
+      }
+    }
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
