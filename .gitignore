@@ -20,6 +20,7 @@
 
 data/*
 BRAD/config/config.json
+BRAD/config/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
