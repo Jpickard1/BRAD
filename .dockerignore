@@ -1,2 +1,5 @@
  node_modules/
  data/
+ !data/RAG_Database/Digital-Biology
+ !data/uplodates/20241125-150204
+ 
