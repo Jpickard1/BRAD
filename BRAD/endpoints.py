@@ -79,6 +79,7 @@ Endpoints
 
 # STANDARD python imports
 import os
+import re
 import json
 import shutil
 import logging
@@ -198,6 +199,52 @@ def normalize_keys_upper(d):
     if isinstance(d, dict):
         return {k.upper(): normalize_keys_upper(v) for k, v in d.items()}
     return d
+
+def validate_database_name(database_name: str) -> str:
+    """
+    Validates and transforms a given string to ensure it conforms to specific rules
+    for database collection names.
+
+    The function enforces the following rules:
+    1. The name must contain 3-63 characters.
+    2. It must start and end with an alphanumeric character (a-z, A-Z, 0-9).
+    3. It can only contain alphanumeric characters, underscores (_), hyphens (-), or periods (.).
+    4. It cannot contain two consecutive periods (..).
+    5. The resulting name is trimmed of leading and trailing whitespace and adjusted to fit the
+       length constraints, adding or removing characters as necessary.
+
+    .. note:
+        A chroma database should not be a valid IPv4 address, and this condition is not verified.
+        We assume our user will not submit malicious database names.
+
+    Args:
+        database_name (str): The input string to validate and transform.
+
+    Returns:
+        str: A valid database name that adheres to the specified constraints.
+    """
+    # Trim whitespace
+    database_name = database_name.strip()
+    
+    # Replace invalid characters
+    database_name = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', database_name)
+    
+    # Replace consecutive periods with a single underscore
+    database_name = re.sub(r'\.\.', '_', database_name)
+    
+    # Ensure length constraints
+    if len(database_name) < 3:
+        database_name = database_name + '_' * (3 - len(database_name))
+    elif len(database_name) > 63:
+        database_name = database_name[:63]
+    
+    # Ensure it starts and ends with an alphanumeric character
+    if not database_name[0].isalnum():
+        database_name = 'a' + database_name[1:]
+    if not database_name[-1].isalnum():
+        database_name = database_name[:-1] + 'z'
+
+    return database_name
 
 def parse_log_for_one_query(chatlog_query):
     """
@@ -641,9 +688,12 @@ def databases_create(request):
                         ).get_agent()
 
     file_list = request.files.getlist("rag_files")
-    dbName = request.form.get('name')
+    database_name = request.form.get('name')
 
-    # Creates new folder with the current statetime
+    # Ensure database has an appropriate name
+    database_name = validate_database_name(database_name)
+
+    # Creates new folder with the current statetime to upload the files
     timestr = time.strftime("%Y%m%d-%H%M%S")
     directory_with_time = os.path.join(UPLOAD_FOLDER, timestr) 
     if not os.path.exists(directory_with_time):
@@ -668,7 +718,7 @@ def databases_create(request):
     db = create_database(
         docsPath=directory_with_time, 
         dbPath=os.path.join(DATABASE_FOLDER), # str(num_dirs)),  # Convert the number to a string
-        dbName=dbName,
+        dbName=database_name,
         v=True
     )
     print("database created")
