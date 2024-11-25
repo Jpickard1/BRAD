@@ -724,6 +724,7 @@ def databases_create(request):
     print("database created")
     
     brad.state['databases']['RAG'] = db
+    CACHE.set('rag_name', database_name, timeout=0)
     
     # print("brad agent database is set")
     return jsonify(response)
