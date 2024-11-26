@@ -167,7 +167,10 @@ def initiate_start():
                                  llm_choice=CACHE.get('LLMChoice'),
                                  gui=True
                                  ).get_agent()
-    delete_dirs_without_log(initial_agent)
+    try:
+        delete_dirs_without_log(initial_agent)
+    except:
+        print('Issue removing directories')
 
     log_path = initial_agent.state['config'].get('log_path')
     default_session = os.path.join(log_path, DEFAULT_SESSION_EXTN)
