@@ -164,7 +164,7 @@ def callPython(state):
     
     :notes: 
         - This function is typically called from `brad.chat()` when the `Python` module is selected by the router.
-        - The Python code execution can also be initiated from `coder.codeCaller()`, which handles both Python and MATLAB scripts.
+        - The Python code execution can also be initiated from `coder.code_caller()`, which handles both Python and MATLAB scripts.
     """
     # Auth: Joshua Pickard
     #       jpic@umich.edu
@@ -181,7 +181,7 @@ def callPython(state):
     # - This function doesn't use the llm to select the appropriate python script.
     #   Currently, a word similarity score between the prompt and matlab codes
     #   is performed and used to select the prompts, but we could follow an approach
-    #   similar to the coder.codeCaller() method that uses an llm to read the docstrings
+    #   similar to the coder.code_caller() method that uses an llm to read the docstrings
     #   and identify the best file. Note - the same approach is used by matlabCaller
     
     log.debugLog("Python Caller Start", state=state) 
@@ -258,7 +258,7 @@ def execute_python_code(python_code, state):
     :type state: dict
 
     :notes:
-        - This function is typically called after extracting Python code from a response in a conversational context but it can be called from the `coder.codeCaller()` as well.
+        - This function is typically called after extracting Python code from a response in a conversational context but it can be called from the `coder.code_caller()` as well.
         - It assumes the presence of `eval()`-compatible Python code and handles basic error handling.
     """
     # Auth: Joshua Pickard

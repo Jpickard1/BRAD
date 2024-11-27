@@ -42,8 +42,10 @@ from BRAD import utils
 
 # History:
 #  2024-10-01: This file was modified to remove support for running MATLAB codes
+#  2024-11-27: Final stage of the pipeline added to have the LLM generate a response
+#              at the end of the pipeline
 
-def codeCaller(state):
+def code_caller(state):
     """
     Executes a Python script based on the user's prompt and chat status settings.
     
