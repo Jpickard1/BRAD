@@ -103,7 +103,7 @@ from BRAD.pythonCaller import *
 from BRAD.llms import *
 from BRAD.geneDatabaseCaller import geneDBRetriever
 from BRAD.planner import planner
-from BRAD.coder import codeCaller
+from BRAD.coder import code_caller
 from BRAD.writer import summarizeSteps, chatReport
 from BRAD import log
 from BRAD.bradllm import BradLLM
@@ -738,7 +738,7 @@ class Agent():
             'RAG'    : queryDocs,        # standard rag
             'PYTHON' : callPython,
             'PLANNER': planner,
-            'CODE'   : codeCaller,
+            'CODE'   : code_caller,
             'WRITE'  : chatReport, # summarizeSteps,
             'ROUTER' : reroute,
         }

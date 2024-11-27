@@ -36,14 +36,17 @@ from langchain.memory import ConversationBufferMemory
 from langchain_community.callbacks import get_openai_callback
 
 from BRAD.pythonCaller import find_py_files, get_py_description, read_python_docstrings, pythonPromptTemplate, extract_python_code, execute_python_code
-from BRAD.promptTemplates import scriptSelectorTemplate, pythonPromptTemplateWithFiles
+from BRAD.promptTemplates import scriptSelectorTemplate, pythonPromptTemplateWithFiles, summarize_code_template
 from BRAD import log
 from BRAD import utils
+from BRAD import justchat
 
 # History:
 #  2024-10-01: This file was modified to remove support for running MATLAB codes
+#  2024-11-27: Final stage of the pipeline added to have the LLM generate a response
+#              at the end of the pipeline
 
-def codeCaller(state):
+def code_caller(state):
     """
     Executes a Python script based on the user's prompt and chat status settings.
     
@@ -258,6 +261,28 @@ def codeCaller(state):
     
     # Execute code
     executeCode(state, code2execute, scriptType)
+
+    # LLM generated response
+    state = summarize_code_execution_results(state)
+
+    return state
+
+def summarize_code_execution_results(state):
+    """
+    This method takes the output of the code and formulates it into a prompt which can be passed to the LLM.
+    The LLM response is generated with the justchat method.
+    """
+    software_output = state['output']
+    
+    template = summarize_code_template()
+    template = template.format(
+        user_query=state['prompt'],
+        system_output=state['output']
+    )
+    state['prompt'] = template
+
+    state = justchat.llm_only(state)
+    state['output'] = software_output + '\n\n --- \n\n ' + state['output']
 
     return state
 
