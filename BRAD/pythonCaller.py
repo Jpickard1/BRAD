@@ -301,9 +301,6 @@ def execute_python_code(python_code, state):
         )
         state['output'] = response.stdout.strip()
         log.debugLog("Debug: PYTHON code output saved to output.", state=state)
-
-        # TODO: If the response contains a stderr then we should allow it the system to
-        # debug and reexecute the code
     
     except SyntaxError as se:
         log.debugLog(f"Debug: Syntax error in the PYTHON code: {se}", state=state)

@@ -17,7 +17,7 @@ from langchain.llms import LlamaCpp
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.document_loaders import PyPDFLoader
-from langchain.text_splitter import CharacterTextSplitter
+# from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains.question_answering import load_qa_chain
 from langchain.output_parsers import CommaSeparatedListOutputParser
 from semantic_router.layer import RouteLayer
@@ -31,15 +31,15 @@ from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings.sentence_transformer import (
     SentenceTransformerEmbeddings,
 )
-from sklearn.metrics.pairwise import cosine_similarity
-from langchain_text_splitters import CharacterTextSplitter
-from langchain.retrievers.multi_query import MultiQueryRetriever
+# from sklearn.metrics.pairwise import cosine_similarity
+# from langchain_text_splitters import CharacterTextSplitter
+# from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain_community.callbacks import get_openai_callback
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+# from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+# from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from sentence_transformers import SentenceTransformer, util
+# from sentence_transformers import SentenceTransformer, util
 
 import logging
 

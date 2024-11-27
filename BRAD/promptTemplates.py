@@ -331,6 +331,21 @@ This output should be exactly one line and no longer. Stop the response after th
 """
     return template
 
+def summarize_code_template():
+    template = """**INSTRUCTIONS**
+You are an assistant responsible for executing a software workflow. The software has been executed,
+and the printed output is available below. Based on the output of the software, please response to
+the user's query. Respond to the query with detail that can be taken from outside the software as well,
+but be sure to reference the code output where possible.
+
+**SOFTWARE OUTPUT**
+{system_output}
+
+**USER QUERY**
+{user_query}
+"""
+    return template
+
 def summarize_document_template():
     template = """**INSTRUCTIONS**
 You are an assistant responsible for compressing the important information in a document.

@@ -55,3 +55,9 @@ build a dynamics model of the 2015 gene coordinate time series data. Please sele
 Load the 2015 gene expression dataset with gene coordinates.
 build a dynamics model of the 2015 gene coordinate time series data. Please select the appropriate parameters and inputs based on previous iterations.
 perform biomarker selection on the model of the 2015 dataset. Please select the appropriate parameters and inputs based on previous iterations.
+Using the data from /nfs/turbo/umms-indikar/shared/projects/DGC/data/tabula_sapiens/extract/TS_Liver.h5ad, perform a PCA and save a visualization of the results.
+Load the 2015 gene expression dataset with gene coordinates.
+build a dynamics model of the 2015 gene coordinate time series data. Please select the appropriate parameters and inputs based on previous iterations.
+Load the 2015 gene expression dataset with gene coordinates.
+build a dynamics model of the 2015 gene coordinate time series data. Please select the appropriate parameters and inputs based on previous iterations.
+perform biomarker selection on the model of the 2015 dataset. Please select the appropriate parameters and inputs based on previous iterations.
