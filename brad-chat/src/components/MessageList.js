@@ -90,7 +90,7 @@ function MessageList({ messages }) {
                 // Find the payloads for RAG-R and RAG-G
                 if (message.process_dict == null){
 
-                  if (message.process == null){
+                  if ((message.process == null) || (typeof message.process == 'object')) {
                     ragR = []
                     ragG = []
                     ragS = []
