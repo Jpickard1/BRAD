@@ -10,6 +10,7 @@ WORKDIR /usr/src/brad
 
 RUN mkdir -p /usr/src/brad
 RUN mkdir -p /usr/src/uploads
+RUN mkdir -p /usr/src/brad/logs
 RUN mkdir -p /usr/src/RAG_Database
 
 
