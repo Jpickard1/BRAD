@@ -62,6 +62,7 @@ docker run -e OPENAI_API_KEY=<YOUR_OPENAI_API_KEY> \
            -p 5002:5000 -p 3000:3000 \
            thedoodler/brad:main
 ```
+> Note: You may need to adjust how environment variables are specified to match your terminal's expectations.
 
 Replace `<YOUR_OPENAI_API_KEY>` with your OpenAI API key. If using LLMs hosted by NVIDIA, you can include the NVIDIA API key as well:
 
