@@ -7,12 +7,6 @@ are available, and should be selected according to the users requirements (pip a
 for development and Docker is recomended for using the tool).
 Below are the software dependencies and corresponding installation instructions for different environments.
 
-
-.. note::
-
-   We are developing a desktop application for BRAD that can be installed without requiring the
-   any environment or package management by the user.
-
 Software Requirements
 ----------------------
 
@@ -57,7 +51,7 @@ To install the required dependencies using `pip`, follow these steps:
 
    First, clone the repository and navigate to the root directory:
 
->>> git clone <repo_url>
+>>> git clone https://github.com/Jpickard1/BRAD/
 >>> cd BRAD                                               
 >>> pip install -r requirements.txt
 
@@ -76,15 +70,42 @@ In the root directory of the project, run the following command to create an env
 
 >>> conda env create -f environment.yml
 >>> conda list                                               
->>> conda activate BRAD-1
+>>> conda activate BRAD-DEV
 
 Docker Instillation
 -------------------
 
+Download and install `docker desktop <https://www.docker.com/products/docker-desktop/>`_ and follow the instructions.
+Click on download docker and double click the .exe file on windows or .dmg file on mac to start the installation.
+You will have to restart the system to get docker desktop running.
 
->>> docker build -t brad:local .
->>> docker run -it brad:local
-                                              
+Once installed, pull the latest BRAD docker image with the command:
+
+```
+docker pull thedoodler/brad:main
+```
+
+This will download the BRAD container image and prepare it for deployment. This instillation should take several minutes.
+
+Start the BRAD container using the following command:
+```
+docker run -e OPENAI_API_KEY=<YOUR_OPENAI_API_KEY> \
+           -e PYDANTIC_SKIP_VALIDATING_CORE_SCHEMAS='True' \
+           -p 5002:5000 -p 3000:3000 \
+           thedoodler/brad:main
+```
+
+Replace `<YOUR_OPENAI_API_KEY>` with your OpenAI API key. If using LLMs hosted by NVIDIA, you can include the NVIDIA API key as well:
+
+```
+docker run -e OPENAI_API_KEY=<YOUR_OPENAI_API_KEY> \
+           -e NVIDIA_API_KEY=<YOUR_NVIDIA_API_KEY> \
+           -e PYDANTIC_SKIP_VALIDATING_CORE_SCHEMAS='True' \
+           -p 5002:5000 -p 3000:3000 \
+           thedoodler/brad:main
+```
+
+Once the container is running, open your browser and navigate to `http://localhost:3000 <http://localhost:3000>`_ to access the BRAD GUI.                                              
 
                                                
                                                
