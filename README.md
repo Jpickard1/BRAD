@@ -78,8 +78,8 @@ Once the container is running, open your browser and navigate to [`http://localh
 
 ## [BRAD-Examples](https://github.com/Jpickard1/BRAD-Examples/tree/main)
 
-- **GUI Tutorial**  
-  A simple tutorial for how to use BRAD's Graphical User Interface.
+- [**GUI Tutorial**](https://docs.google.com/presentation/d/1Vaw5gDTff1Eqv9XaPq_gW4eBOVmookQsaz_LJaIJoFU/edit?usp=sharing)  
+  A simple tutorial for how to set up and use BRAD's Graphical User Interface.
 
 - [**Hello World**](https://github.com/Jpickard1/BRAD-Examples/blob/main/Hello-World/Example-0.ipynb)  
   A simple "Hello, World!" example to help you understand the basics of using the BRAD chatbot.
