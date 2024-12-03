@@ -20,7 +20,6 @@ help:
 # Clean target to remove the build directory and source/tutorials/
 clean:
 	@$(SPHINXBUILD) -M clean "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-	# rm -rf source/tutorials/
 
 # Custom target for building PDF using pdflatex
 latexpdf:
@@ -33,7 +32,4 @@ latexpdf:
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
-	# @cp -r ../tutorials/ $(SOURCEDIR)/
-	# @cp -r ../tutorials/getting-started $(SOURCEDIR)/getting-started/
-	# @cp -r ../tutorials/RAG-with-BRAD $(SOURCEDIR)/RAG-with-BRAD/
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
