@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "BRAD-Chat"
-version = "0.0.4"
+version = "0.0.4.1"
 description = "This package connects large language models with bioinformatics workflows."
 authors = ["Joshua Pickard <jpic@umich.edu>"]
 readme = "README.md"
