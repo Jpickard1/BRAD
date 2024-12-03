@@ -2,11 +2,23 @@
 
 BRAD is a digital assistant designed to streamline bioinformatics workflows by leveraging the power of Large Language Models (LLMs). Built as a Python package, BRAD integrates computational tools, databases, and scientific literature into a unified system, enabling information retrieval and workflow automation. BRAD supports retrieval-augmented generation (RAG), database integration, executing external codes, and provides flexibility to integrate new tools. BRAD is a Python package and Graphical User Interface, and not dependent on a specific LLM.
 
-Please see the projects main page available [here!](https://brad-bioinformatics-retrieval-augmented-data.readthedocs.io/_/downloads/en/latest/pdf/)
-
 <div align="center">
   <img width="635" alt="brad-dl-vision" src="https://github.com/user-attachments/assets/da7a1722-28ca-44e8-b45f-4350b7b29305">
 </div>
+
+## Scope of this README
+This `README` is intended as a quick reference for installing, setting up, and a few examples of the BRAD software. For additional information about this project, see the main page available [here](https://brad-bioinformatics-retrieval-augmented-data.readthedocs.io/en/latest/) and for implementation and configuration details regarding how the software works, consult the software manual [here](https://brad-bioinformatics-retrieval-augmented-data.readthedocs.io/_/downloads/en/latest/pdf/).
+
+## System Requirements:
+
+Any machine capable of running Docker should be able to run BRAD. This includes Windows, MAC, and Linux machines. BRAD was tested on the following operating systems:
+
+- Windows 11 Enterprise, 22H2
+- Ubuntu 22.04.4 LTS
+- and several others
+
+The GUI does not have significant compute requirements, and has been tested on systems with 16 GB of RAM. If a user installs the Python version or the development version of BRAD, the software dependencies can be installed from the below instructions. If a user wishes to run BRAD while running LLM inference locally, the user will require sufficient hardware and compute resources to run the LLM, separate from the dependencies of BRAD. The full list of softare dependencies used throughout this repository can be found [here](https://github.com/Jpickard1/BRAD/network/dependencies).
+
 
 ## Quickstart
 
@@ -103,7 +115,7 @@ cd BRAD
 Ensure Python 3.8 or higher is installed. For better isolation and to avoid dependency conflicts, use Conda to create a separate environment:
 
 ```
-conda create -n brad-dev python=3.8
+conda create -n brad-dev
 conda activate brad-dev
 ```
 
