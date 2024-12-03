@@ -296,7 +296,8 @@ def parse_log_for_one_query(chatlog_query):
         steps = process_data.get('STEPS', [])
         source_locations = process_data.get('SOURCE_LOCATIONS')
         if source_locations:
-            source_locations = [strip_root_path(i, UPLOAD_FOLDER) for i in source_locations]
+            # source_locations = [strip_root_path(i, UPLOAD_FOLDER) for i in source_locations]
+            source_locations = [ i.split('data/uploads')[-1] for i in source_locations ]
         process_data['SOURCE_LOCATIONS'] = source_locations
         for step in steps:
             # Check if 'func' key exists and is 'rag.retrieval'
