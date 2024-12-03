@@ -1,34 +1,68 @@
-# BRAD: Bioinformatics Digital Assistant
+# Bioinformatics Retrieval Augmented Data (BRAD) Digital Assistant
+
+BRAD is a digital assistant designed to streamline bioinformatics workflows by leveraging the power of Large Language Models (LLMs). Built as a Python package, BRAD integrates computational tools, databases, and scientific literature into a unified system, enabling information retrieval and workflow automation. BRAD supports retrieval-augmented generation (RAG), database integration, executing external codes, and provides flexibility to integrate new tools. BRAD is a Python package and Graphical User Interface, and not dependent on a specific LLM.
 
 Please see the projects main page available [here!](https://brad-bioinformatics-retrieval-augmented-data.readthedocs.io/_/downloads/en/latest/pdf/)
 
-## Architecture
 <div align="center">
   <img width="635" alt="brad-dl-vision" src="https://github.com/user-attachments/assets/da7a1722-28ca-44e8-b45f-4350b7b29305">
 </div>
 
-## Installation
+## Quickstart
 
-Brad can be installed directly from pip:
+BRAD can be installed either as a Python package or through Docker. Follow the instructions below to get started.
+
+### Python Instillation
+Brad can be installed directly from [pip](https://pypi.org/project/BRAD-Chat/):
 
 ```
 pip install -U BRAD-Chat
 ```
-<br>
-<br>
 
-## Web Server deployment
+### Python Quickstart
+Once installed, you can verify the instillation worked with the following import:
 
-BRAD can be deployed as a web server to interact and experiment with its functionalities.
+```
+from BRAD import agent
+```
 
-The BRAD web server is written with react.js for the frontend and flask backend.
+See the examples below for how to being using the package or the [software manual](https://brad-bioinformatics-retrieval-augmented-data.readthedocs.io/_/downloads/en/latest/pdf/) for documentation of the installed package.
 
-The recommended method is to use docker.
+### Docker Instillation
+Download and install [docker desktop](https://www.docker.com/products/docker-desktop/) and follow the instructions.
+Click on download docker and double click the .exe file on windows or .dmg file on mac to start the installation.
+You will have to restart the system to get docker desktop running.
 
+Once installed, pull the latest BRAD docker image with the command:
 
+```
+docker pull thedoodler/brad:main
+```
 
-### Docker instructions
-=======
+This will download the BRAD container image and prepare it for deployment. This instillation should take several minutes.
+
+### Docker Turn on
+Start the BRAD container using the following command:
+
+```
+docker run -e OPENAI_API_KEY=<YOUR_OPENAI_API_KEY> \
+           -e PYDANTIC_SKIP_VALIDATING_CORE_SCHEMAS='True' \
+           -p 5002:5000 -p 3000:3000 \
+           thedoodler/brad:main
+```
+
+Replace `<YOUR_OPENAI_API_KEY>` with your OpenAI API key. If using LLMs hosted by NVIDIA, you can include the NVIDIA API key as well:
+
+```
+docker run -e OPENAI_API_KEY=<YOUR_OPENAI_API_KEY> \
+           -e NVIDIA_API_KEY=<YOUR_NVIDIA_API_KEY> \
+           -e PYDANTIC_SKIP_VALIDATING_CORE_SCHEMAS='True' \
+           -p 5002:5000 -p 3000:3000 \
+           thedoodler/brad:main
+```
+
+Once the container is running, open your browser and navigate to [`http://localhost:3000`](http://localhost:3000) to access the BRAD GUI.
+
 ## [BRAD-Examples](https://github.com/Jpickard1/BRAD-Examples/tree/main)
 
 - **GUI Tutorial**  
@@ -46,11 +80,105 @@ The recommended method is to use docker.
 - [**Biomarker Selection Pipeline**](https://github.com/Jpickard1/BRAD-Examples/blob/main/DMD-Biomarkers/Example-3.ipynb)  
   Illustrates how BRAD can assist in selecting biomarkers from datasets using machine learning and bioinformatics tools.
 
-## Development
+## Development Environment and Software Requirements
 
-#### Docker
+To contribute or modify BRAD, you need to set up a development environment. Follow the detailed instructions below for both Python and GUI development.
+
+#### Python Development Environment
+
+1. **Clone the Repository**  
+  Download the BRAD repository from GitHub:
+```
+git clone https://github.com/Jpickard1/BRAD.git
+cd BRAD
+```
+2. **Configure Settings**  
+  Update the configuration file located at `./BRAD/config/config.json` to match your preferences. Specifically, update the `log_path` key to point to a directory on your local system for storing logs.
+
+```
+    "log_path": "/usr/src/brad/logs",                       // Replace this line
+```
+
+3. **Set up Python Environment** (*optional*)  
+Ensure Python 3.8 or higher is installed. For better isolation and to avoid dependency conflicts, use Conda to create a separate environment:
+
+```
+conda create -n brad-dev python=3.8
+conda activate brad-dev
+```
+
+>Our recommendation is to use a self managed conda environment. `environment.yml` provides a template to build the environment, but package management may depend on different software requirements for new tools being integrated to BRAD.
+
+
+4. **Install Python Requirements**  
+Install all dependencies using the provided requirements file:
+
+```
+pip install -r requirements_frozen.txt
+```  
+
+If additional dependencies are needed during development, remember to update this file after installation.
+
+> Note: This will install the requirements associated only with the Python package. It will not install the full set of software dependencies, which can be found [here](https://github.com/Jpickard1/BRAD/network/dependencies).
+
+
+
+### GUI Development
+Follow these instructions to install the development version of BRAD's GUI:
+
+1. **Install NPM and Node.js**  
+BRAD's GUI requires Node.js version 20.18.0 and npm version 10.8.2. You can install these either:
+   - Directly from the [Node.js website](https://nodejs.org/en/download/package-manager)
+   - Or using nvm (recommended for managing multiple Node.js versions):
+
+```
+curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+source ~/.nvm/nvm.sh
+nvm install 20.18.0
+nvm use 20.18.0
+```
+
+>Our recommendation is to use nvm:
+```
+https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+source ~/.nvm/nvm.sh \
+nvm install 20.18.0 \
+nvm use 20.18.0
+```
+
+2. **Install GUI Dependencies**  
+Navigate to the frontend directory and install required packages:
+
+```
+npm install --prefix ./brad-chat
+```
+
+3. **Start the Backend**  
+Start BRAD backend with:
+```
+PYDANTIC_SKIP_VALIDATING_CORE_SCHEMAS=True \
+OPENAI_API_KEY=<your_openai_api_key> \
+NVIDIA_API_KEY=<your_nvidia_api_key> \            (optional)
+flask --app app run --host=0.0.0.0 --port=5000
+```
+
+4. **Start the Frontend**  
+Start BRAD frontend with 
+```
+cd brad-chat
+npm start
+```
+
+5. **Access BRAD**  
+The above process will start BRAD with:
+- Flask server at [`http://localhost:3000`](http://localhost:3000)
+- GUI at [`http://localhost:5000`](http://localhost:5000)
+
+Open a browser and navigate to [`http://localhost:5000`](http://localhost:5000) to view the GUI.
+
+### Docker
 The Docker build can be used to deploy brad without having to install packages manually.
-after installing either docker desktop or docker engine [docker intsallation](https://docs.docker.com/desktop/), you can follow one of the following commands to install and run BRAD
+After installing either docker desktop or docker engine [docker intsallation](https://docs.docker.com/desktop/), you can follow one of the following commands to install and run BRAD
 
 
 1. Use with docker compose:
@@ -75,63 +203,9 @@ Then proceed to http://localhost:3000 to view the frontend
 <br>
 <br>
 
-### Development Environment
-
-To contribute or make your own modifications to BRAD, A separate development environment needs to be set up. Follow the instructions below to set up your environment
-
-Download the BRAD repository
-```
-git clone https://github.com/Jpickard1/BRAD.git
-cd BRAD
-```
-<br>
-
-Update ./BRAD/config/config.json to your preference
-( specifically update the log_path key to point somewhere on your local system )
-<br>
-
-Make sure python is installed and then install the requirements
->Our recommendation is to use conda and setup a separate conda environment to ensure package discrepencies
-
-```
-pip install -r requirements_frozen.txt
-```  
-<br>
-
-Install node=v20.18.0 and npm=10.8.2 from the (website)[https://nodejs.org/en/download/package-manager]  or by using nvm
->Our recommendation is to use nvm
-```
-https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
-source ~/.nvm/nvm.sh \
-nvm install 20.18.0 \
-nvm use 20.18.0
-
-# install the necessary packages
-npm install --prefix ./brad-chat
-```
-
-Start BRAD backend with 
-```
-PYDANTIC_SKIP_VALIDATING_CORE_SCHEMAS=True OPENAI_API_KEY=<your_open_api_key> flask --app app run --host=0.0.0.0 --port=5000
-```
-
-Start BRAD frontend with 
-```
-cd brad-chat
-npm start
-```
-
-This will start BRAD Backend at - http://localhost:3000  
-And the BRAD frontend at - http://localhost:5000
-
-<br>
-<br>
-
 ### Documentation
 
 To build the projects documentation in the ReadTheDocs html formatting, in the `docs/` directory, run the command `make html`. This will populate the `docs/build/html` directory with the webpages. The `docs/build/` directory is excluded from git but *will* automatically be built when pushing to main.
-
-During the build, the `tutorials/` directory is automatically pulled in to the source by copying all jupyter notebooks. These are included in the user guide section of the documentation.
 
 To remove the documentation from `docs/build/` run `make clean` from the same directory where you built it.
 
@@ -140,10 +214,10 @@ To remove the documentation from `docs/build/` run `make clean` from the same di
 ## Cite Us
 
 ```
-@article{pickard2024bioinformatics,
-  title={Language Model Powered Digital Biology},
-  author={Pickard, Joshua and Choi, Marc Andrew and Oliven, Natalie and
-          Stansbury, Cooper and Cwycyshyn, Jillian and Galioto, Nicholas
+@article{pickard2024language,
+  title={Language Model Powered Digital Biology with BRAD},
+  author={Pickard, Joshua and Prakash, Ram and Choi, Marc Andrew and Oliven, Natalie and
+          Stansbury, Cooper and Cwycyshyn, Jillian
           and Gorodetsky, Alex and Velasquez, Alvaro and Rajapakse, Indika},
   journal={arXiv preprint arXiv:2409.02864},
   url={https://arxiv.org/abs/2409.02864},
