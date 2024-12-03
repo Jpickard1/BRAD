@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'pypi_test'
     tags:
       - 'v*'
   pull_request:
@@ -28,7 +29,14 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Test Print
+        run: ls .
+      
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
       - name: Install dependencies
+        working-directory: .
         run: poetry install
 
       - name: Build package (optional)
