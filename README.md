@@ -1,4 +1,4 @@
-# Bioinformatics Retrieval Augmented Data (BRAD) Digital Assistant
+# Bioinformatics Retrieval Augmented Digital (BRAD) Assistant
 
 BRAD is a digital assistant designed to streamline bioinformatics workflows by leveraging the power of Large Language Models (LLMs). Built as a Python package, BRAD integrates computational tools, databases, and scientific literature into a unified system, enabling information retrieval and workflow automation. BRAD supports retrieval-augmented generation (RAG), database integration, executing external codes, and provides flexibility to integrate new tools. BRAD is a Python package and Graphical User Interface, and not dependent on a specific LLM.
 
