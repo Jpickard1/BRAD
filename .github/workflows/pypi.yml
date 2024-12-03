@@ -3,16 +3,8 @@ name: Pypi CI
 on:
   workflow_dispatch:
   push:
-    branches:
-      - 'main'
-      - 'pypi_test'
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - 'main'
-    types:
-      - closed
 
 jobs:
   build:
