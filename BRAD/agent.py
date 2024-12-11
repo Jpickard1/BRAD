@@ -1013,9 +1013,23 @@ class AgentFactory():
     :type start_path: str, optional
     :param interactive: Sets BRAD's mode to interactive or non inteactive. Default mode is non Interactive
     :type tools: bool, optional
+    :param config: The path to a configurations file to construct the agent
+    :type config: str, optional
     """
 
-    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None, llm_choice=None, gui=None, temperature=0):
+    def __init__(
+            self,
+            tool_modules=TOOL_MODULES,
+            session_path=None,
+            start_path=None,
+            interactive=False,
+            db_name=None,
+            persist_directory=None,
+            llm_choice=None,
+            gui=None,
+            temperature=0,
+            config=None
+        ):
         self.interactive = interactive
         suffix = '/log.json'
         if session_path and (session_path.endswith(suffix)):
@@ -1036,18 +1050,35 @@ class AgentFactory():
 
         self.llm_choice = llm_choice
         self.temperature = temperature
-        
+        self.config = config
 
     def get_agent(self):
         """
         The agent function for instantiating a new agent or retrieve an existing agent
         """
         if self.session_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path, gui=self.gui)
+            agent = Agent(
+                interactive=self.interactive,
+                tools=self.tool_modules,
+                restart=self.session_path,
+                gui=self.gui,
+                config=self.config
+            )
         elif self.start_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path, gui=self.gui)
+            agent = Agent(
+                interactive=self.interactive,
+                tools=self.tool_modules,
+                start_path=self.start_path,
+                gui=self.gui,
+                config=self.config
+            )
         else:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, gui=self.gui)
+            agent = Agent(
+                interactive=self.interactive, 
+                tools=self.tool_modules,
+                gui=self.gui,
+                config=self.config
+            )
 
 
         if self.db_name and self.persist_directory:
