@@ -78,6 +78,8 @@ Once the container is running, open your browser and navigate to [`http://localh
 
 ## [BRAD-Examples](https://github.com/Jpickard1/BRAD-Examples/tree/main)
 
+![RAG_Video_Demo](https://github.com/user-attachments/assets/ec305971-a79b-4f37-9eb6-2e9603c7079a)
+
 - [**GUI Tutorial**](https://docs.google.com/presentation/d/1Vaw5gDTff1Eqv9XaPq_gW4eBOVmookQsaz_LJaIJoFU/edit?usp=sharing)  
   A simple tutorial for how to set up and use BRAD's Graphical User Interface.
 
