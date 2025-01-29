@@ -11,10 +11,10 @@
     },
     "SCRAPE": {
         "add_from_scrape": true,
-        "max_search_terms": 10,
+        "max_search_terms": 1,
         "save_search_results": false,
         "download_search_results": false,
-        "perform_search": false
+        "perform_search": true
     },
     "CODE": {
         "matlab-path": "/home/jpic/RAG-DEV/tutorials/planner/matlab/",

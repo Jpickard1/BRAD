@@ -90,81 +90,101 @@ def webScraping(state):
     # Auth: Joshua Pickard
     #       jpic@umich.edu
     # Date: May 20, 2024
+    print(f"webScraping started")
     query    = state['prompt']
-    llm      = state['llm']              # get the llm
-    memory   = state['memory']           # get the memory of the model
-    
-    # Define the mapping of keywords to functions
-    scraping_functions = {
-        'ARXIV'   : arxiv,
-        'BIORXIV' : biorxiv,
-        'PUBMED'  : pubmed
-    }
-    
-    # Identify the database and the search terms
-    template = scrapeTemplate()
-    template = template.format(search_terms=state['search']['used terms'])
-    PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
-    conversation = ConversationChain(prompt  = PROMPT,
-                                     llm     = llm,
-                                     verbose = state['config']['debug'],
-                                     memory  = memory,
-                                    )
-    response = conversation.predict(input=query)
-    llmResponse = parse_llm_response(response)
-    log.debugLog(llmResponse, state=state)
-    try:
-        llmType = str(llm.model)
-    except:
-        try:
-            llmType = str(llm.model_name)
-        except:
-            llmType = str(llm)
-    state['process']['steps'].append(
-        log.llmCallLog(
-            llm          = llmType,
-            prompt       = PROMPT,
-            memory       = memory,
-            input        = query,
-            output       = response,
-            parsedOutput = llmResponse,
-            purpose      = 'identify how to web scrape'
-        )
-    )
-    llmKey, searchTerms = llmResponse['database'].upper(), llmResponse['search_terms']
-
-    # Determine the target source
-    source = next((key for key in scraping_functions if key == llmKey), 'PUBMED')
-    process = {'searched': source}
-    scrape_function = scraping_functions[source]
-    
-    # Execute the scraping function and handle errors
-    if state['config']['SCRAPE']['perform_search']:
-        try:
-            output = f'searching on {source}...'
-            log.debugLog(output, state=state)
-            log.debugLog('Search Terms: ' + str(searchTerms), state=state)
-            for numTerm, st in enumerate(searchTerms):
-                if numTerm == state['config']['SCRAPE']['max_search_terms']:
-                    break
-                scrape_function(st, state)
-        except Exception as e:
-            output = f'Error occurred while searching on {source}: {e}'
-            log.debugLog(output, state=state)
-            process = {'searched': 'ERROR'}
-    
-        if state['config']['SCRAPE']['add_from_scrape']:
-            state = updateDatabase(state)
+    llm      = state['llm']                  # get the llm
+    memory   = state['memory']               # get the memory of the model
+    toolHistory = state['CONTINUE-MODULE'] # tracks which round of invoke is being used
+    print(f"{toolHistory=}")
+    # First query to the scraper
+    if toolHistory is None:
+        toolState = {}
+        # Define the mapping of keywords to functions
+        scraping_functions = {
+            'ARXIV'   : arxiv_stage_one,
+            'BIORXIV' : biorxiv,
+            'PUBMED'  : pubmed
+        }
         
-        state['process']['steps'].append(process)
-        state['output'] = "Articles were successfully downloaded."
+        # Identify the database and the search terms
+        template = scrapeTemplate()
+        template = template.format(search_terms=state['search']['used terms'])
+        PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
+        conversation = ConversationChain(prompt  = PROMPT,
+                                        llm     = llm,
+                                        verbose = state['config']['debug'],
+                                        memory  = memory,
+                                        )
+        response = conversation.predict(input=query)
+        llmResponse = parse_llm_response(response)
+        log.debugLog(llmResponse, state=state)
+        try:
+            llmType = str(llm.model)
+        except:
+            try:
+                llmType = str(llm.model_name)
+            except:
+                llmType = str(llm)
+        state['process']['steps'].append(
+            log.llmCallLog(
+                llm          = llmType,
+                prompt       = PROMPT,
+                memory       = memory,
+                input        = query,
+                output       = response,
+                parsedOutput = llmResponse,
+                purpose      = 'identify how to web scrape'
+            )
+        )
+        llmKey, searchTerms = llmResponse['database'].upper(), llmResponse['search_terms']
+
+        # Determine the target source
+        source = next((key for key in scraping_functions if key == llmKey), 'ARXIV')
+        #TODO delete the below line used for debugging:
+        source = 'ARXIV'
+        process = {'searched': source}
+        print(f"{source=}")
+        scrape_function = scraping_functions[source]
+        print(f"{scraping_functions=}")
+
+        # Save which database to search for future usage
+        toolState['database'] = source
+    
+        # Execute the scraping function and handle errors
+        if state['config']['SCRAPE']['perform_search']:
+            try:
+                output = f'searching on {source}...'
+                log.debugLog(output, state=state)
+                log.debugLog('Search Terms: ' + str(searchTerms), state=state)
+                for numTerm, st in enumerate(searchTerms):
+                    if numTerm == state['config']['SCRAPE']['max_search_terms']:
+                        break
+                    state, scrape_results = scrape_function(st, state)
+                    for k, v in scrape_results.items():
+                        toolState[k] = v
+            except Exception as e:
+                output = f'Error occurred while searching on {source}: {e}'
+                log.debugLog(output, state=state)
+                process = {'searched': 'ERROR'}
+            
+            state['process']['steps'].append(process)
+            # state['output'] = "Articles were successfully downloaded."
+        else:
+            state['output'] = "No articles were searched."
+        state['CONTINUE-MODULE'] = ('SCRAPE', toolState)
+        return state
+
+    # Second query to the scraper
     else:
-        state['output'] = "No articles were searched."        
-    return state
+        arxiv_stage_two(query, toolHistory[1], state)
+#        if state['config']['SCRAPE']['add_from_scrape']:
+#            state = updateDatabase(state)
+        state['CONTINUE-MODULE'] = None
+        return state
 
 
   
-def arxiv(query, state):
+def arxiv_stage_one(query, state):
     """
     Searches for articles on the arXiv repository based on the given query, displays search results, and optionally downloads articles as PDFs.
 
@@ -177,38 +197,48 @@ def arxiv(query, state):
     """
     # Auth: Marc Choi
     #       machoi@umich.edu
+    print("arxiv_stage_one")
     process = {}
     output = 'searching the following on arxiv: ' + query
     state = log.userOutput(output, state=state)
     df, pdfs = arxiv_search(query, 10, state=state)
     process['search results'] = df
+    process['pdfs'] = pdfs
     displayDf = df[['Title', 'Authors', 'Abstract']]
-    display(displayDf)
+    output += "\n\n"
+    output += displayDf.to_markdown()
+    output += "\n\n"
+    print(displayDf.to_markdown())
+    # display(displayDf)
     if state['config']['SCRAPE']['save_search_results']:
         utils.save(state, df, "arxiv-search-" + str(query) + '.csv')
     if len(state['queue']) == 0:
-        if state['interactive']:
+        if state['interactive'] or state['GUI']:
             output += '\n Would you like to download these articles [Y/N]?'
-            state = log.userOutput('Would you like to download these articles [Y/N]?', state=state)
-            download = input().strip().upper()
-            state['process']['steps'].append(
-                {
-                    'func'           : 'scraper.arxiv',
-                    'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
-                    'input'          : download,
-                    'purpose'        : 'decide to download pdfs or not'
-                }
-            )
+            state = log.userOutput(output, state=state)
+            # download = input().strip().upper()
+            # state['process']['steps'].append(
+            #     {
+            #         'func'           : 'scraper.arxiv',
+            #         'prompt to user' : 'Do you want to proceed with this plan? [Y/N/edit]',
+            #         'input'          : download,
+            #         'purpose'        : 'decide to download pdfs or not'
+            #     }
+            # )
         else:
             download = state['SCRAPE']['download_search_results']
     else:
         download = 'Y'
-    process['download'] = (download == 'Y')
-    if download == 'Y':
+    return state, process
+
+def arxiv_stage_two(userInput, toolState, state):
+    print(f"arxiv_stage_two")
+    process = {}
+    process['download'] = (userInput.upper() == 'Y')
+    if process['download'] == 'Y':
+        pdfs = toolState['pdfs']
         output += arxiv_scrape(pdfs, state)
     return output, process
-
-
 
 def search_pubmed_article(query, number_of_articles=10, state=None):
     """
@@ -706,7 +736,7 @@ def parse_llm_response(response):
     :rtype: dict
     """
     # Define possible fallback databases
-    fallback_databases = ["arxiv", "pubmed", "biorxiv"]
+    fallback_databases = ["ARXIV", "PUBMED", "BIORXIV"]
 
     try:
         # Initialize an empty dictionary to hold the parsed data

@@ -260,6 +260,9 @@ def parse_log_for_one_query(chatlog_query):
             llm_usage['process'] = process_dict
 
         return process, llm_usage
+
+    if module_name == 'SCRAPE':
+        return {}, {}
     
     return None, None
 
@@ -332,17 +335,22 @@ def invoke(request):
     brad = AgentFactory(session_path=brad_session, 
                         persist_directory=DATABASE_FOLDER,
                         db_name=CACHE.get('rag_name')).get_agent()
+    print(f"{brad_query=}")
+    print(f"{brad=}")
     brad_response = brad.invoke(brad_query)
+    print(f"{brad_response=}")
     brad_name = brad.chatname
+    print(f"{brad_name=}")
 
     agent_response_log = brad.chatlog[list(brad.chatlog.keys())[-1]]
+    print(f"{agent_response_log=}")
     passed_log_stages, llm_usage = parse_log_for_one_query(agent_response_log)
 
     response_data = {
         "response": brad_response,
         "session-name": brad_name,
         "response-log": passed_log_stages,
-        "response-log-dict": llm_usage.get('process'),
+        "response-log-dict": llm_usage.get('process', 0),
         "llm-usage": llm_usage
     }
     return jsonify(response_data)
@@ -896,7 +904,8 @@ def sessions_change(request):
                     tool_modules=TOOL_MODULES,
                     session_path=session_path,
                     persist_directory=DATABASE_FOLDER,
-                    db_name=CACHE.get('rag_name')
+                    db_name=CACHE.get('rag_name'),
+                    GUI=True
                     ).get_agent()
 
     # Check if the session directory exists

@@ -176,8 +176,9 @@ class Agent():
         name='BRAD',
         max_api_calls=None, # This prevents BRAD from finding infinite loops and using all your API credits,
         interactive=True,   # This indicates if BRAD is in interactive more or not
-        config=None         # This parameter lets a user specify an additional configuration file that will
+        config=None,        # This parameter lets a user specify an additional configuration file that will
                             # overwrite configurations with the same key
+        GUI=False           # This parameter indicates if the GUI is in use
     ):
         # Auth: Joshua Pickard
         #       jpic@umich.edu
@@ -204,6 +205,7 @@ class Agent():
         #   is likely reasonable to split this variable up into separate class variables.
         # super().__init__()
         self.state = self.loadstate(config=config)
+        self.state['GUI'] = GUI
         self.name       = name.strip()
         self.state['interactive'] = interactive # By default a chatbot is not interactive
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -887,7 +889,8 @@ class Agent():
                 'used terms' : [],
             },
             'recursion_depth': 0,
-            'CONTINUE-MODULE': None
+            'CONTINUE-MODULE': None,
+            'GUI': None
         }
         return state
 
@@ -1006,7 +1009,7 @@ class AgentFactory():
     :param interactive: Sets BRAD's mode to interactive or non inteactive. Default mode is non Interactive
     :type tools: bool, optional
     """
-    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None):
+    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None, GUI=True):
         self.interactive = interactive
         suffix = '/log.json'
         if session_path and (session_path.endswith(suffix)):
@@ -1014,6 +1017,7 @@ class AgentFactory():
         self.session_path = session_path
         self.tool_modules = tool_modules
         self.start_path = start_path
+        self.GUI = GUI
         if db_name:
             self.db_name = db_name
         else:
@@ -1030,11 +1034,11 @@ class AgentFactory():
         The agent function for instantiating a new agent or retrieve an existing agent
         """
         if self.session_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path, GUI=self.GUI)
         elif self.start_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path, GUI=self.GUI)
         else:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, GUI=self.GUI)
 
 
         if self.db_name and self.persist_directory:
