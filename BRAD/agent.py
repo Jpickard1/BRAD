@@ -940,7 +940,12 @@ class Agent():
         # load database
         embeddings_model = HuggingFaceEmbeddings(model_name='BAAI/bge-base-en-v1.5')        # Embedding model
         _client_settings = chromadb.PersistentClient(path=os.path.join(persist_directory, db_name))
-        vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings_model, client=_client_settings, collection_name=db_name)
+        vectordb = Chroma(
+            persist_directory=persist_directory,
+            embedding_function=embeddings_model,
+            client=_client_settings,
+            collection_name=db_name
+        )
         if len(vectordb.get()['ids']) == 0:
             print('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
             warnings.warn('The loaded database contains no articles. See the database: ' + str(persist_directory) + ' for details')
@@ -1015,8 +1020,9 @@ class AgentFactory():
     :type tools: bool, optional
     """
 
-    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None, llm_choice=None, gui=None, temperature=0):
+    def __init__(self, tool_modules=TOOL_MODULES, session_path=None, start_path=None, interactive=False, db_name=None, persist_directory=None, llm_choice=None, gui=None, temperature=0, config=None):
         self.interactive = interactive
+        self.config = config
         suffix = '/log.json'
         if session_path and (session_path.endswith(suffix)):
             session_path = session_path[: -len(suffix)]
@@ -1043,11 +1049,11 @@ class AgentFactory():
         The agent function for instantiating a new agent or retrieve an existing agent
         """
         if self.session_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path, gui=self.gui)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, restart=self.session_path, gui=self.gui, config=self.config)
         elif self.start_path:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path, gui=self.gui)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, start_path=self.start_path, gui=self.gui, config=self.config)
         else:
-            agent = Agent(interactive=self.interactive, tools=self.tool_modules, gui=self.gui)
+            agent = Agent(interactive=self.interactive, tools=self.tool_modules, gui=self.gui, config=self.config)
 
 
         if self.db_name and self.persist_directory:
