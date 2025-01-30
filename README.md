@@ -95,6 +95,11 @@ Once the container is running, open your browser and navigate to [`http://localh
 - [**Biomarker Selection Pipeline**](https://github.com/Jpickard1/BRAD-Examples/blob/main/DMD-Biomarkers/Example-3.ipynb)  
   Illustrates how BRAD can assist in selecting biomarkers from datasets using machine learning and bioinformatics tools.
 
+- [**Video RAG**](https://github.com/Jpickard1/BRAD-Video)
+  BRAD operates as a RAG with a video database to interact with the past decade of Michigan Bioinformatics seminars 
+
+https://github.com/user-attachments/assets/293d7bf0-5e6b-4bcb-b62b-e4b8fd17e65f
+
 ## Development Environment and Software Requirements
 
 To contribute or modify BRAD, you need to set up a development environment. Follow the detailed instructions below for both Python and GUI development.
