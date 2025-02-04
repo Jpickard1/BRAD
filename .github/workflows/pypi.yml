@@ -52,14 +52,14 @@ jobs:
           python -m pip install -U build twine
       
       - name: Build package
-        run: python -m build Python/
+        run: python -m build
       
       - name: Check distribution
-        run: twine check --strict Python/dist/*
+        run: twine check --strict dist/*
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@v1.12.3
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-          packages-dir: Python/dist/
+          packages-dir: dist/
           verbose: true
