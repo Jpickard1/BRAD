@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "BRAD-Chat"
-version = "0.0.4"
+name = "BRAD-Agent"
+version = "0.1.33"
 description = "This package connects large language models with bioinformatics workflows."
 authors = ["Joshua Pickard <jpic@umich.edu>"]
 readme = "README.md"
@@ -214,7 +214,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [project]
-name = "BRAD-Chat"
+name = "BRAD-Agent"
 version = "0.1.33"
 description = "This package connects large language models with bioinformatics workflows."
 readme = "README.md"
@@ -226,8 +226,8 @@ name = "Joshua Pickard"
 email = "jpic@umich.edu"
 
 [project.urls]
-Homepage = "https://github.com/Jpickard1/RAG-DEV"
-"Bug Tracker" = "https://github.com/Jpickard1/RAG-DEV"
+Homepage = "https://github.com/Jpickard1/BRAD"
+"Bug Tracker" = "https://github.com/Jpickard1/BRAD"
 
 [tool.setuptools]
 py-modules = ["BRAD",]
