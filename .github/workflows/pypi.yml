@@ -1,13 +1,9 @@
-name: Pypi CI
+name: Publish to PyPI
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - 'main'
-      - 'pypi_test'
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
     branches:
       - 'main'
@@ -15,35 +11,55 @@ on:
       - closed
 
 jobs:
-  build:
+  build-n-publish:
+    name: Build and publish to PyPI
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/BRAD-Agent/
+    permissions:
+      id-token: write # this permission is mandatory for Trusted Publishing (pypi)
+      contents: write # this permission is mandatory for editing the contents of the repository
+
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v4  # Updated to latest version
+
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5  # Updated to latest version
         with:
-          python-version: '3.11'
+          python-version: "3.10"  # Specify a concrete version
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Increment version
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install toml
+          python increment_version.py
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://github.com/${{ github.repository }}
+          git add .
+          git commit -m "🤖 AUTO: Incremented version automatically"
+          git push https://${GH_PAT}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
+        continue-on-error: true  # Avoid breaking the workflow if no changes are made
+
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -U build twine
+      
+      - name: Build package
+        run: python -m build Python/
+      
+      - name: Check distribution
+        run: twine check --strict Python/dist/*
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.12.3
         with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-
-      - name: Test Print
-        run: ls .
-      
-      - name: Check out repository code
-        uses: actions/checkout@v4
-
-      - name: Install dependencies
-        working-directory: .
-        run: poetry install
-
-      - name: Build package (optional)
-        run: poetry build
-      
-      - name: install twine
-        run: pip install twine
-      
-      - name: Push to GitHub
-        run: python -m twine upload --username __token__ --password ${{ secrets.PYPI_TOKEN }} --repository pypi dist/* --verbose
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages-dir: Python/dist/
+          verbose: true
