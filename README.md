@@ -24,7 +24,7 @@ The GUI does not have significant compute requirements, and has been tested on s
 
 BRAD can be installed either as a Python package or through Docker. Follow the instructions below to get started.
 
-### Python Instillation
+### Python Installation
 Brad can be installed directly from [pip](https://pypi.org/project/BRAD-Chat/):
 
 ```
@@ -32,7 +32,7 @@ pip install -U BRAD-Chat
 ```
 
 ### Python Quickstart
-Once installed, you can verify the instillation worked with the following import:
+Once installed, you can verify the installation worked with the following import:
 
 ```
 from BRAD import agent
@@ -40,7 +40,7 @@ from BRAD import agent
 
 See the examples below for how to being using the package or the [software manual](https://brad-bioinformatics-retrieval-augmented-data.readthedocs.io/_/downloads/en/latest/pdf/) for documentation of the installed package.
 
-### Docker Instillation
+### Docker Installation
 Download and install [docker desktop](https://www.docker.com/products/docker-desktop/) and follow the instructions.
 Click on download docker and double click the .exe file on windows or .dmg file on mac to start the installation.
 You will have to restart the system to get docker desktop running.
@@ -51,7 +51,7 @@ Once installed, pull the latest BRAD docker image with the command:
 docker pull thedoodler/brad:main
 ```
 
-This will download the BRAD container image and prepare it for deployment. This instillation should take several minutes.
+This will download the BRAD container image and prepare it for deployment. This installation should take several minutes.
 
 ### Docker Turn on
 Start the BRAD container using the following command:
