@@ -22,4 +22,5 @@ def increment_version(file_path: str):
     print(f"Version updated to {data['project']['version']}")
 
 if __name__ == "__main__":
-    increment_version(os.path.join("Python", "pyproject.toml"))
+    increment_version("pyproject.toml")
+    
