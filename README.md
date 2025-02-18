@@ -95,6 +95,9 @@ Once the container is running, open your browser and navigate to [`http://localh
 - [**Biomarker Selection Pipeline**](https://github.com/Jpickard1/BRAD-Examples/blob/main/DMD-Biomarkers/Example-3.ipynb)  
   Illustrates how BRAD can assist in selecting biomarkers from datasets using machine learning and bioinformatics tools.
 
+- [**Chain of Thought Gene Enrichment**](https://github.com/Jpickard1/BRAD-enrichment)  
+  Automatic enrichment analysis and interpretation in context of research literature with a BRAD agent.
+
 - [**Video RAG**](https://github.com/Jpickard1/BRAD-Video)
   BRAD operates as a RAG with a video database to interact with the past decade of Michigan Bioinformatics seminars 
 
