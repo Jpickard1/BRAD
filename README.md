@@ -25,10 +25,10 @@ The GUI does not have significant compute requirements, and has been tested on s
 BRAD can be installed either as a Python package or through Docker. Follow the instructions below to get started.
 
 ### Python Installation
-Brad can be installed directly from [pip](https://pypi.org/project/BRAD-Chat/):
+Brad can be installed directly from [pip](https://pypi.org/project/BRAD-Agent/):
 
 ```
-pip install -U BRAD-Chat
+pip install -U BRAD-Agent
 ```
 
 ### Python Quickstart
