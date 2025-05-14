@@ -1,5 +1,7 @@
 # Bioinformatics Retrieval Augmented Digital (BRAD) Assistant
 
+> **📢 Update (May 2025):** Our manuscript, [Automatic biomarker discovery and enrichment with BRAD](https://academic.oup.com/bioinformatics/article/41/5/btaf159/8125018), is now published in [*Bioinformatics*](https://academic.oup.com/bioinformatics/article/41/5/btaf159/8125018).
+
 BRAD is a digital assistant designed to streamline bioinformatics workflows by leveraging the power of Large Language Models (LLMs). Built as a Python package, BRAD integrates computational tools, databases, and scientific literature into a unified system, enabling information retrieval and workflow automation. BRAD supports retrieval-augmented generation (RAG), database integration, executing external codes, and provides flexibility to integrate new tools. BRAD is a Python package and Graphical User Interface, and not dependent on a specific LLM.
 
 <div align="center">
@@ -237,13 +239,14 @@ To remove the documentation from `docs/build/` run `make clean` from the same di
 ## Cite Us
 
 ```
-@article{pickard2024language,
-  title={Language Model Powered Digital Biology with BRAD},
-  author={Pickard, Joshua and Prakash, Ram and Choi, Marc Andrew and Oliven, Natalie and
-          Stansbury, Cooper and Cwycyshyn, Jillian
-          and Gorodetsky, Alex and Velasquez, Alvaro and Rajapakse, Indika},
-  journal={arXiv preprint arXiv:2409.02864},
-  url={https://arxiv.org/abs/2409.02864},
-  year={2024}
+@article{pickard2025automatic,
+  title={Automatic biomarker discovery and enrichment with BRAD},
+  author={Pickard, Joshua and Prakash, Ram and Choi, Marc Andrew and Oliven, Natalie and Stansbury, Cooper and Cwycyshyn, Jillian and Galioto, Nicholas and Gorodetsky, Alex and Velasquez, Alvaro and Rajapakse, Indika},
+  journal={Bioinformatics},
+  volume={41},
+  number={5},
+  pages={btaf159},
+  year={2025},
+  publisher={Oxford University Press}
 }
 ```
